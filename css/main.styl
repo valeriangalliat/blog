@@ -1,0 +1,59 @@
+darkgrey = #333
+grey = #666
+lightgrey = #ddd
+subtlegrey = #eee
+invisiblegrey = #fafafa
+
+body
+  font 1.25em serif
+  color darkgrey
+
+  margin 0 auto 80vh
+  padding 0 1em
+  max-width 80ch
+
+h1, h2
+  border-bottom 1px solid subtlegrey
+
+h1, h2, h3, h4, h5, h6
+  position relative
+
+  &:hover .header-anchor
+    opacity 1
+
+.header-anchor
+  font-size 1.5rem
+  text-decoration none
+  color grey
+  opacity 0
+
+  position absolute
+  top 50%
+  left -2.5ch
+  margin-top -1.25ch
+  padding-right -@left - 1ch
+
+table
+  width 100%
+  border-collapse collapse
+
+th, td
+  padding .25em .5em
+  border 1px solid lightgrey
+
+tr:nth-child(even)
+  background invisiblegrey
+
+blockquote
+  color grey
+  border-left 1px solid lightgrey
+  padding .25em 0 0 .75em
+
+  & p:first-child
+    margin-top: 0
+
+  & p:last-child
+    margin-bottom: 0
+
+dt
+  font-weight bold

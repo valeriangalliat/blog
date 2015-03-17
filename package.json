@@ -1,12 +1,17 @@
 {
   "dependencies": {
-    "babel": "^4.3.0",
-    "event-stream": "^3.2.2",
+    "babel": "^4.7.13",
+    "babel-runtime": "^4.7.13",
+    "clean-css": "^3.1.8",
     "highlight.js": "^8.4.0",
-    "markdown-it": "^3.0.6",
-    "markdown-it-deflist": "^0.1.0"
-  },
-  "scripts": {
-    "build": "babel src --out-dir dist"
+    "jade": "^1.9.2",
+    "markdown-it": "^4.0.1",
+    "markdown-it-anchor": "^1.0.0",
+    "markdown-it-deflist": "^1.0.0",
+    "markdown-it-highlightjs": "^1.0.0",
+    "markdown-it-title": "^1.0.0",
+    "promise-done": "^1.0.0",
+    "stream-concat-promise": "^1.0.0",
+    "stylus": "^0.50.0"
   }
 }

@@ -1,38 +1,29 @@
-const mkMd = require('./md')
-const hl = require('./hl')
+import concat from 'stream-concat-promise'
+import jade from 'jade'
+import md from 'markdown-it'
 
-const findTitle = data => md => {
-  const originalRule = md.renderer.rules.heading_close
+const render = locals =>
+  jade.renderFile(__dirname + '/../views/post.jade', locals)
 
-  md.renderer.rules.heading_close = (token, idx, ...args) => {
-    if (token[idx].hLevel === 1) {
-      data.title = token[idx - 1].children.map(x => x.content).join('')
-      md.renderer.rules.heading_close = originalRule
-    }
-
-    return originalRule(token, idx, ...args)
-  }
-}
-
-const conf = { html: true, typographer: true }
-const data = {}
-const exts = [require('markdown-it-deflist'), findTitle(data)]
-
-const hlConf = Object.assign({}, hl.mdConf, {
-  highlight: (...args) => {
-    const html = hl(...args)
-    data.highlight = html !== ''
-    return html
-  },
+const parser = md({
+  html: true,
+  typographer: true,
 })
 
-const md = mkMd(Object.assign({}, conf, hlConf), exts)
+parser.use(require('markdown-it-anchor'), {
+  level: 2, // Do not permalink `<h1>`.
+  permalink: true,
+  permalinkSymbol: '¶',
+})
 
-process.stdin.setEncoding('utf8')
+parser.use(require('markdown-it-deflist'))
+parser.use(require('markdown-it-highlightjs'))
+parser.use(require('markdown-it-title'))
 
-process.stdin
-  .pipe(mkMd.stream(md))
-  .on('end', () => {
-    console.log(data)
-  })
-  .pipe(process.stdout)
+const env = {}
+
+concat(process.stdin.setEncoding('utf8'))
+  .then(src => parser.render(src, env))
+  .then(html => render(Object.assign({ html }, env)))
+  .then(console.log)
+  .then(null, require('promise-done'))

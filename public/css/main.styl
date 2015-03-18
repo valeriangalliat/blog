@@ -1,8 +1,14 @@
+// Shades of grey.
 darkgrey = #333
 grey = #666
 lightgrey = #ddd
 subtlegrey = #eee
 invisiblegrey = #fafafa
+
+clear()
+  &::before, &::after
+    content ''
+    display table
 
 body
   font 1.25em serif
@@ -11,6 +17,13 @@ body
   margin 0 auto 80vh
   padding 0 1em
   max-width 80ch
+
+.post h1
+  margin-bottom .5rem
+
+.post h1 + p
+  color lightgrey
+  margin-top 0
 
 h1, h2
   border-bottom 1px solid subtlegrey
@@ -22,16 +35,23 @@ h1, h2, h3, h4, h5, h6
     opacity 1
 
 .header-anchor
+  // Same anchor size no matter the header size.
   font-size 1.5rem
+
   text-decoration none
   color grey
   opacity 0
 
+  // Off flow, on the left.
   position absolute
-  top 50%
-  left -2.5ch
-  margin-top -1.25ch
+  left -1.5ex
+
+  // Balance `left` to avoid gap breaking hover between header and anchor.
   padding-right -@left - 1ch
+
+  // Try to center the anchor no matter the header line height.
+  top 50%
+  margin-top -1.25ch
 
 table
   width 100%
@@ -46,14 +66,20 @@ tr:nth-child(even)
 
 blockquote
   color grey
+  margin-left 0
+  padding-left 2em
   border-left 1px solid lightgrey
-  padding .25em 0 0 .75em
 
-  & p:first-child
-    margin-top: 0
-
-  & p:last-child
-    margin-bottom: 0
+  // Do not collapse quote inner margins.
+  clear()
 
 dt
   font-weight bold
+
+.posts
+  ul
+    list-style-type none
+    padding-left 0
+
+  small
+    color grey

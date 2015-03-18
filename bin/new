@@ -1,0 +1,21 @@
+#!/bin/sh -e
+#
+# Create a new post.
+#
+# * Open editor on a draft file.
+# * Extract the title slug and move the post in a dated directory.
+#
+
+if [ ! -f draft.md ]; then
+    printf 'Title\n=====\n%s\n\n\n' "$(date '+%B %d, %Y')" > draft.md
+fi
+
+$EDITOR draft.md
+
+title=$(bin/title < draft.md)
+slug=$(echo "$title" | tail -1)
+date=$(date +%Y/%m/%d)
+
+mkdir -p "public/$(dirname "$date")"
+mv -i draft.md "public/$date-$slug.md"
+echo "public/$date-$slug.md"

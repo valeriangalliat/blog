@@ -1,16 +1,25 @@
-BIN = node_modules/.bin
+POSTS = $(shell find public -mindepth 1 -name '*.md')
+DEPS = bin/md $(shell find views)
+ALL = bin/md bin/title public/css/all.css $(POSTS:.md=.html)
 
-all: css/main.css
+all: $(ALL)
 
-.SUFFIXES: .md .html
+public/css/all.css: node_modules/highlight.js/styles/zenburn.css public/css/main.css
+	bin/cleancss $^ > $@
 
-.md.html:
-	bin/md < $< > $@
+public/index.md: $(patsubst public/index.md,,$(POSTS))
+	(echo; bin/posts; echo) | bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->' $@ > $@.tmp
+	mv $@.tmp $@
 
-CSS = node_modules/highlight.js/styles/zenburn.css css/main.css
+bin/%: src/%.js
+	bin/babel < $< > $@
+	chmod +x $@
 
-css/main.css: css/main.styl
-	$(BIN)/stylus < css/main.styl > $@
+%.css: %.styl
+	bin/stylus < $< > $@
 
-css/all.css: $(CSS)
-	$(BIN)/cleancss $(CSS) > $@
+%.html: %.md $(DEPS)
+	bin/md $$(echo $< | grep -o / | sed '1s/./page/;2s/./post/;2q' | tail -1) < $< > $@
+
+new:
+	bin/new

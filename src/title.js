@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 //
 // Find the title from input Markdown file and output it as a slug.
 //
@@ -20,11 +18,9 @@ const parser = md({
   typographer: true,
 })
 
-const anchor = require('markdown-it-anchor')
-
-parser.use(anchor)
 parser.use(require('markdown-it-title'))
 
+const slugify = require('markdown-it-anchor').defaults.slugify
 const env = {}
 
 concat(process.stdin, { encoding: 'string' })
@@ -33,7 +29,7 @@ concat(process.stdin, { encoding: 'string' })
   .then(() => env.title)
   .then(title => {
     console.log(title)
-    console.log(anchor.defaults.slugify(title))
+    console.log(slugify(title))
   }, err => {
     console.error(err.message)
     process.exit(1)

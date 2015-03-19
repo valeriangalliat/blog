@@ -1,5 +1,6 @@
 /node_modules
 /bin/md
 /bin/title
-/public/css/*.css
+/stylus/main.css
+/public/css/main.css
 /public/**/*.html

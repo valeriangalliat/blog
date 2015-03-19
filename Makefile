@@ -1,11 +1,17 @@
-POSTS = $(shell find public -mindepth 1 -name '*.md')
-DEPS = bin/md $(shell find views)
-ALL = bin/md bin/title public/css/all.css $(POSTS:.md=.html)
+POSTS = $(shell find public -name '*.md')
+STYLUS = $(shell find stylus -name '*.styl')
+VIEWS = $(shell find views -name '*.jade')
 
-all: $(ALL)
+all: bin/md bin/title public/css/main.css $(POSTS:.md=.html)
 
-public/css/all.css: node_modules/highlight.js/styles/zenburn.css public/css/main.css
+public/css/main.css: \
+	node_modules/normalize.css/normalize.css \
+	node_modules/highlight.js/styles/zenburn.css \
+	stylus/main.css
 	bin/cleancss $^ > $@
+
+stylus/main.css: $(STYLUS)
+	bin/stylus stylus/main.styl
 
 public/index.md: $(patsubst public/index.md,,$(POSTS))
 	(echo; bin/posts; echo) | bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->' $@ > $@.tmp
@@ -15,10 +21,7 @@ bin/%: src/%.js
 	bin/babel < $< > $@
 	chmod +x $@
 
-%.css: %.styl
-	bin/stylus < $< > $@
-
-%.html: %.md $(DEPS)
+%.html: %.md bin/md $(VIEWS)
 	bin/md $$(echo $< | grep -o / | sed '1s/./page/;2s/./post/;2q' | tail -1) < $< > $@
 
 new:

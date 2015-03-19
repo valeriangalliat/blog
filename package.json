@@ -11,6 +11,7 @@
     "markdown-it-deflist": "^1.0.0",
     "markdown-it-highlightjs": "^1.0.0",
     "markdown-it-title": "^1.0.0",
+    "normalize.css": "^3.0.2",
     "promise-done": "^1.0.0",
     "stream-concat-promise": "^1.0.0",
     "stylus": "^0.50.0"

@@ -5,4 +5,6 @@ block title
   base(href='../..')
 
 block body
-  body.post!= html
+  body.post
+    header.title: a(href='.') CodeJam
+    != html

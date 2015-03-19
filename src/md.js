@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 //
 // Render input Markdown file as HTML.
 //
@@ -7,10 +5,14 @@
 //
 
 import concat from 'stream-concat-promise'
+import fs from 'fs'
 import jade from 'jade'
 import mdit from 'markdown-it'
+import * as util from './util'
 
-const layout = process.argv[2]
+const file = process.argv[2]
+const layout = util.layout(file)
+const base = util.base(file)
 
 const render = locals =>
   jade.renderFile(__dirname + `/../views/${layout}.jade`, locals)
@@ -31,8 +33,8 @@ md.use(require('markdown-it-title'))
 
 const env = {}
 
-concat(process.stdin, { encoding: 'string' })
+concat(fs.createReadStream(file), { encoding: 'string' })
   .then(src => md.render(src, env))
-  .then(html => render(Object.assign({ html }, env)))
+  .then(html => render(Object.assign({ base, layout, html }, env)))
   .then(console.log)
   .then(null, require('promise-done'))

@@ -1,8 +1,9 @@
 POSTS = $(shell find public -name '*.md')
 STYLUS = $(shell find stylus -name '*.styl')
+SOURCES = $(shell find src -name '*.js')
 VIEWS = $(shell find views -name '*.jade')
 
-all: bin/md bin/title public/css/main.css $(POSTS:.md=.html)
+all: $(addprefix dist/,$(notdir $(SOURCES))) public/css/main.css $(POSTS:.md=.html)
 
 public/css/main.css: \
 	node_modules/normalize.css/normalize.css \
@@ -17,12 +18,11 @@ public/index.md: $(patsubst public/index.md,,$(POSTS))
 	(echo; bin/posts; echo) | bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->' $@ > $@.tmp
 	mv $@.tmp $@
 
-bin/%: src/%.js
-	bin/babel < $< > $@
-	chmod +x $@
+dist/%.js: src/%.js
+	bin/babel $< > $@
 
-%.html: %.md bin/md $(VIEWS)
-	bin/md $$(echo $< | grep -o / | sed '1s/./page/;2s/./post/;2q' | tail -1) < $< > $@
+%.html: %.md dist/md.js dist/utils.js $(VIEWS)
+	bin/md $< > $@
 
 new:
 	bin/new

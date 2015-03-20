@@ -3,10 +3,25 @@
 # Create the list of posts.
 #
 
-for post in $(find public -mindepth 2 -type f -name '*.md' | sort -r); do
-    url=$(echo "$post" | sed 's,public/,,;s/\.md$/\.html/')
-    date=$(date -d "$(echo "$url" | head -c10)" '+%B %d, %Y')
-    title=$(head -2 "$post" | bin/title | head -1)
+posts() {
+    find public -mindepth 2 -type f -name '*.md' \
+        | egrep '^public/[0-9]{4}/'
+}
 
-    echo "* <small>$date</small> [$title]($url)"
-done
+convert() {
+    read url
+    read title
+    read date
+    read time
+
+    echo "$time * <small>$date</small> [$title]($url)"
+}
+
+main() {
+    for post in $(posts); do
+        url=$(echo "$post" | sed 's,public/,,;s/\.md$/\.html/')
+        (echo "$url"; bin/meta < "$post") | convert
+    done
+}
+
+main | sort -r | sed 's/^[^ ]* //'

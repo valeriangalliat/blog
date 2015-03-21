@@ -1,27 +1,7 @@
 #!/bin/sh -e
 #
-# Create the list of posts.
+# Get the list of posts.
 #
 
-posts() {
-    find public -mindepth 2 -type f -name '*.md' \
-        | egrep '^public/[0-9]{4}/'
-}
-
-convert() {
-    read url
-    read title
-    read date
-    read time
-
-    echo "$time * <small>$date</small> [$title]($url)"
-}
-
-main() {
-    for post in $(posts); do
-        url=$(echo "$post" | sed 's,public/,,;s/\.md$/\.html/')
-        (echo "$url"; bin/meta < "$post") | convert
-    done
-}
-
-main | sort -r | sed 's/^[^ ]* //'
+find public -mindepth 2 -type f -name '*.md' \
+    | egrep '^public/[0-9]{4}/'

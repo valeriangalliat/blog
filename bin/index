@@ -1,0 +1,23 @@
+#!/bin/sh -e
+#
+# Create the list of posts for Makrdown index.
+#
+
+convert() {
+    read post
+    read title
+    read date
+    read time
+
+    path=$(echo "$post" | sed 's,public/,,')
+    echo "$time * <small>$date</small> [$title]($path)"
+}
+
+main() {
+    for post in "$@"; do
+        md=$(echo "$post" | sed 's/\.html$/\.md/')
+        (echo "$post"; bin/meta < "$md") | convert
+    done
+}
+
+main "$@" | sort -r | sed 's/^[^ ]* //'

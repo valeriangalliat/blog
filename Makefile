@@ -14,7 +14,7 @@ LIST = bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->'
 
 .SILENT:
 
-all: $(JS_DIST) public/css/main.css $(MD_HTML)
+all: $(JS_DIST) public/css/main.css $(MD_HTML) public/feed.xml
 
 public/css/main.css: \
 	node_modules/normalize.css/normalize.css \
@@ -30,6 +30,10 @@ stylus/main.css: $(STYLUS)
 public/index.md: public/index.md.list bin/index $(POSTS_HTML)
 	echo 'update $@'
 	(echo; bin/index $(POSTS_HTML); echo) | $(LIST) $< > $@
+
+public/feed.xml: public/feed.xml.list bin/feed $(POSTS_HTML)
+	echo 'update $@'
+	(echo; bin/feed $(POSTS_HTML); echo) | $(LIST) $< > $@
 
 dist/%.js: src/%.js
 	echo 'babel $<'

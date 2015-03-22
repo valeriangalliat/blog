@@ -1,0 +1,7 @@
+//
+// Display date with format.
+//
+
+import moment from 'moment'
+
+console.log(moment(Date.parse(process.argv[2])).format(process.argv[3]));

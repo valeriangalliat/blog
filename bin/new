@@ -14,11 +14,10 @@ $EDITOR draft.md
 
 bin/meta < draft.md | {
     read title
-    read
-    read time
+    read date
 
     slug=$(bin/slugify "$(bin/clean "$title")")
-    date=$(date -d "$time" +%Y/%m)
+    date=$(bin/date "$date" YYYY/MM)
 
     mkdir -p "public/$date"
     mv -i draft.md "public/$date/$slug.md"

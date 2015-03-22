@@ -5,7 +5,7 @@
 
 convert() {
     read post
-    read
+    read _
     read date
     read time
 

@@ -22,7 +22,7 @@ xml() {
 <guid>$url</guid>
 <pubDate>$date</pubDate>
 <description><![CDATA[
-$(sed '1,3d' "$part")
+$(sed '1,3d;s,<a class="header-anchor" href="[^"]*">¶</a>,,' "$part")
 ]]></description>
 </item>
 EOF

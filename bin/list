@@ -55,17 +55,22 @@ loop() {
 }
 
 index() {
+    meta "$@" | sort -r | head -20 | loop md
+}
+
+posts() {
     meta "$@" | sort -r | loop md
 }
 
 feed() {
-    meta "$@" | sort -r | loop xml
+    meta "$@" | sort -r | head -20 | loop xml
 }
 
 action=$1; shift
 
 case "$action" in
     index) index "$@" ;;
+    posts) posts "$@" ;;
     feed) feed "$@" ;;
     *) echo "Unknown action: $action" >&2; exit 1 ;;
 esac

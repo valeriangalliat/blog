@@ -1,4 +1,4 @@
-MD = $(shell find public -name '*.md') public/index.md
+MD = $(shell find public -name '*.md') public/index.md public/posts.md
 MD_HTML = $(MD:.md=.html)
 
 JS = $(shell find src -name '*.js')
@@ -30,6 +30,10 @@ stylus/main.css: $(STYLUS)
 public/index.md: public/index.md.list bin/list $(POSTS_HTML)
 	echo 'update $@'
 	bin/list index $(POSTS_HTML) | $(LIST) $< > $@
+
+public/posts.md: public/posts.md.list bin/list $(POSTS_HTML)
+	echo 'update $@'
+	bin/list posts $(POSTS_HTML) | $(LIST) $< > $@
 
 public/feed.xml: public/feed.xml.list bin/list $(POSTS_HTML)
 	echo 'update $@'

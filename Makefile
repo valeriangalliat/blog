@@ -10,7 +10,7 @@ POSTS_HTML = $(POSTS:.md=.html)
 STYLUS = $(shell find stylus -name '*.styl')
 VIEWS = $(shell find views -name '*.jade')
 
-LIST = bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->'
+LIST = (echo; cat; echo) | bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->'
 
 .SILENT:
 
@@ -27,13 +27,13 @@ stylus/main.css: $(STYLUS)
 	echo 'stylus stylus/main.styl'
 	bin/stylus stylus/main.styl
 
-public/index.md: public/index.md.list bin/index $(POSTS_HTML)
+public/index.md: public/index.md.list bin/list $(POSTS_HTML)
 	echo 'update $@'
-	(echo; bin/index $(POSTS_HTML); echo) | $(LIST) $< > $@
+	bin/list index $(POSTS_HTML) | $(LIST) $< > $@
 
-public/feed.xml: public/feed.xml.list bin/feed $(POSTS_HTML)
+public/feed.xml: public/feed.xml.list bin/list $(POSTS_HTML)
 	echo 'update $@'
-	(echo; bin/feed $(POSTS_HTML); echo) | $(LIST) $< > $@
+	bin/list feed $(POSTS_HTML) | $(LIST) $< > $@
 
 dist/%.js: src/%.js
 	echo 'babel $<'

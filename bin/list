@@ -1,0 +1,71 @@
+#!/bin/sh -e
+#
+# Create the list of posts for different contexts.
+#
+
+path() {
+    sed 's,public/,,'
+}
+
+xml() {
+    read _ post _ date
+
+    path=$(echo "$post" | path)
+    part=$(echo "$post" | sed 's/\.html$/.part.html/')
+    title=$(head -1 "$part" | sed 's,<title>,,;s,</title>,,')
+    url="https://www.codejam.info/$path"
+
+    cat << EOF
+<item>
+<title>$title</title>
+<link>$url</link>
+<guid>$url</guid>
+<pubDate>$date</pubDate>
+<description><![CDATA[
+$(sed '1,3d' "$part")
+]]></description>
+</item>
+EOF
+}
+
+md() {
+    read _ post title date
+    path=$(echo "$post" | path)
+    echo "* <small>$date</small> [$title]($path)"
+}
+
+meta() {
+    for post in "$@"; do
+        md=$(echo "$post" | sed 's/\.html$/\.md/')
+
+        bin/meta < "$md" | {
+            read title
+            read date
+            read time
+
+            echo "$time~$post~$title~$date"
+        }
+    done
+}
+
+loop() {
+    while read line; do
+        echo "$line" | IFS='~' "$1"
+    done
+}
+
+index() {
+    meta "$@" | sort -r | loop md
+}
+
+feed() {
+    meta "$@" | sort -r | loop xml
+}
+
+action=$1; shift
+
+case "$action" in
+    index) index "$@" ;;
+    feed) feed "$@" ;;
+    *) echo "Unknown action: $action" >&2; exit 1 ;;
+esac

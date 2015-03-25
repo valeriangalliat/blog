@@ -1,13 +1,22 @@
 figure
-  margin 0 0 .5em 0
-
-  &.left
-    float left
-    margin-right 1em
-
-  &.right
-    float right
-    margin-left 1em
+  margin-left 0
+  margin-right 0
 
   img
     display block
+    max-width 100%
+
+  @media all and (max-width: bp-medium)
+    img
+      margin 0 auto
+
+  @media not all and (max-width: bp-medium)
+    margin 0 0 .5em 0
+
+    &.left
+      float left
+      margin-right 1em
+
+    &.right
+      float right
+      margin-left 1em

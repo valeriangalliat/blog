@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //
 // Clean given Markdown line (parse and remove markup).
 //

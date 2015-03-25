@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 //
 // Convert given string to slug.
 //

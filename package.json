@@ -10,6 +10,7 @@
     "markdown-it": "^4.0.1",
     "markdown-it-anchor": "^1.0.0",
     "markdown-it-deflist": "^1.0.0",
+    "markdown-it-footnote": "^1.0.0",
     "markdown-it-highlightjs": "^1.0.0",
     "markdown-it-title": "^1.0.0",
     "moment": "^2.9.0",

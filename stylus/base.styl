@@ -32,7 +32,9 @@ dt
   font-weight bold
 
 dd > ul, dd > ol
-  padding-left 0
+  & > li
+    left 0
+    padding-right 0
 
 pre, code
   font-size .75em
@@ -50,3 +52,11 @@ a
 
   &:hover
     text-decoration underline
+
+ul, ol
+  padding-left 0
+
+  & li
+    position relative
+    left 2em
+    padding-right 2em

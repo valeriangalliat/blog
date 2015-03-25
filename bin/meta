@@ -7,7 +7,7 @@ head=$(head -3 | sed 's/^# //;/^=*$/d')
 
 title=$(echo "$head" | head -1)
 date=$(echo "$head" | tail -1)
-time=$(bin/date "$date" x)
+time=$(date "$date" x)
 
 echo "$title"
 echo "$date"

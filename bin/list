@@ -34,11 +34,11 @@ md() {
     echo "* <small>$date</small> [$title]($path)"
 }
 
-meta() {
+meta_loop() {
     for post in "$@"; do
         md=$(echo "$post" | sed 's/\.html$/\.md/')
 
-        bin/meta < "$md" | {
+        meta < "$md" | {
             read title
             read date
             read time
@@ -55,15 +55,15 @@ loop() {
 }
 
 index() {
-    meta "$@" | sort -r | head -20 | loop md
+    meta_loop "$@" | sort -r | head -20 | loop md
 }
 
 posts() {
-    meta "$@" | sort -r | loop md
+    meta_loop "$@" | sort -r | loop md
 }
 
 feed() {
-    meta "$@" | sort -r | head -20 | loop xml
+    meta_loop "$@" | sort -r | head -20 | loop xml
 }
 
 action=$1; shift

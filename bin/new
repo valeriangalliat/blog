@@ -16,8 +16,8 @@ bin/meta < draft.md | {
     read title
     read date
 
-    slug=$(bin/slugify "$(bin/clean "$title")")
-    date=$(bin/date "$date" YYYY/MM)
+    slug=$(slugify "$(clean "$title")")
+    date=$(date "$date" YYYY/MM)
 
     mkdir -p "public/$date"
     mv -i draft.md "public/$date/$slug.md"

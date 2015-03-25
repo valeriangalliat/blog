@@ -1,16 +1,18 @@
-MD = $(shell find public -name '*.md') public/index.md public/posts.md
+PATH := bin:dist:node_modules/.bin:$(PATH)
+
+MD = $(shell find public -type f -name '*.md') public/index.md public/posts.md
 MD_HTML = $(MD:.md=.html)
 
-JS = $(shell find src -name '*.js')
-JS_DIST = $(addprefix dist/,$(notdir $(JS)))
-
-POSTS = $(shell bin/posts)
+POSTS = $(shell find public -mindepth 2 -type f -name '*.md' | egrep '^public/[0-9]{4}/')
 POSTS_HTML = $(POSTS:.md=.html)
 
-STYLUS = $(shell find stylus -name '*.styl')
-VIEWS = $(shell find views -name '*.jade')
+JS = $(shell find src -type f)
+JS_DIST = $(addprefix dist/,$(notdir $(JS)))
 
-LIST = (echo; cat; echo) | bin/between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->'
+STYLUS = $(shell find stylus -type f -name '*.styl')
+VIEWS = $(shell find views -type f -name '*.jade')
+
+LIST = (echo; cat; echo) | between-tags '<!-- BEGIN LIST -->' '<!-- END LIST -->'
 
 .SILENT:
 
@@ -20,38 +22,43 @@ public/css/main.css: \
 	node_modules/normalize.css/normalize.css \
 	node_modules/highlight.js/styles/zenburn.css \
 	stylus/main.css
-	@echo 'generate $@'
-	bin/cleancss $^ > $@
+	@echo generate $@
+	cleancss $^ > $@
 
 stylus/main.css: $(STYLUS)
-	echo 'stylus stylus/main.styl'
-	bin/stylus stylus/main.styl
+	echo stylus stylus/main.styl
+	stylus stylus/main.styl
 
 public/index.md: public/index.md.list bin/list $(POSTS_HTML)
-	echo 'update $@'
-	bin/list index $(POSTS_HTML) | $(LIST) $< > $@
+	echo update $@
+	list index $(POSTS_HTML) | $(LIST) $< > $@
 
 public/posts.md: public/posts.md.list bin/list $(POSTS_HTML)
-	echo 'update $@'
-	bin/list posts $(POSTS_HTML) | $(LIST) $< > $@
+	echo update $@
+	list posts $(POSTS_HTML) | $(LIST) $< > $@
 
 public/feed.xml: public/feed.xml.list bin/list $(POSTS_HTML)
-	echo 'update $@'
-	bin/list feed $(POSTS_HTML) | $(LIST) $< > $@
+	echo update $@
+	list feed $(POSTS_HTML) | $(LIST) $< > $@
 
 dist/%.js: src/%.js
-	echo 'babel $<'
-	bin/babel < $< > $@
+	echo babel $<
+	babel < $< > $@
 
-%.html: %.part.html dist/render.js $(VIEWS)
-	echo 'render $<'
-	bin/render $< | bin/html-minifier -c .html-minifier > $@
+dist/%: src/%
+	echo babel $<
+	babel < $< > $@
+	chmod +x $@
+
+%.html: %.part.html dist/render $(VIEWS)
+	echo render $<
+	render $< | html-minifier -c .html-minifier > $@
 
 .PRECIOUS: %.part.html
 
-%.part.html: %.md dist/md.js
+%.part.html: %.md dist/md
 	echo 'md $<'
-	bin/md < $< > $@
+	md < $< > $@
 
 new:
-	bin/new
+	new

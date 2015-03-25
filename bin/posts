@@ -1,7 +1,0 @@
-#!/bin/sh -e
-#
-# Get the list of posts.
-#
-
-find public -mindepth 2 -type f -name '*.md' \
-    | egrep '^public/[0-9]{4}/'

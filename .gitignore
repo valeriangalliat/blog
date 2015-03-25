@@ -3,6 +3,7 @@
 !/dist/.gitkeep
 /stylus/main.css
 /public/css/main.css
+/public/img
 /public/**/*.html
 /public/index.md
 /public/posts.md

@@ -36,5 +36,5 @@ On the web
 [![Support La Quadrature du Net](https://val.codejam.info/img/support-lqdn.svg)][lqdn]
 [![April Member](https://val.codejam.info/img/member-april.svg)][april]
 
-[lqdn]: http://www.laquadrature.net/en "Defend a free Internet"
+[lqdn]: http://www.laquadrature.net/ "Defend a free Internet"
 [april]: http://www.april.org/ "Support free software"

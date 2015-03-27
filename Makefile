@@ -6,7 +6,7 @@ MD_HTML = $(MD:.md=.html)
 POSTS = $(shell find public -mindepth 2 -type f -name '*.md' | egrep '^public/[0-9]{4}/')
 POSTS_HTML = $(POSTS:.md=.html)
 
-JS = $(shell find src -type f)
+JS = $(shell find src -type f -not -name '.*')
 JS_DIST = $(addprefix dist/,$(notdir $(JS)))
 
 STYLUS = $(shell find stylus -type f -name '*.styl')

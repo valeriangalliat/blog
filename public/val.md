@@ -26,8 +26,10 @@ On the web
 * [Twitter](https://twitter.com/valeriangalliat)
 * [GitHub](https://github.com/valeriangalliat)
 * [Gogs](https://git.codejam.info/val)
-* [Sonerezh](https://www.sonerezh.bzh/) <small>(coming soon -- beware, I have a
+* [Sonerezh](https://www.sonerezh.bzh/) <small>([coming soon] -- beware, I have a
   badass funk playlist)</small>
+
+[coming soon]: 2015/03/coming-soon.html "The coming soon trap"
 
 ---
 

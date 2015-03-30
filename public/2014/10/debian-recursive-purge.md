@@ -2,13 +2,13 @@ Debian recursive purge
 ======================
 October 7, 2014
 
-When running an `aptitude purge <package>`, unline with `remove`, the
+When running an `aptitude purge <package>`, unlike with `remove`, the
 package's configuration files will also be purged.
 
-Hower, while in both cases the unneeded dependencies are removed,
+However, while in both cases the unneeded dependencies are removed,
 they're not recursively purged when using `purge`. This results in all
 `<package>` dependencies configuration files remaining on the system
-(and there can be a lot if you [install recommandations and suggestions][clean],
+(and there can be a lot if you [install recommendations and suggestions][clean],
 which is the default).
 
 [clean]: ../../2014/09/keeping-debian-clean-and-minimal.html

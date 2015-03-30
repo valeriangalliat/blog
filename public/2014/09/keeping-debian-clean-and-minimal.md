@@ -7,7 +7,7 @@ at work and school, as well as on some servers.
 
 I always start with the latest `netinst` image, unticking everything
 from the "What to install?" list, so I just have the bare minimum
-packages, and I have a full controll over what I install next. But the
+packages, and I have a full control over what I install next. But the
 fact is **this is not enough**.
 
 Apt packages, along with dependencies, have two other "related packages"
@@ -54,7 +54,7 @@ Apt::AutoRemove::SuggestsImportant false;
 ```
 
 The first two lines tell Apt not to install recommendations and
-suggestions anymore. The next lines tell Apt that exesting
+suggestions anymore. The next lines tell Apt that existing
 recommendations/suggestions are not important, thus they can be purged.
 
 Then, running an `aptitude install` will prompt you to remove all the

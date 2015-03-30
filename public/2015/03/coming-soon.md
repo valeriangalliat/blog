@@ -20,7 +20,7 @@ The need for a blog
   <img alt="I should write a blog" src="../../img/i-should-write-a-blog.jpg">
 </figure>
 
-It's been a while I'm periodically thinking: "I should defenitely write
+It's been a while I'm periodically thinking: "I should definitely write
 a blog". It often happens when I want to share how-tos, interesting
 stuff or thoughts, about programming, Unix systems, networking, or
 computing in general.

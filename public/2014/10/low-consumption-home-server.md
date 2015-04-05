@@ -92,6 +92,13 @@ this for €79! This was **exactly** what I needed.
 Putting it all together
 -----------------------
 
+
+<figure class="left">
+  <a href="../../img/codejam.jpg">
+    <img alt="CodeJam server image" src="../../img/codejam.thumb.jpg">
+  </a>
+</figure>
+
 I bought the Gigabyte GA-C1037UN-EU, and all the
 [components](#general-components) for roughly €230 (and €30 shipping). I
 expected between 30 and 35 W for the whole server.
@@ -100,10 +107,6 @@ After receiving and building the server, I installed FreeBSD, and all
 the services I needed. A few months later, I got an [electronic
 wattmeter] to measure the actual consumption: it was between 25 and 30 W
 most of the time, and after a week monitoring, I could see a peak to 35
-W, but no higher than that.
+W, but no higher than that. Pretty satisfying!
 
 [electronic wattmeter]: http://en.wikipedia.org/wiki/Wattmeter#Electronic_wattmeter
-
-<figure>
-  <img alt="Great success!" src="../../img/great-success.jpg">
-</figure>

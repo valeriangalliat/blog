@@ -47,3 +47,17 @@ This one speaks for itself:
 > down.
 
 Originally from [this tweet](https://twitter.com/valeriangalliat/status/569613564278910977).
+
+Bonus: progressively lower volume
+---------------------------------
+
+I also like the volume to go down slowly while listening to music before
+sleeping. This is extremely simple to do (here, I manage my sound with
+ALSA):
+
+```sh
+while :; do amixer set PCM 1%-; sleep 3m; done
+```
+
+This will lower the PCM channel by 1% every 3 minutes. Tweak to your
+tastes!

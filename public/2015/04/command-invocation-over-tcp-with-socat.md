@@ -61,7 +61,7 @@ Here's the working socat version:
 
 ```sh
 # Server
-socat -t 10 TCP-LISTEN:1337,reuseaddr,fork system:my-command
+socat -t 10 TCP-LISTEN:1337,reuseaddr,fork SYSTEM:my-command
 
 # Client
 socat -t 10 TCP:localhost:1337 -

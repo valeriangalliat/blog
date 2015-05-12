@@ -28,6 +28,7 @@ public/css/main.css: \
 stylus/main.css: $(STYLUS)
 	echo stylus stylus/main.styl
 	stylus stylus/main.styl
+	autoprefixer $@
 
 public/index.md: public/index.md.list bin/list $(POSTS_HTML)
 	echo update $@

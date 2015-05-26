@@ -1,6 +1,6 @@
 Hello from the future
 =====================
-July 1, 2014
+July 01, 2014
 
 This post is a virtual first post, to indicate that this blog really
 began in March 2015, with [this post](../../2015/03/coming-soon.html).

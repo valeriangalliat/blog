@@ -1,6 +1,6 @@
 Apache file with custom PHP version
 ===================================
-Sep 16, 2014
+September 16, 2014
 
 I once wanted to execute a single PHP file with a specific PHP version,
 different from the globally configured one with `mod_php`.

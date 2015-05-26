@@ -55,7 +55,7 @@ loop() {
 }
 
 index() {
-    meta_loop "$@" | sort -r | head -20 | loop md
+    meta_loop "$@" | sort -r | head -15 | loop md
 }
 
 posts() {
@@ -63,7 +63,7 @@ posts() {
 }
 
 feed() {
-    meta_loop "$@" | sort -r | head -20 | loop xml
+    meta_loop "$@" | sort -r | head -30 | loop xml
 }
 
 action=$1; shift

@@ -1,6 +1,6 @@
 Apache get PHP version from environment
 =======================================
-Aug 19, 2014
+August 19, 2014
 
 Using [phpfarm] to compile custom PHP versions.
 

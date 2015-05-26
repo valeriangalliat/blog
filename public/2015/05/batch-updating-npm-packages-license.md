@@ -43,39 +43,39 @@ resulting of my `history`, with a drastic cleanup (there was *a lot* of
 trial and error) and comments:
 
 ```sh
-# Get all the packages I contribute to.
+# Get all the packages I contribute to
 curl -s 'https://www.npmjs.com/~valeriangalliat' | grep /package/ | sed 's,.*/package/,,;s/".*//' > my-packages
 
-# Get the URL of non-deprecated packages.
+# Get the URL of non-deprecated packages
 cat my-packages | while read package; do
     node -e "var x = $(npm info "$package");"' if (!x.deprecated) console.log(x.repository.url.replace("git+https", "https"))'
 done > repos
 
-# Clone all repositories.
+# Clone all repositories
 cat repos | xargs -L1 git clone
 
-# Get the directory names.
+# Get the directory names
 cat repos | xargs -L1 basename > dirs
 
-# Update the license.
+# Update the license
 cat dirs | sed 's,$,/package.json,' | xargs sed -i '/license/{N;/Unlicense/{N;N;s/.*/  "license": "Unlicense",/;}}'
 
-# Check the update.
+# Check the update
 cat dirs | xargs -I{} git -C {} diff
 
-# Commit.
+# Commit
 cat dirs | xargs -I{} git -C {} commit -am 'Update package license format'
 
-# Get the repositories where a change occurred (otherwise the commit was not done).
+# Get the repositories where a change occurred (otherwise the commit was not done)
 cat dirs | xargs -I{} sh -c 'cd {} && git log -n 1 | grep -q "Update package license format" && echo {}' > updated
 
-# Bump patch (commit and tag).
+# Bump patch (commit and tag)
 cat updated | xargs -I{} npm version patch -m 'Bump %s'
 
-# Check commits to push.
+# Check commits to push
 cat updated | xargs -I{} git -C {} log origin/master..
 
-# Push, install dependencies and publish.
+# Push, install dependencies and publish
 cat updated | xargs -I{} sh -c 'cd {} && git push && npm install && npm publish'
 ```
 

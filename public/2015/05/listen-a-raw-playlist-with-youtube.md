@@ -15,17 +15,17 @@ YouTube directly with [mpv](http://mpv.io/) (my player of choice).
 go() {
     echo "Playing $1"
 
-    # Force TTY input for controls even if titles are read from input.
+    # Force TTY input for controls even if titles are read from input
     mpv --vid=no "$(youtube-dl -g "ytsearch:$1" | tail -1)" < /dev/tty
 }
 
-# All arguments as a single space separated string.
+# All arguments as a single space separated string
 if [ -n "$*" ]; then
     go "$*"
     exit
 fi
 
-# Read one title per line.
+# Read one title per line
 while read title; do
     go "$title"
 done

@@ -31,7 +31,7 @@ EOF
 md() {
     read _ post title date
     path=$(echo "$post" | path)
-    echo "* <small>$date</small> [$title]($path)"
+    echo "* [$title]($path) <small>$date</small>"
 }
 
 meta_loop() {

@@ -7,9 +7,10 @@
     display table-row
     left 0
 
-    &:not(:last-child)
-      a, small
-        border-bottom 1px solid invisiblegrey
+    @media not all and (max-width bp-small)
+      &:not(:last-child)
+        a, small
+          border-bottom 1px solid invisiblegrey
 
   a, small
     display table-cell
@@ -17,3 +18,6 @@
   small
     color midgrey
     text-align right
+
+    @media all and (max-width bp-small)
+      display none

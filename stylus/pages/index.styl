@@ -1,23 +1,22 @@
 .posts
-  ul
-    display table
-    width 100%
-
   li
-    display table-row
+    display flex
+
+    // Unset general `li` styling.
     left 0
+    padding-right 0
 
-    @media not all and (max-width bp-small)
-      &:not(:last-child)
-        a, small
-          border-bottom 1px solid invisiblegrey
+    justify-content space-between
 
-  a, small
-    display table-cell
+    @media all and (max-width bp-small)
+      margin-bottom .5em
+      flex-direction column-reverse
+
+  li:not(:last-child)
+    border-bottom 1px solid invisiblegrey
 
   small
     color midgrey
-    text-align right
 
-    @media all and (max-width bp-small)
-      display none
+    @media not all and (max-width bp-small)
+      text-align right

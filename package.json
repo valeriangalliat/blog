@@ -9,7 +9,7 @@
     "html-minifier": "^0.7.0",
     "jade": "^1.9.2",
     "markdown-it": "^4.0.1",
-    "markdown-it-anchor": "^1.0.0",
+    "markdown-it-anchor": "^2.0.0",
     "markdown-it-deflist": "^1.0.0",
     "markdown-it-footnote": "^1.0.0",
     "markdown-it-highlightjs": "^1.0.0",

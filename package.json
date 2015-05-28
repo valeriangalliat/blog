@@ -1,8 +1,8 @@
 {
   "dependencies": {
     "autoprefixer": "^5.1.1",
-    "babel": "^4.7.13",
-    "babel-runtime": "^4.7.13",
+    "babel": "^5.4.7",
+    "babel-runtime": "^5.4.7",
     "clean-css": "^3.1.8",
     "help2md": "^1.0.5",
     "highlight.js": "^8.4.0",
@@ -18,6 +18,6 @@
     "normalize.css": "^3.0.2",
     "promise-done": "^1.0.0",
     "stream-concat-promise": "^1.0.0",
-    "stylus": "^0.50.0"
+    "stylus": "^0.51.1"
   }
 }

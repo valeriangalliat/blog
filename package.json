@@ -1,6 +1,6 @@
 {
   "dependencies": {
-    "autoprefixer-stylus": "valeriangalliat/autoprefixer-stylus#postcss",
+    "autoprefixer-stylus": "^0.7.0",
     "babel": "^5.4.7",
     "babel-runtime": "^5.4.7",
     "clean-css": "^3.1.8",

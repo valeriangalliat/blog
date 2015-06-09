@@ -29,6 +29,6 @@ const findTitle = html => {
 
 concat(fs.createReadStream(file), { encoding: 'string' })
   .then(findTitle)
-  .then(([title, html]) => render({ base, layout, title, html }))
+  .then(([title, html]) => render({ file, base, layout, title, html }))
   .then(console.log)
   .then(null, require('promise-done'))

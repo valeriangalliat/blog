@@ -8,7 +8,7 @@ import mdit from 'markdown-it'
 
 const md = mdit({
   html: true,
-  typographer: true,
+  typographer: true
 })
 
 md.use(require('markdown-it-title'))

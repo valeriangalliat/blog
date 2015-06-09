@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "test": "standard src/*"
+  },
   "dependencies": {
     "autoprefixer-stylus": "^0.7.0",
     "babel": "^5.4.7",
@@ -19,8 +22,5 @@
     "promise-done": "^1.0.0",
     "stream-concat-promise": "^1.0.0",
     "stylus": "^0.51.1"
-  },
-  "scripts": {
-    "test": "standard src/*"
   }
 }

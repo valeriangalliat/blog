@@ -4,6 +4,7 @@ export function layout (file) {
   switch (true) {
     case /^\d{4}$/.test(parts[1]): return 'post'
     case parts[1].split('.')[0] === 'index': return 'index'
+    case parts[1].split('.')[0] === 'posts': return 'posts'
     default: return 'page'
   }
 }

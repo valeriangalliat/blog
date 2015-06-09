@@ -9,13 +9,13 @@ import mdit from 'markdown-it'
 
 const md = mdit({
   html: true,
-  typographer: true,
+  typographer: true
 })
 
 md.use(require('markdown-it-anchor'), {
   level: 2, // Do not permalink `<h1>`.
   permalink: true,
-  parmalinkBefore: true,
+  parmalinkBefore: true
 })
 
 md.use(require('markdown-it-deflist'))

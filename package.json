@@ -15,7 +15,7 @@
     "markdown-it-anchor": "^2.0.0",
     "markdown-it-deflist": "^1.0.0",
     "markdown-it-footnote": "^1.0.0",
-    "markdown-it-highlightjs": "^1.0.0",
+    "markdown-it-highlightjs": "^2.0.0",
     "markdown-it-title": "^1.0.0",
     "moment": "^2.9.0",
     "normalize.css": "^3.0.2",

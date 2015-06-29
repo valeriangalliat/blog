@@ -27,7 +27,7 @@ solution for other GNU/Linux distributions (obviously when using ALSA).
 
 So in my case, the following `~/.asoundrc` did the job:
 
-```conf
+```
 pcm.usb
 {
     type hw

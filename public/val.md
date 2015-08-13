@@ -19,13 +19,14 @@ IRC
     * `val` on [`ssl.neutralnetwork.org`](https://ssl.neutralnetwork.org/)
     * `valerian` on [freenode](https://freenode.net/)
 
-On the web
-----------
+About
+-----
 
 * [Blog](.)
 * [Twitter](https://twitter.com/valeriangalliat)
 * [GitHub](https://github.com/valeriangalliat)
 * [Gogs](https://git.codejam.info/val)
+* [Resume](https://val.codejam.info/public/cv.en.pdf)
 * [Sonerezh](https://www.sonerezh.bzh/) <small>([coming soon] -- beware, I have a
   badass funk playlist)</small>
 

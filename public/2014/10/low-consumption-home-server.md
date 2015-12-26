@@ -92,7 +92,6 @@ this for €79! This was **exactly** what I needed.
 Putting it all together
 -----------------------
 
-
 <figure class="left">
   <a href="../../img/codejam.jpg">
     <img alt="CodeJam server image" src="../../img/codejam.thumb.jpg">

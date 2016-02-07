@@ -34,7 +34,7 @@ pkg install go git gcc
 Add the `git` user and open a shell with it:
 
 ```sh
-pw useradd -m git
+pw useradd git -m
 su - git
 ```
 

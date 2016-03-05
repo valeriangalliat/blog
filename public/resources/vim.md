@@ -16,6 +16,7 @@ References
 
 * [A Byte of Vim](http://www.swaroopch.com/notes/vim/)
 * [Vim pour les humains](https://vimebook.com/) (French)
+* [Vim Galore](https://github.com/mhinz/vim-galore)
 
 Why Vim?
 --------
@@ -25,9 +26,10 @@ Why Vim?
 * [Why I use Vim](https://pascalprecht.github.io/2014/03/18/why-i-use-vim/)
 * [To vim, or not to vim](http://coenjacobs.me/vim-or-not/)
 * [Vim for people who think things like Vim are weird and hard](http://csswizardry.com/2014/06/vim-for-people-who-think-things-like-vim-are-weird-and-hard/)
-* [Why Atom Can’t Replace Vim](https://medium.com/@mkozlows/why-atom-cant-replace-vim-433852f4b4d1)
+* [Why Atom Can't Replace Vim](https://medium.com/@mkozlows/why-atom-cant-replace-vim-433852f4b4d1)
 * [Top 10 Pitfalls When Switching to Vim](http://code.tutsplus.com/articles/top-10-pitfalls-when-switching-to-vim--net-18113)
 * [The Invisible Interface](http://spaceandtim.es/etc/the_invisible_interface) (why Vim bindings are more convenient than mouse)
+* [Why, oh WHY, do those #?@! nutheads use vi?](http://www.viemu.com/a-why-vi-vim.html)
 
 Tutorials
 ---------

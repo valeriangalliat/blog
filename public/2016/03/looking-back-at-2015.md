@@ -103,8 +103,8 @@ core.
 
 I released [gogs-migrate][gogs-migrate], a tool to automatically migrate
 (and optionally mirror) GitHub repositories to a [Gogs][gogs] instance.
-This is my most personal successful open source project by number of
-stars (16 as of today, great success)!
+This is my most successful personal project by number of stars (16 as of
+today, great success)!
 
 [gogs-migrate]: https://github.com/valeriangalliat/gogs-migrate
 [gogs]: https://gogs.io/
@@ -112,14 +112,16 @@ stars (16 as of today, great success)!
 ### March 18
 
 First release of [markdown-it-anchor], another of my (relatively) most
-successful personal open source projects, this time by number of
-contributions (5 pull requests, and 10 issues, OMG).
+successful projects, this time by number of contributions (5 pull
+requests, and 10 issues, OMG).
 
 It's a flexible plugin for the [markdown-it] Markdown parser allowing to
-add an ID and an anchor to headings. I released it on the day following
-[markdown-it-title], [markdown-it-highlighted], and
-[markdown-it-highlightjs]. These are all plugins I needed to improve my
-<abbr title="Keep it simple, stupid">KISS</abbr> blog engine.
+add an ID and an anchor to headings (I'm using it on this very blog). I
+released it on the day following [markdown-it-title][markdown-it-title],
+[markdown-it-highlighted][markdown-it-highlighted], and
+[markdown-it-highlightjs][markdown-it-highlightjs]. These are all
+plugins I needed to improve my <abbr title="Keep it simple, stupid">KISS</abbr>
+blog engine.
 
 [markdown-it]: https://github.com/markdown-it/markdown-it
 [markdown-it-anchor]: https://github.com/valeriangalliat/markdown-it-anchor
@@ -377,8 +379,8 @@ I had between the dozens of flatsharings I visited during my first
 week.
 
 I spent most of my day in IKEA, and the whole evening building all
-the furniture. I can say this is *definitely* not my area of expertise
-nor an enjoyable hobby for me.
+the furniture. This is *definitely* not my area of expertise nor an
+enjoyable hobby for me.
 
 I now live with 4 awesome roommates in a beautiful apartment, with 5
 rooms, two bathrooms, a BBQ, and even the luxury of a dishwasher!
@@ -437,12 +439,12 @@ pretty badass thing to do for a first Canadian winter. :D
 
 ### December 30
 
-5 AM, I take my bag, put my [balaclava][cagoule] and walk to the bus
+5 AM, I took my bag, put my [balaclava][cagoule] and walked to the bus
 station downtown under the falling snow. Direction New York for the New
 Year's Eve!
 
-After a 8 hours bus trip we arrive in Manhattan. During 2 days we walked
-around the whole island and could visit a decent part of it.
+After a 8 hours bus trip we arrived in Manhattan. During 2 days we
+walked around the whole island and could visit a decent part of it.
 
 [cagoule]: https://youtu.be/Ud_-AuBmp6Q
 
@@ -484,4 +486,5 @@ had my first full time job and also my first flatsharing experience!
 
 It will be hard to make 2016 even more awesome, but I'm happy I quickly
 found a stable situation that gives me peace of mind, and I think like
-enjoy this for a while, focusing more on programming and playing music.
+enjoying this for a while, focusing more on programming and playing
+music.

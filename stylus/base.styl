@@ -17,6 +17,11 @@ table
   width 100%
   border-collapse collapse
 
+  // Scroll only the table and not the whole page if it's larger than
+  // the container.
+  display block
+  overflow auto
+
 th, td
   padding .25em .5em
   border 1px solid lightgrey
@@ -64,8 +69,8 @@ ul, ol
 
   & li
     position relative
-    left 2em
-    padding-right 2em
+    left 1em
+    padding-right 1em
 
 // Backport normalize.css fix from <https://github.com/necolas/normalize.css/commit/5304c784ffbd03da265fcbf7bf49f6964cbcfc9c>.
 abbr[title]

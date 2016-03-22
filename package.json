@@ -18,7 +18,7 @@
     "markdown-it-highlightjs": "^2.0.0",
     "markdown-it-title": "^1.0.0",
     "moment": "^2.9.0",
-    "normalize.css": "^3.0.2",
+    "normalize.css": "^4.0.0",
     "promise-done": "^1.0.0",
     "stream-concat-promise": "^1.0.0",
     "stylus": "^0.51.1"

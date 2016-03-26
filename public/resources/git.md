@@ -27,6 +27,7 @@ Tips & tricks
 * [Part 1](http://hugogiraudel.com/2014/03/10/git-tips-and-tricks-part-1/)
 * [Part 2](http://hugogiraudel.com/2014/03/17/git-tips-and-tricks-part-2/)
 * [Part 3](http://hugogiraudel.com/2014/03/24/git-tips-and-tricks-part-3/)
+* [Git tips from the trenches](https://ochronus.com/git-tips-from-the-trenches/)
 
 Deepening
 ---------

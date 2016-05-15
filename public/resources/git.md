@@ -35,6 +35,7 @@ Deepening
 ### See how it works in the background
 
 * [A Hacker's Guide to Git](http://wildlyinaccurate.com/a-hackers-guide-to-git)
+* [Git from the inside out](https://codewords.recurse.com/issues/two/git-from-the-inside-out)
 * [Git from the Bottom Up](http://jwiegley.github.io/git-from-the-bottom-up/)
 * [Cheat sheet about Git states](http://codepen.io/HugoGiraudel/full/d7a439ac945a29dcad9f02d831b731e6/)
 

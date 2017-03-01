@@ -32,13 +32,3 @@ About
   badass funk playlist)</small>
 
 [coming soon]: 2015/03/coming-soon.html "The coming soon trap"
-
----
-
-<!-- This is awesome to create badges: <https://github.com/badges/shields> -->
-
-[![Support La Quadrature du Net](https://val.codejam.info/img/support-lqdn.svg)][lqdn]
-[![April Member](https://val.codejam.info/img/member-april.svg)][april]
-
-[lqdn]: http://www.laquadrature.net/ "Defend a free Internet"
-[april]: http://www.april.org/ "Support free software"

@@ -77,3 +77,16 @@ the output reached EOF (while Ncat exits *instantly* upon input end).
 the other part of the channel to finish once the first part is done.
 
 Exactly what I needed!
+
+appendix
+--------
+
+Alternatively, socat provides an `ignoreeof` option that will keep the port open until the command returns. This may be indefinite if the command stalls, and therefore using the timeout option may be preferable in many cases. 
+
+```sh
+# Server
+socat TCP-LISTEN:1337,reuseaddr,fork,ignoreeof SYSTEM:my-command
+
+# Client
+echo some data | nc 127.0.0.1 1337
+```

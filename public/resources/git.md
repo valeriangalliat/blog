@@ -52,6 +52,11 @@ Workflow & branching
 * [Comparing Workflows](http://www.atlassian.com/git/tutorials/comparing-workflows/)
 * [Using git-flow to automate your git branching workflow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
 
+The Hugo way
+------------
+
+* [How I Use Git](https://hugogiraudel.com/2018/02/17/how-i-use-git/)
+
 Other interesting stuff
 -----------------------
 

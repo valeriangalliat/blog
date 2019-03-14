@@ -56,8 +56,7 @@ Writing a blog is for sure really different from writing code and
 technical documentation. I need to get used to it. Feel free to [contact
 me][contact] if you have any comment or advice to give me!
 
-
-[contact]: https://www.codejam.info/val.html#contact
+[contact]: ../../val.md#contact
 
 [^1]: This is not exactly true, because I try my best to make my code
 *also* understandable by other people. But you get the idea.

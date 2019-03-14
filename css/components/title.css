@@ -1,0 +1,29 @@
+.title {
+    font-size: 1.5em;
+}
+
+.title a {
+    text-decoration: none;
+    color: #333;
+}
+
+@media all and (max-width: 42em) {
+    .title {
+        margin-top: 1.3rem;
+        margin-bottom: 0.25rem;
+    }
+
+    .title + h1 {
+        margin-top: 0;
+    }
+}
+
+@media not all and (max-width: 42em) {
+    .title {
+        line-height: 2.4rem; /* Seems to match `h1`'s `line-height`. */
+        margin-left: 1em;
+        float: right;
+        position: relative;
+        z-index: 2;
+    }
+}

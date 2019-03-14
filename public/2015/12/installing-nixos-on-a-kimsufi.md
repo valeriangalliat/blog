@@ -269,7 +269,7 @@ journalctl -D /mnt/var/log/journal
 ```
 
 [^1]: Because I moved from France (where I have a
-[home server](../../2014/10/low-consumption-home-server.html)) to
+[home server](../../2014/10/low-consumption-home-server.md)) to
 Quebec, and here we have a bandwidth consumption limit, and I don't feel
 like hosting a home server behind a limited connection, especially when
 sharing this connection with roommates! Hence the investment in renting

@@ -1,10 +1,5 @@
 /node_modules
-/dist/*
-!/dist/.gitkeep
-/stylus/main.css
-/public/css/main.css
+/package-lock.json
+/public/css
 /public/img
 /public/**/*.html
-/public/index.md
-/public/posts.md
-/public/feed.xml

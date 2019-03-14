@@ -2,7 +2,7 @@ Low consumption home server
 ===========================
 October 26, 2014
 
-[CodeJam](../../2015/03/naming-things.html) is my little homemade piece
+[CodeJam](../../2015/03/naming-things.md) is my little homemade piece
 of Internet -- a €200 server optimized for low consumption, while being
 a decent x86-64 machine, where I run all the "cloud" services I need.
 

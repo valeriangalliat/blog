@@ -47,7 +47,7 @@ IRC, XMPP server, among others.
 While I did not experience with real word charge and scaling, it tought
 me one or two things about system administration.
 
-[home-server]: ../../2014/10/low-consumption-home-server.html
+[home-server]: ../../2014/10/low-consumption-home-server.md
 
 ### February 05
 
@@ -163,8 +163,8 @@ I [installed NixOS on it][nixos-kimsufi] and began migrating parts of my
 more about [NixOS][nixos] by using it daily.
 
 [kimsufi]: https://www.kimsufi.com/
-[nixos-kimsufi]: ../../2015/12/installing-nixos-on-a-kimsufi.html
-[home-server]: ../../2014/10/low-consumption-home-server.html
+[nixos-kimsufi]: ../../2015/12/installing-nixos-on-a-kimsufi.md
+[home-server]: ../../2014/10/low-consumption-home-server.md
 
 ### Other projects
 

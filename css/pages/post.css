@@ -1,0 +1,8 @@
+.post h1 {
+    margin-bottom: 0.5rem;
+}
+
+.post h1 + p {
+    color: #bbb;
+    margin-top: 0;
+}

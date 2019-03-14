@@ -1,0 +1,33 @@
+#!/usr/bin/env node
+
+const path = require('path')
+const fs = require('fs')
+const mdit = require('markdown-it')
+
+const md = mdit({
+  html: true,
+  typographer: true
+})
+
+md.use(require('markdown-it-anchor'), {
+  level: 2, // Do not permalink `<h1>`.
+  permalink: true,
+  permalinkBefore: true
+})
+
+md.use(require('markdown-it-deflist'))
+md.use(require('markdown-it-footnote'))
+md.use(require('markdown-it-highlightjs'), { auto: false })
+md.use(require('markdown-it-title'))
+
+const file = process.argv[2];
+const head = fs.readFileSync(path.resolve(__dirname, 'head.html'), 'utf8')
+const foot = fs.readFileSync(path.resolve(__dirname, 'foot.html'), 'utf8')
+const markdown = fs.readFileSync(file, 'utf8')
+const env = {}
+const bodyClass = file.match(/^public\/\d{4}\//) ? 'post' : 'page'
+const html = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1')
+
+process.stdout.write(head.replace('<title>', `<title>${env.title}`).replace(/<body>/, `<body class="${bodyClass}">`))
+process.stdout.write(html)
+process.stdout.write(foot)

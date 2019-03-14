@@ -11,7 +11,7 @@ they're not recursively purged when using `purge`. This results in all
 (and there can be a lot if you [install recommendations and suggestions][clean],
 which is the default).
 
-[clean]: ../../2014/09/keeping-debian-clean-and-minimal.html
+[clean]: ../../2014/09/keeping-debian-clean-and-minimal.md
 
 While I don't know a way to make `purge` recursively purge the
 dependencies configuration files, you can run `aptitude purge '~c'` to

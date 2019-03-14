@@ -1,0 +1,95 @@
+html {
+    font: 1.25em/1.35 serif;
+    color: #333;
+}
+
+body {
+    margin: 0 auto;
+    padding: 0 1em;
+    max-width: 80ch;
+}
+
+h1, h2 {
+    border-bottom: 1px solid #eee;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    /* Scroll only the table and not the whole page if it's larger than
+     * the container. */
+    display: block;
+    overflow: auto;
+}
+
+th, td {
+    padding: 0.25em 0.75em;
+    border: 1px solid #ddd;
+}
+
+tr:nth-child(even) {
+    background: #fafafa;
+}
+
+blockquote {
+    color: #666;
+    margin-left: 0;
+    padding-left: 2em;
+    border-left: 1px solid #ddd;
+}
+
+/* Do not collapse quote inner margins. */
+blockquote::before,
+blockquote::after {
+    content: '';
+    display: table;
+}
+
+dt {
+    font-weight: bold;
+}
+
+dd > ul > li,
+dd > ol > li {
+    left: 0;
+    padding-right: 0;
+}
+
+pre, code {
+    font-size: 0.75em;
+}
+
+pre > code {
+    font-size: inherit;
+}
+
+hr {
+    border-top: 1px solid #eee;
+    border-bottom: 0;
+}
+
+a {
+    color: #4183c4;
+    text-decoration: none;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: #6e5494;
+}
+
+ul,
+ol {
+    padding-left: 0;
+}
+
+ul li,
+ol li {
+    position: relative;
+    left: 1em;
+    padding-right: 1em;
+}

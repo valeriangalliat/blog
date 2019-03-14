@@ -67,4 +67,4 @@ before running the final `aptitude install`.
 Don't forget to [purge the configuration files][purge] by running
 `aptitude purge '~c'`!
 
-[purge]: ../../2014/10/debian-recursive-purge.html
+[purge]: ../../2014/10/debian-recursive-purge.md

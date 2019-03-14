@@ -3,7 +3,7 @@ Naming things
 March 29, 2015
 
 **CodeJam** is the name I choose more than a year ago for both my domain
-and [home server](../../2014/10/low-consumption-home-server.html)
+and [home server](../../2014/10/low-consumption-home-server.md)
 name.
 
 Choosing this name was tough. I wanted a name that evoked *programming*,

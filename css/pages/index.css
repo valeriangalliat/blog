@@ -1,0 +1,35 @@
+.posts ul {
+    list-style-type: none;
+}
+
+.posts li {
+    display: flex;
+
+    /* Unset general `li` styling. */
+    left: 0;
+    padding-right: 0;
+
+    align-items: baseline;
+    justify-content: space-between;
+}
+
+@media all and (max-width: 38em) {
+    .posts li {
+        margin-bottom: 0.5em;
+        flex-direction: column-reverse;
+    }
+}
+
+.posts li:not(:last-child) {
+    border-bottom: 1px solid #fafafa;
+}
+
+.posts small {
+    color: #bbb;
+}
+
+@media not all and (max-width: 38em) {
+    .posts small {
+        text-align: right;
+    }
+}

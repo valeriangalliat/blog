@@ -32,9 +32,9 @@ Pages
 * [Git](resources/git.md)
 * [Vim](resources/vim.md)
 
-About
+Links
 -----
 
 * [Author](val.md)
-* [Network](network.md)
-* [RSS](feed.xml)
+* [Photography](https://photography.codejam.info/)
+* [IP echo service](http://ip.codejam.info/) ([source](https://github.com/valeriangalliat/cgip))

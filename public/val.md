@@ -1,34 +1,44 @@
-Valérian Galliat
-================
+Valérian (Val) Galliat
+======================
+
+![Val](img/val.jpg)
+
+About
+-----
 
 * Joined `#humanity` on July 20, 1995
 * Spawned in Grenoble, France
 * Currently in Montreal, Quebec
 
-Contact
--------
+One of my favorite things in life is summiting mountains, whether it's
+hiking, rock climbing or skiing. I usually bring a beer at the summit
+(possibly homebrewed), which I not only love drinking, but also [taking
+pictures of][beer] (but it's [not just about beer][photography], I like
+taking pictures in general).
 
-Email/<abbr title="XMPP/Jabber">JID</abbr>
-:   `val`, at this very domain
+[beer]: https://photography.codejam.info/beer.html
+[photography]: https://photography.codejam.info/
 
-GPG
-:   [`F489B457`](https://val.codejam.info/public/public.key.txt)
-    <small>(<code>DF3E D5DE 9E05 BF01 FAA7 8B37 CE76 5B32 F489 B457</code>)</small>
+You'll often see me riding, whether it's on my [bike] or my [motorcycle].
 
-IRC
-:   * `val` on [`irc.codejam.info`](network.html#irc)
-    * `val` on [`ssl.neutralnetwork.org`](https://ssl.neutralnetwork.org/)
-    * `valerian` on [freenode](https://freenode.net/)
+I'm addicted to music, and when I'm not listening to some, I'm more
+likely playing guitar, bass or synthesizer.
 
-About
+I also happen to be a software developer, currently working at
+[Busbud].
+
+[bike]: https://photography.codejam.info/photos/P1000756.html
+[motorcycle]: https://photography.codejam.info/photos/P2570525.html
+[Busbud]: https://www.busbud.com/en/about/team
+
+[riding my motorcycle]: https://photography.codejam.info/gs650.html
+
+Links
 -----
 
-* [Blog](.)
-* [Twitter](https://twitter.com/valeriangalliat)
+* [Blog](https://www.codejam.info/)
+* [Photography](https://photography.codejam.info/)
 * [GitHub](https://github.com/valeriangalliat)
-* [Gogs](https://git.codejam.info/val)
-* [Resume](https://val.codejam.info/public/cv.en.pdf)
-* [Sonerezh](https://www.sonerezh.bzh/) <small>([coming soon] -- beware, I have a
-  badass funk playlist)</small>
-
-[coming soon]: 2015/03/coming-soon.html "The coming soon trap"
+* [Twitter](https://twitter.com/valeriangalliat)
+* [Instagram](https://www.instagram.com/valeriangalliat/)
+* Email (`val`, at this very domain)

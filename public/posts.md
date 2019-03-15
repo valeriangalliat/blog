@@ -1,5 +1,4 @@
-Posts
-=====
+# Posts
 
 <div class="posts">
 

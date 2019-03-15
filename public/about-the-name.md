@@ -6,7 +6,7 @@ to build a tech blog to share tips, thoughts and resources about code.
 
 It took me a while to settle on a name for this blog, and CodeJam was my
 favorite. I'm both a music and free software enthusiast, and to me, the
-philosophy of a [jam session] applied to code is pretty much sums up my
+philosophy of a [jam session] applied to code pretty much sums up my
 approach to building free software, hence the name CodeJam.
 
 Indeed, a jam session would allow a variable number of musicians that

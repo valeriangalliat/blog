@@ -38,6 +38,7 @@ Links
 
 * [Blog](https://www.codejam.info/)
 * [Photography](https://photography.codejam.info/)
+* [Dotfiles](https://github.com/valeriangalliat/dotfiles)
 * [GitHub](https://github.com/valeriangalliat)
 * [Twitter](https://twitter.com/valeriangalliat)
 * [Instagram](https://www.instagram.com/valeriangalliat/)

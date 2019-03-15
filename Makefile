@@ -13,13 +13,13 @@ index.html: index.md head.html foot.html
 %.html: %.md head.html foot.html
 	./render $< > $@
 
-css/normalize.css: node_modules/normalize.css/normalize.css
+public/css/normalize.css: node_modules/normalize.css/normalize.css
 	cp $< $@
 
-css/zenburn.css: node_modules/highlight.js/styles/zenburn.css
+public/css/zenburn.css: node_modules/highlight.js/styles/zenburn.css
 	cp $< $@
 
-css/main.css: \
+public/css/main.css: \
 	css/base.css \
 	css/components/anchor.css \
 	css/components/figure.css \

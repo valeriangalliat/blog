@@ -93,3 +93,7 @@ ol li {
     left: 1em;
     padding-right: 1em;
 }
+
+img {
+    max-width: 100%;
+}

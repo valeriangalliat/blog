@@ -36,5 +36,8 @@ Links
 -----
 
 * [Author](val.md)
+* [About the name](about-the-name.md)
 * [Photography](https://photography.codejam.info/)
+* [Brewing](https://github.com/valeriangalliat/sans-pression)
+* [Climbing](https://solidite.rocks/)
 * [IP echo service](http://ip.codejam.info/) ([source](https://github.com/valeriangalliat/cgip))

@@ -29,7 +29,7 @@ as opposed to competitive, let alone that a jam's purpose is pretty far
 from winning cash prizes and a job in a big corporation.
 
 I kept that name since I still believe in the message it symbolizes, and
-it took me long enough to find a name I don't want to go through that
-process anytime soon.
+it took me long enough to find a name that I don't want to go through
+that process anytime soon.
 
 [^1]: In practice, I mostly just end up coding alone, but I guess that's fine.

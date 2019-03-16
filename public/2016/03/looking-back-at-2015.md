@@ -2,7 +2,7 @@ Looking back at 2015
 ====================
 March 12, 2016
 
-**Sidenote:** You can say your procrastination level is very high where
+**Sidenote:** you can say your procrastination level is very high where
 you write an article like this in March.
 
 I got inspired by my friend [Hugo][hugo]'s article [Looking back at

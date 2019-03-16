@@ -7,8 +7,8 @@ build: $(HTML) $(ASSETS)
 clean:
 	rm -f $(HTML)
 
-index.html: index.md head.html foot.html
-	./render < $< | sed '/<header/,/<\/header>/d' > $@
+public/index.html: public/index.md head.html foot.html
+	./render $< | sed '/<header/,/<\/header>/d' > $@
 
 %.html: %.md head.html foot.html
 	./render $< > $@

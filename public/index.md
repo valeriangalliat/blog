@@ -6,6 +6,7 @@ Posts
 
 <div class="posts">
 
+* [macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
 * [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
 * [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
@@ -20,7 +21,6 @@ Posts
 * [Portable Rust installation](2015/03/portable-rust-installation.md) <small>March 15, 2015</small>
 * [urxvt terminfo on NetBSD](2015/03/urxvt-terminfo-on-netbsd.md) <small>March 11, 2015</small>
 * [Installing Gogs on FreeBSD](2015/03/installing-gogs-on-freebsd.md) <small>March 07, 2015</small>
-* [Evening music](2015/02/evening-music.md) <small>February 22, 2015</small>
 
 </div>
 

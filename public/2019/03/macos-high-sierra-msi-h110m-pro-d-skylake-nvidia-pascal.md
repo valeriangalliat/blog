@@ -172,12 +172,8 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
    filesystem, and tick "AptioMemoryFix-64" (would stay [stuck at "End randomseed" on boot](https://www.tonymacx86.com/threads/solved-end-randomseed-reboot.249537/)
    otherwise).
 1. Click "Install".
-1. Then, back in Clover Configurator, in "Kexts Installer", tick "Lilu"
-   and "WhateverGreen" and click "Download". For some reason, for me,
-   this puts the kexts on `EFI/CLOVER/kexts/10.6` on the EFI
-   partition, which is not the version of macOS I'm using, so it ends up
-   not using the kexts. I manually had to go on the EFI partition and
-   move `Lilu.kext` and `WhateverGreen.kext` to the `EFI/CLOVER/kexts/Other`.
+1. Then, back in Clover Configurator, in "Kexts Installer", set "OS
+   Version" to "Other", tick "Lilu" and "WhateverGreen" and click "Download".
 1. In Clover Configurator, click on the home button at the bottom, and
    load `EFI/EFI/CLOVER/config.plist`.
 1. In "Boot", in "Arguments", add `nvda_drv=1`.

@@ -1,5 +1,3 @@
 /node_modules
 /package-lock.json
-/public/css
-/public/img
-/public/**/*.html
+/dist

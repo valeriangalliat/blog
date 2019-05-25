@@ -1,25 +1,29 @@
 MD = $(shell find public -name '*.md')
-HTML = $(MD:%.md=%.html)
-ASSETS = public/css/normalize.css public/css/zenburn.css public/css/main.css
+HTML = $(MD:public/%.md=dist/%.html)
+ASSETS = dist/css/normalize.css dist/css/zenburn.css dist/css/main.css
 
-build: $(HTML) $(ASSETS)
+build: dist $(HTML) $(ASSETS)
+
+dist:
+	git clone --branch gh-pages $$(git remote get-url origin) dist
 
 clean:
 	rm -f $(HTML)
 
-public/index.html: public/index.md head.html foot.html
+dist/index.html: public/index.md head.html foot.html
 	./render $< | sed '/<header/,/<\/header>/d' > $@
 
-%.html: %.md head.html foot.html
+dist/%.html: public/%.md head.html foot.html
+	mkdir -p $$(dirname $@)
 	./render $< > $@
 
-public/css/normalize.css: node_modules/normalize.css/normalize.css
+dist/css/normalize.css: node_modules/normalize.css/normalize.css
 	cp $< $@
 
-public/css/zenburn.css: node_modules/highlight.js/styles/zenburn.css
+dist/css/zenburn.css: node_modules/highlight.js/styles/zenburn.css
 	cp $< $@
 
-public/css/main.css: \
+dist/css/main.css: \
 	css/base.css \
 	css/components/anchor.css \
 	css/components/figure.css \

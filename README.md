@@ -25,3 +25,16 @@ You need Node.js and GNU `make` to build.
 npm install
 make -j8
 ```
+
+This will create a `dist` directory that is setup to track the
+`gh-pages` branch of this repository and contains the built site.
+
+## Deploy
+
+After building:
+
+```
+cd dist
+git commit -am 'Build'
+git push
+```

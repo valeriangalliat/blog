@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Change rxvt font size on the fly</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Change rxvt font size on the fly</h1>
+<p>September 18, 2014</p>
+<p>Ever wanted to change the terminal font size (or even font family) on
+the fly when using rxvt? This is easy!</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">printf</span> <span class="hljs-string">'\33]50;%s%d\007'</span> <span class="hljs-string">"xft:monospace:size="</span> <span class="hljs-string">"<span class="hljs-variable">$size</span>"</span>
+</code></pre>
+<p>Replace <code>$size</code> with the size of your choice.</p>
+<p>I even made <a href="https://github.com/valeriangalliat/dotfiles/blob/master/bin/fz">a little script</a> to ease this, called <code>fz</code>:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment">#!/bin/sh -e</span>
+<span class="hljs-comment">#</span>
+<span class="hljs-comment"># Dynamically change font size in rxvt.</span>
+<span class="hljs-comment">#</span>
+
+<span class="hljs-comment"># Tweak this with your own font settings</span>
+<span class="hljs-built_in">readonly</span> PREFIX=<span class="hljs-string">'xft:monospace:size='</span>
+
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span> ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">'Usage: fz &lt;size&gt;'</span>
+    <span class="hljs-built_in">exit</span> 1
+<span class="hljs-keyword">fi</span>
+
+<span class="hljs-built_in">printf</span> <span class="hljs-string">'\33]50;%s%d\007'</span> <span class="hljs-string">"<span class="hljs-variable">$PREFIX</span>"</span> <span class="hljs-string">"<span class="hljs-variable">$1</span>"</span>
+</code></pre>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

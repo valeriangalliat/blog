@@ -1,0 +1,204 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Installing NixOS on a Kimsufi</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Installing NixOS on a Kimsufi</h1>
+<p>December 24, 2015</p>
+<p><strong>Sidenote:</strong> yes, I’m absolutely doing this on a December 24.</p>
+<h2 id="introduction"><a class="header-anchor" href="#introduction" aria-hidden="true">¶</a> Introduction</h2>
+<p>I recently obtained a <a href="https://www.kimsufi.com/">Kimsufi</a> server<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> and
+wanted to install NixOS on it. Though the web installation wizard
+doesn’t know about NixOS, thus requiring some more manual steps to
+install it.</p>
+<p>This blog post is an (up-to-date) mix of <a href="https://nixos.org/wiki/How_to_install_NixOS_from_Linux">How to install NixOS from
+Linux</a> and
+<a href="http://aborsu.github.io/2015/09/26/Install%20NixOS%20on%20So%20You%20Start%20dedicated%20server/">Install NixOS on a So You Start Dedicated server</a>
+articles.</p>
+<h2 id="get-the-network-info"><a class="header-anchor" href="#get-the-network-info" aria-hidden="true">¶</a> Get the network info</h2>
+<p>I started from an Arch Linux installation (available on the web
+installation wizard). If you have another system running, you can skip
+this step.</p>
+<p>The idea is just to SSH into a preconfigured system to get the network
+information, namely the hostname, IPv4 and IPv6 adresses, netmasks and
+gateways, and optionally DNS servers.</p>
+<p>You can find the hostname in the standard <code>/etc/hostname</code>, and IP
+information in <code>/root/.ovhrc</code> and <code>/etc/netctl/ovh_net_eth0</code>.</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># /root/.ovhrc</span>
+DNS_IP=<span class="hljs-string">"{{ IPV4_DNS }}"</span>
+DNS_IPV6=<span class="hljs-string">"{{ IPV6_DNS }}"</span>
+IPV6ADDR=<span class="hljs-string">"{{ IPV6_ADDR }}"</span>
+IPV6GW=<span class="hljs-string">"{{ IPV6_GW }}"</span>
+IPV6NETMASK=<span class="hljs-string">"{{ IPV6_NETMASK }}"</span>
+SERVERNAME=<span class="hljs-string">"{{ HOSTNAME }}.whatever.eu"</span>
+</code></pre>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># /etc/netctl/ovh_net_eth0</span>
+Address=(<span class="hljs-string">'{{ IPV4_ADDR }}/{{ IPV4_NETMASK }}'</span>)
+Gateway=(<span class="hljs-string">'{{ IPV4_GW }}'</span>)
+DNS=(<span class="hljs-string">'{{ IPV4_DNS }}'</span>)
+Address6=(<span class="hljs-string">'{{ IPV6_ADDR }}/{{ IPV6_NETMASK }}'</span>)
+IPCustom=(<span class="hljs-string">'-6 route add {{ IPV6_GW }} dev eth0'</span> <span class="hljs-string">'-6 route add default via {{ IPV6_GW }}
+</span></code></pre>
+<p>You will need those when creating your NixOS configuration.</p>
+<h2 id="fake-boot-in-nixos-iso"><a class="header-anchor" href="#fake-boot-in-nixos-iso" aria-hidden="true">¶</a> Fake boot in NixOS ISO</h2>
+<p>We cannot specify a custom ISO to boot in, so we need to boot in rescue
+mode and replicate the NixOS ISO system in order to do the
+<a href="#regular-installation">regular installation</a> steps.</p>
+<p>After restarting in rescue mode, you’ll receive a mail with the SSH
+credentials. Once there, execute the following steps:</p>
+<h3 id="predict-the-network-interface-name"><a class="header-anchor" href="#predict-the-network-interface-name" aria-hidden="true">¶</a> Predict the network interface name</h3>
+<p>In rescue mode the public network interface is <code>eth0</code> but in NixOS, with
+systemd, it’s a different name, and you’ll need to explicitly specify it
+for the network configuration. For this, run the following command:</p>
+<pre><code class="hljs language-sh">udevadm <span class="hljs-built_in">test</span>-builtin net_id /sys/class/net/eth0 2&gt; /dev/null
+</code></pre>
+<p>Which will output:</p>
+<pre><code class="hljs language-sh">ID_NET_NAME_PATH={{ NETIF }}
+</code></pre>
+<h3 id="format-the-disk-(optional)"><a class="header-anchor" href="#format-the-disk-(optional)" aria-hidden="true">¶</a> Format the disk (optional)</h3>
+<p>While this step is usually done in the
+<a href="#regular-installation">regular installation</a> procedure, we need to do
+this before because faking the NixOS ISO system requires more space than
+available in rescue mode (at least in case of my instance), so I need to
+prepare a small (2GB) partition for this.</p>
+<pre><code class="hljs language-sh">fdisk /dev/sda
+</code></pre>
+<p>Personally I made 4 partitions, one of 30GB for the system, one for the
+home, and at the end 2GB for swap, and 2GB to extract NixOS.</p>
+<pre><code class="hljs language-sh">mkfs.ext4 -L nixos /dev/sda1
+mkfs.ext4 -L home /dev/sda2
+mkswap -L swap /dev/sda3
+mkfs.ext4 -L nixos-rescue /dev/sda4
+</code></pre>
+<p>The following commands assume this layout, obviously tweak them
+for your own needs.</p>
+<h3 id="prepare-the-working-directories"><a class="header-anchor" href="#prepare-the-working-directories" aria-hidden="true">¶</a> Prepare the working directories</h3>
+<p>We create an <code>image</code> directory to mount the installation ISO in, and a
+<code>rescue</code> directory to mount the 2GB <code>nixos-rescue</code> partition and
+replicate the ISO system in.</p>
+<pre><code class="hljs language-sh">mkdir image rescue
+mount /dev/disk/by-label/nixos-rescue rescue
+mkdir rescue/nix
+</code></pre>
+<h3 id="get-the-iso-and-mount-it"><a class="header-anchor" href="#get-the-iso-and-mount-it" aria-hidden="true">¶</a> Get the ISO and mount it</h3>
+<p>Get the ISO URL of the NixOS release you want to install, see the
+<a href="http://nixos.org/nixos/download.html">download page</a>.</p>
+<p>In my case I fetched the latest unstable at this date:</p>
+<pre><code class="hljs language-sh">wget <span class="hljs-string">'https://nixos.org/releases/nixos/unstable/nixos-16.03pre73316.93d8671/nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso'</span>
+mount -o loop nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso image
+</code></pre>
+<h3 id="extract-the-store"><a class="header-anchor" href="#extract-the-store" aria-hidden="true">¶</a> Extract the store</h3>
+<p>To extract the store from the ISO to the rescue system, we need to get
+the <code>squashfs-tools</code> package, then extract it:</p>
+<pre><code class="hljs language-sh">apt-get install squashfs-tools
+unsquashfs -d rescue/nix/store image/nix-store.squashfs <span class="hljs-string">'*'</span>
+</code></pre>
+<h3 id="populate-the-system"><a class="header-anchor" href="#populate-the-system" aria-hidden="true">¶</a> Populate the system</h3>
+<p>We then recreate the needed
+<a href="https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard">FHS</a>
+entries and mount bind or copy whatever is needed from the host system:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cd</span> rescue
+mkdir -p etc dev proc sys
+mount --<span class="hljs-built_in">bind</span> /dev dev
+mount --<span class="hljs-built_in">bind</span> /proc proc
+mount --<span class="hljs-built_in">bind</span> /sys sys
+</code></pre>
+<p>Also take note of the content of <code>/etc/resolv.conf</code> to manually copy it
+after <code>chroot</code>.</p>
+<h3 id="chroot-in-the-installation-system"><a class="header-anchor" href="#chroot-in-the-installation-system" aria-hidden="true">¶</a> <code>chroot</code> in the installation system</h3>
+<p>First need to find the right path for <code>init</code> and <code>bash</code>:</p>
+<pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*nixos*/init'</span>)
+BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*/bin/bash'</span> | tail -n 1)
+<span class="hljs-comment"># See https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2</span>
+find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*-nix.conf'</span> | xargs sed -i <span class="hljs-string">'s/sandbox = true/sandbox = false/'</span>
+</code></pre>
+<p>Then modify the init script to execute <code>bash</code> instead of <code>systemd</code>:</p>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">"s,exec systemd,exec /<span class="hljs-variable">$BASH</span>,"</span> <span class="hljs-string">"<span class="hljs-variable">$INIT</span>"</span>
+</code></pre>
+<p>Now ready to <code>chroot</code>:</p>
+<pre><code class="hljs language-sh">chroot . /<span class="hljs-variable">$INIT</span>
+</code></pre>
+<p>Just after, restore the <code>/etc/resolv.conf</code>.</p>
+<h2 id="regular-installation"><a class="header-anchor" href="#regular-installation" aria-hidden="true">¶</a> Regular installation</h2>
+<p>You can now install your system as if you were in the installation ISO:</p>
+<pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt
+mkdir /mnt/home
+mount /dev/disk/by-label/home /mnt/home
+swapon /dev/disk/by-label/swap
+nixos-generate-config --root /mnt
+</code></pre>
+<p>Then edit the configuration to reflect the OVH network settings, plus
+usual stuff like boot loader, locale, timezone, users:</p>
+<pre><code class="hljs language-sh">nix-env -i vim
+vim /mnt/etc/nixos/configuration.nix
+</code></pre>
+<pre><code class="hljs language-nix">{ config, pkgs, ... }:
+
+{
+  <span class="hljs-comment"># ...</span>
+
+  <span class="hljs-attr">networking</span> = {
+    <span class="hljs-attr">hostName</span> = <span class="hljs-string">"{{ HOSTNAME }}"</span>;
+
+    interfaces.{{ NETIF }} = {
+      <span class="hljs-attr">ip4</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">"{{ IPV4_ADDR }}"</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV4_NETMASK }}; } ];
+      <span class="hljs-attr">ip6</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">"{{ IPV6_ADDR }}"</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV6_NETMASK }}; } ];
+    };
+
+    <span class="hljs-attr">defaultGateway</span> = <span class="hljs-string">"{{ IPV4_GW }}"</span>;
+    <span class="hljs-attr">defaultGateway6</span> = <span class="hljs-string">"{{ IPV6_GW }}"</span>;
+
+    <span class="hljs-attr">nameservers</span> = [ <span class="hljs-string">"{{ IPV4_DNS }}"</span>, <span class="hljs-string">"{{ IPV6_DNS }}"</span> ];
+  };
+
+  <span class="hljs-comment"># ...</span>
+}
+</code></pre>
+<p>I like to have those settings in an external file like
+<code>/etc/nixos/ovh-configuration.nix</code> and add it to the <code>imports</code> list.</p>
+<p>You’re then ready to install the system:</p>
+<pre><code class="hljs language-sh">nixos-install
+</code></pre>
+<p>If you want to execute more commands in your new system, like setting
+passwords for new users:</p>
+<pre><code class="hljs language-sh">nixos-install --chroot
+</code></pre>
+<p>Then you can unmount everything and exit:</p>
+<pre><code class="hljs language-sh">umount -R /mnt
+<span class="hljs-built_in">exit</span>
+</code></pre>
+<h2 id="final-boot"><a class="header-anchor" href="#final-boot" aria-hidden="true">¶</a> Final boot</h2>
+<p>From the management panel, define the hard disk as default boot device,
+and reboot the system. You should be able to SSH with the user/password
+you created previously.</p>
+<h2 id="troubleshooting"><a class="header-anchor" href="#troubleshooting" aria-hidden="true">¶</a> Troubleshooting</h2>
+<p>If your server doesn’t go up, you can’t connect, or whatever, boot back
+in rescue mode, and look what happened in the system logs with:</p>
+<pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt
+journalctl -D /mnt/var/<span class="hljs-built_in">log</span>/journal
+</code></pre>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>Because I moved from France (where I have a
+<a href="../../2014/10/low-consumption-home-server.html">home server</a>) to
+Quebec, and here we have a bandwidth consumption limit, and I don’t feel
+like hosting a home server behind a limited connection, especially when
+sharing this connection with roommates! Hence the investment in renting
+a dedicated server. <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Sane way to manage dependencies in Ruby</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Sane way to manage dependencies in Ruby</h1>
+<p>December 15, 2014</p>
+<p>I still don’t know what’s the proper way to deal with dependencies with
+Ruby. I’ve spent a few hours searching, but I don’t see any kind of
+agreement between Rubyists for this.</p>
+<p>A lot agree that Bundler is the right way to go, but the default
+configuration is still installing dependencies globally, and it quickly
+makes conflicts between different Ruby projects.</p>
+<p>I’m used to PHP and Node.js environments, where dependencies are simply
+managed <em>per project</em>, in a <code>vendor</code> or <code>node_modules</code> directory. This
+way, dependencies are contained in the project, there’s no conflict
+across projects, and it’s easy to bundle them! Why don’t Ruby or Python
+do this way?</p>
+<p>Anyway, I managed to achieve a similar behavior with Bundler. The key is
+the <code>.bundle/config</code> file, that needs to be copied in every project:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">BUNDLE_PATH:</span> <span class="hljs-string">vendor</span>
+</code></pre>
+<p>Then, <code>bundle install</code> will create the <code>vendor</code> directory, with
+contained dependencies. You now need to run all your commands with
+<code>bundle exec</code> so the Ruby environments is set properly to find
+dependencies in the <code>vendor</code> directory.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Debian recursive purge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Debian recursive purge</h1>
+<p>October 7, 2014</p>
+<p>When running an <code>aptitude purge &lt;package&gt;</code>, unlike with <code>remove</code>, the
+package’s configuration files will also be purged.</p>
+<p>However, while in both cases the unneeded dependencies are removed,
+they’re not recursively purged when using <code>purge</code>. This results in all
+<code>&lt;package&gt;</code> dependencies configuration files remaining on the system
+(and there can be a lot if you <a href="../../2014/09/keeping-debian-clean-and-minimal.html">install recommendations and suggestions</a>,
+which is the default).</p>
+<p>While I don’t know a way to make <code>purge</code> recursively purge the
+dependencies configuration files, you can run <code>aptitude purge '~c'</code> to
+remove the configuration files of <strong>all previously removed (but not
+purged) packages</strong>.</p>
+<p>See also <a href="https://aptitude.alioth.debian.org/doc/en/ch02s04s05.html">aptitude search patterns</a> for all the neat stuff
+you can use in aptitude queries!</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

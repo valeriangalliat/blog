@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Recover space from a VirtualBox disk</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Recover space from a VirtualBox disk</h1>
+<p>January 18, 2015</p>
+<p>When you write large files in a dynamically sized  VirtualBox disk,
+deleting them won’t help recovering the space at host level. The files
+will more likely still be on the file system, even if marked as free
+space.</p>
+<p>To shrink a VirtualBox disk after removing large files, just zero out
+the rest of the drive, before asking VirtualBox to compact the disk:</p>
+<p>On the guest:</p>
+<pre><code class="hljs language-sh">dd <span class="hljs-keyword">if</span>=/dev/zero of=junk <span class="hljs-comment"># Will fail with disk full error</span>
+sync
+rm junk
+</code></pre>
+<p>On the host:</p>
+<pre><code class="hljs language-sh">find ~/VirtualBox\ VMs -name <span class="hljs-string">'*.vdi'</span> -<span class="hljs-built_in">exec</span> VBoxManage modifyhd --compact  {} \;
+</code></pre>
+<p>Here, I choose to compact all the disks, but you can just apply the
+<code>-exec</code> command to a single one.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,48 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Portable Rust installation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Portable Rust installation</h1>
+<p>March 15, 2015</p>
+<p>The <a href="http://www.rust-lang.org/install.html">recommended Rust installation method</a> is to
+curl a <code>rustup.sh</code> script and pipe it into <code>sh</code>. The script will then
+ask for <code>root</code> permissions and install stuff globally. You’ll never see
+me pipe unknown stuff from the network into <code>sh</code>.</p>
+<blockquote>
+<p>I don’t get that new <code>curl foodotcom/setup | sh</code> trend, do you want to
+fuck up your OS? Because that’s how you fuck up your OS.</p>
+<p>— <a href="https://twitter.com/iMilnb">@iMilnb</a> <a href="https://twitter.com/iMilnb/status/577229798910611456">March 15, 2015</a></p>
+</blockquote>
+<p>And even when manually downloading and extracting the binaries, we still
+need to run a 1000 lines <code>install.sh</code> script doing again stuff as
+<code>root</code>.</p>
+<p>However, it turns out to be trivial to use Rust without installing
+anything globally, nor running big shell scripts as <code>root</code>.</p>
+<p>First, get the binaries according to your system, and the Rust version
+you want. For me (nightly 64-bit Linux binaries) and extract the archive
+(I like to put it in <code>~/opt</code>):</p>
+<pre><code class="hljs language-sh">wget https://static.rust-lang.org/dist/rust-nightly-x86_64-unknown-linux-gnu.tar.gz
+tar xf rust-nightly-x86_64-unknown-linux-gnu.tar.gz
+mv rust-nightly-x86_64-unknown-linux-gnu rust
+</code></pre>
+<p>Then, just export the appropriate environment variables (do this from
+your <code>~/.profile</code> or equivalent to have it set up automatically). No
+need to install anything globally!</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">export</span> LD_LIBRARY_PATH=~/opt/rust/rustc/lib:<span class="hljs-variable">$LD_LIBRARY_PATH</span>
+<span class="hljs-built_in">export</span> PATH=~/opt/rust/rustc/bin:<span class="hljs-variable">$PATH</span>
+<span class="hljs-built_in">export</span> PATH=~/opt/rust/cargo/bin:<span class="hljs-variable">$PATH</span>
+</code></pre>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

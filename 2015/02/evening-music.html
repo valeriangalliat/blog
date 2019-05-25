@@ -1,0 +1,56 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Evening music</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Evening music</h1>
+<p>February 22, 2015</p>
+<p>I like to listen a few songs the night in my bed before actually
+sleeping. But I hate having to get up again to stop the PC, and I don’t
+have any kind of remote control.</p>
+<p>Ideally, I wanted to say “play 10 songs and shut down”, or “play 30
+minutes of music, wait the end of the song and shut down”. Turns out this
+is <em>trivial</em> to do with a music server like <a href="http://www.musicpd.org/">MPD</a>.</p>
+<p>I’ll use <a href="http://www.musicpd.org/clients/mpc/">mpc</a> to controll the MPD instance from the shell.</p>
+<h2 id="play-10-songs-and-shut-down"><a class="header-anchor" href="#play-10-songs-and-shut-down" aria-hidden="true">¶</a> Play 10 songs and shut down</h2>
+<pre><code class="hljs language-sh">mpc idleloop player | head -18; poweroff
+</code></pre>
+<p>The <code>mpc idleloop player</code> command will listen for <code>player</code> events. A
+<code>player</code> event will fire when the song is seeked, the end of a song is
+reached, and the current song is changed.</p>
+<p>In my case, nobody’s seeking anything, and when the next song is
+naturally selected, it will send two events (end and next), hence the
+<code>head -18</code> (twice the number of songs I want, minus two because it’s
+about “next song” events). The <code>head</code> command will exit when the given
+number of lines are printed.</p>
+<p>Originally from <a href="https://twitter.com/valeriangalliat/status/569613240168292352">this tweet</a>.</p>
+<h2 id="30-minutes-of-music-and-shut-down"><a class="header-anchor" href="#30-minutes-of-music-and-shut-down" aria-hidden="true">¶</a> 30 minutes of music and shut down</h2>
+<pre><code class="hljs language-sh">sleep 30m; mpc idle player; poweroff
+</code></pre>
+<p>This one speaks for itself:</p>
+<blockquote>
+<p>Sleep for 30 minutes, idle until the next <code>player</code> event, and shut
+down.</p>
+</blockquote>
+<p>Originally from <a href="https://twitter.com/valeriangalliat/status/569613564278910977">this tweet</a>.</p>
+<h2 id="bonus%3A-progressively-lower-volume"><a class="header-anchor" href="#bonus%3A-progressively-lower-volume" aria-hidden="true">¶</a> Bonus: progressively lower volume</h2>
+<p>I also like the volume to go down slowly while listening to music before
+sleeping. This is extremely simple to do (here, I manage my sound with
+ALSA):</p>
+<pre><code class="hljs language-sh"><span class="hljs-keyword">while</span> :; <span class="hljs-keyword">do</span> amixer <span class="hljs-built_in">set</span> PCM 1%-; sleep 3m; <span class="hljs-keyword">done</span>
+</code></pre>
+<p>This will lower the PCM channel by 1% every 3 minutes. Tweak to your
+tastes!</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

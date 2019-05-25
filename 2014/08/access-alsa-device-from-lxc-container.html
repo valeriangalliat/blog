@@ -1,0 +1,28 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Access ALSA device from LXC container</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Access ALSA device from LXC container</h1>
+<p>August 20, 2014</p>
+<p>In LXC configuration file, allow cgroup access to <code>/dev/snd</code> and bind
+mount it:</p>
+<pre><code class="hljs"># Apparently, cgroup for `/dev/snd`
+lxc.cgroup.devices.allow = c 116:* rwm
+
+lxc.mount.entry = /dev/snd /var/lib/lxc/music/rootfs/dev/snd none bind 0 0
+</code></pre>
+<p>Both host and child must have ALSA installed.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,82 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Command invocation over TCP with socat</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Command invocation over TCP with socat</h1>
+<p>April 19, 2015</p>
+<p>I wanted to run a TCP server in a Docker container, invoking given
+command in a child process upon each request. This way, I could run a
+Docker <em>service</em> container once, and send it parallel TCP requests to
+run a specific command over some input, instead of having to invoke the
+container each time I want to call the command.</p>
+<p><a href="https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94303270">More</a> on the <a href="https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94271213">actual issue</a> (see “Parallelism”).</p>
+<h2 id="first-try-with-ncat"><a class="header-anchor" href="#first-try-with-ncat" aria-hidden="true">¶</a> First try with Ncat</h2>
+<p>I originally thought of <a href="https://nmap.org/ncat/">Ncat</a> (that comes with <a href="http://nmap.org/">Nmap</a>) for this job. Ncat
+is an awesome netcat-like utility with some additions, particularly SSL
+support, the ability to handle multiple clients, and to run a program to
+handle each connection.</p>
+<p>I ended up with the following invocation:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Server</span>
+ncat --listen --keep-open --sh-exec my-command 1337
+
+<span class="hljs-comment"># Client</span>
+<span class="hljs-built_in">echo</span> some data | ncat localhost 1337
+</code></pre>
+<p>But this didn’t work as expected. While everything was fine when running
+<code>ncat localhost 1337</code> interactively, I just had no output when piping to
+Ncat. I expected Ncat to <strong>wait for the output</strong>, and it really felt
+like a bug. I ended up digging into the code to understand this.</p>
+<p>I found <a href="https://github.com/nmap/nmap/blob/5adfb3b1de162b5fc14b89f5383989af049eb745/ncat/ncat_posix.c#L259-L262">this interesting comment</a>
+in the function handling server command execution:</p>
+<blockquote>
+<p>Enter a “caretaker” loop that reads from the socket and writes to the
+subprocess, and reads from the subprocess and writes to the socket.
+<strong>We exit the loop on any read error (or EOF).</strong> On a write error we
+just close the opposite side of the conversation.</p>
+</blockquote>
+<p>Ha! Ncat is stopping everything when the input is consumed, even if the
+command <em>output</em> haven’t reached EOF yet. And there is no option to
+control this behavior, damned!</p>
+<h2 id="socat-to-the-rescue"><a class="header-anchor" href="#socat-to-the-rescue" aria-hidden="true">¶</a> socat to the rescue</h2>
+<p><a href="http://www.dest-unreach.org/socat/">socat</a> can do all what Ncat can do,
+but also way much more.</p>
+<p>Here’s the working socat version:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Server</span>
+socat -t 10 TCP-LISTEN:1337,reuseaddr,fork SYSTEM:my-command
+
+<span class="hljs-comment"># Client</span>
+socat -t 10 TCP:localhost:1337 -
+</code></pre>
+<p>This is basically doing the same as the previous Ncat invocations, but
+with the <code>-t 10</code> added.</p>
+<p>Without this option, socat behaves nearly exactly like Ncat: it waits
+0.5 seconds for output after the input reaches EOF, and exit regardless
+the output reached EOF (while Ncat exits <em>instantly</em> upon input end).
+<code>-t 10</code> tells socat to wait 10 seconds (instead of the 0.5 default) for
+the other part of the channel to finish once the first part is done.</p>
+<p>Exactly what I needed!</p>
+<h2 id="appendix"><a class="header-anchor" href="#appendix" aria-hidden="true">¶</a> Appendix</h2>
+<p>Alternatively, socat provides an <code>ignoreeof</code> option that will keep the
+port open until the command returns. This may be indefinite if the
+command stalls, and therefore using the timeout option may be preferable
+in many cases.</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Server</span>
+socat TCP-LISTEN:1337,reuseaddr,fork,ignoreeof SYSTEM:my-command
+
+<span class="hljs-comment"># Client</span>
+<span class="hljs-built_in">echo</span> some data | nc localhost  1337
+</code></pre>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Listen a raw playlist with YouTube</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Listen a raw playlist with YouTube</h1>
+<p>May 22, 2015</p>
+<p>Sometimes the easiest way to share a playlist is to just give a raw list
+of song titles and artists. However it’s not straightforward to actually
+<em>play</em> it.</p>
+<p>I wrote a little script to ease the pain, playling each song from
+YouTube directly with <a href="http://mpv.io/">mpv</a> (my player of choice).</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment">#!/bin/sh -e</span>
+
+<span class="hljs-function"><span class="hljs-title">go</span></span>() {
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Playing <span class="hljs-variable">$1</span>"</span>
+
+    <span class="hljs-comment"># Force TTY input for controls even if titles are read from input</span>
+    mpv --vid=no <span class="hljs-string">"<span class="hljs-variable">$(youtube-dl -g "ytsearch:$1" | tail -1)</span>"</span> &lt; /dev/tty
+}
+
+<span class="hljs-comment"># All arguments as a single space separated string</span>
+<span class="hljs-keyword">if</span> [ -n <span class="hljs-string">"$*"</span> ]; <span class="hljs-keyword">then</span>
+    go <span class="hljs-string">"$*"</span>
+    <span class="hljs-built_in">exit</span>
+<span class="hljs-keyword">fi</span>
+
+<span class="hljs-comment"># Read one title per line</span>
+<span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> title; <span class="hljs-keyword">do</span>
+    go <span class="hljs-string">"<span class="hljs-variable">$title</span>"</span>
+<span class="hljs-keyword">done</span>
+</code></pre>
+<p>You can see the latest source <a href="https://github.com/valeriangalliat/dotfiles/blob/master/bin/ytpl">here</a>.</p>
+<p>You can either give a single song name as arguments (script arguments
+are concatenated), or from standard input, one title per line.</p>
+<p>For example:</p>
+<pre><code class="hljs language-sh">ytpl &lt;&lt; EOF
+born to be alive
+girls got rhythm
+EOF
+</code></pre>
+<h2 id="continuing-a-playlist"><a class="header-anchor" href="#continuing-a-playlist" aria-hidden="true">¶</a> Continuing a playlist</h2>
+<p>If you ever stop the script in the middle of a playlist, and want to
+continue later, just pipe the playlist file in <code>sed</code>:</p>
+<pre><code class="hljs language-sh">sed <span class="hljs-string">'0,/&lt;title&gt;/d'</span> &lt; playlist | ytpl
+</code></pre>
+<p>Where <code>&lt;title&gt;</code> is the title of the song you stopped at.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

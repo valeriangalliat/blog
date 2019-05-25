@@ -1,0 +1,71 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Keeping Debian clean and minimal</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Keeping Debian clean and minimal</h1>
+<p>September 25, 2014</p>
+<p>It’s been a couple of years I’m running Debian on my workstations, both
+at work and school, as well as on some servers.</p>
+<p>I always start with the latest <code>netinst</code> image, unticking everything
+from the “What to install?” list, so I just have the bare minimum
+packages, and I have a full control over what I install next. But the
+fact is <strong>this is not enough</strong>.</p>
+<p>Apt packages, along with dependencies, have two other “related packages”
+lists. <strong>Recommendations</strong> and <strong>suggestions</strong>. Unlike hard
+dependencies, these packages are optional – the software can work
+without them – but you can have additional functionality with them,
+that you may or may not need (protip: most of the time, you don’t).</p>
+<p>By default, Apt installs <em>everything</em>, including recommendations
+and suggestions. This is how, <em>by default</em>, <code>imagemagick</code> will come as
+an <code>nmap</code> suggestion/recommendation (with several layers of
+indirection). Do you really expect an image manipulation tool (and all
+its related image and fonts libraries) to come with a network scanner?
+<strong>I do not.</strong></p>
+<h2 id="kill-it-with-fire!"><a class="header-anchor" href="#kill-it-with-fire!" aria-hidden="true">¶</a> Kill it with fire!</h2>
+<figure class="left">
+  <object data="http://i1.kym-cdn.com/photos/images/newsfeed/000/337/603/43f.gif">
+    <object data="http://img.pandawhale.com/91787-kill-it-with-fire-gif-2mNC.gif">
+      <object data="http://gifsec.com/wp-content/uploads/GIF/2014/03/GIF-Kill-it-with-fire.gif">
+        <img alt="Kill it with fire!" src="https://val.codejam.info/public/gif/kill-it-with-fire.gif">
+      </object>
+    </object>
+  </object>
+</figure>
+<p><small><em>Not Debian. Not yet. But let’s begin with all these useless
+packages.</em></small></p>
+<p>We’re gonna configure Apt to automatically consider those
+non-explicitly installed suggestions/recommendations as orphans, so we
+can easily purge them. We will also configure it so these packages
+<em>will no longer be installed in the first place</em>. All you need is
+<del>love</del>:</p>
+<pre><code class="hljs"># /etc/apt/apt.conf
+Apt::Install-Recommends false;
+Apt::Install-Suggests false;
+Apt::AutoRemove::RecommendsImportant false;
+Apt::AutoRemove::SuggestsImportant false;
+</code></pre>
+<p>The first two lines tell Apt not to install recommendations and
+suggestions anymore. The next lines tell Apt that existing
+recommendations/suggestions are not important, thus they can be purged.</p>
+<p>Then, running an <code>aptitude install</code> will prompt you to remove all the
+packages that are not needed anymore (and there will probably be a whole
+bunch of them). <strong>However, there’s maybe some of them you’ll want to
+keep.</strong> Verify carefully the content of this list before confirming the
+removal. Be sure to <code>aptitude unmarkauto</code> the packages you want to keep
+before running the final <code>aptitude install</code>.</p>
+<p>Don’t forget to <a href="../../2014/10/debian-recursive-purge.html">purge the configuration files</a> by running
+<code>aptitude purge '~c'</code>!</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

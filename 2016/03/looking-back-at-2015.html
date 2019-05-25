@@ -1,0 +1,355 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Looking back at 2015</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Looking back at 2015</h1>
+<p>March 12, 2016</p>
+<p><strong>Sidenote:</strong> you can say your procrastination level is very high where
+you write an article like this in March.</p>
+<p>I got inspired by my friend <a href="http://hugogiraudel.com/">Hugo</a>’s article <a href="http://hugogiraudel.com/2016/01/05/looking-back-at-2015/">Looking back at
+2015</a> and decided to write my own (about two
+months later but shhh, it’s never too late).</p>
+<p>This article is more a writing exercise for me than something you should
+read, unless you have nothing better to do than reading about my 2015
+year. And I have the feeling that it will be quite long. Nevertheless, I
+make this page public.</p>
+<h2 id="programming%2C-open-source"><a class="header-anchor" href="#programming%2C-open-source" aria-hidden="true">¶</a> Programming, open source</h2>
+<p>I began the year spending the vast majority of my free time programming
+and contributing to open source, with the motivation and productivity
+momentum being part of the <a href="http://sassdoc.com/">SassDoc</a> team gave me since mid 2014.</p>
+<p>I’m especially super thankful to <a href="https://twitter.com/HugoGiraudel">Hugo</a>, <a href="https://twitter.com/pascalduez">Pascal</a>
+and <a href="https://twitter.com/FWeinb">Fabrice</a>, we made an awesome team that I’m really proud
+being part of. I learnt so much by building SassDoc together, as much in
+programming as in open source project handling and team building.</p>
+<h3 id="january-16"><a class="header-anchor" href="#january-16" aria-hidden="true">¶</a> January 16</h3>
+<p>I Celebrated the 1 year anniversary of my <a href="../../2014/10/low-consumption-home-server.html">home server</a> I
+gave birth to in 2014. This also means 1 year day to day FreeBSD usage
+as a server OS. The only thing I have to say is I still happily run it!</p>
+<p>During this year of administration of my little server, I experimented
+with FreeBSD jails, setting up, hosting and maintaining a web, mail,
+IRC, XMPP server, among others.</p>
+<p>While I did not experience with real word charge and scaling, it tought
+me one or two things about system administration.</p>
+<h3 id="february-05"><a class="header-anchor" href="#february-05" aria-hidden="true">¶</a> February 05</h3>
+<p>Release of <a href="http://sassdoc.com/">SassDoc</a> 2.0.0, after a lot of work with the
+SassDoc team on the previous months to completely rewrite the core, add
+more features, and make a pretty website.</p>
+<h3 id="february-07"><a class="header-anchor" href="#february-07" aria-hidden="true">¶</a> February 07</h3>
+<p>I made my first pull request, and (not so) sadly last, since I don’t do
+PHP anymore, on the <a href="http://symfony.com/">Symfony</a> project to add support for images
+extraction with the crawler component, involving a slight refactoring of
+the module.</p>
+<p>Symfony is a large project, and to my eyes an example for open source
+guidelines and contribution process. Everything is documented with
+well-defined and enforced rules. The code review is really solid, I had
+input on my code by multiple people, got really good comments and
+suggestions, my mistakes were directly pointed out. It made me feel
+really confident while contributing, and it was a really insightful
+experience contributing to a project of this size.</p>
+<p>While such a strict process requires more time and implication (at least
+for non-trivial change like this), both for the external contributor and
+the maintainers, it results in a really consistent and totally
+documented project, from the actual file tree to the commit and pull
+request history.</p>
+<p>The only negative point for me is that the pull request got actually
+merged nearly one year later (close to 3 days). Also my name didn’t
+appear as the final commit author, and while I don’t really care, it
+surprised me a little bit. But I see it as a pledge that one of the
+reviewers actually takes the full ownership of this code and its
+maintenance which is a good thing.</p>
+<h3 id="february-08"><a class="header-anchor" href="#february-08" aria-hidden="true">¶</a> February 08</h3>
+<p>First real contribution to the <a href="http://nixos.org/">NixOS</a> project, by adding a Vim
+plugin and the late io.js support, following a quick fix for npm
+packages the day before.</p>
+<h3 id="february-19"><a class="header-anchor" href="#february-19" aria-hidden="true">¶</a> February 19</h3>
+<p>I published my blog, <a href="../..">CodeJam</a>, that you are currently reading,
+after experimenting for a while on a blog engine using a makefile as its
+core.</p>
+<h3 id="march-04"><a class="header-anchor" href="#march-04" aria-hidden="true">¶</a> March 04</h3>
+<p>I released <a href="https://github.com/valeriangalliat/gogs-migrate">gogs-migrate</a>, a tool to automatically migrate
+(and optionally mirror) GitHub repositories to a <a href="https://gogs.io/">Gogs</a> instance.
+This is my most successful personal project by number of stars (16 as of
+today, great success)!</p>
+<h3 id="march-18"><a class="header-anchor" href="#march-18" aria-hidden="true">¶</a> March 18</h3>
+<p>First release of <a href="https://github.com/valeriangalliat/markdown-it-anchor">markdown-it-anchor</a>, another of my (relatively) most
+successful projects, this time by number of contributions (5 pull
+requests, and 10 issues, OMG).</p>
+<p>It’s a flexible plugin for the <a href="https://github.com/markdown-it/markdown-it">markdown-it</a> Markdown parser allowing to
+add an ID and an anchor to headings (I’m using it on this very blog). I
+released it on the day following <a href="https://github.com/valeriangalliat/markdown-it-title">markdown-it-title</a>,
+<a href="https://github.com/valeriangalliat/markdown-it-highlighted">markdown-it-highlighted</a>, and
+<a href="https://github.com/valeriangalliat/markdown-it-highlightjs">markdown-it-highlightjs</a>. These are all
+plugins I needed to improve my <abbr title="Keep it simple, stupid">KISS</abbr>
+blog engine.</p>
+<h3 id="september-10"><a class="header-anchor" href="#september-10" aria-hidden="true">¶</a> September 10</h3>
+<p>I made a <a href="https://github.com/feross/webtorrent/pull/425">couple</a> <a href="https://github.com/feross/webtorrent/pull/426">pull</a>
+<a href="https://github.com/feross/webtorrent/pull/427">requests</a> on <a href="https://github.com/feross/webtorrent">WebTorrent</a> as I was
+working with it for the final project of my studies.</p>
+<h3 id="november-06"><a class="header-anchor" href="#november-06" aria-hidden="true">¶</a> November 06</h3>
+<p>I helped my friend <a href="http://hugogiraudel.com/">Hugo</a> to build <a href="https://github.com/HugoGiraudel/node-legofy">node-legofy</a>,
+a tool to convert an image to a mosaic of LEGO. We had a lot of fun
+writing this.</p>
+<h3 id="december-07"><a class="header-anchor" href="#december-07" aria-hidden="true">¶</a> December 07</h3>
+<p>I bought a <a href="https://www.kimsufi.com/">Kimsufi</a>. I had to monitor its status in real time
+minutes for a week, so I could get a notification when the server I
+wanted was available. I could log it as available maybe 3 or 4 times in
+the week, and each time they were gone in less than 5 minutes.
+The first time I was sleeping, the second time I lost too much time
+creating my account and the server was not available anymore when I was
+ready to pay, but I got it the third time!</p>
+<p>I <a href="../../2015/12/installing-nixos-on-a-kimsufi.html">installed NixOS on it</a> and began migrating parts of my
+<a href="../../2014/10/low-consumption-home-server.html">FreeBSD home server</a> to it. It’s a way for me to learn
+more about <a href="http://nixos.org/">NixOS</a> by using it daily.</p>
+<h3 id="other-projects"><a class="header-anchor" href="#other-projects" aria-hidden="true">¶</a> Other projects</h3>
+<p>I started a lot of libraries and tools as side projects, that don’t
+really worth mentioning, but I still do.</p>
+<ul>
+<li><a href="https://github.com/valeriangalliat/cgip">cgip</a> CGI IP echo service. <!-- February 07 --></li>
+<li><a href="https://github.com/valeriangalliat/es6-denodeify">es6-denodeify</a> Convert callbacks to promises. <!-- February 11 --></li>
+<li><a href="https://github.com/valeriangalliat/through2-sync">through2-sync</a> Synchronous <a href="https://github.com/rvagg/through2">through2</a> transforms. <!-- February 22 --></li>
+<li><a href="https://github.com/valeriangalliat/stream64">stream64</a> Base64 encode/decode stream. <!-- February 22 --></li>
+<li><a href="https://github.com/valeriangalliat/make-overridable">make-overridable</a> <a href="http://lethalman.blogspot.fr/2014/09/nix-pill-14-override-design-pattern.html">Override design pattern</a> for JavaScript. <!-- February 28 --></li>
+<li><a href="https://github.com/valeriangalliat/bind-late">bind-late</a> Late binding of <a href="https://github.com/valeriangalliat/make-overridable">overridable</a> object properties. <!-- February 28 --></li>
+<li><a href="https://github.com/valeriangalliat/gogs-migrate">gogs-migrate</a> Migrate existing repositories on a <a href="https://gogs.io/">Gogs</a> instance. <!-- March 04 --></li>
+<li><a href="https://github.com/valeriangalliat/help2md">help2md</a> Convert command help string to Markdown. <!-- March 07 --></li>
+<li><a href="https://github.com/valeriangalliat/antisocial-auth">antisocial-auth</a> Social authentication for websites that don’t provide any. <!-- March 11 --></li>
+<li><a href="https://github.com/valeriangalliat/express-then">express-then</a> <a href="http://expressjs.com/">Express</a> handlers with promise support. <!-- March 11 --></li>
+<li><a href="https://github.com/valeriangalliat/crypto-promise">crypto-promise</a> Promise version of Node.js crypto module. <!-- March 11 --></li>
+<li><a href="https://github.com/valeriangalliat/jvc">jvc</a> Node.js <a href="https://www.jeuxvideo.com/">jeuxvideo.com</a> <a href="https://wiki.jvflux.com/Documentation_de_l'API_Jeuxvideo.com">API</a> client. <!-- March 11 --></li>
+<li><a href="https://github.com/valeriangalliat/jvc-cli">jvc-cli</a> CLI <a href="https://www.jeuxvideo.com/">jeuxvideo.com</a> client. <!-- March 14 --></li>
+<li><a href="https://github.com/valeriangalliat/jvc-auth">jvc-auth</a> Authenticate <a href="https://www.jeuxvideo.com/">jeuxvideo.com</a> users. <!-- March 15 --></li>
+<li><a href="https://github.com/valeriangalliat/stream-concat-promise">stream-concat-promise</a> Promise version of <a href="https://github.com/maxogden/concat-stream">concat-stream</a>. <!-- March 17 --></li>
+<li><a href="https://github.com/valeriangalliat/promise-done">promise-done</a> Propagate errors out of promise context.  <!-- March 17 --></li>
+<li><a href="https://github.com/valeriangalliat/markdown-it-title">markdown-it-title</a> Extract title during <a href="https://github.com/markdown-it/markdown-it">markdown-it</a> parsing. <!-- March 17 --></li>
+<li><a href="https://github.com/valeriangalliat/markdown-it-highlighted">markdown-it-highlighted</a> Whether code was highlighted during <a href="https://github.com/markdown-it/markdown-it">markdown-it</a> rendering. <!-- March 17 --></li>
+<li><a href="https://github.com/valeriangalliat/markdown-it-highlightjs">markdown-it-highlightjs</a> Preset to use <a href="https://highlightjs.org/">highlight.js</a> with <a href="https://github.com/markdown-it/markdown-it">markdown-it</a>. <!-- March 17 --></li>
+<li><a href="https://github.com/valeriangalliat/markdown-it-anchor">markdown-it-anchor</a> Header anchors for <a href="https://github.com/markdown-it/markdown-it">markdown-it</a>. <!-- March 18 --></li>
+<li><a href="https://github.com/valeriangalliat/fetch-cookie">fetch-cookie</a> Decorator for a <code>fetch</code> function to support automatic cookies. <!-- May 04 --></li>
+<li><a href="https://github.com/valeriangalliat/fr-gas-price">fr-gas-price</a> Retrieve French gas price data from <a href="http://www.prix-carburants.gouv.fr/">government website</a>. <!-- May 04 --></li>
+<li><a href="https://github.com/valeriangalliat/promise-retryable">promise-retryable</a> Retryable promises. <!-- November 01 --></li>
+<li><a href="https://github.com/valeriangalliat/babel-plugin-transform-array-from">babel-plugin-transform-array-from</a> Replace <code>Array.from</code> by <code>require('array-from')</code>. <!-- November 09 --></li>
+</ul>
+<h2 id="afk"><a class="header-anchor" href="#afk" aria-hidden="true">¶</a> <abbr title="Away from keyboard">AFK</abbr></h2>
+<h3 id="summer"><a class="header-anchor" href="#summer" aria-hidden="true">¶</a> Summer</h3>
+<p>Since I procrastinated my days off for 3 years (yes, I procrastinate
+<em>even</em> my days off) while working at <a href="http://www.dredd.fr/">Dredd</a>, I had the
+equivalent of 3 months of vacations to take before the end of June
+(provided that I was still studying 2 days per week at <a href="http://www.ecolearies.fr/">Aries</a>).</p>
+<p>I wrote code all day long for a month, but then I realized than as the
+time was passing, I was getting incredibly way less productive than when
+I was working, even though I had all the time I wanted to dedicate to my
+side projects, open source, and generally improving my technical skills.</p>
+<p>At the point where I was doing nothing meaningful of my days, I started
+biking, and hiking a little later. I was not in a good shape since I
+spent the past years basically daylong behind a computer without any
+physical activity, it was terribly demanding, and I could barely bike
+for 4 kilometers, being super exhausted and thirsty at the end. But
+by training nearly everyday, I quickly got better and could bike more
+and more kilometers while being less and tired and needing less water.</p>
+<p>Soon enough I could bike for 20, 40, even 80 kilometers straight! This
+was a rewarding experience and was really worth the initial pain.</p>
+<figure class="center inline">
+  <a href="../../img/bike/01.jpg">
+    <img src="../../img/bike/01.thumb.jpg">
+  </a>
+  <a href="../../img/bike/02.jpg">
+    <img src="../../img/bike/02.thumb.jpg">
+  </a>
+  <a href="../../img/bike/03.jpg">
+    <img src="../../img/bike/03.thumb.jpg">
+  </a>
+  <a href="../../img/bike/04.jpg">
+    <img src="../../img/bike/04.thumb.jpg">
+  </a>
+  <figcaption>It allowed me to discover nice places around my city, Grenoble.</figcaption>
+</figure>
+<p>Being in the heart of the Alps, and since I had a car, I had the chance
+to be able to go hiking in wonderful places in just 30 or 45 minutes of
+driving. Like for the bike, I started with small but exhausting hikes,
+until I got trained enough to do larger ones, with more ease.</p>
+<p>At the end of the summer, I walked roughly 20,000 vertical meters among
+30 tracks.</p>
+<figure class="center inline">
+  <a href="../../img/mountain/01.jpg">
+    <img src="../../img/mountain/01.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/02.jpg">
+    <img src="../../img/mountain/02.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/03.jpg">
+    <img src="../../img/mountain/03.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/04.jpg">
+    <img src="../../img/mountain/04.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/05.jpg">
+    <img src="../../img/mountain/05.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/06.jpg">
+    <img src="../../img/mountain/06.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/07.jpg">
+    <img src="../../img/mountain/07.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/08.jpg">
+    <img src="../../img/mountain/08.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/09.jpg">
+    <img src="../../img/mountain/09.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/10.jpg">
+    <img src="../../img/mountain/10.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/11.jpg">
+    <img src="../../img/mountain/11.thumb.jpg">
+  </a>
+  <a href="../../img/mountain/12.jpg">
+    <img src="../../img/mountain/12.thumb.jpg">
+  </a>
+  <figcaption>Here's a taste of the sublime landscapes we have in the Alps.</figcaption>
+</figure>
+<h3 id="september-17"><a class="header-anchor" href="#september-17" aria-hidden="true">¶</a> September 17</h3>
+<p>I graduated from <a href="http://www.ecolearies.fr/">Aries</a>. This marks the end of my studies, with
+a software developer diploma, 3 years after integrating this school in
+the webmaster class.</p>
+<p>Those 3 years at Aries were really enjoyable. We had such great vibes
+and complicity within the class that the 2 days of school per week felt
+like a week-end before the week-end. These memories will remain etched
+in my mind.</p>
+<h3 id="september-22"><a class="header-anchor" href="#september-22" aria-hidden="true">¶</a> September 22</h3>
+<p>I moved from Grenoble (France) to Montreal (Quebec) with a 2 years
+<abbr title="Working holiday visa">WHV</abbr>.</p>
+<p>I had quite a fright because the carpooling I took to go to the airport
+in Paris the day before had an engine problem in the middle of the trip
+and we were stuck in a garage for half a day. Fortunately they could fix
+the engine and I got to my destination on time.</p>
+<figure class="center inline">
+  <a href="../../img/airport/01.jpg">
+    <img src="../../img/airport/01.thumb.jpg">
+  </a>
+  <a href="../../img/airport/02.jpg">
+    <img src="../../img/airport/02.thumb.jpg">
+  </a>
+  <figcaption>Direction Montreal!</figcaption>
+</figure>
+<h3 id="september-21"><a class="header-anchor" href="#september-21" aria-hidden="true">¶</a> September 21</h3>
+<p>I Joined <a href="https://www.busbud.com/">Busbud</a> as a backend developer. I’m so excited to work
+here, it’s really motivating and productive to be part of such an
+awesome team of enthusiast programmers.</p>
+<p>We also have a blazingly awesome ping pong setup, that is, admittedly,
+quite addictive. I’m working on making it work on different setups than
+our <em>exact</em> configuration and hardware in order to make it open source.
+Stay tuned!</p>
+<figure class="center inline">
+  <a href="../../img/busbud.jpg">
+    <img src="../../img/busbud.thumb.jpg">
+  </a>
+  <figcaption>Busbud, a startup with a view!</figcaption>
+</figure>
+<h3 id="october-01"><a class="header-anchor" href="#october-01" aria-hidden="true">¶</a> October 01</h3>
+<p>I signed the lease for a flatsharing that I visited the day before. It
+was the last day of my Airbnb and I can say I was really lucky because
+it was for me the best match, both for the place and the roommates, that
+I had between the dozens of flatsharings I visited during my first
+week.</p>
+<p>I spent most of my day in IKEA, and the whole evening building all
+the furniture. This is <em>definitely</em> not my area of expertise nor an
+enjoyable hobby for me.</p>
+<p>I now live with 4 awesome roommates in a beautiful apartment, with 5
+rooms, two bathrooms, a BBQ, and even the luxury of a dishwasher!</p>
+<h3 id="october-31"><a class="header-anchor" href="#october-31" aria-hidden="true">¶</a> October 31</h3>
+<p>Right when I got my first paycheck, I bought a new guitar, since I left
+mines in France. It’s a Fender Stratocaster, the guitar of my dreams
+since ever. Let’s <a href="https://youtu.be/_pHT9yYFdZg">play that funky music</a>!</p>
+<figure class="center inline">
+  <a href="../../img/guitar/01.jpg">
+    <img src="../../img/guitar/01.thumb.jpg">
+  </a>
+  <a href="../../img/guitar/02.jpg">
+    <img src="../../img/guitar/02.thumb.jpg">
+  </a>
+  <a href="../../img/guitar/03.jpg">
+    <img src="../../img/guitar/03.thumb.jpg">
+  </a>
+  <figcaption>Shameless guitar porn.</figcaption>
+</figure>
+<h3 id="november-19"><a class="header-anchor" href="#november-19" aria-hidden="true">¶</a> November 19</h3>
+<p>I got a bit annoyed to walk 20 minutes to work everyday while I felt
+like it would take 5 minutes in bike. Same for getting kinda anywhere in
+Montreal, while there are buses and metros, everything seems so close in
+bike and you don’t have to wait nor pay anything!</p>
+<p>So I decided to get a bike, even if the winter was coming. After all, I
+heard some people here kept biking in the winter, even with snow storms
+and a decent amount of snow on the road.</p>
+<p>Turned out the snow took a while to fall, so I could profit of my bike
+in ideal conditions for another month. And even once the roads were
+covered by a couple centimeters of snow, biking on it was surprisingly
+good, and even really enjoyable when the snow is fresh!</p>
+<figure class="center inline">
+  <a href="../../img/bike-2/01.jpg">
+    <img src="../../img/bike-2/01.thumb.jpg">
+  </a>
+  <a href="../../img/bike-2/02.jpg">
+    <img src="../../img/bike-2/02.thumb.jpg">
+  </a>
+  <figcaption>This is my bike. It's a beautiful bike.</figcaption>
+</figure>
+<h3 id="december-24"><a class="header-anchor" href="#december-24" aria-hidden="true">¶</a> December 24</h3>
+<p>I and a few friends casually made a BBQ for Christmas Eve. That’s a
+pretty badass thing to do for a first Canadian winter. :D</p>
+<h3 id="december-30"><a class="header-anchor" href="#december-30" aria-hidden="true">¶</a> December 30</h3>
+<p>5 AM, I took my bag, put my <a href="https://youtu.be/Ud_-AuBmp6Q">balaclava</a> and walked to the bus
+station downtown under the falling snow. Direction New York for the New
+Year’s Eve!</p>
+<p>After a 8 hours bus trip we arrived in Manhattan. During 2 days we
+walked around the whole island and could visit a decent part of it.</p>
+<figure class="center inline">
+  <a href="../../img/ny/01.jpg">
+    <img src="../../img/ny/01.thumb.jpg">
+  </a>
+  <a href="../../img/ny/02.jpg">
+    <img src="../../img/ny/02.thumb.jpg">
+  </a>
+  <a href="../../img/ny/03.jpg">
+    <img src="../../img/ny/03.thumb.jpg">
+  </a>
+  <a href="../../img/ny/04.jpg">
+    <img src="../../img/ny/04.thumb.jpg">
+  </a>
+  <a href="../../img/ny/05.jpg">
+    <img src="../../img/ny/05.thumb.jpg">
+  </a>
+  <a href="../../img/ny/06.jpg">
+    <img src="../../img/ny/06.thumb.jpg">
+  </a>
+  <figcaption>New York.</figcaption>
+</figure>
+<p>The New Year’s Eve in Times Square was also an unique experience. It’s
+incredibly hard to get in Times Square at 3 PM, and even if you’re lucky
+enough to get inside (which we were), you then have to wait another 9
+hours standing in the crowd without really any kind of animation. All of
+this to have the countdown the last minute before midnight, and a tiny
+firework. I have quite mixed feelings about this experience, to say the
+least.</p>
+<h3 id="what-next%3F"><a class="header-anchor" href="#what-next%3F" aria-hidden="true">¶</a> What next?</h3>
+<p>That was a pretty intense year for me; finishing my studies, leaving my
+job, family and friends to start from scratch in a new country, where I
+had my first full time job and also my first flatsharing experience!</p>
+<p>It will be hard to make 2016 even more awesome, but I’m happy I quickly
+found a stable situation that gives me peace of mind, and I think like
+enjoying this for a while, focusing more on programming and playing
+music.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

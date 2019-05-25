@@ -1,0 +1,84 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Batch updating npm packages license</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Batch updating npm packages license</h1>
+<p>May 25, 2015</p>
+<p>Since a few weeks, npm have <a href="https://github.com/npm/npm/commit/8669f7d88c472ccdd60e140106ac43cca636a648">deprecated</a> the old <code>package.json</code>
+<code>license</code> format (where we specify an object with <code>type</code> and <code>url</code>), and
+it now must be just a string.</p>
+<p>I needed the old format because npm didn’t support the <a href="http://unlicense.org/">Unlicense</a> yet,
+but it looks like it’s not the case anymore!</p>
+<p>So I basically have to change the following:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">"license"</span>: {
+    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Unlicense"</span>,
+    <span class="hljs-attr">"url"</span>: <span class="hljs-string">"http://unlicense.org/"</span>
+  }
+}
+</code></pre>
+<p>to this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">"license"</span>: <span class="hljs-string">"Unlicense"</span>
+}
+</code></pre>
+<p>for all the packages I have under the Unlicense (roughly 30 packages).</p>
+<h2 id="automation"><a class="header-anchor" href="#automation" aria-hidden="true">¶</a> Automation</h2>
+<p>I did not want to do this by hand, so I automated this with some
+commands. I did not wrote this script at once, but here’s what’s
+resulting of my <code>history</code>, with a drastic cleanup (there was <em>a lot</em> of
+trial and error) and comments:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Get all the packages I contribute to</span>
+curl -s <span class="hljs-string">'https://www.npmjs.com/~valeriangalliat'</span> | grep /package/ | sed <span class="hljs-string">'s,.*/package/,,;s/".*//'</span> &gt; my-packages
+
+<span class="hljs-comment"># Get the URL of non-deprecated packages</span>
+cat my-packages | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> package; <span class="hljs-keyword">do</span>
+    node -e <span class="hljs-string">"var x = <span class="hljs-variable">$(npm info "$package")</span>;"</span><span class="hljs-string">' if (!x.deprecated) console.log(x.repository.url.replace("git+https", "https"))'</span>
+<span class="hljs-keyword">done</span> &gt; repos
+
+<span class="hljs-comment"># Clone all repositories</span>
+cat repos | xargs -L1 git <span class="hljs-built_in">clone</span>
+
+<span class="hljs-comment"># Get the directory names</span>
+cat repos | xargs -L1 basename &gt; <span class="hljs-built_in">dirs</span>
+
+<span class="hljs-comment"># Update the license</span>
+cat <span class="hljs-built_in">dirs</span> | sed <span class="hljs-string">'s,$,/package.json,'</span> | xargs sed -i <span class="hljs-string">'/license/{N;/Unlicense/{N;N;s/.*/  "license": "Unlicense",/;}}'</span>
+
+<span class="hljs-comment"># Check the update</span>
+cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} diff
+
+<span class="hljs-comment"># Commit</span>
+cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} commit -am <span class="hljs-string">'Update package license format'</span>
+
+<span class="hljs-comment"># Get the repositories where a change occurred (otherwise the commit was not done)</span>
+cat <span class="hljs-built_in">dirs</span> | xargs -I{} sh -c <span class="hljs-string">'cd {} &amp;&amp; git log -n 1 | grep -q "Update package license format" &amp;&amp; echo {}'</span> &gt; updated
+
+<span class="hljs-comment"># Bump patch (commit and tag)</span>
+cat updated | xargs -I{} npm version patch -m <span class="hljs-string">'Bump %s'</span>
+
+<span class="hljs-comment"># Check commits to push</span>
+cat updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin/master..
+
+<span class="hljs-comment"># Push, install dependencies and publish</span>
+cat updated | xargs -I{} sh -c <span class="hljs-string">'cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish'</span>
+</code></pre>
+<h2 id="was-it-worth-it%3F"><a class="header-anchor" href="#was-it-worth-it%3F" aria-hidden="true">¶</a> Was it worth it?</h2>
+<p>In the end, I think it took way more time to write this script (and blog
+post) than doing it manually. But it was also <em>incredibly more fun</em>!</p>
+<p>I hope this may be useful to other people in the same case as me, so it
+will be actually productive, in addition to be fun.</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

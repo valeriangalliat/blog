@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Firefox Hello, ALSA, and webcam microphone</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Firefox Hello, ALSA, and webcam microphone</h1>
+<p>May 03, 2015</p>
+<p>Yesterday, I finally tried Firefox Hello, one of the few free softwares
+to do cross platform video chat.</p>
+<p>I’m using Arch Linux, with ALSA to manage my sound. While Firefox Hello
+had no problem with the video, I couldn’t get any sound coming out from
+my side.</p>
+<p>While the browser asks for input video and audio device when joining a
+session, Firefox Hello leave no way to select the input microphone when
+you <em>create</em> a session. The problem is Firefox was taking audio input
+from my default card instead of my webcam, where I had no microphone
+plugged in.</p>
+<h2 id="custom-default-pcm-device"><a class="header-anchor" href="#custom-default-pcm-device" aria-hidden="true">¶</a> Custom default PCM device</h2>
+<p>The solution for this was to configure the default ALSA capture device.
+Turns out there’s already an entry for this on the
+<a href="https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture/Troubleshooting#Setting_the_default_microphone.2Fcapture_device">ALSA page of the ArchWiki</a>. I’m pretty sure it’s a decent
+solution for other GNU/Linux distributions (obviously when using ALSA).</p>
+<p>So in my case, the following <code>~/.asoundrc</code> did the job:</p>
+<pre><code class="hljs">pcm.usb
+{
+    type hw
+    card C170
+}
+
+pcm.!default
+{
+    type asym
+
+    playback.pcm
+    {
+        type plug
+        slave.pcm &quot;dmix&quot;
+    }
+
+    capture.pcm
+    {
+        type plug
+        slave.pcm &quot;usb&quot;
+    }
+}
+</code></pre>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

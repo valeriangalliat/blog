@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Apache file with custom PHP version</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Apache file with custom PHP version</h1>
+<p>September 16, 2014</p>
+<p>I once wanted to execute a single PHP file with a specific PHP version,
+different from the globally configured one with <code>mod_php</code>.</p>
+<p>First, enable a <code>cgi-bin</code> directory:</p>
+<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location "/cgi-bin"&gt;</span>
+  <span class="hljs-attribute"><span class="hljs-nomarkup">SetHandler</span></span> cgi-script
+  <span class="hljs-attribute"><span class="hljs-nomarkup">Options</span></span> +ExecCGI
+<span class="hljs-section">&lt;Location&gt;</span>
+</code></pre>
+<p>You can also use <code>ScriptAlias</code> for this.</p>
+<p>Then, for this specific file, turn off <code>mod_php</code> and use custom CGI:</p>
+<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location "/test.php"&gt;</span>
+  <span class="hljs-attribute">php_flag</span> engine <span class="hljs-literal">off</span>
+  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin/php55
+  <span class="hljs-attribute">AddHandler</span> php-cgi .php
+<span class="hljs-section">&lt;Location&gt;</span>
+</code></pre>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

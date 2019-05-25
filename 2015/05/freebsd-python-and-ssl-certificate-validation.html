@@ -1,0 +1,33 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>FreeBSD, Python and SSL certificate validation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>FreeBSD, Python and SSL certificate validation</h1>
+<p>May 22, 2015</p>
+<p>When not explicitely giving a SSL certificate file to Python <code>request</code>,
+it will expect the system certificates to be in <code>/etc/ssl/cert.pem</code>.</p>
+<p>However, in FreeBSD, they are in <code>/usr/local/etc/ssl/cert.pem</code>,
+resulting in the following error:</p>
+<pre><code class="hljs">urllib.error.URLError: &lt;urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)&gt;
+</code></pre>
+<p>The quick and dirty fix for this was the following:</p>
+<pre><code class="hljs language-sh">ln -s /usr/<span class="hljs-built_in">local</span>/etc/ssl/cert.pem /etc/ssl/cert.pem
+</code></pre>
+<p>Now Python can find the system certificates, and we don’t need to
+explicitely give the certificate file to <code>request</code> when doing the
+request (espacially useful when <code>request</code> is used by another module that
+don’t allow to customize the certificates).</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

@@ -13,7 +13,7 @@ Posts
 * [Batch updating npm packages license](2015/05/batch-updating-npm-packages-license.md) <small>May 25, 2015</small>
 * [Listen a raw playlist with YouTube](2015/05/listen-a-raw-playlist-with-youtube.md) <small>May 22, 2015</small>
 * [FreeBSD, Python and SSL certificate validation](2015/05/freebsd-python-and-ssl-certificate-validation.md) <small>May 22, 2015</small>
-* [Firefox Hello, ALSA, and webcam microphone](2015/05/firefox-hello-alsa-and-webcam-microphone.md) <small>May 03, 2015</small>
+* [Firefox Hello, ALSA, and webcam microphone](2015/05/firefox-hello-alsa-and-webcam-microphone.md) <small>May 3, 2015</small>
 * [Command invocation over TCP with socat](2015/04/command-invocation-over-tcp-with-socat.md) <small>April 19, 2015</small>
 * [Naming things](2015/03/naming-things.md) <small>March 29, 2015</small>
 * [Move existing VirtualBox images](2015/03/move-existing-virtualbox-images.md) <small>March 27, 2015</small>

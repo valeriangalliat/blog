@@ -1,6 +1,6 @@
 Firefox Hello, ALSA, and webcam microphone
 ==========================================
-May 03, 2015
+May 3, 2015
 
 Yesterday, I finally tried Firefox Hello, one of the few free softwares
 to do cross platform video chat.

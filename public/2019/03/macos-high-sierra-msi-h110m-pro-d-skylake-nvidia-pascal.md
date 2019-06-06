@@ -145,7 +145,7 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
    the MultiBeast app. The selected drivers are inspired by
    [this post](https://www.tonymacx86.com/threads/macos-sierra-on-a-skylake-pc-mb-h110m-pro-d-cpu-i5-6400-gpu-gtx960-ram-ddr4-8gb.210098/).
 1. In "Quick Start", select "UEFI Boot Mode".
-1. In "Drivers", "Audio" in "Universal" select "VoodooHDA v2. 9.0d10"
+1. Don't select anything in "Drivers", "Audio", we'll take care of that later.
    (I tried the 2.8.6 version before and had issues with crackling sound).
 1. In "Drivers", "Disk", select "3rd Party SATA" and "Intel Generic AHCI SATA".
 1. In "Drivers", "Misc", select "FakeSMC Plugins", "FakeSMC HWMonitor Application"
@@ -173,13 +173,17 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
    otherwise).
 1. Click "Install".
 1. Then, back in Clover Configurator, in "Kexts Installer", set "OS
-   Version" to "Other", tick "Lilu" and "WhateverGreen" and click "Download".
+   Version" to "Other", tick "Lilu", "WhateverGreen" and "AppleALC" and
+   click "Download".
 1. In Clover Configurator, click on the home button at the bottom, and
    load `EFI/EFI/CLOVER/config.plist`.
 1. In "Boot", in "Arguments", add `nvda_drv=1`.
+1. In "Devices", in "Audio", set "Inject" to `11`. That's what works for
+   me at least since I have Realtek ALC887 codec, from some trial and error
+   on [AppleALC supported codecs](https://github.com/acidanthera/AppleALC/wiki/Supported-codecs).
 1. Optional, in "GUI", in "Hide Volume", I added "Preboot" to hide the
-   bootloader entries "Boot macOS Install Prebooter from Prebot" and "Boot
-   FileVault Prebooter from Preboot".
+   bootloader entries "Boot macOS Install Prebooter from Prebot" and
+   "Boot FileVault Prebooter from Preboot".
 1. In "SMBIOS", use the select menu to auto fill the fields using the
    model of your choice. I used "iMac17,1". This step doesn't seems to
    be necessary, looks like it mostly customizes what you see in the
@@ -194,15 +198,72 @@ I used [nVidia Update](https://github.com/Benjamin-Dobell/nvidia-update)
 to install and patch the latest drivers (apparently the official
 installer needs patching to be able to run for some reason).
 
-```bash
+```sh
 bash <(curl -s https://raw.githubusercontent.com/Benjamin-Dobell/nvidia-update/master/nvidia-update.sh)
 ```
+
+#### Note on audio
+
+I could find no way to get the HDMI audio working properly. I've managed
+to get *only* the HDMI audio working (still no clue how) but even then,
+it would not let me change the volume from the system, and my screen
+doesn't let me change the volume from its interface, so it was basically
+always maxed out, which was unusable. Also since this wouldn't even let
+me use other audio devices than HDMI ones so it's definitely not usable
+for me.
+
+I've also checked this [Hackintosh HDMI audio](https://hackintosher.com/guides/hackintosh-hdmi-audio-displayport-sound/)
+guide but it didn't change anything, also seems to be outdated and
+replaced by [this guide](https://hackintosher.com/forums/thread/nvidia-hdmi-audio-with-applealc.193/)
+which is essentially what I'm doing already (Lilu and AppleALC kexts).
+
+They do mention that not all ports might be working for audio, but my
+card only have one HDMI port so there's not much more I can do here.
+
+Other than that, this [Audio Mechanic](https://www.reddit.com/r/hackintosh/comments/4sil5p/audio_mechanic_old_patchfix_removal_applealc/)
+thread on Reddit have been pretty useful for me to figure out audio things
+(other than HDMI audio).
 
 #### You're done!
 
 After this, you should be able to reboot, and from the Clover bootloader
 on your HDD, select "Boot macOS from Hackintosh" (in my case my
 partition is named Hackintosh), and have a fully functional Hackintosh!
+
+Updating
+--------
+
+Actually, you're not that done. Soon enough you'll need to install
+updates. I'm not sure what exactly I fucked up with the above setup, but
+updates don't work 100% out of the box, but it's not bothering me enough
+so that I go try to make it perfect.
+
+Basically, when you get an update, do the usual "Download & Restart",
+which will show a black "Installing" screen that will automatically
+reboot after a little bit.
+
+Upon reboot, **boot on the UniBeast USB** and not on your regular
+Clover. For me, if I use my regular clover, the update just hangs and I
+couldn't find a way to debug that.
+
+Make sure to boot (from the USB) on the "Install macOS from Hackintosh"
+(in my case my partition is named Hackintosh) and not the usual "Boot
+macOS from Hackintosh", or this will just boot to the regular system
+without updating. Also don't pick anything with "Preboot" as it won't be
+any useful.
+
+You will then see a progress bar with an estimate of the time remaining.
+When it's done, it's automatically going to reboot. Now you can use your
+regular Clover to boot (if everything went well, you will notice that
+the "Install macOS from Hackintosh" entry is gone).
+
+The graphics might not be working after the update. For this, run
+`nvidia-update --force`. You need `--force` since if the driver version
+is still the same, the script will skip installation, and here we need
+to force it to install the driver again regardless if there's a new
+version.
+
+After this, reboot and you should be set!
 
 Bonus: Windows dual boot
 ------------------------

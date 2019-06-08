@@ -6,6 +6,7 @@ Posts
 
 <div class="posts">
 
+* [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
 * [macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
 * [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
@@ -20,7 +21,6 @@ Posts
 * [Move existing VirtualBox images](2015/03/move-existing-virtualbox-images.md) <small>March 27, 2015</small>
 * [Coming soon](2015/03/coming-soon.md) <small>March 25, 2015</small>
 * [Portable Rust installation](2015/03/portable-rust-installation.md) <small>March 15, 2015</small>
-* [urxvt terminfo on NetBSD](2015/03/urxvt-terminfo-on-netbsd.md) <small>March 11, 2015</small>
 
 </div>
 

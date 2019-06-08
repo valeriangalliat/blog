@@ -1,0 +1,227 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Arch Linux laptop, UEFI, encrypted disk and hibernation</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">CodeJam</a>
+  </header>
+<h1>Arch Linux laptop, UEFI, encrypted disk and hibernation</h1>
+<p>June 8, 2019</p>
+<p>Based on <a href="https://gist.github.com/mattiaslundberg/8620837">this Gist</a>,
+with hibernation added.</p>
+<h2 id="installer-usb"><a class="header-anchor" href="#installer-usb" aria-hidden="true">¶</a> Installer USB</h2>
+<p>Download the <a href="https://www.archlinux.org/download/">latest ISO</a> and
+<code>dd</code> it to your USB drive as per the <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">official documentation</a>.</p>
+<p>With GNU/Linux (replace <code>/dev/sdx</code> with the proper drive):</p>
+<pre><code class="hljs language-sh">dd <span class="hljs-keyword">if</span>=archlinux.iso of=/dev/sdx bs=4M status=progress oflag=sync
+</code></pre>
+<p>Then boot on the USB.</p>
+<h2 id="installation"><a class="header-anchor" href="#installation" aria-hidden="true">¶</a> Installation</h2>
+<p>Based on the <a href="https://wiki.archlinux.org/index.php/installation_guide">install guide</a>.</p>
+<p>Connect to Wi-Fi if necessary.</p>
+<pre><code class="hljs language-sh">wifi-menu
+</code></pre>
+<p>Partition disk. I will go with a 256 MiB mixed EFI and boot partition,
+and the rest for a LUKS container, containing a 8 GiB swap (the size of
+my RAM to support hibernation) and the rest for the system.</p>
+<p>Based on <a href="https://wiki.archlinux.org/index.php/Dm-crypt/Encrypting_an_entire_system#LVM_on_LUKS">encrypting an entire system</a>.</p>
+<pre><code class="hljs">fdisk /dev/sdx
+</code></pre>
+<pre><code class="hljs">Command: n
+Partition number: (default)
+First sector: (default)
+Last sector: +256M
+
+Command: t
+Partition type: 1 # EFI System
+
+Command: n
+Partition number: (default)
+First sector: (default)
+Last sector: (default)
+
+Command: w
+</code></pre>
+<pre><code class="hljs language-sh">mkfs.fat -F32 /dev/sdx1
+cryptsetup luksFormat /dev/sdx2
+cryptsetup luksOpen /dev/sdx2 luks
+pvcreate /dev/mapper/luks
+vgcreate vg0 /dev/mapper/luks
+lvcreate -L 8G vg0 --name swap
+lvcreate -l 100%FREE vg0 --name root
+mkfs.ext4 /dev/vg0/root
+mkswap /dev/vg0/swap
+</code></pre>
+<p>Mount partitions.</p>
+<pre><code class="hljs language-sh">mount /dev/vg0/root /mnt
+swapon /dev/vg0/swap
+mkdir /mnt/boot
+mount /dev/sdx1 /mnt/boot
+</code></pre>
+<p>Install the base system together will necessary packages.</p>
+<pre><code class="hljs language-sh">pacstrap /mnt base base-devel grub efibootmgr dialog wpa_supplicant
+</code></pre>
+<p><code>efibootmgr</code> is necessary for GRUB to add the EFI boot entry, <code>dialog</code>
+for <code>wifi-menu</code> to work and <code>wpa_supplicant</code> for WPA.</p>
+<p>I also tend to add <code>zsh</code>, <code>vim</code> and <code>git</code> here as well but they’re not
+strictly necessary.</p>
+<p>Then, generate <code>/etc/fstab</code>.</p>
+<pre><code class="hljs">genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
+vim /mnt/etc/fstab
+</code></pre>
+<p>Change <code>relatime</code> to <code>noatime</code> on the root partition to reduce SSD wear.</p>
+<p>Add <code>tmpfs /tmp tmpfs rw,noatime,nodev,nosuid 0 0</code> if you want to keep
+<code>/tmp</code> in RAM.</p>
+<p><code>chroot</code> in the system.</p>
+<pre><code class="hljs language-sh">arch-chroot /mnt
+</code></pre>
+<p>Setup the timezone (Montreal for me), and synchronize hardware clock.</p>
+<pre><code class="hljs language-sh">ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
+hwclock --systohc
+</code></pre>
+<p>Uncomment the locale you desire in <code>/etc/locale.gen</code> (<code>en_CA.UTF-8</code> for me,
+to have 24-hour clock format).</p>
+<pre><code class="hljs language-sh">locale-gen
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'LANG=en_CA.UTF-8 &gt; /etc/locale.conf'</span>
+</code></pre>
+<p>Set the hostname.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> myhostname &gt; /etc/hostname
+</code></pre>
+<p>Edit <code>/etc/mkinitcpio.conf</code> to add <code>encrypt</code> and <code>lvm2</code> to <code>HOOKS</code>
+before <code>filesystems</code>. Also add <code>resume</code> after <code>filesystems</code> to support
+resuming from hibernation.</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Before</span>
+HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)
+
+<span class="hljs-comment"># After</span>
+HOOKS=(base udev autodetect modconf block encrypt lvm2 filesystems resume keyboard fsck)
+</code></pre>
+<pre><code class="hljs language-sh">mkinitcpio -p linux
+</code></pre>
+<p>Setup the root password.</p>
+<pre><code class="hljs">passwd
+</code></pre>
+<p>Edit <code>/etc/default/grub</code> to configure the encrypted disk by adding
+<code>cryptdevice=/dev/sdx2:luks:allow-discards</code> (again, replace <code>/dev/sdx</code>
+with the proper drive) to <code>GRUB_CMDLINE_LINUX</code>.  I also added
+<code>resume=/dev/vg0/swap</code> for supporting hibernation (resuming from swap).</p>
+<pre><code class="hljs language-sh">GRUB_CMDLINE_LINUX=<span class="hljs-string">"cryptdevice=/dev/sdx2:luks:allow-discards resume=/dev/vg0/swap"</span>
+</code></pre>
+<p>Install GRUB and generate its configuration. Since I decided to have a
+shared EFI and boot partition, I need to tell GRUB that the EFI
+directory is <code>/boot</code>.</p>
+<pre><code class="hljs language-sh">grub-install --efi-directory=/boot
+grub-mkconfig -o /boot/grub/grub.cfg
+</code></pre>
+<p>Teardown and reboot.</p>
+<pre><code class="hljs language-sh">umount -R /mnt
+swapoff -a
+reboot
+</code></pre>
+<h2 id="post-installation"><a class="header-anchor" href="#post-installation" aria-hidden="true">¶</a> Post installation</h2>
+<p>Connect to Wi-Fi if necessary.</p>
+<pre><code class="hljs language-sh">wifi-menu
+</code></pre>
+<p>Automatically connect to available known networks on the Wi-Fi
+interface (replace <code>wlp2s0</code> with your Wi-Fi interface).</p>
+<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> netctl-auto@wlp2s0
+</code></pre>
+<p>Enable time synchronization.</p>
+<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> systemd-timesyncd
+</code></pre>
+<p>Add user and set password.</p>
+<pre><code class="hljs language-sh">useradd -m -G wheel -s /usr/bin/zsh val
+passwd val
+</code></pre>
+<p>Install the packages you need. Here’s my personal selection.</p>
+<ul>
+<li><code>xf86-video-intel</code> graphics driver</li>
+<li><code>xorg-server</code></li>
+<li><code>xorg-xinit</code> as I don’t use a display/login manager, I just <code>startx</code></li>
+<li><code>xorg-xset</code> as I use it in my <code>.xinitrc</code> for setting key repeat delay</li>
+<li><code>ttf-dejavu</code> main system font</li>
+<li><code>ttf-liberation</code> for proper web fonts support</li>
+<li><code>noto-fonts-emoji</code> because emojis</li>
+<li><code>i3-gaps</code> window manager</li>
+<li><code>i3lock</code> locker</li>
+<li><code>i3blocks</code> status bar</li>
+<li><code>xfce4-terminal</code></li>
+<li><code>dmenu</code></li>
+<li><code>firefox</code></li>
+<li><code>compton</code> for <code>xfce4-terminal</code> background transparency</li>
+<li><code>alsa-utils</code> for native audio</li>
+<li><code>pulseaudio</code> sound server</li>
+<li><code>pulseaudio-alsa</code> for PulseAudio to control ALSA</li>
+<li><code>pulseaudio-bluetooth</code> for PulseAudio to control Bluetooth devices</li>
+<li><code>pavucontrol</code> for an audio GUI</li>
+<li><code>bluez</code> for Bluetooth support</li>
+<li><code>blueberry</code> for a Bluetooth GUI</li>
+<li><code>feh</code> image viewer and background setter</li>
+<li><code>maim</code> and <code>imagemagick</code> as my custom <code>i3locks</code> locker depends on them</li>
+<li><code>xsel</code>, <code>xclip</code> for clipboard management</li>
+<li><code>xorg-xbacklight</code> for changing screen brightness</li>
+<li><code>acpi</code> to get battery information (the i3blocks <code>battery</code> blocklet
+depends on it)</li>
+<li><code>openssh</code></li>
+<li><code>redshift</code>, <code>geoclue</code>, started in my <code>.xinitrc</code>, adjust screen color
+temperature based on time of day</li>
+<li><code>jq</code> as my <a href="https://github.com/valeriangalliat/dotfiles/blob/master/bin/i3-focused-window-cwd">script</a>
+to preserve working directory when opening a new terminal depends on it</li>
+<li><code>xss-lock</code>, started in my <code>.xinitrc</code>, auto lock on screen sleep,
+suspend and hibernate</li>
+<li><code>xautolock</code>, started in my <code>.xinitrc</code> to auto suspend after a time of
+inactivity (can’t rely on <code>/etc/systemd/logind.conf</code> <code>IdleAction</code>
+because it doesn’t work without a display manager and I don’t use a
+display manager)</li>
+<li><code>zip</code>, <code>unzip</code></li>
+<li><code>ack</code></li>
+</ul>
+<p>For some reason PulseAudio will require a reboot to work.</p>
+<h3 id="bluetooth"><a class="header-anchor" href="#bluetooth" aria-hidden="true">¶</a> Bluetooth</h3>
+<p>Enable Bluetooth.</p>
+<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> bluetooth
+</code></pre>
+<p>In practice I usually don’t enable Bluetooth and I <code>systemctl start bluetooth</code> and <code>systemctl stop bluetooth</code> as I need it.</p>
+<h3 id="touchpad"><a class="header-anchor" href="#touchpad" aria-hidden="true">¶</a> Touchpad</h3>
+<p>I add the following to <code>/etc/X11/xorg.conf.d/40-libinput.conf</code> to have
+the touchpad work the way I like it to (natural scrolling and having the
+whole surface clickable).</p>
+<pre><code class="hljs">Section &quot;InputClass&quot;
+        Identifier &quot;libinput clickfinger&quot;
+        Driver &quot;libinput&quot;
+        Option &quot;ClickMethod&quot; &quot;clickfinger&quot;
+        Option &quot;NaturalScrolling&quot; &quot;true&quot;
+EndSection
+</code></pre>
+<h3 id="auto-hibernate-after-sustained-suspend"><a class="header-anchor" href="#auto-hibernate-after-sustained-suspend" aria-hidden="true">¶</a> Auto hibernate after sustained suspend</h3>
+<p>If you want to have the system hibernate after being suspended for some
+time (3 hours by default as per <code>/etc/systemd/sleep.conf</code>
+<code>HibernateDelaySec</code>), run the following:</p>
+<pre><code class="hljs language-sh">ln -s /usr/lib/systemd/system/systemd-suspend-then-hibernate.service /etc/systemd/system/systemd-suspend.service
+</code></pre>
+<p>The advantage of this solution is anything that would normally just
+suspend will suspend then hibernate, which is an easy way to make sure
+that in any case the system will hibernate if suspended for more than 3
+hours to save battery.</p>
+<p>Hack from <a href="https://www.reddit.com/r/Fedora/comments/auctgi/setting_systemctl_suspendthenhibernate_as_default/">this Reddit thread</a>.</p>
+<h3 id="final-touch"><a class="header-anchor" href="#final-touch" aria-hidden="true">¶</a> Final touch</h3>
+<p>After logging in with my regular user, I finish the configuration by
+cloning and installing my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>.</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/valeriangalliat/dotfiles.git
+<span class="hljs-built_in">cd</span> dotfiles
+make i3 i3blocks zsh vim git net x11 compton xfce4-terminal
+</code></pre>
+<p>Lastly, in Firefox I add the Vimium-FF and uBlock Origin extensions.</p>
+<p>And here you go, a somewhat minimalist Arch Linux setup with everything
+needed to have a smooth laptop experience!</p>
+<hr class="footer-sep">
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome! <a href="https://creativecommons.org/publicdomain/zero/1.0/">No rights reserved</a>.</footer>
+</body>
+</html>

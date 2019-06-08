@@ -2,6 +2,7 @@
 
 <div class="posts">
 
+* [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
 * [macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>

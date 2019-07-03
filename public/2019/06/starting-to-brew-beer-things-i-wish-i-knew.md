@@ -63,8 +63,45 @@ opening the tap of cold water.
 
 So do yourself a favor and get a wort chiller.
 
-Get a grain filter basket
--------------------------
+Set up a blow-off instead of an airlock
+---------------------------------------
+
+While airlocks are nice, it turned out for me that a blow-off is pretty
+much as easy to set up and prevents potential mess.
+
+For example, you might make the mistake of over filling your carboy,
+thus not letting enough head space for the fermentation, and this will
+quickly clog the airlock. Or maybe with the kind of beer you're doing
+you're having a very active fermentation and the same results happen.
+
+To avoid this potential issues, just go for a blow-off and stop
+worrying. It's easy, instead of putting the airlock in, just put a
+plastic tube in, and put the other end into a jar that contains some
+sanitized water (e.g. OxySan). As your beer is fermenting, you'll see
+bubbles in the jar the same way you would see them in the airlock, but
+if for some reason it overflows, it's just gonna end up in the jar and
+won't block anything.
+
+When the fermentation is done being active, feel free to switch it for
+an airlock, but at that point might as well just leave the blow-off
+unless you really need that jar or tube.
+
+Consider getting a carboy opener
+--------------------------------
+
+This little tool that costs like 2 bucks might save you some time and
+energy. Get it just in case while you're at the brewing equipment store.
+
+It can happen after sitting for many weeks or even months that the
+carboy lid gets pretty tight and hard to remove by hand, especially
+if you used a nylon bag to dry hop or infuse extra ingredients.
+
+A carboy lid opener will then be really useful for you to easily open
+your carboy when you need, instead of struggling with your fingers for
+a while to get it open.
+
+Get a grain filter basket or bag
+--------------------------------
 
 If you're gonna use the same mash tun to make your mash and to boil it,
 you're gonna have to get rid of the grains and clean it up before
@@ -74,9 +111,10 @@ Regardless if you're using a regular strainer or a bazooka filter,
 you'll end up with a lot of grains in your mash tun which will take some
 time to remove while your mash is just sitting there.
 
-Instead, you can get a grain filter basket to put in the mash tun, so
-that when you're done with the grains, you can just remove the filter
-basket and the tun is instantly ready to use.
+Instead, you can get a grain filter basket, or a grain filter bag (much
+less expensive) to put in the mash tun, so that when you're done with
+the grains, you can just remove the filter basket or bag, and the tun is
+instantly ready to use.
 
 Then, as the boil is going, you can take the time to cleanup the grain
 filter in parallel instead of it delaying the start of your boil.
@@ -87,3 +125,23 @@ Optional: use swing top bottles
 Swing top bottles are cool. Easy to open and close, no need for caps and
 capper, plus they make a very nice *pop* when you open them. Guaranteed
 effect in parties.
+
+Drink your homebrew while brewing
+---------------------------------
+
+Unelss it's your very first batch, brewing time is the best time to
+enjoy one of your previous homebrews!
+
+Mandatory: honor the hot scotchie tradition
+-------------------------------------------
+
+When draining the mash, sweep a little jar down the spigot to get some
+of that tasty warm malt juice. Pour a drop of your favorite single malt
+scotch in it and enjoy one of the greatest beverages in the world.
+
+I tried a couple different scotch from my collection for this and my
+favorite so far was hands down the Aberlour 10. It spices up the mash
+while keeping it smooth and without being overwhelming. While otherwise
+I'm a huge fan of Laphroaig, Lagavulin or Caol Ila, those didn't really
+cut it for the hot scotchie as their strong character would just stand
+out and didn't pair well with the sweeter taste of hot mash.

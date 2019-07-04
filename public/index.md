@@ -40,4 +40,3 @@ Links
 * [Photography](https://photography.codejam.info/)
 * [Brewing](https://github.com/valeriangalliat/sans-pression)
 * [Climbing](https://solidite.codejam.info/)
-* [IP echo service](https://ip.codejam.info/) ([source](https://github.com/valeriangalliat/cgip))

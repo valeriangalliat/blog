@@ -45,6 +45,12 @@ To avoid this, just directly get an auto-siphon. It's trivial to use,
 and you can effortlessly start the stream or give it a little boost if
 it was to slow down.
 
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640263.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640263.jpg">
+  </a>
+</figure>
+
 Get a wort chiller
 ------------------
 
@@ -62,6 +68,23 @@ job done in 10 minutes without you having to do anything other than
 opening the tap of cold water.
 
 So do yourself a favor and get a wort chiller.
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640253.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640253.jpg">
+  </a>
+</figure>
+
+You might need an extra adapter to plug it onto your sink as they
+usually come with a piece that fits garden hose size.
+
+Here, we have a 1/2" (sink) to 3/4" (garden hose) adapter.
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640255.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640255.jpg">
+  </a>
+</figure>
 
 Set up a blow-off instead of an airlock
 ---------------------------------------
@@ -86,6 +109,12 @@ When the fermentation is done being active, feel free to switch it for
 an airlock, but at that point might as well just leave the blow-off
 unless you really need that jar or tube.
 
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640264.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640264.jpg">
+  </a>
+</figure>
+
 Consider getting a carboy opener
 --------------------------------
 
@@ -99,6 +128,18 @@ if you used a nylon bag to dry hop or infuse extra ingredients.
 A carboy lid opener will then be really useful for you to easily open
 your carboy when you need, instead of struggling with your fingers for
 a while to get it open.
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640257.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640257.jpg">
+  </a>
+</figure>
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640259.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640259.jpg">
+  </a>
+</figure>
 
 Get a grain filter basket or bag
 --------------------------------
@@ -119,6 +160,18 @@ instantly ready to use.
 Then, as the boil is going, you can take the time to cleanup the grain
 filter in parallel instead of it delaying the start of your boil.
 
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640248.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640248.jpg">
+  </a>
+</figure>
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640251.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640251.jpg">
+  </a>
+</figure>
+
 Optional: use swing top bottles
 -------------------------------
 
@@ -126,11 +179,29 @@ Swing top bottles are cool. Easy to open and close, no need for caps and
 capper, plus they make a very nice *pop* when you open them. Guaranteed
 effect in parties.
 
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2600461.html">
+    <img src="https://photography.codejam.info/photos/hd/P2600461.jpg">
+  </a>
+</figure>
+
 Drink your homebrew while brewing
 ---------------------------------
 
 Unelss it's your very first batch, brewing time is the best time to
 enjoy one of your previous homebrews!
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2580621.html">
+    <img src="https://photography.codejam.info/photos/hd/P2580621.jpg">
+  </a>
+</figure>
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2580635.html">
+    <img src="https://photography.codejam.info/photos/hd/P2580635.jpg">
+  </a>
+</figure>
 
 Mandatory: honor the hot scotchie tradition
 -------------------------------------------
@@ -145,3 +216,9 @@ while keeping it smooth and without being overwhelming. While otherwise
 I'm a huge fan of Laphroaig, Lagavulin or Caol Ila, those didn't really
 cut it for the hot scotchie as their strong character would just stand
 out and didn't pair well with the sweeter taste of hot mash.
+
+<figure class="center">
+  <a href="https://photography.codejam.info/photos/P2640272.html">
+    <img src="https://photography.codejam.info/photos/hd/P2640272.jpg">
+  </a>
+</figure>

@@ -73,7 +73,7 @@ cat updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin
 <span class="hljs-comment"># Push, install dependencies and publish</span>
 cat updated | xargs -I{} sh -c <span class="hljs-string">'cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish'</span>
 </code></pre>
-<h2 id="was-it-worth-it%3F"><a class="header-anchor" href="#was-it-worth-it%3F" aria-hidden="true">¶</a> Was it worth it?</h2>
+<h2 id="was-it-worth-it"><a class="header-anchor" href="#was-it-worth-it" aria-hidden="true">¶</a> Was it worth it?</h2>
 <p>In the end, I think it took way more time to write this script (and blog
 post) than doing it manually. But it was also <em>incredibly more fun</em>!</p>
 <p>I hope this may be useful to other people in the same case as me, so it

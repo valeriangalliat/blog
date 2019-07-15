@@ -61,11 +61,12 @@ premade one), but the time and energy it saves you is so worth it even
 since the first time you use it.
 
 Without a wort chiller, you can try to put the mash tun in the bath tub
-with cold water, continuously throwing ice in the water to cool it down,
-but even then it can take many hours to get the temperature down to a
-point where it won't kill the yeast, while the wort chiller will get the
-job done in 10 minutes without you having to do anything other than
-opening the tap of cold water.
+with cold water (that's even if you have a bath tub), continuously
+throwing ice in the water to cool it down, but even then it can take
+many hours to get the temperature down to a point where it won't kill
+the yeast, while the wort chiller will get the job done in 10 minutes
+without you having to do anything other than opening the tap of cold
+water.
 
 So do yourself a favor and get a wort chiller.
 

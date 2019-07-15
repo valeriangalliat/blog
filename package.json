@@ -8,6 +8,7 @@
     "markdown-it-footnote": "^3.0.1",
     "markdown-it-highlightjs": "^3.0.0",
     "markdown-it-title": "^1.0.4",
-    "normalize.css": "^8.0.1"
+    "normalize.css": "^8.0.1",
+    "string": "^3.3.3"
   }
 }

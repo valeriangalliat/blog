@@ -41,4 +41,5 @@ Links
 * [GitHub](https://github.com/valeriangalliat)
 * [Twitter](https://twitter.com/valeriangalliat)
 * [Instagram](https://www.instagram.com/valeriangalliat/)
+* [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) ([French](https://valeriangalliat.github.io/cv/cv.fr.pdf))
 * Email (`val`, at this very domain)

@@ -7,7 +7,7 @@ About
 -----
 
 * Spawned in Grenoble, France
-* Currently in Montreal, Quebec
+* Currently in Montreal, Canada
 
 One of my favorite things in life is summiting mountains, whether it's
 hiking, rock climbing or skiing. I usually bring a beer at the summit

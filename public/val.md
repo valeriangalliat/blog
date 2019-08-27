@@ -6,7 +6,6 @@ Valérian (Val) Galliat
 About
 -----
 
-* Joined `#humanity` on July 20, 1995
 * Spawned in Grenoble, France
 * Currently in Montreal, Quebec
 

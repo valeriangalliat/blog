@@ -66,12 +66,14 @@ mkdir /mnt/boot
 mount /dev/sdx1 /mnt/boot
 </code></pre>
 <p>Install the base system together will necessary packages.</p>
-<pre><code class="hljs language-sh">pacstrap /mnt base base-devel grub efibootmgr dialog wpa_supplicant
+<pre><code class="hljs language-sh">pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr netctl dialog wpa_supplicant dhcpcd
 </code></pre>
 <p><code>efibootmgr</code> is necessary for GRUB to add the EFI boot entry, <code>dialog</code>
-for <code>wifi-menu</code> to work and <code>wpa_supplicant</code> for WPA.</p>
+and <code>netctl</code> for the <code>wifi-menu</code> command, <code>wpa_supplicant</code> for WPA, and
+<code>dhcpcd</code> to enable DHCP.</p>
 <p>I also tend to add <code>zsh</code>, <code>vim</code> and <code>git</code> here as well but they’re not
-strictly necessary.</p>
+strictly necessary. I also tend to add <code>man-db</code>, <code>man-pages</code> and
+<code>texinfo</code> to get documentation as well.</p>
 <p>Then, generate <code>/etc/fstab</code>.</p>
 <pre><code class="hljs">genfstab -U /mnt &gt;&gt; /mnt/etc/fstab
 vim /mnt/etc/fstab
@@ -103,7 +105,7 @@ HOOKS=(base udev autodetect modconf block filesystems keyboard fsck)
 <span class="hljs-comment"># After</span>
 HOOKS=(base udev autodetect modconf block encrypt lvm2 filesystems resume keyboard fsck)
 </code></pre>
-<pre><code class="hljs language-sh">mkinitcpio -p linux
+<pre><code class="hljs language-sh">mkinitcpio -P
 </code></pre>
 <p>Setup the root password.</p>
 <pre><code class="hljs">passwd
@@ -146,6 +148,7 @@ passwd val
 <li><code>xorg-server</code></li>
 <li><code>xorg-xinit</code> as I don’t use a display/login manager, I just <code>startx</code></li>
 <li><code>xorg-xset</code> as I use it in my <code>.xinitrc</code> for setting key repeat delay</li>
+<li><code>xorg-xrandr</code> to setup multiple monitors</li>
 <li><code>ttf-dejavu</code> main system font</li>
 <li><code>ttf-liberation</code> for proper web fonts support</li>
 <li><code>noto-fonts-emoji</code> because emojis</li>
@@ -211,6 +214,9 @@ suspend will suspend then hibernate, which is an easy way to make sure
 that in any case the system will hibernate if suspended for more than 3
 hours to save battery.</p>
 <p>Hack from <a href="https://www.reddit.com/r/Fedora/comments/auctgi/setting_systemctl_suspendthenhibernate_as_default/">this Reddit thread</a>.</p>
+<h3 id="displaylink-adapter-for-multiple-monitors-and-ethernet"><a class="header-anchor" href="#displaylink-adapter-for-multiple-monitors-and-ethernet" aria-hidden="true">¶</a> DisplayLink adapter for multiple monitors and Ethernet</h3>
+<p>On my work laptop, installing <code>displaylink</code> and <code>evdi</code> from the AUR just
+worked out of the box.</p>
 <h3 id="final-touch"><a class="header-anchor" href="#final-touch" aria-hidden="true">¶</a> Final touch</h3>
 <p>After logging in with my regular user, I finish the configuration by
 cloning and installing my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>.</p>

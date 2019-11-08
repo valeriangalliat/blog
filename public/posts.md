@@ -31,6 +31,6 @@
 * [Apache file with custom PHP version](2014/09/apache-file-with-custom-php-version.md) <small>September 16, 2014</small>
 * [Access ALSA device from LXC container](2014/08/access-alsa-device-from-lxc-container.md) <small>August 20, 2014</small>
 * [Apache get PHP version from environment](2014/08/apache-get-php-version-from-environment.md) <small>August 19, 2014</small>
-* [Hello from the future](2014/07/hello-from-the-future.md) <small>July 01, 2014</small>
+* [Hello from the future](2014/07/hello-from-the-future.md) <small>July 1, 2014</small>
 
 </div>

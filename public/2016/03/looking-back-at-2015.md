@@ -49,13 +49,13 @@ me one or two things about system administration.
 
 [home-server]: ../../2014/10/low-consumption-home-server.md
 
-### February 05
+### February 5
 
 Release of [SassDoc][sassdoc] 2.0.0, after a lot of work with the
 SassDoc team on the previous months to completely rewrite the core, add
 more features, and make a pretty website.
 
-### February 07
+### February 7
 
 I made my first pull request, and (not so) sadly last, since I don't do
 PHP anymore, on the [Symfony][symfony] project to add support for images
@@ -85,7 +85,7 @@ surprised me a little bit. But I see it as a pledge that one of the
 reviewers actually takes the full ownership of this code and its
 maintenance which is a good thing.
 
-### February 08
+### February 8
 
 First real contribution to the [NixOS][nixos] project, by adding a Vim
 plugin and the late io.js support, following a quick fix for npm
@@ -99,7 +99,7 @@ I published my blog, [CodeJam](../..), that you are currently reading,
 after experimenting for a while on a blog engine using a makefile as its
 core.
 
-### March 04
+### March 4
 
 I released [gogs-migrate][gogs-migrate], a tool to automatically migrate
 (and optionally mirror) GitHub repositories to a [Gogs][gogs] instance.
@@ -140,7 +140,7 @@ working with it for the final project of my studies.
 [webtorrent-pr-427]: https://github.com/feross/webtorrent/pull/427
 [webtorrent]: https://github.com/feross/webtorrent
 
-### November 06
+### November 6
 
 I helped my friend [Hugo][hugo] to build [node-legofy][node-legofy],
 a tool to convert an image to a mosaic of LEGO. We had a lot of fun
@@ -148,7 +148,7 @@ writing this.
 
 [node-legofy]: https://github.com/HugoGiraudel/node-legofy
 
-### December 07
+### December 7
 
 I bought a [Kimsufi][kimsufi]. I had to monitor its status in real time
 minutes for a week, so I could get a notification when the server I
@@ -171,14 +171,14 @@ more about [NixOS][nixos] by using it daily.
 I started a lot of libraries and tools as side projects, that don't
 really worth mentioning, but I still do.
 
-* [cgip][cgip] CGI IP echo service. <!-- February 07 -->
+* [cgip][cgip] CGI IP echo service. <!-- February 7 -->
 * [es6-denodeify][es6-denodeify] Convert callbacks to promises. <!-- February 11 -->
 * [through2-sync][through2-sync] Synchronous [through2][through2] transforms. <!-- February 22 -->
 * [stream64][stream64] Base64 encode/decode stream. <!-- February 22 -->
 * [make-overridable][make-overridable] [Override design pattern][override] for JavaScript. <!-- February 28 -->
 * [bind-late][bind-late] Late binding of [overridable][make-overridable] object properties. <!-- February 28 -->
-* [gogs-migrate][gogs-migrate] Migrate existing repositories on a [Gogs][gogs] instance. <!-- March 04 -->
-* [help2md][help2md] Convert command help string to Markdown. <!-- March 07 -->
+* [gogs-migrate][gogs-migrate] Migrate existing repositories on a [Gogs][gogs] instance. <!-- March 4 -->
+* [help2md][help2md] Convert command help string to Markdown. <!-- March 7 -->
 * [antisocial-auth][antisocial-auth] Social authentication for websites that don't provide any. <!-- March 11 -->
 * [express-then][express-then] [Express][express] handlers with promise support. <!-- March 11 -->
 * [crypto-promise][crypto-promise] Promise version of Node.js crypto module. <!-- March 11 -->
@@ -191,10 +191,10 @@ really worth mentioning, but I still do.
 * [markdown-it-highlighted][markdown-it-highlighted] Whether code was highlighted during [markdown-it][markdown-it] rendering. <!-- March 17 -->
 * [markdown-it-highlightjs][markdown-it-highlightjs] Preset to use [highlight.js][highlight.js] with [markdown-it][markdown-it]. <!-- March 17 -->
 * [markdown-it-anchor][markdown-it-anchor] Header anchors for [markdown-it][markdown-it]. <!-- March 18 -->
-* [fetch-cookie][fetch-cookie] Decorator for a `fetch` function to support automatic cookies. <!-- May 04 -->
-* [fr-gas-price][fr-gas-price] Retrieve French gas price data from [government website][gas]. <!-- May 04 -->
-* [promise-retryable][promise-retryable] Retryable promises. <!-- November 01 -->
-* [babel-plugin-transform-array-from][babel-plugin-transform-array-from] Replace `Array.from` by `require('array-from')`. <!-- November 09 -->
+* [fetch-cookie][fetch-cookie] Decorator for a `fetch` function to support automatic cookies. <!-- May 4 -->
+* [fr-gas-price][fr-gas-price] Retrieve French gas price data from [government website][gas]. <!-- May 4 -->
+* [promise-retryable][promise-retryable] Retryable promises. <!-- November 1 -->
+* [babel-plugin-transform-array-from][babel-plugin-transform-array-from] Replace `Array.from` by `require('array-from')`. <!-- November 9 -->
 
 [cgip]: https://github.com/valeriangalliat/cgip
 [es6-denodeify]: https://github.com/valeriangalliat/es6-denodeify
@@ -370,7 +370,7 @@ Stay tuned!
   <figcaption>Busbud, a startup with a view!</figcaption>
 </figure>
 
-### October 01
+### October 1
 
 I signed the lease for a flatsharing that I visited the day before. It
 was the last day of my Airbnb and I can say I was really lucky because

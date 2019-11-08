@@ -214,3 +214,23 @@ After doing so, I manually compare the files I have on disk with the
 remaining files in the project panel and I remove the ones that are not
 used anymore. I'm not aware of an automated solution for this, but for
 this kind of project it's usually pretty quick.
+
+YouTube
+-------
+
+### Prepare a cover picture first
+
+YouTube will auto generate 3 cover pictures from the video, but from my
+experience they're rarely the best and I'm better off picking a custom
+frame from the video (using Premiere's export frame feature).
+
+The main thing is to do that as early as possible, especially before
+actually publishing the video, otherwise if you start sharing the video
+to other platforms, e.g. Facebook, it will cache for a very long time
+the cover picture and even the "sharing debugger" will not do anything
+about the cover itself for at least a couple days after you change it.
+
+Also when sharing on Facebook, you might want to check [this article] to
+make sure the mobile layout of your YouTube post is the full width one.
+
+[this article]: ../11/fix-facebook-youtube-attachment-layout-mobile.md

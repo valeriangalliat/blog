@@ -81,14 +81,16 @@ mount /dev/sdx1 /mnt/boot
 Install the base system together will necessary packages.
 
 ```sh
-pacstrap /mnt base base-devel grub efibootmgr dialog wpa_supplicant
+pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr netctl dialog wpa_supplicant dhcpcd
 ```
 
 `efibootmgr` is necessary for GRUB to add the EFI boot entry, `dialog`
-for `wifi-menu` to work and `wpa_supplicant` for WPA.
+and `netctl` for the `wifi-menu` command, `wpa_supplicant` for WPA, and
+`dhcpcd` to enable DHCP.
 
 I also tend to add `zsh`, `vim` and `git` here as well but they're not
-strictly necessary.
+strictly necessary. I also tend to add `man-db`, `man-pages` and
+`texinfo` to get documentation as well.
 
 Then, generate `/etc/fstab`.
 
@@ -142,7 +144,7 @@ HOOKS=(base udev autodetect modconf block encrypt lvm2 filesystems resume keyboa
 ```
 
 ```sh
-mkinitcpio -p linux
+mkinitcpio -P
 ```
 
 Setup the root password.
@@ -214,6 +216,7 @@ Install the packages you need. Here's my personal selection.
 * `xorg-server`
 * `xorg-xinit` as I don't use a display/login manager, I just `startx`
 * `xorg-xset` as I use it in my `.xinitrc` for setting key repeat delay
+* `xorg-xrandr` to setup multiple monitors
 * `ttf-dejavu` main system font
 * `ttf-liberation` for proper web fonts support
 * `noto-fonts-emoji` because emojis
@@ -295,6 +298,11 @@ that in any case the system will hibernate if suspended for more than 3
 hours to save battery.
 
 Hack from [this Reddit thread](https://www.reddit.com/r/Fedora/comments/auctgi/setting_systemctl_suspendthenhibernate_as_default/).
+
+### DisplayLink adapter for multiple monitors and Ethernet
+
+On my work laptop, installing `displaylink` and `evdi` from the AUR just
+worked out of the box.
 
 ### Final touch
 

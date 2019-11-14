@@ -144,6 +144,7 @@ passwd val
 </code></pre>
 <p>Install the packages you need. Here’s my personal selection.</p>
 <ul>
+<li><code>tlp</code> for out of the box power management (<code>systemctl enablet tlp</code>)</li>
 <li><code>xf86-video-intel</code> graphics driver</li>
 <li><code>xorg-server</code></li>
 <li><code>xorg-xinit</code> as I don’t use a display/login manager, I just <code>startx</code></li>
@@ -186,7 +187,7 @@ display manager)</li>
 <li><code>zip</code>, <code>unzip</code></li>
 <li><code>ack</code></li>
 </ul>
-<p>For some reason PulseAudio will require a reboot to work.</p>
+<p>For some reason PulseAudio might require a reboot to work.</p>
 <h3 id="bluetooth"><a class="header-anchor" href="#bluetooth" aria-hidden="true">¶</a> Bluetooth</h3>
 <p>Enable Bluetooth.</p>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> bluetooth

@@ -212,6 +212,7 @@ passwd val
 
 Install the packages you need. Here's my personal selection.
 
+* `tlp` for out of the box power management (`systemctl enablet tlp`)
 * `xf86-video-intel` graphics driver
 * `xorg-server`
 * `xorg-xinit` as I don't use a display/login manager, I just `startx`
@@ -254,7 +255,7 @@ Install the packages you need. Here's my personal selection.
 * `zip`, `unzip`
 * `ack`
 
-For some reason PulseAudio will require a reboot to work.
+For some reason PulseAudio might require a reboot to work.
 
 ### Bluetooth
 

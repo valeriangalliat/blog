@@ -93,6 +93,53 @@ need, and make sure that the input sensitivity is at a point where only
 the "too loud" stuff results in clipping, meaning that when I play
 normally I'll have optimal recording level.
 
+I've found though that when slapping the bass, I had to turn the
+sensitivity very low to avoid clipping, which then made it harder for me
+to have the bass sound loud. It seems to me that the clipping happens on
+some kind of extra "noise" when I slap but that it's not directly
+clipping the actual bass sound, so especially for slap, I allow the
+clipping LED to light up a lot, as long as the overall bass sound
+doesn't sound distorted. Basically I end up turning up the sensitivity
+as much as possible regardless of the clipping LED as long as it still
+sounds good.
+
+Strings
+-------
+
+Whether it's bass or guitar, you'll get a significant tone improvement
+by changing your strings before recording. New strings just got that
+extra clearness in the tone, that extra "zing" that gives some colour to
+the sound, and it usually makes for a higher quality recording.
+
+However I record pretty much every week, and that new string tone goes
+away in a couple days for me, so I just accept that most of the time I
+won't have an optimal tone, as I don't really want to change both my
+guitar and bass strings every single week.
+
+One trick I've found brilliant for bass though, consists in loosening
+the strings and "slapping the shit out of them" before tuning it again
+and playing, as shown in [that video](https://youtu.be/s8OYeN9mAL4).
+
+This turned out to work really well for me, even though I can't get 100%
+back the new string tone, it already sounds much better than the dead
+string tone I get after a week or so. However I need to do it every time
+before playing, otherwise it's a matter of hours for the tone to go dead
+again.
+
+There seems to be mixed opinions online on how coated strings could help
+with that, so I haven't tried that just yet. It seems also that wiping
+the strings with some kind of cloth after playing should help preserve
+them a bit longer, and maybe also applying some kind of product like
+Fast Fret. I'll update this post if I end up trying some of those
+solutions.
+
+This kind of problem seems to be very "personal" though, in the sense
+that some people have more sweaty hands than others, and more or less
+acidic sweat as well, and that seems to affect a lot the lifetime of the
+strings. It looks like I'm of the kind that destroys strings in a couple
+hours of playing, but if you're lucky enough you might be able to keep
+your new string tone for months without having to think about it.
+
 Logic
 -----
 
@@ -146,6 +193,22 @@ limiter as opposed to just the limiter, I found
 differences and what might be "better". Seems that the answer is usually
 another plugin, but the second best answers seems to be in favor of the
 adaptive limiter, so I'll go with that as it sounds decent to me.
+
+### Bass loudness
+
+I've struggled a lot (and still kind of am struggling) with the bass
+sounding loud enough in the mix compared to other parts. Even with
+compression and adjusting the gain/volume so that the bass is always
+close to 0 dB, it just sounds far behind other instruments, and putting
+it louder results in clipping, or if relying on Logic's audio
+normalization, results in lowering significantly every other part and
+having the whole mix sound quiet.
+
+The best I've found so far (which is probably not the right thing to do,
+please contact me if you actually know how to do that properly), is
+adding a limiter as the last plugin of the bass track pipeline, and
+boosting the gain (I usually boost it by 12 dB or so for it to sound
+loud enough compared to other parts).
 
 ### Monitor perceived loudness
 

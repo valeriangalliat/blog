@@ -241,6 +241,11 @@ It won't sound as good as the original track obviously, but will leave
 more room for the sound of the actual bass cover which is the most
 important part of a... bass cover.
 
+Also depending on the way the original track is mastered (especially
+when they're [brickwalled](https://en.wikipedia.org/wiki/Loudness_war)),
+I usually lower the original track by about 6 dB, to allow more room for
+the parts I'm recording (since it's the whole point of a cover).
+
 ### Cleanup
 
 I sometimes end up doing a *lot* of takes for the same cover or parts of

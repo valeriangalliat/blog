@@ -2,6 +2,7 @@
 
 <div class="posts">
 
+* [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
 * [Fix Facebook YouTube attachment layout on mobile](2019/11/fix-facebook-youtube-attachment-layout-mobile.md) <small>November 7, 2019</small>
 * [Recording bass and guitar for YouTube](2019/10/recording-bass-and-guitar-for-youtube.md) <small>October 17, 2019</small>
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>

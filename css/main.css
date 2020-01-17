@@ -13,6 +13,11 @@ h1, h2 {
     border-bottom: 1px solid #eee;
 }
 
+h1 small {
+    font-size: 40%;
+    color: #333;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -82,16 +87,14 @@ a:visited {
     color: #6e5494;
 }
 
-ul,
-ol {
-    padding-left: 0;
+ul {
+    /* Seems to match bullet width. */
+    padding-left: 1em;
 }
 
-ul li,
-ol li {
-    position: relative;
-    left: 1em;
-    padding-right: 1em;
+ol {
+    /* Seems to match a single digit and a dot width. */
+    padding-left: 1.2em;
 }
 
 img {
@@ -194,7 +197,11 @@ footer a, footer a:visited {
 
 @media all and (max-width: 42em) {
     .title {
+        /* Match what would have been `h1`'s `margin-top` according to
+         * normalize.css default rules. */
         margin-top: 1.3rem;
+
+        /* This value visually feels right. */
         margin-bottom: 0.25rem;
     }
 
@@ -205,7 +212,11 @@ footer a, footer a:visited {
 
 @media not all and (max-width: 42em) {
     .title {
-        line-height: 2.4rem; /* Seems to match `h1`'s `line-height`. */
+        /* Match `h1`'s `line-height`. normalize.css sets the default
+         * line height to 1.35, times the `2em` size of `h1`, we get
+         * `2.7rem`. */
+        line-height: 2.7rem;
+
         margin-left: 1em;
         float: right;
         position: relative;
@@ -214,6 +225,7 @@ footer a, footer a:visited {
 }
 .posts ul {
     list-style-type: none;
+    padding-left: 0;
 }
 
 .posts li {
@@ -238,7 +250,9 @@ footer a, footer a:visited {
     border-bottom: 1px solid #fafafa;
 }
 
-.posts small {
+/* Make sure we don't target the `<small>` tags in the `<a>` but only
+ * the one used for the date. */
+.posts li > small {
     color: #bbb;
 }
 

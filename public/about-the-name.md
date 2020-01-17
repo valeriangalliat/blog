@@ -24,12 +24,13 @@ the [bazaar model] of development.
 
 I later learnt that this name was already used by Google, for the Google
 Code Jam international programming competition, which is unfortunate,
-and somewhat inappropriate, since a jam is intrinsically collaborative,
-as opposed to competitive, let alone that a jam's purpose is pretty far
-from winning cash prizes and a job in a big corporation.
+but I kept that name since I still believe in the message it symbolizes,
+and it took me long enough to find a name that I don't want to go
+through that process anytime soon.
 
-I kept that name since I still believe in the message it symbolizes, and
-it took me long enough to find a name that I don't want to go through
-that process anytime soon.
+It also turned out that with time, my interests shifted from being
+solely centered on programming and I now use that same domain name to
+share a number of different things that I'm passionate about, whether
+it's photography, music, sports, brewing and so on.
 
 [^1]: In practice, I mostly just end up coding alone, but I guess that's fine.

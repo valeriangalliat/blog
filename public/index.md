@@ -1,5 +1,11 @@
-CodeJam
-=======
+Hey, I'm Val <small>and this is my blog</small>
+===============================================
+
+I'm a professional and passionate software developer, and as importantly
+(if not more), an amateur musician, photograph, brewer and climber.
+
+You'll find on this blog writings about the things that I care about and
+feel like are worth sharing.
 
 Posts
 -----
@@ -12,7 +18,7 @@ Posts
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
-* [macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
+* [macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
 * [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
 * [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
@@ -29,14 +35,13 @@ Posts
 Pages
 -----
 
-* [Git](resources/git.md)
-* [Vim](resources/vim.md)
+* [Git](resources/git.md) <small>| how I learnt Git</small>
+* [Vim](resources/vim.md) <small>| how I learnt Vim</small>
 
 Links
 -----
 
-* [Author](val.md)
-* [About the name](about-the-name.md)
-* [Photography](https://photography.codejam.info/)
-* [Brewing](https://github.com/valeriangalliat/sans-pression)
-* [Climbing](https://solidite.codejam.info/)
+* [Author](val.md) <small>| who I am</small>
+* [About the name](about-the-name.md) <small>| why that stupid domain name</small>
+* [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
+* [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I make</small>

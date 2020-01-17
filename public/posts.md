@@ -8,7 +8,7 @@
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
-* [macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
+* [macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
 * [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
 * [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>

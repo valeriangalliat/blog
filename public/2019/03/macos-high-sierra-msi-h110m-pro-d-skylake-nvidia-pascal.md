@@ -1,5 +1,5 @@
-macOS High Sierra on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU
-=========================================================================
+macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>
+========================================================================================
 March 16, 2019
 
 I recently decided to install macOS on my desktop computer, which I

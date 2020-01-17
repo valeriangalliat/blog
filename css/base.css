@@ -13,6 +13,11 @@ h1, h2 {
     border-bottom: 1px solid #eee;
 }
 
+h1 small {
+    font-size: 40%;
+    color: #333;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -82,16 +87,14 @@ a:visited {
     color: #6e5494;
 }
 
-ul,
-ol {
-    padding-left: 0;
+ul {
+    /* Seems to match bullet width. */
+    padding-left: 1em;
 }
 
-ul li,
-ol li {
-    position: relative;
-    left: 1em;
-    padding-right: 1em;
+ol {
+    /* Seems to match a single digit and a dot width. */
+    padding-left: 1.2em;
 }
 
 img {

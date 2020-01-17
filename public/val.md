@@ -21,16 +21,16 @@ taking pictures in general).
 You'll often see me riding, whether it's on my [bike] or my [motorcycle].
 
 I'm addicted to music, and when I'm not listening to some, I'm more
-likely playing guitar, bass or synthesizer.
+likely playing guitar, bass or synthesizer. You can find some of my
+recordings (mostly covers) on my [YouTube channel].
 
 I also happen to be a software developer, currently working at
-[Busbud].
+[Sportlogiq].
 
 [bike]: https://photography.codejam.info/photos/P1000756.html
 [motorcycle]: https://photography.codejam.info/photos/P2570525.html
-[Busbud]: https://www.busbud.com/en/about/team
-
-[riding my motorcycle]: https://photography.codejam.info/gs650.html
+[YouTube channel]: https://www.youtube.com/channel/UCzpErreSO-Fv2oY5t-YXvRw
+[Sportlogiq]: https://sportlogiq.com/
 
 Links
 -----

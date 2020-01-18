@@ -5,7 +5,7 @@ html {
 
 body {
     margin: 0 auto;
-    padding: 0 1em;
+    padding: 0 .5em;
     max-width: 80ch;
 }
 
@@ -175,7 +175,7 @@ footer {
     color: #bbb;
     font-size: 0.75em;
     margin-top: 4rem;
-    margin-bottom: 2rem;
+    margin-bottom: 3rem;
     padding-top: .5rem;
 }
 

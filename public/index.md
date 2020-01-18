@@ -1,8 +1,8 @@
 Hey, I'm Val <small>and this is my blog</small>
 ===============================================
 
-I'm a professional and passionate software developer, and as importantly
-(if not more), an amateur musician, photograph, brewer and climber.
+I'm passionate software developer, and as importantly, an amateur
+musician, photograph, brewer and climber.
 
 You'll find on this blog writings about the things that I care about and
 feel like are worth sharing.

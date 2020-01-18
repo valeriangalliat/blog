@@ -1,11 +1,10 @@
-.footer-sep {
-    margin-top: 4em;
-}
-
 footer {
+    border-top: 1px solid #eee;
     color: #bbb;
     font-size: 0.75em;
-    margin-bottom: 4em;
+    margin-top: 4rem;
+    margin-bottom: 3rem;
+    padding-top: .5rem;
 }
 
 footer a, footer a:visited {

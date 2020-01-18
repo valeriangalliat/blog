@@ -22,7 +22,7 @@ You'll often see me riding, whether it's on my [bike] or [motorcycle]
 (well not so often motorcycle since my engine seized).
 
 I'm addicted to music, and when I'm not listening to some, I'm more
-likely [playing guitar, bass or synthesizer][channel].
+likely [playing bass, guitar or synthesizer][channel].
 
 I also happen to be a software developer, currently working at
 [Sportlogiq], and previously at [Busbud].

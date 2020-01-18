@@ -16,7 +16,7 @@ Jam
 
 A jam session essentially consists of people improvising music together,
 regardless of their level and without necessarily knowing each other, in
-a very spontaneous way, only agreeing only on a very basic set of rules
+a very spontaneous way, only agreeing on a very basic set of rules
 (chords, tempo, time signature), and creating something unique and
 beautiful.
 

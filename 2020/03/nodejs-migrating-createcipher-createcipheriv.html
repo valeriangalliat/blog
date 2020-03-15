@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>undefined</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">Home</a>
+  </header>
+<h2 id="nodejs-migrating-from-createcipher-to-createcipheriv"><a class="header-anchor" href="#nodejs-migrating-from-createcipher-to-createcipheriv" aria-hidden="true">¶</a> Node.js: migrating from <code>createCipher</code> to <code>createCipheriv</code></h2>
+<p>March 14, 2020</p>
+<p>If you still use the <code>createCipher</code> and <code>createDecipher</code> methods of the
+<code>crypto</code> module, you’re likely getting the following deprecation
+warnings when running your code:</p>
+<pre><code class="hljs">(node:477082) [DEP0106] DeprecationWarning: crypto.createCipher is deprecated.
+(node:468005) [DEP0106] DeprecationWarning: crypto.createDecipher is deprecated.
+</code></pre>
+<p>This is because this method didn’t allow for passing an initialization
+vector (IV), and instead derived the IV from the key using the OpenSSL
+<code>EVP_BytesToKey</code> derivation function, using a <code>null</code> salt meaning that
+the IV would be deterministic for a given key which is an issue for
+ciphers with counter mode like CTR, GCM and CCM.</p>
+<p>Your code might have looked like:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cipher = crypto.createCipher(<span class="hljs-string">'aes256'</span>, key)
+</code></pre>
+<p>If you want to make this code backwards compatible, you need to call
+OpenSSL’s <code>EVP_BytesToKey</code> function yourself, typically through
+<a href="https://www.npmjs.com/package/evp_bytestokey">this module</a> which makes
+it available in JS userland.</p>
+<p>However the reason this function is deprecated in the first place is
+because you shouldn’t use it, and instead use a random unpredictable IV,
+which requires you to change your code to something like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iv = crypto.randomBytes(<span class="hljs-number">16</span>)
+<span class="hljs-keyword">const</span> cipher = crypto.createCipher(<span class="hljs-string">'aes256'</span>, key, iv)
+</code></pre>
+<p>Here, for AES-256 in CBC mode (<code>aes256</code> being aliased to <code>AES-256-CBC</code> by
+OpenSSL), the IV size is expected to be the same as the block size,
+which is always 16 bytes.</p>
+<p>In order to decrypt the message, you will need the IV as well. Typically
+you’d store the IV together with the message, as the important part is
+for the IV to not be predictable ahead of time.</p>
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+</body>
+</html>

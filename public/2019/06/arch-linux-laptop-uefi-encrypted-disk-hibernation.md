@@ -5,6 +5,8 @@ June 8, 2019
 Based on [this Gist](https://gist.github.com/mattiaslundberg/8620837),
 with hibernation added.
 
+Updated on March 14, 2020.
+
 Installer USB
 -------------
 
@@ -19,6 +21,9 @@ dd if=archlinux.iso of=/dev/sdx bs=4M status=progress oflag=sync
 
 Then boot on the USB.
 
+If it won't boot, you might need to disable Secure Boot in your
+motherboard settings.
+
 Installation
 ------------
 
@@ -28,6 +33,12 @@ Connect to Wi-Fi if necessary.
 
 ```sh
 wifi-menu
+```
+
+Make sure system clock is accurate.
+
+```sh
+timedatectl set-ntp true
 ```
 
 Partition disk. I will go with a 256 MiB mixed EFI and boot partition,
@@ -81,11 +92,12 @@ mount /dev/sdx1 /mnt/boot
 Install the base system together will necessary packages.
 
 ```sh
-pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr netctl dialog wpa_supplicant dhcpcd
+pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr lvm2 netctl dialog wpa_supplicant dhcpcd
 ```
 
-`efibootmgr` is necessary for GRUB to add the EFI boot entry, `dialog`
-and `netctl` for the `wifi-menu` command, `wpa_supplicant` for WPA, and
+`efibootmgr` is necessary for GRUB to add the EFI boot entry, `lvm2` for
+being able to mount LVM devices (here, root partition), `dialog` and
+`netctl` for the `wifi-menu` command, `wpa_supplicant` for WPA, and
 `dhcpcd` to enable DHCP.
 
 I also tend to add `zsh`, `vim` and `git` here as well but they're not
@@ -153,7 +165,6 @@ Setup the root password.
 passwd
 ```
 
-
 Edit `/etc/default/grub` to configure the encrypted disk by adding
 `cryptdevice=/dev/sdx2:luks:allow-discards` (again, replace `/dev/sdx`
 with the proper drive) to `GRUB_CMDLINE_LINUX`.  I also added
@@ -167,15 +178,24 @@ Install GRUB and generate its configuration. Since I decided to have a
 shared EFI and boot partition, I need to tell GRUB that the EFI
 directory is `/boot`.
 
+On my latest installation (not sure if because new version of software
+or because different hardware), I also had to add the `--bootloader-id`
+option otherwise the system was just unable to boot, while I never had
+any issue without it before on UEFI systems.
+
+I've also seen systems where `grub-install` wouldn't be able to add a
+boot entry and it needed to be manually added from the motherboard
+settings (e.g. selecting partition and path to `grubx64.efi`).
 
 ```sh
-grub-install --efi-directory=/boot
+grub-install --bootloader-id=Arch --efi-directory=/boot
 grub-mkconfig -o /boot/grub/grub.cfg
 ```
 
-Teardown and reboot.
+Exit from `chroot`, teardown and reboot.
 
 ```sh
+exit
 umount -R /mnt
 swapoff -a
 reboot
@@ -200,7 +220,7 @@ systemctl enable netctl-auto@wlp2s0
 Enable time synchronization.
 
 ```sh
-systemctl enable systemd-timesyncd
+timedatectl set-ntp true
 ```
 
 Add user and set password.
@@ -238,7 +258,9 @@ Install the packages you need. Here's my personal selection.
 * `feh` image viewer and background setter
 * `maim` and `imagemagick` as my custom `i3locks` locker depends on them
 * `xsel`, `xclip` for clipboard management
-* `xorg-xbacklight` for changing screen brightness
+* `xorg-xbacklight` or `light` for changing screen brightness (my
+  experience is that depending on the laptop, one of them will work and
+  the other one won't)
 * `acpi` to get battery information (the i3blocks `battery` blocklet
   depends on it)
 * `openssh`
@@ -256,6 +278,7 @@ Install the packages you need. Here's my personal selection.
 * `ack`
 
 For some reason PulseAudio might require a reboot to work.
+
 
 ### Bluetooth
 

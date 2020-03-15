@@ -16,6 +16,7 @@
 <p>June 8, 2019</p>
 <p>Based on <a href="https://gist.github.com/mattiaslundberg/8620837">this Gist</a>,
 with hibernation added.</p>
+<p>Updated on March 14, 2020.</p>
 <h2 id="installer-usb"><a class="header-anchor" href="#installer-usb" aria-hidden="true">¶</a> Installer USB</h2>
 <p>Download the <a href="https://www.archlinux.org/download/">latest ISO</a> and
 <code>dd</code> it to your USB drive as per the <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">official documentation</a>.</p>
@@ -23,10 +24,15 @@ with hibernation added.</p>
 <pre><code class="hljs language-sh">dd <span class="hljs-keyword">if</span>=archlinux.iso of=/dev/sdx bs=4M status=progress oflag=sync
 </code></pre>
 <p>Then boot on the USB.</p>
+<p>If it won’t boot, you might need to disable Secure Boot in your
+motherboard settings.</p>
 <h2 id="installation"><a class="header-anchor" href="#installation" aria-hidden="true">¶</a> Installation</h2>
 <p>Based on the <a href="https://wiki.archlinux.org/index.php/installation_guide">install guide</a>.</p>
 <p>Connect to Wi-Fi if necessary.</p>
 <pre><code class="hljs language-sh">wifi-menu
+</code></pre>
+<p>Make sure system clock is accurate.</p>
+<pre><code class="hljs language-sh">timedatectl <span class="hljs-built_in">set</span>-ntp <span class="hljs-literal">true</span>
 </code></pre>
 <p>Partition disk. I will go with a 256 MiB mixed EFI and boot partition,
 and the rest for a LUKS container, containing a 8 GiB swap (the size of
@@ -66,10 +72,11 @@ mkdir /mnt/boot
 mount /dev/sdx1 /mnt/boot
 </code></pre>
 <p>Install the base system together will necessary packages.</p>
-<pre><code class="hljs language-sh">pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr netctl dialog wpa_supplicant dhcpcd
+<pre><code class="hljs language-sh">pacstrap /mnt base base-devel linux linux-firmware grub efibootmgr lvm2 netctl dialog wpa_supplicant dhcpcd
 </code></pre>
-<p><code>efibootmgr</code> is necessary for GRUB to add the EFI boot entry, <code>dialog</code>
-and <code>netctl</code> for the <code>wifi-menu</code> command, <code>wpa_supplicant</code> for WPA, and
+<p><code>efibootmgr</code> is necessary for GRUB to add the EFI boot entry, <code>lvm2</code> for
+being able to mount LVM devices (here, root partition), <code>dialog</code> and
+<code>netctl</code> for the <code>wifi-menu</code> command, <code>wpa_supplicant</code> for WPA, and
 <code>dhcpcd</code> to enable DHCP.</p>
 <p>I also tend to add <code>zsh</code>, <code>vim</code> and <code>git</code> here as well but they’re not
 strictly necessary. I also tend to add <code>man-db</code>, <code>man-pages</code> and
@@ -119,11 +126,19 @@ with the proper drive) to <code>GRUB_CMDLINE_LINUX</code>.  I also added
 <p>Install GRUB and generate its configuration. Since I decided to have a
 shared EFI and boot partition, I need to tell GRUB that the EFI
 directory is <code>/boot</code>.</p>
-<pre><code class="hljs language-sh">grub-install --efi-directory=/boot
+<p>On my latest installation (not sure if because new version of software
+or because different hardware), I also had to add the <code>--bootloader-id</code>
+option otherwise the system was just unable to boot, while I never had
+any issue without it before on UEFI systems.</p>
+<p>I’ve also seen systems where <code>grub-install</code> wouldn’t be able to add a
+boot entry and it needed to be manually added from the motherboard
+settings (e.g. selecting partition and path to <code>grubx64.efi</code>).</p>
+<pre><code class="hljs language-sh">grub-install --bootloader-id=Arch --efi-directory=/boot
 grub-mkconfig -o /boot/grub/grub.cfg
 </code></pre>
-<p>Teardown and reboot.</p>
-<pre><code class="hljs language-sh">umount -R /mnt
+<p>Exit from <code>chroot</code>, teardown and reboot.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">exit</span>
+umount -R /mnt
 swapoff -a
 reboot
 </code></pre>
@@ -136,7 +151,7 @@ interface (replace <code>wlp2s0</code> with your Wi-Fi interface).</p>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> netctl-auto@wlp2s0
 </code></pre>
 <p>Enable time synchronization.</p>
-<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> systemd-timesyncd
+<pre><code class="hljs language-sh">timedatectl <span class="hljs-built_in">set</span>-ntp <span class="hljs-literal">true</span>
 </code></pre>
 <p>Add user and set password.</p>
 <pre><code class="hljs language-sh">useradd -m -G wheel -s /usr/bin/zsh val
@@ -170,7 +185,9 @@ passwd val
 <li><code>feh</code> image viewer and background setter</li>
 <li><code>maim</code> and <code>imagemagick</code> as my custom <code>i3locks</code> locker depends on them</li>
 <li><code>xsel</code>, <code>xclip</code> for clipboard management</li>
-<li><code>xorg-xbacklight</code> for changing screen brightness</li>
+<li><code>xorg-xbacklight</code> or <code>light</code> for changing screen brightness (my
+experience is that depending on the laptop, one of them will work and
+the other one won’t)</li>
 <li><code>acpi</code> to get battery information (the i3blocks <code>battery</code> blocklet
 depends on it)</li>
 <li><code>openssh</code></li>

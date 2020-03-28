@@ -5,7 +5,7 @@ June 8, 2019
 Based on [this Gist](https://gist.github.com/mattiaslundberg/8620837),
 with hibernation added.
 
-Updated on March 14, 2020.
+Updated on March 27, 2020.
 
 Installer USB
 -------------
@@ -129,12 +129,13 @@ ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
 hwclock --systohc
 ```
 
-Uncomment the locale you desire in `/etc/locale.gen` (`en_CA.UTF-8` for me,
-to have 24-hour clock format).
+Uncomment the locale you desire in `/etc/locale.gen` (`en_CA.UTF-8` for
+me, as well as `en_GB.UTF-8` to have 24-hour clock format).
 
 ```sh
 locale-gen
-echo 'LANG=en_CA.UTF-8 > /etc/locale.conf'
+echo 'LANG=en_CA.UTF-8' > /etc/locale.conf
+echo 'LC_TIME=en_GB.UTF-8' >> /etc/locale.conf
 ```
 
 Set the hostname.
@@ -232,22 +233,23 @@ passwd val
 
 Install the packages you need. Here's my personal selection.
 
-* `tlp` for out of the box power management (`systemctl enablet tlp`)
+* `tlp` for out of the box power management
 * `xf86-video-intel` graphics driver
 * `xorg-server`
-* `xorg-xinit` as I don't use a display/login manager, I just `startx`
 * `xorg-xset` as I use it in my `.xinitrc` for setting key repeat delay
 * `xorg-xrandr` to setup multiple monitors
 * `ttf-dejavu` main system font
 * `ttf-liberation` for proper web fonts support
 * `noto-fonts-emoji` because emojis
+* `lightdm` display manager
+* `lightdm-mini-greeter` (from AUR)
 * `i3-gaps` window manager
 * `i3lock` locker
 * `i3blocks` status bar
 * `xfce4-terminal`
 * `dmenu`
 * `firefox`
-* `compton` for `xfce4-terminal` background transparency
+* `picom` for `xfce4-terminal` background transparency
 * `alsa-utils` for native audio
 * `pulseaudio` sound server
 * `pulseaudio-alsa` for PulseAudio to control ALSA
@@ -264,21 +266,46 @@ Install the packages you need. Here's my personal selection.
 * `acpi` to get battery information (the i3blocks `battery` blocklet
   depends on it)
 * `openssh`
-* `redshift`, `geoclue`, started in my `.xinitrc`, adjust screen color
+* `redshift`, started in my `.xinitrc`, to adjust screen color
   temperature based on time of day
 * `jq` as my [script](https://github.com/valeriangalliat/dotfiles/blob/master/bin/i3-focused-window-cwd)
   to preserve working directory when opening a new terminal depends on it
 * `xss-lock`, started in my `.xinitrc`, auto lock on screen sleep,
   suspend and hibernate
-* `xautolock`, started in my `.xinitrc` to auto suspend after a time of
-  inactivity (can't rely on `/etc/systemd/logind.conf` `IdleAction`
-  because it doesn't work without a display manager and I don't use a
-  display manager)
 * `zip`, `unzip`
 * `ack`
 
 For some reason PulseAudio might require a reboot to work.
 
+### TLP
+
+```sh
+systemctl enable tlp
+systemctl start tlp
+```
+
+### LightDM
+
+In `/etc/lightdm/lightdm.conf`, set `greeter-session=lightdm-mini-greeter`
+or whatever is the greeter of your choice.
+
+If using `lightdm-mini-greeter`, modify
+`/etc/lightdm/lightdm-mini-greeter.conf` to set the user.
+
+I use LightDM so that my X session is started as a logind GUI session
+as opposed to being considered to be a TTY if I would use `xinit`. This
+allows something like `xss-lock` to report idle status to logind so that
+logind can properly run the configured `IdleAction`.
+
+I usually set `IdleAction=suspend` in `/etc/systemd/logind.conf` so that
+my system suspends after 30 minutes of inactivity.
+
+It seems there's no way to upgrade a logind TTY session to a graphical
+session so that it would allow to report the idle hint, and since for a
+TTY session the idle status doesn't use the idle hint but uses the last
+TTY input instead, it is always considered to be idled if a X session is
+started with `xinit` or `startx`, which is why I resorted to use a
+display manager.
 
 ### Bluetooth
 
@@ -286,6 +313,7 @@ Enable Bluetooth.
 
 ```sh
 systemctl enable bluetooth
+systemctl start bluetooth
 ```
 
 In practice I usually don't enable Bluetooth and I `systemctl start
@@ -336,7 +364,7 @@ cloning and installing my [dotfiles](https://github.com/valeriangalliat/dotfiles
 ```sh
 git clone https://github.com/valeriangalliat/dotfiles.git
 cd dotfiles
-make i3 i3blocks zsh vim git net x11 compton xfce4-terminal
+make i3 i3blocks zsh vim git net x11 picom xfce4-terminal
 ```
 
 Lastly, in Firefox I add the Vimium-FF and uBlock Origin extensions.

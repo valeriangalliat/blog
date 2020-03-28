@@ -16,7 +16,7 @@
 <p>June 8, 2019</p>
 <p>Based on <a href="https://gist.github.com/mattiaslundberg/8620837">this Gist</a>,
 with hibernation added.</p>
-<p>Updated on March 14, 2020.</p>
+<p>Updated on March 27, 2020.</p>
 <h2 id="installer-usb"><a class="header-anchor" href="#installer-usb" aria-hidden="true">¶</a> Installer USB</h2>
 <p>Download the <a href="https://www.archlinux.org/download/">latest ISO</a> and
 <code>dd</code> it to your USB drive as per the <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">official documentation</a>.</p>
@@ -95,10 +95,11 @@ vim /mnt/etc/fstab
 <pre><code class="hljs language-sh">ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
 hwclock --systohc
 </code></pre>
-<p>Uncomment the locale you desire in <code>/etc/locale.gen</code> (<code>en_CA.UTF-8</code> for me,
-to have 24-hour clock format).</p>
+<p>Uncomment the locale you desire in <code>/etc/locale.gen</code> (<code>en_CA.UTF-8</code> for
+me, as well as <code>en_GB.UTF-8</code> to have 24-hour clock format).</p>
 <pre><code class="hljs language-sh">locale-gen
-<span class="hljs-built_in">echo</span> <span class="hljs-string">'LANG=en_CA.UTF-8 &gt; /etc/locale.conf'</span>
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'LANG=en_CA.UTF-8'</span> &gt; /etc/locale.conf
+<span class="hljs-built_in">echo</span> <span class="hljs-string">'LC_TIME=en_GB.UTF-8'</span> &gt;&gt; /etc/locale.conf
 </code></pre>
 <p>Set the hostname.</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> myhostname &gt; /etc/hostname
@@ -159,22 +160,23 @@ passwd val
 </code></pre>
 <p>Install the packages you need. Here’s my personal selection.</p>
 <ul>
-<li><code>tlp</code> for out of the box power management (<code>systemctl enablet tlp</code>)</li>
+<li><code>tlp</code> for out of the box power management</li>
 <li><code>xf86-video-intel</code> graphics driver</li>
 <li><code>xorg-server</code></li>
-<li><code>xorg-xinit</code> as I don’t use a display/login manager, I just <code>startx</code></li>
 <li><code>xorg-xset</code> as I use it in my <code>.xinitrc</code> for setting key repeat delay</li>
 <li><code>xorg-xrandr</code> to setup multiple monitors</li>
 <li><code>ttf-dejavu</code> main system font</li>
 <li><code>ttf-liberation</code> for proper web fonts support</li>
 <li><code>noto-fonts-emoji</code> because emojis</li>
+<li><code>lightdm</code> display manager</li>
+<li><code>lightdm-mini-greeter</code> (from AUR)</li>
 <li><code>i3-gaps</code> window manager</li>
 <li><code>i3lock</code> locker</li>
 <li><code>i3blocks</code> status bar</li>
 <li><code>xfce4-terminal</code></li>
 <li><code>dmenu</code></li>
 <li><code>firefox</code></li>
-<li><code>compton</code> for <code>xfce4-terminal</code> background transparency</li>
+<li><code>picom</code> for <code>xfce4-terminal</code> background transparency</li>
 <li><code>alsa-utils</code> for native audio</li>
 <li><code>pulseaudio</code> sound server</li>
 <li><code>pulseaudio-alsa</code> for PulseAudio to control ALSA</li>
@@ -191,23 +193,41 @@ the other one won’t)</li>
 <li><code>acpi</code> to get battery information (the i3blocks <code>battery</code> blocklet
 depends on it)</li>
 <li><code>openssh</code></li>
-<li><code>redshift</code>, <code>geoclue</code>, started in my <code>.xinitrc</code>, adjust screen color
+<li><code>redshift</code>, started in my <code>.xinitrc</code>, to adjust screen color
 temperature based on time of day</li>
 <li><code>jq</code> as my <a href="https://github.com/valeriangalliat/dotfiles/blob/master/bin/i3-focused-window-cwd">script</a>
 to preserve working directory when opening a new terminal depends on it</li>
 <li><code>xss-lock</code>, started in my <code>.xinitrc</code>, auto lock on screen sleep,
 suspend and hibernate</li>
-<li><code>xautolock</code>, started in my <code>.xinitrc</code> to auto suspend after a time of
-inactivity (can’t rely on <code>/etc/systemd/logind.conf</code> <code>IdleAction</code>
-because it doesn’t work without a display manager and I don’t use a
-display manager)</li>
 <li><code>zip</code>, <code>unzip</code></li>
 <li><code>ack</code></li>
 </ul>
 <p>For some reason PulseAudio might require a reboot to work.</p>
+<h3 id="tlp"><a class="header-anchor" href="#tlp" aria-hidden="true">¶</a> TLP</h3>
+<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> tlp
+systemctl start tlp
+</code></pre>
+<h3 id="lightdm"><a class="header-anchor" href="#lightdm" aria-hidden="true">¶</a> LightDM</h3>
+<p>In <code>/etc/lightdm/lightdm.conf</code>, set <code>greeter-session=lightdm-mini-greeter</code>
+or whatever is the greeter of your choice.</p>
+<p>If using <code>lightdm-mini-greeter</code>, modify
+<code>/etc/lightdm/lightdm-mini-greeter.conf</code> to set the user.</p>
+<p>I use LightDM so that my X session is started as a logind GUI session
+as opposed to being considered to be a TTY if I would use <code>xinit</code>. This
+allows something like <code>xss-lock</code> to report idle status to logind so that
+logind can properly run the configured <code>IdleAction</code>.</p>
+<p>I usually set <code>IdleAction=suspend</code> in <code>/etc/systemd/logind.conf</code> so that
+my system suspends after 30 minutes of inactivity.</p>
+<p>It seems there’s no way to upgrade a logind TTY session to a graphical
+session so that it would allow to report the idle hint, and since for a
+TTY session the idle status doesn’t use the idle hint but uses the last
+TTY input instead, it is always considered to be idled if a X session is
+started with <code>xinit</code> or <code>startx</code>, which is why I resorted to use a
+display manager.</p>
 <h3 id="bluetooth"><a class="header-anchor" href="#bluetooth" aria-hidden="true">¶</a> Bluetooth</h3>
 <p>Enable Bluetooth.</p>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> bluetooth
+systemctl start bluetooth
 </code></pre>
 <p>In practice I usually don’t enable Bluetooth and I <code>systemctl start bluetooth</code> and <code>systemctl stop bluetooth</code> as I need it.</p>
 <h3 id="touchpad"><a class="header-anchor" href="#touchpad" aria-hidden="true">¶</a> Touchpad</h3>
@@ -240,7 +260,7 @@ worked out of the box.</p>
 cloning and installing my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>.</p>
 <pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/valeriangalliat/dotfiles.git
 <span class="hljs-built_in">cd</span> dotfiles
-make i3 i3blocks zsh vim git net x11 compton xfce4-terminal
+make i3 i3blocks zsh vim git net x11 picom xfce4-terminal
 </code></pre>
 <p>Lastly, in Firefox I add the Vimium-FF and uBlock Origin extensions.</p>
 <p>And here you go, a somewhat minimalist Arch Linux setup with everything

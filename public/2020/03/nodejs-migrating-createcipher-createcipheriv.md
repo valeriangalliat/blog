@@ -1,5 +1,5 @@
 Node.js: migrating from `createCipher` to `createCipheriv`
-----------------------------------------------------------
+==========================================================
 March 14, 2020
 
 If you still use the `createCipher` and `createDecipher` methods of the

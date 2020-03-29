@@ -17,7 +17,7 @@
 <p><a href="http://gogs.io/">Gogs</a> is a self-hosted Git service, not unlike GitHub, but lightweight
 and open source. Here’s a small tutorial to install it in its own jail
 on a FreeBSD host.</p>
-<h2 id="preparation"><a class="header-anchor" href="#preparation" aria-hidden="true">¶</a> Preparation</h2>
+<h2 id="preparation"><a class="header-anchor" href="#preparation">¶</a> Preparation</h2>
 <p>First, create the jail, start it, and open a shell into it. You can
 skip this step if you don’t want to install it into a jail. Assuming
 you use <a href="http://erdgeist.org/arts/software/ezjail/">ezjail</a>:</p>
@@ -37,7 +37,7 @@ su - git
 <pre><code class="hljs language-sh">GOPATH=<span class="hljs-variable">$HOME</span>/go; <span class="hljs-built_in">export</span> GOPATH
 <span class="hljs-built_in">echo</span> <span class="hljs-string">'GOPATH=$HOME/go; export GOPATH'</span> &gt;&gt; ~/.profile
 </code></pre>
-<h2 id="installation"><a class="header-anchor" href="#installation" aria-hidden="true">¶</a> Installation</h2>
+<h2 id="installation"><a class="header-anchor" href="#installation">¶</a> Installation</h2>
 <p>We can now install Gogs using the Go package manager:</p>
 <pre><code class="hljs language-sh">CC=gcc48 go get -u --tags sqlite github.com/gogits/gogs
 </code></pre>
@@ -54,7 +54,7 @@ the package and its dependencies.</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">cd</span> gogs
 CC=gcc48 go build --tags sqlite
 </code></pre>
-<h2 id="configuration"><a class="header-anchor" href="#configuration" aria-hidden="true">¶</a> Configuration</h2>
+<h2 id="configuration"><a class="header-anchor" href="#configuration">¶</a> Configuration</h2>
 <p>The default configuration can be extended by creating
 <code>custom/conf/app.ini</code>.</p>
 <pre><code class="hljs language-sh">mkdir -p custom/conf
@@ -66,37 +66,37 @@ instead (needed for Git hooks), see <code>SCRIPT_TYPE</code> option. Here’s my
 whole configuration:</p>
 <pre><code class="hljs language-ini"><span class="hljs-attr">RUN_USER</span> = git
 <span class="hljs-attr">RUN_MODE</span> = prod
-<span class="hljs-section">
-[database]</span>
+
+<span class="hljs-section">[database]</span>
 <span class="hljs-attr">DB_TYPE</span> = sqlite3
 <span class="hljs-attr">PATH</span> = data/gogs.db
-<span class="hljs-section">
-[repository]</span>
+
+<span class="hljs-section">[repository]</span>
 <span class="hljs-attr">ROOT</span> = /home/git/gogs-repositories
 <span class="hljs-attr">SCRIPT_TYPE</span> = sh
-<span class="hljs-section">
-[server]</span>
+
+<span class="hljs-section">[server]</span>
 <span class="hljs-attr">DOMAIN</span> = git.codejam.info
 <span class="hljs-attr">ROOT_URL</span> = https://git.codejam.info/
 <span class="hljs-attr">HTTP_PORT</span> = <span class="hljs-number">3000</span>
 <span class="hljs-attr">DISABLE_SSH</span> = <span class="hljs-literal">true</span>
 <span class="hljs-attr">LANDING_PAGE</span> = explore
-<span class="hljs-section">
-[session]</span>
+
+<span class="hljs-section">[session]</span>
 <span class="hljs-attr">PROVIDER</span> = file
-<span class="hljs-section">
-[log]</span>
+
+<span class="hljs-section">[log]</span>
 <span class="hljs-attr">MODE</span> = file
-<span class="hljs-section">
-[security]</span>
+
+<span class="hljs-section">[security]</span>
 <span class="hljs-attr">INSTALL_LOCK</span> = <span class="hljs-literal">true</span>
 <span class="hljs-attr">SECRET_KEY</span> = ThisIsNotMySecretKey
-<span class="hljs-section">
-[service]</span>
+
+<span class="hljs-section">[service]</span>
 <span class="hljs-attr">DISABLE_REGISTRATION</span> = <span class="hljs-literal">true</span>
 </code></pre>
 <p>See the <a href="http://gogs.io/docs/advanced/configuration_cheat_sheet.html">other configuration options</a> and tweak to your tastes!</p>
-<h2 id="execution"><a class="header-anchor" href="#execution" aria-hidden="true">¶</a> Execution</h2>
+<h2 id="execution"><a class="header-anchor" href="#execution">¶</a> Execution</h2>
 <p>Run the server with:</p>
 <pre><code class="hljs language-sh">./gogs web
 </code></pre>
@@ -105,7 +105,7 @@ put it in a <code>@reboot</code> entry in the crontab:</p>
 <pre><code class="hljs language-sh">PATH=/bin:/usr/bin:/usr/<span class="hljs-built_in">local</span>/bin
 @reboot <span class="hljs-built_in">cd</span> ~/gogs &amp;&amp; ./gogs web &gt; logs/main.log
 </code></pre>
-<h2 id="updating"><a class="header-anchor" href="#updating" aria-hidden="true">¶</a> Updating</h2>
+<h2 id="updating"><a class="header-anchor" href="#updating">¶</a> Updating</h2>
 <p>To update Gogs to the latest version, basically replay the installation
 process:</p>
 <pre><code class="hljs language-sh">CC=gcc48 go get -u --tags sqlite github.com/gogits/gogs

@@ -24,7 +24,7 @@ session, Firefox Hello leave no way to select the input microphone when
 you <em>create</em> a session. The problem is Firefox was taking audio input
 from my default card instead of my webcam, where I had no microphone
 plugged in.</p>
-<h2 id="custom-default-pcm-device"><a class="header-anchor" href="#custom-default-pcm-device" aria-hidden="true">¶</a> Custom default PCM device</h2>
+<h2 id="custom-default-pcm-device"><a class="header-anchor" href="#custom-default-pcm-device">¶</a> Custom default PCM device</h2>
 <p>The solution for this was to configure the default ALSA capture device.
 Turns out there’s already an entry for this on the
 <a href="https://wiki.archlinux.org/index.php/Advanced_Linux_Sound_Architecture/Troubleshooting#Setting_the_default_microphone.2Fcapture_device">ALSA page of the ArchWiki</a>. I’m pretty sure it’s a decent
@@ -43,13 +43,13 @@ pcm.!default
     playback.pcm
     {
         type plug
-        slave.pcm &quot;dmix&quot;
+        slave.pcm "dmix"
     }
 
     capture.pcm
     {
         type plug
-        slave.pcm &quot;usb&quot;
+        slave.pcm "usb"
     }
 }
 </code></pre>

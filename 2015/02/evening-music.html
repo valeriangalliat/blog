@@ -21,7 +21,7 @@ have any kind of remote control.</p>
 minutes of music, wait the end of the song and shut down”. Turns out this
 is <em>trivial</em> to do with a music server like <a href="http://www.musicpd.org/">MPD</a>.</p>
 <p>I’ll use <a href="http://www.musicpd.org/clients/mpc/">mpc</a> to controll the MPD instance from the shell.</p>
-<h2 id="play-10-songs-and-shut-down"><a class="header-anchor" href="#play-10-songs-and-shut-down" aria-hidden="true">¶</a> Play 10 songs and shut down</h2>
+<h2 id="play-10-songs-and-shut-down"><a class="header-anchor" href="#play-10-songs-and-shut-down">¶</a> Play 10 songs and shut down</h2>
 <pre><code class="hljs language-sh">mpc idleloop player | head -18; poweroff
 </code></pre>
 <p>The <code>mpc idleloop player</code> command will listen for <code>player</code> events. A
@@ -33,7 +33,7 @@ naturally selected, it will send two events (end and next), hence the
 about “next song” events). The <code>head</code> command will exit when the given
 number of lines are printed.</p>
 <p>Originally from <a href="https://twitter.com/valeriangalliat/status/569613240168292352">this tweet</a>.</p>
-<h2 id="30-minutes-of-music-and-shut-down"><a class="header-anchor" href="#30-minutes-of-music-and-shut-down" aria-hidden="true">¶</a> 30 minutes of music and shut down</h2>
+<h2 id="30-minutes-of-music-and-shut-down"><a class="header-anchor" href="#30-minutes-of-music-and-shut-down">¶</a> 30 minutes of music and shut down</h2>
 <pre><code class="hljs language-sh">sleep 30m; mpc idle player; poweroff
 </code></pre>
 <p>This one speaks for itself:</p>
@@ -42,7 +42,7 @@ number of lines are printed.</p>
 down.</p>
 </blockquote>
 <p>Originally from <a href="https://twitter.com/valeriangalliat/status/569613564278910977">this tweet</a>.</p>
-<h2 id="bonus-progressively-lower-volume"><a class="header-anchor" href="#bonus-progressively-lower-volume" aria-hidden="true">¶</a> Bonus: progressively lower volume</h2>
+<h2 id="bonus-progressively-lower-volume"><a class="header-anchor" href="#bonus-progressively-lower-volume">¶</a> Bonus: progressively lower volume</h2>
 <p>I also like the volume to go down slowly while listening to music before
 sleeping. This is extremely simple to do (here, I manage my sound with
 ALSA):</p>

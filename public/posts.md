@@ -2,6 +2,7 @@
 
 <div class="posts">
 
+* [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
 * [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
 * [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
 * [Fix Facebook YouTube attachment layout on mobile](2019/11/fix-facebook-youtube-attachment-layout-mobile.md) <small>November 7, 2019</small>

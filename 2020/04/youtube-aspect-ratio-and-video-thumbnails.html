@@ -1,0 +1,96 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>YouTube aspect ratio and video thumbnails</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">Home</a>
+  </header>
+<h1>YouTube aspect ratio and video thumbnails</h1>
+<p>April 6, 2020</p>
+<p>I’ve been making a couple of YouTube videos lately, and one thing I
+started wondering about was aspect ratios.</p>
+<p>In the first place I always recorded and published 16:9 videos as it
+seems to be quite the standard, but at some point I felt like having a
+little wider aspect ratio to get somewhat of a cinematographic look.</p>
+<h2 id="first-try-black-borders"><a class="header-anchor" href="#first-try-black-borders">¶</a> First try: black borders</h2>
+<p>Fair enough. I start by just cropping my 16:9 shots but still export in
+16:9 so I have black borders on top and bottom. That’s fine if viewed on
+a 16:9 screen, but if viewed on a wider screen, it’s actually worst
+because we’ll have black borders on the sides to be able to display the
+black borders on the top and bottom.</p>
+<p>That’s completely stupid so I quickly gave up on that idea.</p>
+<h2 id="exporting-in-a-different-ratio"><a class="header-anchor" href="#exporting-in-a-different-ratio">¶</a> Exporting in a different ratio</h2>
+<p>I then tried exporting in a different ratio, for instance, 2:1 (also
+known as 18:9) which is essentially the aspect ratio of most modern
+phones, as well as being a good compromise between 16:9 and 21:9 (the
+“proper” cinema aspect ratio, but that might be a tad too wide for my
+needs).</p>
+<p>This is great, except when you start to consider the video thumbnail,
+which is what this article is about.</p>
+<h2 id="thumbnails-on-youtube"><a class="header-anchor" href="#thumbnails-on-youtube">¶</a> Thumbnails on YouTube</h2>
+<p>This is where things start to get funky. On the video page, before
+actually pressing play on the video, the thumbnail is gonna be
+displayed. Here, since the video player is gonna use the aspect ratio of
+your video, the thumbnail is gonna need to fit in it. This means if you
+published 2:1 and your thumbnail is 2:1, everything’s fine.</p>
+<p>The issue is everywhere else on YouTube, it actually displays all
+thumbnails as 16:9. This means if you have a 2:1 thumbnail, you’ll have
+black borders on the top and bottom everywhere it’s gonna be displayed.</p>
+<p>This kind of sucks.</p>
+<p>To prevent this, you can upload a 16:9 thumbnail (e.g. making an
+alternative sequence of your video in 16:9 just for the thumbnail,
+either by zooming in or by revealing the content you cropped if any).</p>
+<p>But now, on your actual video page, the 16:9 thumbnail is gonna be
+<em>cropped</em> to be displayed in the 2:1 player! If you revealed cropped
+content to make the thumbnail, that’s fine, you’re pretty much just back
+to the original look. But if you cropped even more on the sides to get
+back to 16:9, then your video is gonna be zoomed on the player page to
+fit 2:1 again!</p>
+<p>Also, an extra issue in my case was that on my thumbnail I had some kind
+of montage with multiple videos, meaning that with the above solutions,
+either some parts of my montage would be floating in the middle instead
+of being anchored in a corner, or in the other case it would be mostly
+cropped on the video page. I guess you just shouldn’t have this kind of
+montage for the thumbnail if you’re gonna use an aspect ratio different
+from 16:9…  But wait, that’s not even considering sharing on Facebook!</p>
+<h2 id="aspect-ratio-on-facebook-youtube-attachments"><a class="header-anchor" href="#aspect-ratio-on-facebook-youtube-attachments">¶</a> Aspect ratio on Facebook YouTube attachments</h2>
+<p>The funny thing is while YouTube displays your thumbnail in 16:9 other
+than on the video page, where it fits your video aspect ratio, Facebook
+instead displays them in 17.3/9 (yep). That’s some kind of weird middle
+ground between 16:9 and 2:1 (18:9).</p>
+<p>This means again that if you go for a 2:1 thumbnail, even on Facebook
+you’ll still have black borders, but if you do a 16:9 which seems to be
+mostly optimal for YouTube, it’s still gonna be cropped.</p>
+<p>And this means that if you have some kind of montage going on in the
+cover especially when it’s dependent on the corners of the frame, you’re
+always gonna be fucked.</p>
+<h2 id="conclusion"><a class="header-anchor" href="#conclusion">¶</a> Conclusion</h2>
+<p>If you want to make sure the content in the thumbnail is visible
+everywhere, I would recommend uploading 16:9 thumbnails, but designing
+it while keeping in mind that it’s gonna be fitted to the aspect ratio
+of your video on the video page, and that Facebook will crop it to a
+weird 17.3:9 aspect ratio as well.</p>
+<p>So if you’re publishing 2:1 video, you’ll want to make it a 16:9
+thumbnail where you <em>add</em> content above and below what would otherwise
+have been your framing, and make sure that this space doesn’t contain
+anything important.</p>
+<p>However this is still not optimal, as it’ll make a nonnegligible part of
+your thumbnail deprived of meaningful content, which is an issue as the
+thumbnail is one of the main vectors to drive traffic to your video.</p>
+<p>Another consideration would be to ignore that the aspect ratio of the
+thumbnail of your 2:1 video would also be 2:1 on the video page itself,
+since someone already on the video page likely doesn’t care about the
+picture at that point, leaving you more room to optimize for the rest of
+YouTube and Facebook attachments. Maybe your subject and text will be
+cropped on the video page, but it might be the price to pay for them to
+be displayed bigger earlier in the conversion funnel.</p>
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+</body>
+</html>

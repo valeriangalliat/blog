@@ -42,7 +42,7 @@ Links
 * [YouTube](https://www.youtube.com/channel/UCzpErreSO-Fv2oY5t-YXvRw) <small>| music I play</small>
 * [GitHub](https://github.com/valeriangalliat) <small>| code I write</small>
 * [Twitter](https://twitter.com/valeriangalliat) <small>| bullshit I say</small>
-* [Instagram](https://www.instagram.com/valeriangalliat/) <small>| silly stories I share</small>
+* [Instagram](https://www.instagram.com/funkyval_/) <small>| silly stories I share</small>
 * [Dotfiles](https://github.com/valeriangalliat/dotfiles) <small>| don't bother clicking if you don't know what that is</small>
 * [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>
 * Email <small>| `val`, at this very domain</small>

@@ -2,6 +2,7 @@
 
 <div class="posts">
 
+* [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
 * [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
 * [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>

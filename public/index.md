@@ -12,6 +12,7 @@ Posts
 
 <div class="posts">
 
+* [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
 * [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
 * [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
@@ -26,7 +27,6 @@ Posts
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
 * [Batch updating npm packages license](2015/05/batch-updating-npm-packages-license.md) <small>May 25, 2015</small>
 * [Listen a raw playlist with YouTube](2015/05/listen-a-raw-playlist-with-youtube.md) <small>May 22, 2015</small>
-* [FreeBSD, Python and SSL certificate validation](2015/05/freebsd-python-and-ssl-certificate-validation.md) <small>May 22, 2015</small>
 
 </div>
 

@@ -33,3 +33,6 @@ dist/css/main.css: \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@
+
+serve:
+	cd dist && python -m http.server

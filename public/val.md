@@ -36,13 +36,18 @@ I also happen to be a software developer, currently working at
 Links
 -----
 
+<div class="links">
+
 * [Blog](https://www.codejam.info/) <small>| random stuff I write about my interests</small>
 * [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I make</small>
-* [YouTube](https://www.youtube.com/channel/UCzpErreSO-Fv2oY5t-YXvRw) <small>| music I play</small>
+* [YouTube](https://www.youtube.com/valise) <small>| videos I make</small>
+* [SoundCloud](https://soundcloud.com/funkyval) <small>| music I produce</small>
+* [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I brew</small>
 * [GitHub](https://github.com/valeriangalliat) <small>| code I write</small>
 * [Twitter](https://twitter.com/valeriangalliat) <small>| bullshit I say</small>
 * [Instagram](https://www.instagram.com/funkyval_/) <small>| silly stories I share</small>
 * [Dotfiles](https://github.com/valeriangalliat/dotfiles) <small>| don't bother clicking if you don't know what that is</small>
 * [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>
 * Email <small>| `val`, at this very domain</small>
+
+</div>

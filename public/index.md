@@ -1,16 +1,17 @@
-Hey, I'm Val <small>and this is my blog</small>
-===============================================
+Hey, I'm Val<small>, welcome to my blog!</small>
+================================================
 
 I'm passionate software developer, and as importantly, an amateur
-musician, photograph, brewer and climber.
+musician, photograph, videographer, brewer and climber.
 
 You'll find on this blog writings about the things that I care about and
-feel like are worth sharing.
+feel like are worth sharing, as well as links to the different platforms
+where I create content.
 
 Posts
 -----
 
-<div class="posts">
+<div class="links posts">
 
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
@@ -30,18 +31,28 @@ Posts
 
 </div>
 
-[Show all](posts.md)
+[More posts](posts.md)
 
 Pages
 -----
 
+<div class="links">
+
 * [Git](resources/git.md) <small>| how I learnt Git</small>
 * [Vim](resources/vim.md) <small>| how I learnt Vim</small>
+
+</div>
 
 Links
 -----
 
+<div class="links">
+
 * [Author](val.md) <small>| who I am</small>
 * [About the name](about-the-name.md) <small>| why that stupid domain name</small>
 * [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I make</small>
+* [YouTube](https://www.youtube.com/valise) <small>| videos I make</small>
+
+</div>
+
+[More links](val.md#links)

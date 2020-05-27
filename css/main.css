@@ -222,7 +222,7 @@ footer a, footer a:visited {
         z-index: 2;
     }
 }
-.posts ul {
+.links ul {
     list-style-type: none;
     padding-left: 0;
 }
@@ -239,7 +239,7 @@ footer a, footer a:visited {
 }
 
 @media all and (max-width: 38em) {
-    .posts li {
+    .links li {
         margin-bottom: 0.5em;
         flex-direction: column-reverse;
     }

@@ -238,9 +238,11 @@ Install the packages you need. Here's my personal selection.
 * `xorg-server`
 * `xorg-xset` as I use it in my `.xinitrc` for setting key repeat delay
 * `xorg-xrandr` to setup multiple monitors
-* `ttf-dejavu` main system font
-* `ttf-liberation` for proper web fonts support
+* `noto-fonts` main system font
+* `noto-fonts-cjk` and `noto-fonts-extra` optionally to really see every
+  character online
 * `noto-fonts-emoji` because emojis
+* `ttf-liberation` for proper web fonts support
 * `lightdm` display manager
 * `lightdm-mini-greeter` (from AUR)
 * `i3-gaps` window manager

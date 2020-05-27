@@ -1,5 +1,5 @@
-MD = $(shell find public -name '*.md')
-HTML = $(MD:public/%.md=dist/%.html)
+MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md')
+HTML = $(MD:%.md=dist/%.html)
 ASSETS = dist/css/normalize.css dist/css/zenburn.css dist/css/main.css
 
 build: dist $(HTML) $(ASSETS)
@@ -10,10 +10,10 @@ dist:
 clean:
 	rm -f $(HTML)
 
-dist/index.html: public/index.md head.html foot.html
+dist/index.html: index.md head.html foot.html
 	./render $< | sed '/<header/,/<\/header>/d' > $@
 
-dist/%.html: public/%.md head.html foot.html
+dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
 	./render $< > $@
 

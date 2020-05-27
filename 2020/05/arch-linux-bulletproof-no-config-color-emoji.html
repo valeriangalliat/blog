@@ -1,0 +1,72 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Arch Linux bulletproof no config color emoji</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header class="title">
+    <a href="/">Home</a>
+  </header>
+<h1>Arch Linux bulletproof no config color emoji</h1>
+<p>May 27, 2020</p>
+<p>I (used to) use DejaVu (<code>ttf-dejavu</code>) as my main system and default font
+on Arch Linux and I’ve been mildly bothered about some emoji not being
+displayed as color emoji even though I have <code>noto-fonts-emoji</code>
+installed, and instead being displayed as black and white glyphs.</p>
+<p>For a while, I’ve haven’t been bothered enough by it to actually dig
+into it, but recently I’ve decided to spend the time to figure it out.</p>
+<h2 id="tldr"><a class="header-anchor" href="#tldr" aria-hidden="true">¶</a> TLDR</h2>
+<p>If you use <code>ttf-dejavu</code>, remove it and install <code>ttf-bitstream-vera</code> instead,
+which is essentially the same font without the Unicode additions. Then
+if you want some proper Unicode support, make sure to have <code>noto-fonts</code>
+installed as well, so that it will fall back to Noto Unicode characters
+when they’re not defined by Vera.</p>
+<p>Alternatively, just remove DejaVu and make Noto your default font,
+period (which is even simpler and is what I’ve done in the end since I
+ended up liking the look of the Noto fonts even better).</p>
+<h2 id="why-this-bug-happens"><a class="header-anchor" href="#why-this-bug-happens" aria-hidden="true">¶</a> Why this bug happens</h2>
+<p>The black and white glyphs are from the <code>ttf-dejavu</code> font, which is
+essentially <code>tff-bitstream-vera</code> with added Unicode support, but that
+also includes <em>some</em> black and white emoji.</p>
+<p>This means that if you have an emoji font as fallback, e.g.
+<code>noto-fonts-emoji</code>, <code>ttf-dejavu</code> will still have priority over the
+subset of emoji that it defines.</p>
+<p>Since it’s not currently possible to blacklist part of a font characters
+in fontconfig, there’s been some forks of <code>ttf-dejavu</code> to remove emoji
+characters, but still keep the other Unicode additions. This seems like
+a good idea but the AUR package for that is fairly outdated and people
+seem to report issues with it, so I would rather not go that way.</p>
+<p>I’ve also found <a href="https://www.reddit.com/r/archlinux/comments/6wkval/enable_noto_color_emoji_easily/">on Reddit</a>
+a fontconfig, well, config, to fix that issue, which essentially sets
+the default font to Noto instead of DejaVu, and Noto natively don’t try
+to conflict with the emoji font, so that works.</p>
+<p>However, some websites depending on the font they request, and depending
+on your browser, and configuration, and a bunch of other shit, are still
+gonna be using DejaVu if it’s installed, and then you’ll get the black
+and white emoji back, since that config only makes Noto and its color
+emoji the default for generic fonts.</p>
+<p>At that point you can just remove DejaVu altogether, which is the
+solution I ended up going for, but if you want to keep the DejaVu/Vera
+font as your default system font, read on.</p>
+<h2 id="the-solution"><a class="header-anchor" href="#the-solution" aria-hidden="true">¶</a> The solution</h2>
+<p>I’ve spent some more time digging, and I’ve eventually found a setup
+that so far seems to work consistently across browsers and websites, and
+the good thing is that it’s <em>simple</em> and doesn’t require any manual
+configuration.</p>
+<p>Simply remove <code>ttf-dejavu</code> and install <code>ttf-bitstream-vera</code> instead,
+which is essentially the same font, without the addition of Unicode
+glyphs, and then make sure to have <code>noto-fonts</code> installed as a fallback
+for Unicode stuff.</p>
+<p>Since unlike DejaVu, Noto doesn’t try to define its own emoji, it’ll
+cleanly fall through, first, Vera, then for the Unicode characters not
+found in Vera, it’ll fall back to Noto, and finally it’ll use whatever
+emoji font you have installed!</p>
+<p>I hope that helps!</p>
+<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+</body>
+</html>

@@ -21,7 +21,7 @@ when they're not defined by Vera.
 
 Alternatively, just remove DejaVu and make Noto your default font,
 period (which is even simpler and is what I've done in the end since I
-like the look of the Noto fonts).
+ended up liking the look of the Noto fonts even better).
 
 Why this bug happens
 --------------------

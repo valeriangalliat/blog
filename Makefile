@@ -29,7 +29,7 @@ dist/css/main.css: \
 	css/components/figure.css \
 	css/components/footer.css \
 	css/components/footnotes.css \
-	css/components/title.css \
+	css/components/home.css \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@

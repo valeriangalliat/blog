@@ -244,7 +244,7 @@ header.home a {
 }
 
 @media all and (max-width: 38em) {
-    .links li {
+    .posts li {
         margin-bottom: 0.5em;
         flex-direction: column-reverse;
     }

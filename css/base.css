@@ -80,6 +80,10 @@ a {
     text-decoration: none;
 }
 
+a:active, a:hover {
+    outline-width: 0;
+}
+
 a:hover {
     text-decoration: underline;
 }

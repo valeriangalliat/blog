@@ -1,4 +1,4 @@
-MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md')
+MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md' -printf '%P\n')
 HTML = $(MD:%.md=dist/%.html)
 ASSETS = dist/css/normalize.css dist/css/zenburn.css dist/css/main.css
 

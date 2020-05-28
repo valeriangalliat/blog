@@ -30,7 +30,7 @@ const head = fs.readFileSync(path.resolve(__dirname, 'head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, 'foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
 const env = {}
-const bodyClass = file.match(/^public\/\d{4}\//) ? 'post' : 'page'
+const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
 const html = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1')
 
 process.stdout.write(head.replace('<title>', `<title>${env.title}`).replace(/<body>/, `<body class="${bodyClass}">`))

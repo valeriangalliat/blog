@@ -17,6 +17,15 @@ h1, h2 {
 h1 small {
     font-size: 40%;
     color: #333;
+
+    /* Force subtitle on its own line if it doesn't fit on the same line
+     * as the main title. */
+    display: inline-block;
+
+    /* Don't collapse white spaces, mostly useful for homepage to allow
+     * keeping the small coma on the first line when breaking the sutbitle on a
+     * new line, but still having the space when it's on the same line. */
+    white-space: pre;
 }
 
 table {

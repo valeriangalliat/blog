@@ -1,5 +1,5 @@
-Hey, I'm Val<small>, welcome to my blog!</small>
-================================================
+Hey, I'm Val<small>, </small><small>welcome to my blog!</small>
+===============================================================
 
 I'm passionate software developer, and as importantly, an amateur
 musician, photograph, videographer, brewer and climber.

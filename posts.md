@@ -6,6 +6,7 @@ Posts
 2020
 ----
 
+* [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>

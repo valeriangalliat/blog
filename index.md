@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
 * [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
-* [Batch updating npm packages license](2015/05/batch-updating-npm-packages-license.md) <small>May 25, 2015</small>
 
 </div>
 

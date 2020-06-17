@@ -5,7 +5,8 @@ June 16, 2020
 Following my article on how I [configure my Panasonic LX100](../05/my-settings-for-panasonic-lumix-lx100.md),
 I wanted to make a similar article on my GoPro HERO (2018) and HERO5 Black configuration.
 
-## Make your HERO (2018) a HERO5 Black
+Make your HERO (2018) a HERO5 Black
+-----------------------------------
 
 First things first, the hardware for the HERO (2018) and HERO5 Black is
 essentially the same. The HERO (2018) comes with a stripped down
@@ -20,7 +21,8 @@ fault if you fuck up your GoPro by trying that out.
 
 That being said, let's look at the settings I use.
 
-## Record settings
+Record settings
+---------------
 
 ### Resolution (RES)
 
@@ -75,7 +77,8 @@ If I'm shooting a farther subject, I might put it in Linear mode so that
 not only I can focus more on the subject, but also remove all the
 distortion from the GoPro lens and give a more regular camera feel.
 
-## Protune settings
+Protune settings
+----------------
 
 First, it's useful to understand all the Protune settings before
 tweaking them. There's countless articles about that, but one of my

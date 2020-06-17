@@ -18,7 +18,8 @@ or not.
 The tables below are organized in the same way the LX100 settings menus
 are, and I've put in bold the values that I changed from default.
 
-## Rec
+Rec
+---
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -62,7 +63,8 @@ Stabilizer | Vertical & horizontal |
 Face Recog. | OFF |
 Profile Setup | OFF | Kids and pets stuff
 
-## Motion Picture
+Motion Picture
+--------------
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -87,7 +89,8 @@ Mic Level Adj. | LEVEL3 |
 4/4 | |
 Wind Cut | AUTO |
 
-## Custom
+Custom
+------
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -141,7 +144,8 @@ Video Button | ON | I like to record videos
 9/9 | |
 Eye Sensor | (default) |
 
-## Q.MENU
+Q.MENU
+------
 
 Not a settings menu, but just to keep track of the settings I actually left default in the Q.MENU.
 

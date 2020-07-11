@@ -40,7 +40,7 @@ Links
 
 * [Blog](https://www.codejam.info/) <small>| random stuff I write about my interests</small>
 * [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [YouTube](https://www.youtube.com/valise) <small>| videos I make</small>
+* [YouTube](https://www.youtube.com/FunkyVal) <small>| videos I make</small>
 * [SoundCloud](https://soundcloud.com/funkyval) <small>| music I produce</small>
 * [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I brew</small>
 * [GitHub](https://github.com/valeriangalliat) <small>| code I write</small>

@@ -51,7 +51,7 @@ Links
 * [Author](val.md) <small>| who I am</small>
 * [About the name](about-the-name.md) <small>| why that stupid domain name</small>
 * [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [YouTube](https://www.youtube.com/valise) <small>| videos I make</small>
+* [YouTube](https://www.youtube.com/FunkyVal) <small>| videos I make</small>
 
 </div>
 

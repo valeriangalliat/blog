@@ -29,9 +29,9 @@ Posts
 * [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
 
-</div>
-
 [More posts](posts.md)
+
+</div>
 
 Pages
 -----
@@ -48,11 +48,11 @@ Links
 
 <div class="links">
 
-* [Author](val.md) <small>| who I am</small>
+* [About](val.md) <small>| who I am</small>
 * [About the name](about-the-name.md) <small>| why that stupid domain name</small>
 * [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
 * [YouTube](https://www.youtube.com/FunkyVal) <small>| videos I make</small>
 
-</div>
-
 [More links](val.md#links)
+
+</div>

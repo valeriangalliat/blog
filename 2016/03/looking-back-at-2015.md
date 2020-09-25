@@ -254,7 +254,7 @@ and more kilometers while being less and tired and needing less water.
 Soon enough I could bike for 20, 40, even 80 kilometers straight! This
 was a rewarding experience and was really worth the initial pain.
 
-<figure class="center inline">
+<figure class="center">
   <a href="../../img/bike/01.jpg">
     <img src="../../img/bike/01.thumb.jpg">
   </a>
@@ -278,45 +278,47 @@ until I got trained enough to do larger ones, with more ease.
 At the end of the summer, I walked roughly 20,000 vertical meters among
 30 tracks.
 
-<figure class="center inline">
-  <a href="../../img/mountain/01.jpg">
-    <img src="../../img/mountain/01.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/02.jpg">
-    <img src="../../img/mountain/02.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/03.jpg">
-    <img src="../../img/mountain/03.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/04.jpg">
-    <img src="../../img/mountain/04.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/05.jpg">
-    <img src="../../img/mountain/05.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/06.jpg">
-    <img src="../../img/mountain/06.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/07.jpg">
-    <img src="../../img/mountain/07.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/08.jpg">
-    <img src="../../img/mountain/08.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/09.jpg">
-    <img src="../../img/mountain/09.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/10.jpg">
-    <img src="../../img/mountain/10.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/11.jpg">
-    <img src="../../img/mountain/11.thumb.jpg">
-  </a>
-  <a href="../../img/mountain/12.jpg">
-    <img src="../../img/mountain/12.thumb.jpg">
-  </a>
-  <figcaption>Here's a taste of the sublime landscapes we have in the Alps.</figcaption>
-</figure>
+<div class="oversized">
+  <figure class="center">
+    <a href="../../img/mountain/01.jpg">
+      <img src="../../img/mountain/01.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/02.jpg">
+      <img src="../../img/mountain/02.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/03.jpg">
+      <img src="../../img/mountain/03.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/04.jpg">
+      <img src="../../img/mountain/04.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/05.jpg">
+      <img src="../../img/mountain/05.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/06.jpg">
+      <img src="../../img/mountain/06.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/07.jpg">
+      <img src="../../img/mountain/07.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/08.jpg">
+      <img src="../../img/mountain/08.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/09.jpg">
+      <img src="../../img/mountain/09.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/10.jpg">
+      <img src="../../img/mountain/10.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/11.jpg">
+      <img src="../../img/mountain/11.thumb.jpg">
+    </a>
+    <a href="../../img/mountain/12.jpg">
+      <img src="../../img/mountain/12.thumb.jpg">
+    </a>
+    <figcaption>Here's a taste of the sublime landscapes we have in the Alps.</figcaption>
+  </figure>
+</div>
 
 ### September 17
 
@@ -339,7 +341,7 @@ in Paris the day before had an engine problem in the middle of the trip
 and we were stuck in a garage for half a day. Fortunately they could fix
 the engine and I got to my destination on time.
 
-<figure class="center inline">
+<figure class="center">
   <a href="../../img/airport/01.jpg">
     <img src="../../img/airport/01.thumb.jpg">
   </a>
@@ -363,12 +365,14 @@ Stay tuned!
 
 [busbud]: https://www.busbud.com/
 
-<figure class="center inline">
-  <a href="../../img/busbud.jpg">
-    <img src="../../img/busbud.thumb.jpg">
-  </a>
-  <figcaption>Busbud, a startup with a view!</figcaption>
-</figure>
+<div class="oversized">
+  <figure class="center">
+    <a href="../../img/busbud.jpg">
+      <img src="../../img/busbud.thumb.jpg">
+    </a>
+    <figcaption>Busbud, a startup with a view!</figcaption>
+  </figure>
+</div>
 
 ### October 1
 
@@ -393,18 +397,20 @@ since ever. Let's [play that funky music][funk]!
 
 [funk]: https://youtu.be/_pHT9yYFdZg
 
-<figure class="center inline">
-  <a href="../../img/guitar/01.jpg">
-    <img src="../../img/guitar/01.thumb.jpg">
-  </a>
-  <a href="../../img/guitar/02.jpg">
-    <img src="../../img/guitar/02.thumb.jpg">
-  </a>
-  <a href="../../img/guitar/03.jpg">
-    <img src="../../img/guitar/03.thumb.jpg">
-  </a>
-  <figcaption>Shameless guitar porn.</figcaption>
-</figure>
+<div class="oversized">
+  <figure class="center">
+    <a href="../../img/guitar/01.jpg">
+      <img src="../../img/guitar/01.thumb.jpg">
+    </a>
+    <a href="../../img/guitar/02.jpg">
+      <img src="../../img/guitar/02.thumb.jpg">
+    </a>
+    <a href="../../img/guitar/03.jpg">
+      <img src="../../img/guitar/03.thumb.jpg">
+    </a>
+    <figcaption>Shameless guitar porn.</figcaption>
+  </figure>
+</div>
 
 ### November 19
 
@@ -422,7 +428,7 @@ in ideal conditions for another month. And even once the roads were
 covered by a couple centimeters of snow, biking on it was surprisingly
 good, and even really enjoyable when the snow is fresh!
 
-<figure class="center inline">
+<figure class="center">
   <a href="../../img/bike-2/01.jpg">
     <img src="../../img/bike-2/01.thumb.jpg">
   </a>
@@ -448,27 +454,29 @@ walked around the whole island and could visit a decent part of it.
 
 [cagoule]: https://youtu.be/Ud_-AuBmp6Q
 
-<figure class="center inline">
-  <a href="../../img/ny/01.jpg">
-    <img src="../../img/ny/01.thumb.jpg">
-  </a>
-  <a href="../../img/ny/02.jpg">
-    <img src="../../img/ny/02.thumb.jpg">
-  </a>
-  <a href="../../img/ny/03.jpg">
-    <img src="../../img/ny/03.thumb.jpg">
-  </a>
-  <a href="../../img/ny/04.jpg">
-    <img src="../../img/ny/04.thumb.jpg">
-  </a>
-  <a href="../../img/ny/05.jpg">
-    <img src="../../img/ny/05.thumb.jpg">
-  </a>
-  <a href="../../img/ny/06.jpg">
-    <img src="../../img/ny/06.thumb.jpg">
-  </a>
-  <figcaption>New York.</figcaption>
-</figure>
+<div class="oversized">
+  <figure class="center">
+    <a href="../../img/ny/01.jpg">
+      <img src="../../img/ny/01.thumb.jpg">
+    </a>
+    <a href="../../img/ny/02.jpg">
+      <img src="../../img/ny/02.thumb.jpg">
+    </a>
+    <a href="../../img/ny/03.jpg">
+      <img src="../../img/ny/03.thumb.jpg">
+    </a>
+    <a href="../../img/ny/04.jpg">
+      <img src="../../img/ny/04.thumb.jpg">
+    </a>
+    <a href="../../img/ny/05.jpg">
+      <img src="../../img/ny/05.thumb.jpg">
+    </a>
+    <a href="../../img/ny/06.jpg">
+      <img src="../../img/ny/06.thumb.jpg">
+    </a>
+    <figcaption>New York.</figcaption>
+  </figure>
+</div>
 
 The New Year's Eve in Times Square was also an unique experience. It's
 incredibly hard to get in Times Square at 3 PM, and even if you're lucky

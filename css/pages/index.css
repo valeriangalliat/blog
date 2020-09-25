@@ -1,6 +1,14 @@
+.index h1 {
+    text-align: center;
+}
+
 .links ul {
     list-style-type: none;
     padding-left: 0;
+}
+
+.links {
+    font-family: sans-serif;
 }
 
 .posts li {

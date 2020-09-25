@@ -3,6 +3,7 @@
 }
 
 .post h1 + p {
+    font-family: sans-serif;
     color: #bbb;
     margin-top: 0;
 }

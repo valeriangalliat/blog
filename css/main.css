@@ -238,6 +238,10 @@ header {
     flex-wrap: wrap;
     margin: 1em 0 6em 0;
     padding: 0 2em;
+
+    /* Dirty fix to prevent horizontal scroll in some cased because of negative
+     * margin below. */
+    overflow: hidden;
 }
 
 header ul {
@@ -246,7 +250,7 @@ header ul {
     list-style-type: none;
     padding-left: 0;
     display: flex;
-    margin: 1em -1em 1em -1em;
+    margin: 1em -1em;
 }
 
 @media all and (max-width: 69em) {

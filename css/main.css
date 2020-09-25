@@ -1,17 +1,42 @@
 html {
-    font: 1.25em/normal serif;
+    font: 1.25em/1.5 serif;
     color: #333;
 }
 
-body {
-    margin: 0 auto;
-    padding: 0 .5em;
-    max-width: 80ch;
+.content {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 45rem;
+    padding-left: .5em;
+    padding-right: .5em;
 }
 
-h1, h2 {
-    border-bottom: 1px solid #eee;
-    padding-bottom: .3em;
+/* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
+ * so it should be 75em here, but I added 2em to break before the width of the
+ * vertical scrollbar causes an horizontal scroll, and to keep some padding. */
+@media (min-width: 77em) {
+    .oversized {
+        /* I thought that I wanted a full sized container with a centered inner
+         * container that's 60rem wide, but 100vw doesn't account for the
+         * vertical scrollbar so it ends up causing an horizontal scrollbar.
+         *
+         * Instead a relative negative padding to expand to 60rem works. */
+        margin-left: -7.5rem;
+        margin-right: -7.5rem;
+    }
+}
+
+h2 {
+    border-top: 1px solid #eee;
+    padding-top: 1em;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
+    margin: 2rem 0 2rem 0;
 }
 
 h1 small {
@@ -48,17 +73,9 @@ tr:nth-child(even) {
 }
 
 blockquote {
-    color: #666;
     margin-left: 0;
-    padding-left: 2em;
-    border-left: 1px solid #ddd;
-}
-
-/* Do not collapse quote inner margins. */
-blockquote::before,
-blockquote::after {
-    content: '';
-    display: table;
+    padding: 0 1em;
+    border-left: .25rem solid #4183c4;
 }
 
 dt {
@@ -107,8 +124,11 @@ ul {
 }
 
 ol {
-    /* Seems to match a single digit and a dot width. */
-    padding-left: 1.2em;
+    /* Try to match roughly a single digit and a dot. */
+    padding-left: 2ch;
+
+    /* Deal with lists on the side of floats... */
+    overflow: hidden;
 }
 
 img {
@@ -145,100 +165,140 @@ figure {
 }
 
 figure img, figure object {
-    display: block;
+    display: inline-block;
     max-width: 100%;
 }
 
 @media all and (max-width: 42em) {
-    figure img {
-        margin: 0 auto;
+    figure {
+        text-align: center;
     }
 }
 
 @media not all and (max-width: 42em) {
-    figure {
-        margin: 0 0 0.5em 0;
-    }
-
     figure.left {
         float: left;
-        margin-right: 1em;
+        margin: 0 1em 0 0;
     }
 
     figure.right {
         float: right;
-        margin-left: 1em;
+        margin: 0 0 0 1em;
     }
 }
 
 figure.center {
-    margin-left: auto;
-    margin-right: auto;
     text-align: center;
 }
 
 figure.center img {
     margin: 0 auto;
 }
-
-figure.inline img {
-    display: inline-block;
-}
 footer {
-    border-top: 1px solid #eee;
-    color: #bbb;
+    margin: 10em 0 1em 0;
+    padding: 0 2em;
+    display: flex;
+    justify-content: center;
+}
+
+footer p {
+    font-family: sans-serif;
     font-size: 0.75em;
-    margin-top: 4rem;
-    margin-bottom: 3rem;
-    padding-top: .5rem;
+    color: #bbb;
+    margin: 1em 0;
+}
+
+@media all and (max-width: 69em) {
+    footer {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 45rem;
+        padding: 0 .5em;
+    }
 }
 
 footer a, footer a:visited {
     color: #666;
 }
+
+footer a:hover {
+    color: #333;
+    text-decoration: none;
+}
 .footnotes-sep {
     margin-top: 4em;
 }
-header.home {
-    font-size: 1.5em;
+
+.footnotes p {
+    margin: 0;
+}
+header {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    margin: 1em 0 6em 0;
+    padding: 0 2em;
 }
 
-header.home a {
-    text-decoration: none;
-    color: #333;
+header ul {
+    font-family: sans-serif;
+    font-size: 0.75em;
+    list-style-type: none;
+    padding-left: 0;
+    display: flex;
+    margin: 1em -1em 1em -1em;
+}
+
+@media all and (max-width: 69em) {
+    header {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 45rem;
+        padding: 0 .5em;
+    }
 }
 
 @media all and (max-width: 42em) {
-    header.home {
-        /* Match what would have been `h1`'s `margin-top` according to
-         * normalize.css default rules. */
-        margin-top: 1.3rem;
-
-        /* This value visually feels right. */
-        margin-bottom: 0.25rem;
+    header {
+        flex-direction: column;
     }
 
-    header.home + h1 {
-        margin-top: 0;
+    header ul {
+        justify-content: center;
     }
 }
 
-@media not all and (max-width: 42em) {
-    header.home {
-        /* Match `h1`'s `line-height`. normalize.css sets the default
-         * line height to 1.35, times the `2em` size of `h1`, we get
-         * `2.7rem`. */
-        line-height: 2.7rem;
-
-        margin-left: 1em;
-        float: right;
-        position: relative;
-        z-index: 2;
-    }
+header li {
+    padding: 0 1em;
 }
+
+header a, header a:visited {
+    color: #666;
+}
+
+header a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+header .social svg {
+    --color-fill: #666;
+}
+
+header .social a:hover svg {
+    --color-fill: #333;
+}
+.index h1 {
+    text-align: center;
+}
+
 .links ul {
     list-style-type: none;
     padding-left: 0;
+}
+
+.links {
+    font-family: sans-serif;
 }
 
 .posts li {
@@ -279,6 +339,7 @@ header.home a {
 }
 
 .post h1 + p {
+    font-family: sans-serif;
     color: #bbb;
     margin-top: 0;
 }

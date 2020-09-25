@@ -5,13 +5,60 @@
   <title>Installing NixOS on a Kimsufi</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Installing NixOS on a Kimsufi</h1>
 <p>December 24, 2015</p>
 <p><strong>Sidenote:</strong> yes, I’m absolutely doing this on a December 24.</p>
@@ -34,19 +81,19 @@ gateways, and optionally DNS servers.</p>
 <p>You can find the hostname in the standard <code>/etc/hostname</code>, and IP
 information in <code>/root/.ovhrc</code> and <code>/etc/netctl/ovh_net_eth0</code>.</p>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># /root/.ovhrc</span>
-DNS_IP=<span class="hljs-string">"{{ IPV4_DNS }}"</span>
-DNS_IPV6=<span class="hljs-string">"{{ IPV6_DNS }}"</span>
-IPV6ADDR=<span class="hljs-string">"{{ IPV6_ADDR }}"</span>
-IPV6GW=<span class="hljs-string">"{{ IPV6_GW }}"</span>
-IPV6NETMASK=<span class="hljs-string">"{{ IPV6_NETMASK }}"</span>
-SERVERNAME=<span class="hljs-string">"{{ HOSTNAME }}.whatever.eu"</span>
+DNS_IP=<span class="hljs-string">&quot;{{ IPV4_DNS }}&quot;</span>
+DNS_IPV6=<span class="hljs-string">&quot;{{ IPV6_DNS }}&quot;</span>
+IPV6ADDR=<span class="hljs-string">&quot;{{ IPV6_ADDR }}&quot;</span>
+IPV6GW=<span class="hljs-string">&quot;{{ IPV6_GW }}&quot;</span>
+IPV6NETMASK=<span class="hljs-string">&quot;{{ IPV6_NETMASK }}&quot;</span>
+SERVERNAME=<span class="hljs-string">&quot;{{ HOSTNAME }}.whatever.eu&quot;</span>
 </code></pre>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># /etc/netctl/ovh_net_eth0</span>
-Address=(<span class="hljs-string">'{{ IPV4_ADDR }}/{{ IPV4_NETMASK }}'</span>)
-Gateway=(<span class="hljs-string">'{{ IPV4_GW }}'</span>)
-DNS=(<span class="hljs-string">'{{ IPV4_DNS }}'</span>)
-Address6=(<span class="hljs-string">'{{ IPV6_ADDR }}/{{ IPV6_NETMASK }}'</span>)
-IPCustom=(<span class="hljs-string">'-6 route add {{ IPV6_GW }} dev eth0'</span> <span class="hljs-string">'-6 route add default via {{ IPV6_GW }}
+Address=(<span class="hljs-string">&#x27;{{ IPV4_ADDR }}/{{ IPV4_NETMASK }}&#x27;</span>)
+Gateway=(<span class="hljs-string">&#x27;{{ IPV4_GW }}&#x27;</span>)
+DNS=(<span class="hljs-string">&#x27;{{ IPV4_DNS }}&#x27;</span>)
+Address6=(<span class="hljs-string">&#x27;{{ IPV6_ADDR }}/{{ IPV6_NETMASK }}&#x27;</span>)
+IPCustom=(<span class="hljs-string">&#x27;-6 route add {{ IPV6_GW }} dev eth0&#x27;</span> <span class="hljs-string">&#x27;-6 route add default via {{ IPV6_GW }}
 </span></code></pre>
 <p>You will need those when creating your NixOS configuration.</p>
 <h2 id="fake-boot-in-nixos-iso"><a class="header-anchor" href="#fake-boot-in-nixos-iso">¶</a> Fake boot in NixOS ISO</h2>
@@ -59,7 +106,7 @@ credentials. Once there, execute the following steps:</p>
 <p>In rescue mode the public network interface is <code>eth0</code> but in NixOS, with
 systemd, it’s a different name, and you’ll need to explicitly specify it
 for the network configuration. For this, run the following command:</p>
-<pre><code class="hljs language-sh">udevadm <span class="hljs-built_in">test</span>-builtin net_id /sys/class/net/eth0 2&gt; /dev/null
+<pre><code class="hljs language-sh">udevadm test-builtin net_id /sys/class/net/eth0 2&gt; /dev/null
 </code></pre>
 <p>Which will output:</p>
 <pre><code class="hljs language-sh">ID_NET_NAME_PATH={{ NETIF }}
@@ -93,14 +140,14 @@ mkdir rescue/nix
 <p>Get the ISO URL of the NixOS release you want to install, see the
 <a href="http://nixos.org/nixos/download.html">download page</a>.</p>
 <p>In my case I fetched the latest unstable at this date:</p>
-<pre><code class="hljs language-sh">wget <span class="hljs-string">'https://nixos.org/releases/nixos/unstable/nixos-16.03pre73316.93d8671/nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso'</span>
+<pre><code class="hljs language-sh">wget <span class="hljs-string">&#x27;https://nixos.org/releases/nixos/unstable/nixos-16.03pre73316.93d8671/nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso&#x27;</span>
 mount -o loop nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso image
 </code></pre>
 <h3 id="extract-the-store"><a class="header-anchor" href="#extract-the-store">¶</a> Extract the store</h3>
 <p>To extract the store from the ISO to the rescue system, we need to get
 the <code>squashfs-tools</code> package, then extract it:</p>
 <pre><code class="hljs language-sh">apt-get install squashfs-tools
-unsquashfs -d rescue/nix/store image/nix-store.squashfs <span class="hljs-string">'*'</span>
+unsquashfs -d rescue/nix/store image/nix-store.squashfs <span class="hljs-string">&#x27;*&#x27;</span>
 </code></pre>
 <h3 id="populate-the-system"><a class="header-anchor" href="#populate-the-system">¶</a> Populate the system</h3>
 <p>We then recreate the needed
@@ -116,13 +163,13 @@ mount --<span class="hljs-built_in">bind</span> /sys sys
 after <code>chroot</code>.</p>
 <h3 id="chroot-in-the-installation-system"><a class="header-anchor" href="#chroot-in-the-installation-system">¶</a> <code>chroot</code> in the installation system</h3>
 <p>First need to find the right path for <code>init</code> and <code>bash</code>:</p>
-<pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*nixos*/init'</span>)
-BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*/bin/bash'</span> | tail -n 1)
+<pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*nixos*/init&#x27;</span>)
+BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*/bin/bash&#x27;</span> | tail -n 1)
 <span class="hljs-comment"># See https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2</span>
-find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">'*-nix.conf'</span> | xargs sed -i <span class="hljs-string">'s/sandbox = true/sandbox = false/'</span>
+find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*-nix.conf&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;s/sandbox = true/sandbox = false/&#x27;</span>
 </code></pre>
 <p>Then modify the init script to execute <code>bash</code> instead of <code>systemd</code>:</p>
-<pre><code class="hljs language-sh">sed -i <span class="hljs-string">"s,exec systemd,exec /<span class="hljs-variable">$BASH</span>,"</span> <span class="hljs-string">"<span class="hljs-variable">$INIT</span>"</span>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&quot;s,exec systemd,exec /<span class="hljs-variable">$BASH</span>,&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$INIT</span>&quot;</span>
 </code></pre>
 <p>Now ready to <code>chroot</code>:</p>
 <pre><code class="hljs language-sh">chroot . /<span class="hljs-variable">$INIT</span>
@@ -147,17 +194,17 @@ vim /mnt/etc/nixos/configuration.nix
   <span class="hljs-comment"># ...</span>
 
   <span class="hljs-attr">networking</span> = {
-    <span class="hljs-attr">hostName</span> = <span class="hljs-string">"{{ HOSTNAME }}"</span>;
+    <span class="hljs-attr">hostName</span> = <span class="hljs-string">&quot;{{ HOSTNAME }}&quot;</span>;
 
     interfaces.{{ NETIF }} = {
-      <span class="hljs-attr">ip4</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">"{{ IPV4_ADDR }}"</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV4_NETMASK }}; } ];
-      <span class="hljs-attr">ip6</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">"{{ IPV6_ADDR }}"</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV6_NETMASK }}; } ];
+      <span class="hljs-attr">ip4</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">&quot;{{ IPV4_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV4_NETMASK }}; } ];
+      <span class="hljs-attr">ip6</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">&quot;{{ IPV6_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV6_NETMASK }}; } ];
     };
 
-    <span class="hljs-attr">defaultGateway</span> = <span class="hljs-string">"{{ IPV4_GW }}"</span>;
-    <span class="hljs-attr">defaultGateway6</span> = <span class="hljs-string">"{{ IPV6_GW }}"</span>;
+    <span class="hljs-attr">defaultGateway</span> = <span class="hljs-string">&quot;{{ IPV4_GW }}&quot;</span>;
+    <span class="hljs-attr">defaultGateway6</span> = <span class="hljs-string">&quot;{{ IPV6_GW }}&quot;</span>;
 
-    <span class="hljs-attr">nameservers</span> = [ <span class="hljs-string">"{{ IPV4_DNS }}"</span>, <span class="hljs-string">"{{ IPV6_DNS }}"</span> ];
+    <span class="hljs-attr">nameservers</span> = [ <span class="hljs-string">&quot;{{ IPV4_DNS }}&quot;</span>, <span class="hljs-string">&quot;{{ IPV6_DNS }}&quot;</span> ];
   };
 
   <span class="hljs-comment"># ...</span>
@@ -198,6 +245,9 @@ a dedicated server. <a href="#fnref1" class="footnote-backref">↩︎</a></p>
 </li>
 </ol>
 </section>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

@@ -5,13 +5,60 @@
   <title>Listen a raw playlist with YouTube</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Listen a raw playlist with YouTube</h1>
 <p>May 22, 2015</p>
 <p>Sometimes the easiest way to share a playlist is to just give a raw list
@@ -19,24 +66,24 @@ of song titles and artists. However it’s not straightforward to actually
 <em>play</em> it.</p>
 <p>I wrote a little script to ease the pain, playling each song from
 YouTube directly with <a href="http://mpv.io/">mpv</a> (my player of choice).</p>
-<pre><code class="hljs language-sh"><span class="hljs-comment">#!/bin/sh -e</span>
+<pre><code class="hljs language-sh"><span class="hljs-meta">#!/bin/sh -e</span>
 
 <span class="hljs-function"><span class="hljs-title">go</span></span>() {
-    <span class="hljs-built_in">echo</span> <span class="hljs-string">"Playing <span class="hljs-variable">$1</span>"</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Playing <span class="hljs-variable">$1</span>&quot;</span>
 
     <span class="hljs-comment"># Force TTY input for controls even if titles are read from input</span>
-    mpv --vid=no <span class="hljs-string">"<span class="hljs-variable">$(youtube-dl -g "ytsearch:$1" | tail -1)</span>"</span> &lt; /dev/tty
+    mpv --vid=no <span class="hljs-string">&quot;<span class="hljs-subst">$(youtube-dl -g <span class="hljs-string">&quot;ytsearch:<span class="hljs-variable">$1</span>&quot;</span> | tail -1)</span>&quot;</span> &lt; /dev/tty
 }
 
 <span class="hljs-comment"># All arguments as a single space separated string</span>
-<span class="hljs-keyword">if</span> [ -n <span class="hljs-string">"$*"</span> ]; <span class="hljs-keyword">then</span>
-    go <span class="hljs-string">"$*"</span>
+<span class="hljs-keyword">if</span> [ -n <span class="hljs-string">&quot;$*&quot;</span> ]; <span class="hljs-keyword">then</span>
+    go <span class="hljs-string">&quot;$*&quot;</span>
     <span class="hljs-built_in">exit</span>
 <span class="hljs-keyword">fi</span>
 
 <span class="hljs-comment"># Read one title per line</span>
 <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> title; <span class="hljs-keyword">do</span>
-    go <span class="hljs-string">"<span class="hljs-variable">$title</span>"</span>
+    go <span class="hljs-string">&quot;<span class="hljs-variable">$title</span>&quot;</span>
 <span class="hljs-keyword">done</span>
 </code></pre>
 <p>You can see the latest source <a href="https://github.com/valeriangalliat/dotfiles/blob/master/bin/ytpl">here</a>.</p>
@@ -51,9 +98,12 @@ EOF
 <h2 id="continuing-a-playlist"><a class="header-anchor" href="#continuing-a-playlist">¶</a> Continuing a playlist</h2>
 <p>If you ever stop the script in the middle of a playlist, and want to
 continue later, just pipe the playlist file in <code>sed</code>:</p>
-<pre><code class="hljs language-sh">sed <span class="hljs-string">'0,/&lt;title&gt;/d'</span> &lt; playlist | ytpl
+<pre><code class="hljs language-sh">sed <span class="hljs-string">&#x27;0,/&lt;title&gt;/d&#x27;</span> &lt; playlist | ytpl
 </code></pre>
 <p>Where <code>&lt;title&gt;</code> is the title of the song you stopped at.</p>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

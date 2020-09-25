@@ -5,13 +5,60 @@
   <title>Apache get PHP version from environment</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Apache get PHP version from environment</h1>
 <p>August 19, 2014</p>
 <p>Using <a href="https://github.com/cweiske/phpfarm">phpfarm</a> to compile custom PHP versions.</p>
@@ -28,19 +75,19 @@
             └── php-cgi
 </code></pre>
 <p>The <code>cgi-bin/php-cgi</code> script:</p>
-<pre><code class="hljs language-sh"><span class="hljs-comment">#!/bin/sh -e</span>
+<pre><code class="hljs language-sh"><span class="hljs-meta">#!/bin/sh -e</span>
 
-<span class="hljs-built_in">cd</span> <span class="hljs-string">"<span class="hljs-variable">$(dirname "$0")</span>"</span>
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>&quot;</span>
 
 inst=../phpfarm/inst
 
-<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">"<span class="hljs-variable">$PHP_VERSION</span>"</span> ]; <span class="hljs-keyword">then</span>
-    file=<span class="hljs-string">"<span class="hljs-variable">$inst</span>/current-bin/php-cgi"</span>
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">&quot;<span class="hljs-variable">$PHP_VERSION</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
+    file=<span class="hljs-string">&quot;<span class="hljs-variable">$inst</span>/current-bin/php-cgi&quot;</span>
 <span class="hljs-keyword">else</span>
-    file=<span class="hljs-string">"<span class="hljs-variable">$inst</span>/bin/php-cgi-<span class="hljs-variable">$PHP_VERSION</span>"</span>
+    file=<span class="hljs-string">&quot;<span class="hljs-variable">$inst</span>/bin/php-cgi-<span class="hljs-variable">$PHP_VERSION</span>&quot;</span>
 <span class="hljs-keyword">fi</span>
 
-<span class="hljs-built_in">exec</span> <span class="hljs-string">"<span class="hljs-variable">$file</span>"</span>
+<span class="hljs-built_in">exec</span> <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>
 </code></pre>
 <p>And the Apache configuration:</p>
 <pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">DocumentRoot</span></span> /home/site/public_html
@@ -51,7 +98,7 @@ inst=../phpfarm/inst
 </code></pre>
 <p>The PHP version will be executed according to the <code>PHP_VERSION</code>
 environment variable, that you can set for example from a <code>.htaccess</code>:</p>
-<pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">SetEnv</span></span> PHP_VERSION 5.6
+<pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">SetEnv</span></span> PHP_VERSION <span class="hljs-number">5</span>.<span class="hljs-number">6</span>
 </code></pre>
 <h2 id="variant-php-version-at-project-level"><a class="header-anchor" href="#variant-php-version-at-project-level">¶</a> Variant: PHP version at project level</h2>
 <p>If you don’t need this to be configurable at environment level, you can
@@ -61,12 +108,12 @@ simply configure the PHP version in the virtual host:</p>
 
 <span class="hljs-section">&lt;Location /project-5.5&gt;</span>
   <span class="hljs-attribute">AddHandler</span> php-cgi .php
-  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin-php/php-cgi-5.5
+  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin-php/php-cgi-<span class="hljs-number">5</span>.<span class="hljs-number">5</span>
 <span class="hljs-section">&lt;/Location&gt;</span>
 
 <span class="hljs-section">&lt;Location /project-5.6&gt;</span>
   <span class="hljs-attribute">AddHandler</span> php-cgi .php
-  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin-php/php-cgi-5.6
+  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin-php/php-cgi-<span class="hljs-number">5</span>.<span class="hljs-number">6</span>
 <span class="hljs-section">&lt;/Location&gt;</span>
 </code></pre>
 <p>Where <code>php-cgi-5.5</code> contains the following (and similar for
@@ -74,6 +121,9 @@ simply configure the PHP version in the virtual host:</p>
 <pre><code class="hljs language-sh"><span class="hljs-meta">#!/bin/sh</span>
 <span class="hljs-built_in">exec</span> /home/php/phpfarm/inst/bin/php-cgi-5.5
 </code></pre>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

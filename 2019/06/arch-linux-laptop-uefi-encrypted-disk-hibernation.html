@@ -5,13 +5,60 @@
   <title>Arch Linux laptop, UEFI, encrypted disk and hibernation</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Arch Linux laptop, UEFI, encrypted disk and hibernation</h1>
 <p>June 8, 2019</p>
 <p>Based on <a href="https://gist.github.com/mattiaslundberg/8620837">this Gist</a>,
@@ -32,7 +79,7 @@ motherboard settings.</p>
 <pre><code class="hljs language-sh">wifi-menu
 </code></pre>
 <p>Make sure system clock is accurate.</p>
-<pre><code class="hljs language-sh">timedatectl <span class="hljs-built_in">set</span>-ntp <span class="hljs-literal">true</span>
+<pre><code class="hljs language-sh">timedatectl set-ntp <span class="hljs-literal">true</span>
 </code></pre>
 <p>Partition disk. I will go with a 256 MiB mixed EFI and boot partition,
 and the rest for a LUKS container, containing a 8 GiB swap (the size of
@@ -98,8 +145,8 @@ hwclock --systohc
 <p>Uncomment the locale you desire in <code>/etc/locale.gen</code> (<code>en_CA.UTF-8</code> for
 me, as well as <code>en_GB.UTF-8</code> to have 24-hour clock format).</p>
 <pre><code class="hljs language-sh">locale-gen
-<span class="hljs-built_in">echo</span> <span class="hljs-string">'LANG=en_CA.UTF-8'</span> &gt; /etc/locale.conf
-<span class="hljs-built_in">echo</span> <span class="hljs-string">'LC_TIME=en_GB.UTF-8'</span> &gt;&gt; /etc/locale.conf
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;LANG=en_CA.UTF-8&#x27;</span> &gt; /etc/locale.conf
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;LC_TIME=en_GB.UTF-8&#x27;</span> &gt;&gt; /etc/locale.conf
 </code></pre>
 <p>Set the hostname.</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> myhostname &gt; /etc/hostname
@@ -122,7 +169,7 @@ HOOKS=(base udev autodetect modconf block encrypt lvm2 filesystems resume keyboa
 <code>cryptdevice=/dev/sdx2:luks:allow-discards</code> (again, replace <code>/dev/sdx</code>
 with the proper drive) to <code>GRUB_CMDLINE_LINUX</code>.  I also added
 <code>resume=/dev/vg0/swap</code> for supporting hibernation (resuming from swap).</p>
-<pre><code class="hljs language-sh">GRUB_CMDLINE_LINUX=<span class="hljs-string">"cryptdevice=/dev/sdx2:luks:allow-discards resume=/dev/vg0/swap"</span>
+<pre><code class="hljs language-sh">GRUB_CMDLINE_LINUX=<span class="hljs-string">&quot;cryptdevice=/dev/sdx2:luks:allow-discards resume=/dev/vg0/swap&quot;</span>
 </code></pre>
 <p>Install GRUB and generate its configuration. Since I decided to have a
 shared EFI and boot partition, I need to tell GRUB that the EFI
@@ -152,7 +199,7 @@ interface (replace <code>wlp2s0</code> with your Wi-Fi interface).</p>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> netctl-auto@wlp2s0
 </code></pre>
 <p>Enable time synchronization.</p>
-<pre><code class="hljs language-sh">timedatectl <span class="hljs-built_in">set</span>-ntp <span class="hljs-literal">true</span>
+<pre><code class="hljs language-sh">timedatectl set-ntp <span class="hljs-literal">true</span>
 </code></pre>
 <p>Add user and set password.</p>
 <pre><code class="hljs language-sh">useradd -m -G wheel -s /usr/bin/zsh val
@@ -236,11 +283,11 @@ systemctl start bluetooth
 <p>I add the following to <code>/etc/X11/xorg.conf.d/40-libinput.conf</code> to have
 the touchpad work the way I like it to (natural scrolling and having the
 whole surface clickable).</p>
-<pre><code class="hljs">Section "InputClass"
-        Identifier "libinput clickfinger"
-        Driver "libinput"
-        Option "ClickMethod" "clickfinger"
-        Option "NaturalScrolling" "true"
+<pre><code class="hljs">Section &quot;InputClass&quot;
+        Identifier &quot;libinput clickfinger&quot;
+        Driver &quot;libinput&quot;
+        Option &quot;ClickMethod&quot; &quot;clickfinger&quot;
+        Option &quot;NaturalScrolling&quot; &quot;true&quot;
 EndSection
 </code></pre>
 <h3 id="auto-hibernate-after-sustained-suspend"><a class="header-anchor" href="#auto-hibernate-after-sustained-suspend">¶</a> Auto hibernate after sustained suspend</h3>
@@ -267,6 +314,9 @@ make i3 i3blocks zsh vim git net x11 picom xfce4-terminal
 <p>Lastly, in Firefox I add the Vimium-FF and uBlock Origin extensions.</p>
 <p>And here you go, a somewhat minimalist Arch Linux setup with everything
 needed to have a smooth laptop experience!</p>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

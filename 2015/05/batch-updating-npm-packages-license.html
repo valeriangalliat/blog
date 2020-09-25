@@ -5,13 +5,60 @@
   <title>Batch updating npm packages license</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Batch updating npm packages license</h1>
 <p>May 25, 2015</p>
 <p>Since a few weeks, npm have <a href="https://github.com/npm/npm/commit/8669f7d88c472ccdd60e140106ac43cca636a648">deprecated</a> the old <code>package.json</code>
@@ -21,15 +68,15 @@ it now must be just a string.</p>
 but it looks like it’s not the case anymore!</p>
 <p>So I basically have to change the following:</p>
 <pre><code class="hljs language-json">{
-  <span class="hljs-attr">"license"</span>: {
-    <span class="hljs-attr">"type"</span>: <span class="hljs-string">"Unlicense"</span>,
-    <span class="hljs-attr">"url"</span>: <span class="hljs-string">"http://unlicense.org/"</span>
+  <span class="hljs-attr">&quot;license&quot;</span>: {
+    <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Unlicense&quot;</span>,
+    <span class="hljs-attr">&quot;url&quot;</span>: <span class="hljs-string">&quot;http://unlicense.org/&quot;</span>
   }
 }
 </code></pre>
 <p>to this:</p>
 <pre><code class="hljs language-json">{
-  <span class="hljs-attr">"license"</span>: <span class="hljs-string">"Unlicense"</span>
+  <span class="hljs-attr">&quot;license&quot;</span>: <span class="hljs-string">&quot;Unlicense&quot;</span>
 }
 </code></pre>
 <p>for all the packages I have under the Unlicense (roughly 30 packages).</p>
@@ -39,11 +86,11 @@ commands. I did not wrote this script at once, but here’s what’s
 resulting of my <code>history</code>, with a drastic cleanup (there was <em>a lot</em> of
 trial and error) and comments:</p>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># Get all the packages I contribute to</span>
-curl -s <span class="hljs-string">'https://www.npmjs.com/~valeriangalliat'</span> | grep /package/ | sed <span class="hljs-string">'s,.*/package/,,;s/".*//'</span> &gt; my-packages
+curl -s <span class="hljs-string">&#x27;https://www.npmjs.com/~valeriangalliat&#x27;</span> | grep /package/ | sed <span class="hljs-string">&#x27;s,.*/package/,,;s/&quot;.*//&#x27;</span> &gt; my-packages
 
 <span class="hljs-comment"># Get the URL of non-deprecated packages</span>
 cat my-packages | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> package; <span class="hljs-keyword">do</span>
-    node -e <span class="hljs-string">"var x = <span class="hljs-variable">$(npm info "$package")</span>;"</span><span class="hljs-string">' if (!x.deprecated) console.log(x.repository.url.replace("git+https", "https"))'</span>
+    node -e <span class="hljs-string">&quot;var x = <span class="hljs-subst">$(npm info <span class="hljs-string">&quot;<span class="hljs-variable">$package</span>&quot;</span>)</span>;&quot;</span><span class="hljs-string">&#x27; if (!x.deprecated) console.log(x.repository.url.replace(&quot;git+https&quot;, &quot;https&quot;))&#x27;</span>
 <span class="hljs-keyword">done</span> &gt; repos
 
 <span class="hljs-comment"># Clone all repositories</span>
@@ -53,31 +100,34 @@ cat repos | xargs -L1 git <span class="hljs-built_in">clone</span>
 cat repos | xargs -L1 basename &gt; <span class="hljs-built_in">dirs</span>
 
 <span class="hljs-comment"># Update the license</span>
-cat <span class="hljs-built_in">dirs</span> | sed <span class="hljs-string">'s,$,/package.json,'</span> | xargs sed -i <span class="hljs-string">'/license/{N;/Unlicense/{N;N;s/.*/  "license": "Unlicense",/;}}'</span>
+cat <span class="hljs-built_in">dirs</span> | sed <span class="hljs-string">&#x27;s,$,/package.json,&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;/license/{N;/Unlicense/{N;N;s/.*/  &quot;license&quot;: &quot;Unlicense&quot;,/;}}&#x27;</span>
 
 <span class="hljs-comment"># Check the update</span>
 cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} diff
 
 <span class="hljs-comment"># Commit</span>
-cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} commit -am <span class="hljs-string">'Update package license format'</span>
+cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} commit -am <span class="hljs-string">&#x27;Update package license format&#x27;</span>
 
 <span class="hljs-comment"># Get the repositories where a change occurred (otherwise the commit was not done)</span>
-cat <span class="hljs-built_in">dirs</span> | xargs -I{} sh -c <span class="hljs-string">'cd {} &amp;&amp; git log -n 1 | grep -q "Update package license format" &amp;&amp; echo {}'</span> &gt; updated
+cat <span class="hljs-built_in">dirs</span> | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git log -n 1 | grep -q &quot;Update package license format&quot; &amp;&amp; echo {}&#x27;</span> &gt; updated
 
 <span class="hljs-comment"># Bump patch (commit and tag)</span>
-cat updated | xargs -I{} npm version patch -m <span class="hljs-string">'Bump %s'</span>
+cat updated | xargs -I{} npm version patch -m <span class="hljs-string">&#x27;Bump %s&#x27;</span>
 
 <span class="hljs-comment"># Check commits to push</span>
 cat updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin/master..
 
 <span class="hljs-comment"># Push, install dependencies and publish</span>
-cat updated | xargs -I{} sh -c <span class="hljs-string">'cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish'</span>
+cat updated | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish&#x27;</span>
 </code></pre>
 <h2 id="was-it-worth-it"><a class="header-anchor" href="#was-it-worth-it">¶</a> Was it worth it?</h2>
 <p>In the end, I think it took way more time to write this script (and blog
 post) than doing it manually. But it was also <em>incredibly more fun</em>!</p>
 <p>I hope this may be useful to other people in the same case as me, so it
 will be actually productive, in addition to be fun.</p>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

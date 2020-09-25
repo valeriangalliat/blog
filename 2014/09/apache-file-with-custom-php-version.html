@@ -5,31 +5,81 @@
   <title>Apache file with custom PHP version</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
-  <link rel="stylesheet" href="/css/zenburn.css">
+  <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main.css">
 </head>
 <body class="post">
-  <header class="home">
-    <a href="/">Home</a>
+  <header>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
   </header>
+  <div class="content">
 <h1>Apache file with custom PHP version</h1>
 <p>September 16, 2014</p>
 <p>I once wanted to execute a single PHP file with a specific PHP version,
 different from the globally configured one with <code>mod_php</code>.</p>
 <p>First, enable a <code>cgi-bin</code> directory:</p>
-<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location "/cgi-bin"&gt;</span>
+<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location <span class="hljs-string">&quot;/cgi-bin&quot;</span>&gt;</span>
   <span class="hljs-attribute"><span class="hljs-nomarkup">SetHandler</span></span> cgi-script
   <span class="hljs-attribute"><span class="hljs-nomarkup">Options</span></span> +ExecCGI
 <span class="hljs-section">&lt;Location&gt;</span>
 </code></pre>
 <p>You can also use <code>ScriptAlias</code> for this.</p>
 <p>Then, for this specific file, turn off <code>mod_php</code> and use custom CGI:</p>
-<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location "/test.php"&gt;</span>
+<pre><code class="hljs language-apache"><span class="hljs-section">&lt;Location <span class="hljs-string">&quot;/test.php&quot;</span>&gt;</span>
   <span class="hljs-attribute">php_flag</span> engine <span class="hljs-literal">off</span>
-  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin/php55
+  <span class="hljs-attribute">Action</span> php-cgi /cgi-bin/php<span class="hljs-number">55</span>
   <span class="hljs-attribute">AddHandler</span> php-cgi .php
 <span class="hljs-section">&lt;Location&gt;</span>
 </code></pre>
-<footer>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</footer>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
 </body>
 </html>

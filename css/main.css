@@ -149,7 +149,6 @@ h6:hover .header-anchor {
 
 .header-anchor {
     text-decoration: none;
-    color: #666;
     opacity: 0;
     position: absolute;
     left: -1.5ch;
@@ -158,6 +157,10 @@ h6:hover .header-anchor {
 
 .header-anchor:hover {
     text-decoration: none;
+}
+
+.header-anchor:visited {
+    color: #4183c4;
 }
 figure {
     margin-left: 0;

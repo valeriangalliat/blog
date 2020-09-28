@@ -1,0 +1,58 @@
+nav {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+
+    /* Dirty fix to prevent horizontal scroll in some cased because of negative
+     * margin below. */
+    overflow: hidden;
+}
+
+nav ul {
+    font-family: sans-serif;
+    font-size: 0.75em;
+    list-style-type: none;
+    padding-left: 0;
+    display: flex;
+    margin: 1em -1em;
+}
+
+@media all and (max-width: 69em) {
+    nav {
+        margin-left: auto;
+        margin-right: auto;
+        max-width: 45rem;
+        padding: 0 .5em;
+    }
+}
+
+@media all and (max-width: 42em) {
+    nav {
+        flex-direction: column;
+    }
+
+    nav ul {
+        justify-content: center;
+    }
+}
+
+nav li {
+    padding: 0 1em;
+}
+
+nav a, nav a:visited {
+    color: #666;
+}
+
+nav a:hover {
+    color: #333;
+    text-decoration: none;
+}
+
+nav .social svg {
+    --color-fill: #666;
+}
+
+nav .social a:hover svg {
+    --color-fill: #333;
+}

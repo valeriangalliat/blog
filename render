@@ -13,6 +13,15 @@ const md = mdit({
   typographer: true
 })
 
+const meta = {}
+
+md.use(require('markdown-it-front-matter'), metaString => {
+  for (const line of metaString.split('\n')) {
+    const [key, value] = line.split(': ')
+    meta[key] = value
+  }
+})
+
 md.use(require('markdown-it-anchor'), {
   level: 2, // Do not permalink `<h1>`.
   slugify,
@@ -31,8 +40,26 @@ const foot = fs.readFileSync(path.resolve(__dirname, 'foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
 const env = {}
 const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
-const html = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1')
+const lines = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1').trim().split('\n')
+const slice = bodyClass === 'post' ? 2 : 1;
+const header = lines.slice(0, slice).join('\n')
+const body = lines.slice(slice).join('\n')
 
-process.stdout.write(head.replace('<title>', `<title>${env.title}`).replace(/<body>/, `<body class="${bodyClass}">`))
-process.stdout.write(html)
+let hero = '<header>'
+
+if (meta.hero) {
+  const focus = meta.focus ? ` background-position: ${meta.focus};` : '';
+  hero = `<header class="hero" style="background-image: url(${meta.hero});${focus}">`
+}
+
+process.stdout.write(
+  head
+    .replace('<title>', `<title>${env.title}`)
+    .replace(/<body>/, `<body class="${bodyClass}">`)
+    .replace(/<header>/, hero)
+    .replace(/<div class="content">/, `<div class="content">\n${header}`)
+)
+
+process.stdout.write(body)
+process.stdout.write('\n')
 process.stdout.write(foot)

@@ -32,6 +32,8 @@ dist/css/main.css: \
 	css/components/footer.css \
 	css/components/footnotes.css \
 	css/components/header.css \
+	css/components/nav.css \
+	css/components/hero.css \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@

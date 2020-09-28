@@ -1,3 +1,8 @@
+---
+hero: /img/2020/06/gopro.jpg
+focus: 15% 40%
+---
+
 My settings for GoPro HERO (2018) and HERO5 Black
 =================================================
 June 16, 2020

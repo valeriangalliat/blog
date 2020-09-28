@@ -1,3 +1,8 @@
+---
+hero: ../../img/2020/05/lumix.jpg
+focus: 50% 45%
+---
+
 My settings for Panasonic LUMIX LX100
 =====================================
 May 22, 2020

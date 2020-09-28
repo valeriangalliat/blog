@@ -27,7 +27,7 @@ Error: CodeJam is already defined
 ---------------------------------
 
 <figure class="left">
-  <img src="../../img/naming-things.jpg">
+  <img src="../../img/2015/03/naming-things.jpg">
 </figure>
 
 Turns out there's already something called *Google Code Jam*. Yeah,

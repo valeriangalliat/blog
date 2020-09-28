@@ -93,8 +93,8 @@ Putting it all together
 -----------------------
 
 <figure class="left">
-  <a href="../../img/codejam.jpg">
-    <img alt="CodeJam server image" src="../../img/codejam.thumb.jpg">
+  <a href="../../img/2014/10/codejam.jpg">
+    <img alt="CodeJam server image" src="../../img/2014/10/codejam.thumb.jpg">
   </a>
 </figure>
 

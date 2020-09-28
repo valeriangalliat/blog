@@ -17,7 +17,7 @@ The need for a blog
 -------------------
 
 <figure class="left">
-  <img alt="I should write a blog" src="../../img/i-should-write-a-blog.jpg">
+  <img alt="I should write a blog" src="../../img/2015/03/i-should-write-a-blog.jpg">
 </figure>
 
 It's been a while I'm periodically thinking: "I should definitely write

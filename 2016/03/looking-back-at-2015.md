@@ -255,17 +255,17 @@ Soon enough I could bike for 20, 40, even 80 kilometers straight! This
 was a rewarding experience and was really worth the initial pain.
 
 <figure class="center">
-  <a href="../../img/bike/01.jpg">
-    <img src="../../img/bike/01.thumb.jpg">
+  <a href="../../img/2016/03/bike/01.jpg">
+    <img src="../../img/2016/03/bike/01.thumb.jpg">
   </a>
-  <a href="../../img/bike/02.jpg">
-    <img src="../../img/bike/02.thumb.jpg">
+  <a href="../../img/2016/03/bike/02.jpg">
+    <img src="../../img/2016/03/bike/02.thumb.jpg">
   </a>
-  <a href="../../img/bike/03.jpg">
-    <img src="../../img/bike/03.thumb.jpg">
+  <a href="../../img/2016/03/bike/03.jpg">
+    <img src="../../img/2016/03/bike/03.thumb.jpg">
   </a>
-  <a href="../../img/bike/04.jpg">
-    <img src="../../img/bike/04.thumb.jpg">
+  <a href="../../img/2016/03/bike/04.jpg">
+    <img src="../../img/2016/03/bike/04.thumb.jpg">
   </a>
   <figcaption>It allowed me to discover nice places around my city, Grenoble.</figcaption>
 </figure>
@@ -280,41 +280,41 @@ At the end of the summer, I walked roughly 20,000 vertical meters among
 
 <div class="oversized">
   <figure class="center">
-    <a href="../../img/mountain/01.jpg">
-      <img src="../../img/mountain/01.thumb.jpg">
+    <a href="../../img/2016/03/mountain/01.jpg">
+      <img src="../../img/2016/03/mountain/01.thumb.jpg">
     </a>
-    <a href="../../img/mountain/02.jpg">
-      <img src="../../img/mountain/02.thumb.jpg">
+    <a href="../../img/2016/03/mountain/02.jpg">
+      <img src="../../img/2016/03/mountain/02.thumb.jpg">
     </a>
-    <a href="../../img/mountain/03.jpg">
-      <img src="../../img/mountain/03.thumb.jpg">
+    <a href="../../img/2016/03/mountain/03.jpg">
+      <img src="../../img/2016/03/mountain/03.thumb.jpg">
     </a>
-    <a href="../../img/mountain/04.jpg">
-      <img src="../../img/mountain/04.thumb.jpg">
+    <a href="../../img/2016/03/mountain/04.jpg">
+      <img src="../../img/2016/03/mountain/04.thumb.jpg">
     </a>
-    <a href="../../img/mountain/05.jpg">
-      <img src="../../img/mountain/05.thumb.jpg">
+    <a href="../../img/2016/03/mountain/05.jpg">
+      <img src="../../img/2016/03/mountain/05.thumb.jpg">
     </a>
-    <a href="../../img/mountain/06.jpg">
-      <img src="../../img/mountain/06.thumb.jpg">
+    <a href="../../img/2016/03/mountain/06.jpg">
+      <img src="../../img/2016/03/mountain/06.thumb.jpg">
     </a>
-    <a href="../../img/mountain/07.jpg">
-      <img src="../../img/mountain/07.thumb.jpg">
+    <a href="../../img/2016/03/mountain/07.jpg">
+      <img src="../../img/2016/03/mountain/07.thumb.jpg">
     </a>
-    <a href="../../img/mountain/08.jpg">
-      <img src="../../img/mountain/08.thumb.jpg">
+    <a href="../../img/2016/03/mountain/08.jpg">
+      <img src="../../img/2016/03/mountain/08.thumb.jpg">
     </a>
-    <a href="../../img/mountain/09.jpg">
-      <img src="../../img/mountain/09.thumb.jpg">
+    <a href="../../img/2016/03/mountain/09.jpg">
+      <img src="../../img/2016/03/mountain/09.thumb.jpg">
     </a>
-    <a href="../../img/mountain/10.jpg">
-      <img src="../../img/mountain/10.thumb.jpg">
+    <a href="../../img/2016/03/mountain/10.jpg">
+      <img src="../../img/2016/03/mountain/10.thumb.jpg">
     </a>
-    <a href="../../img/mountain/11.jpg">
-      <img src="../../img/mountain/11.thumb.jpg">
+    <a href="../../img/2016/03/mountain/11.jpg">
+      <img src="../../img/2016/03/mountain/11.thumb.jpg">
     </a>
-    <a href="../../img/mountain/12.jpg">
-      <img src="../../img/mountain/12.thumb.jpg">
+    <a href="../../img/2016/03/mountain/12.jpg">
+      <img src="../../img/2016/03/mountain/12.thumb.jpg">
     </a>
     <figcaption>Here's a taste of the sublime landscapes we have in the Alps.</figcaption>
   </figure>
@@ -342,11 +342,11 @@ and we were stuck in a garage for half a day. Fortunately they could fix
 the engine and I got to my destination on time.
 
 <figure class="center">
-  <a href="../../img/airport/01.jpg">
-    <img src="../../img/airport/01.thumb.jpg">
+  <a href="../../img/2016/03/airport/01.jpg">
+    <img src="../../img/2016/03/airport/01.thumb.jpg">
   </a>
-  <a href="../../img/airport/02.jpg">
-    <img src="../../img/airport/02.thumb.jpg">
+  <a href="../../img/2016/03/airport/02.jpg">
+    <img src="../../img/2016/03/airport/02.thumb.jpg">
   </a>
   <figcaption>Direction Montreal!</figcaption>
 </figure>
@@ -367,8 +367,8 @@ Stay tuned!
 
 <div class="oversized">
   <figure class="center">
-    <a href="../../img/busbud.jpg">
-      <img src="../../img/busbud.thumb.jpg">
+    <a href="../../img/2016/03/busbud.jpg">
+      <img src="../../img/2016/03/busbud.thumb.jpg">
     </a>
     <figcaption>Busbud, a startup with a view!</figcaption>
   </figure>
@@ -399,14 +399,14 @@ since ever. Let's [play that funky music][funk]!
 
 <div class="oversized">
   <figure class="center">
-    <a href="../../img/guitar/01.jpg">
-      <img src="../../img/guitar/01.thumb.jpg">
+    <a href="../../img/2016/03/guitar/01.jpg">
+      <img src="../../img/2016/03/guitar/01.thumb.jpg">
     </a>
-    <a href="../../img/guitar/02.jpg">
-      <img src="../../img/guitar/02.thumb.jpg">
+    <a href="../../img/2016/03/guitar/02.jpg">
+      <img src="../../img/2016/03/guitar/02.thumb.jpg">
     </a>
-    <a href="../../img/guitar/03.jpg">
-      <img src="../../img/guitar/03.thumb.jpg">
+    <a href="../../img/2016/03/guitar/03.jpg">
+      <img src="../../img/2016/03/guitar/03.thumb.jpg">
     </a>
     <figcaption>Shameless guitar porn.</figcaption>
   </figure>
@@ -429,11 +429,11 @@ covered by a couple centimeters of snow, biking on it was surprisingly
 good, and even really enjoyable when the snow is fresh!
 
 <figure class="center">
-  <a href="../../img/bike-2/01.jpg">
-    <img src="../../img/bike-2/01.thumb.jpg">
+  <a href="../../img/2016/03/bike-2/01.jpg">
+    <img src="../../img/2016/03/bike-2/01.thumb.jpg">
   </a>
-  <a href="../../img/bike-2/02.jpg">
-    <img src="../../img/bike-2/02.thumb.jpg">
+  <a href="../../img/2016/03/bike-2/02.jpg">
+    <img src="../../img/2016/03/bike-2/02.thumb.jpg">
   </a>
   <figcaption>This is my bike. It's a beautiful bike.</figcaption>
 </figure>
@@ -456,23 +456,23 @@ walked around the whole island and could visit a decent part of it.
 
 <div class="oversized">
   <figure class="center">
-    <a href="../../img/ny/01.jpg">
-      <img src="../../img/ny/01.thumb.jpg">
+    <a href="../../img/2016/03/ny/01.jpg">
+      <img src="../../img/2016/03/ny/01.thumb.jpg">
     </a>
-    <a href="../../img/ny/02.jpg">
-      <img src="../../img/ny/02.thumb.jpg">
+    <a href="../../img/2016/03/ny/02.jpg">
+      <img src="../../img/2016/03/ny/02.thumb.jpg">
     </a>
-    <a href="../../img/ny/03.jpg">
-      <img src="../../img/ny/03.thumb.jpg">
+    <a href="../../img/2016/03/ny/03.jpg">
+      <img src="../../img/2016/03/ny/03.thumb.jpg">
     </a>
-    <a href="../../img/ny/04.jpg">
-      <img src="../../img/ny/04.thumb.jpg">
+    <a href="../../img/2016/03/ny/04.jpg">
+      <img src="../../img/2016/03/ny/04.thumb.jpg">
     </a>
-    <a href="../../img/ny/05.jpg">
-      <img src="../../img/ny/05.thumb.jpg">
+    <a href="../../img/2016/03/ny/05.jpg">
+      <img src="../../img/2016/03/ny/05.thumb.jpg">
     </a>
-    <a href="../../img/ny/06.jpg">
-      <img src="../../img/ny/06.thumb.jpg">
+    <a href="../../img/2016/03/ny/06.jpg">
+      <img src="../../img/2016/03/ny/06.thumb.jpg">
     </a>
     <figcaption>New York.</figcaption>
   </figure>

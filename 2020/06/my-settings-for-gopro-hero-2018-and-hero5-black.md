@@ -1,5 +1,5 @@
 ---
-hero: /img/2020/06/gopro.jpg
+hero: ../../img/2020/06/gopro.jpg
 focus: 15% 40%
 ---
 

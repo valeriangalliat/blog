@@ -148,8 +148,7 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
 1. Don't select anything in "Drivers", "Audio", we'll take care of that later.
    (I tried the 2.8.6 version before and had issues with crackling sound).
 1. In "Drivers", "Disk", select "3rd Party SATA" and "Intel Generic AHCI SATA".
-1. In "Drivers", "Misc", select "FakeSMC Plugins", "FakeSMC HWMonitor Application"
-   and "NullCPUPowerManagement".
+1. In "Drivers", "Misc", select "FakeSMC Plugins" and "NullCPUPowerManagement".
 1. In "Drivers", "Network", in "Realtek" select "RealtekRTL8111 v2.2.2".
 1. In "Drivers", "USB", select "3rd Party USB 3.0", "7/8/9 Series USB Support",
    "Remove XHCI USB Port Limit" and "USBInjectAll". USBInjectAll is

@@ -13,6 +13,9 @@ Posts
 
 <div class="links posts">
 
+* [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
+* [Too much contrast on external screen with macOS Catalina](2020/10/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
+* [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>
 * [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
@@ -25,9 +28,6 @@ Posts
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
 * [macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
-* [Looking back at 2015](2016/03/looking-back-at-2015.md) <small>March 12, 2016</small>
-* [Minimal NixOS configuration profile](2016/02/minimal-nixos-configuration-profile.md) <small>February 15, 2016</small>
-* [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
 
 [More posts](posts.md)
 

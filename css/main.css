@@ -239,6 +239,12 @@ footer a:hover {
     padding: 1em 2em 0;
 }
 
+@media all and (max-width: 69em) {
+    .header-inner {
+        padding: 1em 0 0;
+    }
+}
+
 header .content {
     margin-top: 6em;
 }

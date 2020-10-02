@@ -39,18 +39,26 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
     margin: 2rem 0 2rem 0;
 }
 
-h1 small {
-    font-size: 40%;
+h1.has-subtitle {
+    /* Set base size to the small font size, and then use the span inside
+     * to make the text bigger.
+     *
+     * Having the block `font-size` the same as the smallest possible text
+     * inside allows for more pleasing spacing between lines when wrapping. */
+    font-size: .8em;
+}
+
+h1.has-subtitle span {
+    font-size: 2rem;
+}
+
+h1.has-subtitle small {
+    font-size: inherit;
     color: #333;
 
     /* Force subtitle on its own line if it doesn't fit on the same line
      * as the main title. */
     display: inline-block;
-
-    /* Don't collapse white spaces, mostly useful for homepage to allow
-     * keeping the small coma on the first line when breaking the sutbitle on a
-     * new line, but still having the space when it's on the same line. */
-    white-space: pre;
 }
 
 table {

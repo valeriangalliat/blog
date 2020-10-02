@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Too much contrast on external screen with macOS Catalina</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>Too much contrast on external screen with macOS Catalina</h1>
+<p>October 2, 2020</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I recently <a href="upgrade-hackintosh-high-sierra-catalina.html">upgraded</a> my <a href="../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">Hackintosh</a> from High
+Sierra to Catalina (after switching from NVIDIA to AMD).</p>
+<p>After the upgrade, the contrast was way too high on my ASUS monitor
+(VP239H-P). I can’t add pictures here really because it’s how the
+display rendered colors that was affected, and a screenshot wouldn’t
+represent that. I confirmed that the colors were off by comparing with
+my Windows dual boot.</p>
+<p>I wasn’t in high contrast mode, and this problem was there with any kind
+of display profile in the system preferences (each profile looked
+different, but each profiled looked equally overly contrasty).</p>
+<p>While I couldn’t find anything online about that exact issue, I found
+a similar post with an <a href="https://spin.atomicobject.com/2018/08/24/macbook-pro-external-monitor-display-problem/">external monitor color problem</a>.</p>
+<p>There’s a great explanation there about color formats, the differences
+between YCbCr, YPbPr and RGB, and the way EDIDs affect which color
+format will be used.</p>
+<p>For me, it seems that High Sierra used RGB by default, while Catalina
+switched to YCbCr, as my ASUS VP239H-P claims to support it, but in
+practice it gives way too contrasty results.</p>
+<p>The only way to fix that as explained in the above article, is to
+configure macOS to override the EDID of that specific display to force
+RGB mode.</p>
+<h2 id="patch-the-edid-to-force-rgb-mode"><a class="header-anchor" href="#patch-the-edid-to-force-rgb-mode">¶</a> Patch the EDID to force RGB mode</h2>
+<p>Here’s <a href="https://www.mathewinkson.com/2013/03/force-rgb-mode-in-mac-os-x-to-fix-the-picture-quality-of-an-external-monitor">another article</a> that explains in great details
+how to do that, but I’ll sum up things here.</p>
+<p>Download the <a href="https://gist.github.com/adaugherity/7435890">following script</a> and run <code>ruby patch-edid.rb</code>.
+That will generate a directory starting with <code>DisplayVendorID-</code>, in my
+case, <code>DisplayVendorID-469</code>, that contains a file for your specific
+display, in my case, <code>DisplayProductID-23c5</code>.</p>
+<p>You need to put this file in <code>/System/Library/Displays/Contents/Resources/Overrides</code>, so in my case
+the full path would be <code>/System/Library/Displays/Contents/Resources/Overrides/DisplayVendorID-469/DisplayProductID-23c5</code>.</p>
+<p>You can’t write in this folder by default at least in recent macOS
+versions like Catalina, and I’ve seen people suggesting to reboot in
+recovery mode to be able to do it from there, but as far as I’m
+concerned, a simple <code>mount -u -w /</code> as <code>root</code> allowed me to put the file
+there.</p>
+<p>Then reboot the computer.</p>
+<h2 id="using-a-better-display-profile"><a class="header-anchor" href="#using-a-better-display-profile">¶</a> Using a better display profile</h2>
+<p>This forces the display in RGB mode, which is great, however this also
+sets the display profile in “System Preferences”, “Displays”, “Color” to
+what seems to be an autogenerated ICC profile named after EDID override
+display name.</p>
+<p>I’m not sure where that calibration comes from, but it turns out macOS
+comes with a proper calibration for my screen, so in the display preferences,
+I set back the profile to “ASUS VP239”.</p>
+<p><img src="../../img/2020/10/display-preferences.png" alt="Preferences"></p>
+<p>This gives an even better result and is likely more accurate.</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
+</body>
+</html>

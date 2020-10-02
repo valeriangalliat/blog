@@ -1,0 +1,114 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>MSI BIOS freeze on save and boot menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>MSI BIOS freeze on save and boot menu</h1>
+<p>September 2, 2020</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I’ve been having an issue on my rig for the past couple of months where
+any time I go in the BIOS and go to the “Save &amp; Exit”, or any time I
+open the boot menu, it just freezes and I need to reset. For reference,
+my motherboard is a MSI H110M PRO-D.</p>
+<p>This means I had no way of booting on something else than the default
+boot priority, or to change any BIOS setting whatsoever.</p>
+<p>I put it off for a while, but with the latest macOS update, I’ve had an
+issue where it, well, wouldn’t update, and I figured it might be
+related.</p>
+<p>When looking up that issue, a common suggestion is to reset CMOS.</p>
+<p>I was kinda lazy to open the computer and I mostly didn’t feel confident
+about the procedure of shorting two pins that I wasn’t 100% sure which
+ones it was, and was worried I would cause more harm than good doing so.</p>
+<p>Meet “AUTO CLR_CMOS”.</p>
+<h2 id="auto-clr-cmos"><a class="header-anchor" href="#auto-clr-cmos">¶</a> AUTO CLR_CMOS</h2>
+<p>Turns out “Boot” menu in the BIOS setup contains an option named “AUTO
+CLR_CMOS”. Enabling that gives access to another “Manual Mode” option,
+that, when enabled, allows to reset CMOS by pressing the power button
+for 6 seconds.</p>
+<p><img src="../../img/2020/10/bios.jpg" alt="BIOS"></p>
+<p>This seems promising, but one of the reasons I want to clear CMOS is
+because I can’t save my BIOS settings as it freezes when I reach the
+“Save &amp; Exit” menu.</p>
+<h2 id="saving-bios-settings-without-going-to-the-save-menu"><a class="header-anchor" href="#saving-bios-settings-without-going-to-the-save-menu">¶</a> Saving BIOS settings without going to the save menu</h2>
+<p>That day, I learnt that “in most BIOS” you can save the settings by
+pressing F10. This worked for me, meaning that I didn’t have to go into
+the save menu (that just freezes) to save the BIOS settings.</p>
+<p>Thanks to that trick I could enable the “AUTO CLR_CMOS” “Manual Mode”.</p>
+<p>With the computer off hold the power button. It will start, but as you
+keep holding the button, after around 5 seconds, it shuts down again. It
+seems that this triggered the reset of the CMOS (you can release at that
+point).</p>
+<p>Then wait 30 seconds or so (the power button had no effect for me during
+that time, but it eventually works again).</p>
+<p>On boot, you’ll get prompted to enter setup or continue, after what your
+BIOS settings are reset to default.</p>
+<p>Resetting CMOS that way effectively fixed the freezing issue (both on
+the “Save &amp; Exit” menu as well as the boot menu) and I was able to
+perform my update.</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog">public repository</a>. Pull requests and issues are welcome!</p>
+  </footer>
+</body>
+</html>

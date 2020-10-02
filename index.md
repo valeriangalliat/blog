@@ -1,4 +1,4 @@
-Hey, I'm Val<small>, </small><small>welcome to my blog!</small>
+Hey, I'm Val<small>,</small> <small>welcome to my blog!</small>
 ===============================================================
 
 I'm passionate software developer, and as importantly, an amateur

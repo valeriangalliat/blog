@@ -42,7 +42,7 @@ const env = {}
 const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
 const lines = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1').trim().split('\n')
 const slice = bodyClass === 'post' ? 2 : 1;
-const header = lines.slice(0, slice).join('\n')
+const header = lines.slice(0, slice).join('\n').replace(/<h1>([^<]*)<small>/, '<h1 class="has-subtitle"><span>$1</span><small>')
 const body = lines.slice(slice).join('\n')
 
 let hero = '<header>'

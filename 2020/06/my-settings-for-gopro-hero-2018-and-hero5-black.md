@@ -43,16 +43,27 @@ as the GoPro is already pretty damn wide by default, but if for some
 reason I were to want those 10% back and don't need stabilization (or
 not that much), I would turn off built-in stabilization.
 
-In some cases I will shoot 4K, like if I shoot a bit wider than I need
-and plan to crop in post, so that I can keep a decent image quality by
-doing so if I output in 2K or 1080p. I do this mostly just for static
-shots using a tripod where I want the option to adjust the framing in
-post, but I often use the LX100 for this kind of shots, and keep the GoPro for
-action shots, where I rarely ever crop the footage.
+In some cases I will shoot 2.7K or 4K, like if I shoot a bit wider than
+I need and plan to crop in post, so that I can keep a decent image
+quality by doing so if I output in 2K or 1080p. I do this mostly just
+for static shots using a tripod where I want the option to adjust the
+framing in post, but I often use the LX100 for this kind of shots, and
+keep the GoPro for action shots, where I rarely ever crop the footage
+anyways.
 
-Maybe if I know I don't need a lot of shots, thus I don't really care
-about space and battery, I will shoot 4K so that when exporting in 2K or
-1080p it looks even nicer.
+A thing to note is that the 1440p option is 1920x1440, so a 4:3 ratio,
+so that won't match e.g. 2K on YouTube which expects 16:9 2560x1440.
+The closest to that will be the 2.7K option which is 2704x1520, which is the
+one I use when I plan to export 2K video on YouTube.
+
+I could think about using the 1440p option when I would otherwise use
+1080p, then crop it back in my timeline to a 16:9 ratio, but that would
+give me more height to play with if I'm also gonna crop that footage in
+9:16 for Instagram and such.
+
+Finally, if I know I don't need a lot of shots, thus I don't really care
+about space and battery, I might shoot 4K so that when exporting in 2K
+or 1080p it looks even nicer.
 
 ### Frame rate (FPS)
 
@@ -173,4 +184,11 @@ If I get lazy to deal with that in post, I might put it back to High.
 
 ### Audio
 
-I leave that to Off as I didn't bother playing with those settings yet.
+I used to have that to "Off" but after watching [this
+video](https://youtu.be/3DoKXA8tCq0) which I highly recommend on tuning
+GoPro settings, I turned it up to "High".
+
+Also sliding after the Protune menu I noticed there was a "Manual Audio
+Control" panel, so I enabled that and ticked "Stereo Only", which should
+be the same as setting "Wind" to "Off" on more recent GoPro (like in the
+video I mention).

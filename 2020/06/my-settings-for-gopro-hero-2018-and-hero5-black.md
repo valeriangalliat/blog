@@ -176,11 +176,20 @@ In low light, I'll leave it to 0.
 
 ### Sharpness (SHARP)
 
-I need to play with this more, but these days I'm leaving it on Low so
-that I can adjust the sharpness to my taste in post, as you can't really
-remove sharpness as much as you can add sharpness after the fact.
+At first, I tried leaving it on Low so that I can adjust the sharpness
+to my taste in post, as you can't really remove sharpness as much as you
+can add sharpness after the fact.
 
-If I get lazy to deal with that in post, I might put it back to High.
+In practice I never bothered adjusting sharpness in post. So I put it
+back to High, until I saw some YouTube video where they suggested to
+just leave it in Medium if you're not gonna add some in post, so I just
+did that.
+
+To be honest I don't look closely enough to my own footage to notice any
+difference between sharpness settings. I will sometimes reupload a video
+before publishing just to remove 0.5 dB to a music track or to move tint
+from +7 to +8 on a clip but sharpness isn't one of those things I'm
+overly perfectionist about. 😂
 
 ### Audio
 

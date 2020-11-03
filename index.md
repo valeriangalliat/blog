@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/10/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
 * [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 * [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
-* [macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>](2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.md) <small>March 16, 2019</small>
 
 [More posts](posts.md)
 

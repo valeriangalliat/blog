@@ -6,6 +6,7 @@ Posts
 2020
 ----
 
+* [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/20/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
 * [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>

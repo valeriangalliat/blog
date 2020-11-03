@@ -61,7 +61,7 @@
         </ul>
       </nav>
       <div class="content">
-<h1>Software <code>Fn Lock</code></h1>
+<h1>Software <kbd>Fn Lock</kbd></h1>
 <p>June 8, 2019</p>
       </div>
     </div>
@@ -72,8 +72,8 @@ pressing <code>Fn</code> + <code>Esc</code> or changing some BIOS or UEFI settin
 <p>However, my laptop (ASUS VivoBook, X510UA-BB51-CB) does not have any way
 to lock the function keys, forcing me to press the <code>Fn</code> key every time I
 want to, for instance, change the screen brightness or the audio volume.</p>
-<p>Since I use those much more than the F1 to F12 keys, I had to find a
-software way to invert the function of those keys.</p>
+<p>Since I use those much more than the <kbd>F1</kbd> to <kbd>F12<kbd>
+keys, I had to find a software way to invert the function of those keys.</p>
 <p>While I couldn’t come up with a perfect automatic solution, I resorted
 to a custom <code>xmodmap</code> configuration.</p>
 <p>First, I listed the default mappings.</p>
@@ -81,12 +81,12 @@ to a custom <code>xmodmap</code> configuration.</p>
 </code></pre>
 <p>My keyboard have the following mappings by default:</p>
 <ul>
-<li>F5, decrease screen brightness (<code>XF86MonBrightnessDown</code>)</li>
-<li>F6, increase scren brightness (<code>XF86MonBrightnessUp</code>)</li>
-<li>F7, screen saver (<code>XF86ScreenSaver</code>)</li>
-<li>F10, mute audio (<code>XF86AudioMiute</code>)</li>
-<li>F11, lower volume (<code>XF86AudioLowerVolume</code>)</li>
-<li>F12, raise volume (<code>XF86AudioRaiseVolume</code>)</li>
+<li><kbd>F5</kbd>, decrease screen brightness (<code>XF86MonBrightnessDown</code>)</li>
+<li><kbd>F6</kbd>, increase scren brightness (<code>XF86MonBrightnessUp</code>)</li>
+<li><kbd>F7</kbd>, screen saver (<code>XF86ScreenSaver</code>)</li>
+<li><kbd>F10</kbd>, mute audio (<code>XF86AudioMiute</code>)</li>
+<li><kbd>F11</kbd>, lower volume (<code>XF86AudioLowerVolume</code>)</li>
+<li><kbd>F12</kbd>, raise volume (<code>XF86AudioRaiseVolume</code>)</li>
 </ul>
 <p>If not sure based on what’s written on the keyboard, you can also use
 the <code>xev</code> program to find out what is the default association.</p>

@@ -87,7 +87,7 @@ blog post will describe what was necessary to make it run smoothly!</p>
 <dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16814133634">PNY GeForce GTX 1060</a></dd>
 <dt>PSU</dt>
 <dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16817438012">EVGA 500 B1</a></dd>
-<dt>WiFi card</dt>
+<dt>Wi-Fi card</dt>
 <dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133">TP-Link TL-WDN4800 N900</a></dd>
 </dl>
 <h2 id="why-not-mojave"><a class="header-anchor" href="#why-not-mojave">¶</a> Why not Mojave?</h2>
@@ -156,10 +156,10 @@ to “Enabled”.</li>
 </ol>
 <h3 id="install-macos"><a class="header-anchor" href="#install-macos">¶</a> Install macOS</h3>
 <ol>
-<li>Boot on the USB, for me by spamming the <code>&lt;F11&gt;</code> key on boot, and
-selecting my USB key in the menu. I have a weird issue where I need
-to keep spamming the <code>&lt;F11&gt;</code> key just after I select the USB in the
-boot menu otherwise it sometimes just boots from the HDD.</li>
+<li>Boot on the USB, for me by spamming the <kbd>F11</kbd> key on boot,
+and selecting my USB key in the menu. I have a weird issue where I
+need to keep spamming the <kbd>F11</kbd> key just after I select the
+USB in the boot menu otherwise it sometimes just boots from the HDD.</li>
 <li>In Clover, go in “Options”, “ACPI patching”, “DSDT fix mask [0x00000000]”
 and tick “Fix USB”. I needed that on top of USBInjectAll, otherwise I
 would run systematically into the <a href="https://www.tonymacx86.com/threads/unibeast-8-2-10-13-4-stop-sign-issue.249150/">stop sign</a>

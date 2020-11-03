@@ -24,7 +24,7 @@
 
 @media all and (max-width: 38em) {
     .posts li {
-        margin-bottom: 0.5em;
+        margin-bottom: .5em;
         flex-direction: column-reverse;
     }
 }

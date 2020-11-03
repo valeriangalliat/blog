@@ -96,12 +96,10 @@ dd > ol > li {
     padding-right: 0;
 }
 
-pre, code {
-    font-size: 0.75em;
-}
-
-pre > code {
-    font-size: inherit;
+code, kbd, samp {
+    font-size: .75em;
+    background: #f8f8f8;
+    padding: .25em .5em;
 }
 
 hr {

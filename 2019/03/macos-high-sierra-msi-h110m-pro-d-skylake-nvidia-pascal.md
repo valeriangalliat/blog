@@ -31,7 +31,7 @@ GPU
 PSU
 : [EVGA 500 B1](https://www.newegg.ca/Product/Product.aspx?Item=N82E16817438012)
 
-WiFi card
+Wi-Fi card
 : [TP-Link TL-WDN4800 N900](https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133)
 
 Why not Mojave?
@@ -108,10 +108,10 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
 
 ### Install macOS
 
-1. Boot on the USB, for me by spamming the `<F11>` key on boot, and
-   selecting my USB key in the menu. I have a weird issue where I need
-   to keep spamming the `<F11>` key just after I select the USB in the
-   boot menu otherwise it sometimes just boots from the HDD.
+1. Boot on the USB, for me by spamming the <kbd>F11</kbd> key on boot,
+   and selecting my USB key in the menu. I have a weird issue where I
+   need to keep spamming the <kbd>F11</kbd> key just after I select the
+   USB in the boot menu otherwise it sometimes just boots from the HDD.
 1. In Clover, go in "Options", "ACPI patching", "DSDT fix mask [0x00000000]"
    and tick "Fix USB". I needed that on top of USBInjectAll, otherwise I
    would run systematically into the [stop sign](https://www.tonymacx86.com/threads/unibeast-8-2-10-13-4-stop-sign-issue.249150/)

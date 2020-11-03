@@ -1,5 +1,5 @@
-Software `Fn Lock`
-==================
+Software <kbd>Fn Lock</kbd>
+===========================
 June 8, 2019
 
 Most laptops feature a way to lock the function keys (`Fn Lock`), often by
@@ -9,8 +9,8 @@ However, my laptop (ASUS VivoBook, X510UA-BB51-CB) does not have any way
 to lock the function keys, forcing me to press the `Fn` key every time I
 want to, for instance, change the screen brightness or the audio volume.
 
-Since I use those much more than the F1 to F12 keys, I had to find a
-software way to invert the function of those keys.
+Since I use those much more than the <kbd>F1</kbd> to <kbd>F12<kbd>
+keys, I had to find a software way to invert the function of those keys.
 
 While I couldn't come up with a perfect automatic solution, I resorted
 to a custom `xmodmap` configuration.
@@ -23,12 +23,12 @@ xmodmap -pke
 
 My keyboard have the following mappings by default:
 
-* F5, decrease screen brightness (`XF86MonBrightnessDown`)
-* F6, increase scren brightness (`XF86MonBrightnessUp`)
-* F7, screen saver (`XF86ScreenSaver`)
-* F10, mute audio (`XF86AudioMiute`)
-* F11, lower volume (`XF86AudioLowerVolume`)
-* F12, raise volume (`XF86AudioRaiseVolume`)
+* <kbd>F5</kbd>, decrease screen brightness (`XF86MonBrightnessDown`)
+* <kbd>F6</kbd>, increase scren brightness (`XF86MonBrightnessUp`)
+* <kbd>F7</kbd>, screen saver (`XF86ScreenSaver`)
+* <kbd>F10</kbd>, mute audio (`XF86AudioMiute`)
+* <kbd>F11</kbd>, lower volume (`XF86AudioLowerVolume`)
+* <kbd>F12</kbd>, raise volume (`XF86AudioRaiseVolume`)
 
 If not sure based on what's written on the keyboard, you can also use
 the `xev` program to find out what is the default association.

@@ -38,8 +38,8 @@ because I can't save my BIOS settings as it freezes when I reach the
 ## Saving BIOS settings without going to the save menu
 
 That day, I learnt that "in most BIOS" you can save the settings by
-pressing F10. This worked for me, meaning that I didn't have to go into
-the save menu (that just freezes) to save the BIOS settings.
+pressing <kbd>F10</kbd>. This worked for me, meaning that I didn't have
+to go into the save menu (that just freezes) to save the BIOS settings.
 
 Thanks to that trick I could enable the "AUTO CLR_CMOS" "Manual Mode".
 

@@ -159,3 +159,58 @@ Name | Value | Comment
 AF Mode | 49-Area | I tend to use that for photos, however I flip to *Face/Eye Detection* for video recordings where I want to stay focused on faces (no shit Sherlock)
 Sensitivity | AUTO ISO | Unless I want to go manual temporarily
 White Balance | Auto White Balance |
+
+Bonus: NTSC mode for 60 FPS
+---------------------------
+
+For some reason even though I'm in Canada, my LX100 came in PAL mode
+which only allows me 24, 25 and 50 FPS.
+
+While I don't really care about not having 30 FPS, even though that
+would be the standard for non-cinematic footage in my country, I kinda
+want to have the 60 FPS option instead of 50.
+
+I mean not really, because it's only 1080p anyways, but I guess for slow
+motion I'd rather have the option of a proper camera looking footage in
+1080p or a GoPro looking footage in 2K, than just be stuck with the
+GoPro.
+
+So why do I want 60 over 50? Well, first if I slow down 50 FPS two
+times in my 24 FPS timeline, I'm gonna be dropping one frame every
+second, and that idea is making me more uncomfortable than it should.
+While if I shoot 60 FPS, I can slow down by 2.5 and get not only a
+slower slow motion but a perfect 24 FPS that's consistent with the rest
+of my footage without dropping frames.
+
+And THAT is neat.
+
+So, how to do that? Well [this post on DPReview](https://www.dpreview.com/forums/thread/3789789#forum-post-60593772)
+gives a pretty neat solution.
+
+> With the camera off, press <kbd>Right</kbd> + <kbd>DISP.</kbd> +
+> <kbd>AF/AE LOCK</kbd> simultaneously and turn the camera on.
+>
+> Then press <kbd>Playback</kbd> (to enter the playback screen).
+>
+> Then while pressing <kbd>Up</kbd> + <kbd>AF/AE LOCK</kbd>, turn off
+> the camera.
+>
+> If you see a yellow triangle, you got into service mode, turn it back
+> on, set your favorite video mode, shoot and smile.
+
+Here you go! And this operation is reversible:
+
+> If you decided not to shoot videos for online use anymore, you can
+> exit service mode by turning on the camera, then:
+>
+> Pressing <kbd>MENU/SET</kbd> + <kbd>Right</kbd>, while turning the
+> camera off, to get the option of factory resetting the camera.
+>
+> After factory reset, the yellow exclamation mark disappears, just like
+> the 30/60 FPS video modes, so you can shoot for PAL TV frame rate for
+> VHS, according to the original Panasonic design (shame on you,
+> Panasonic...).
+
+I don't mind the yellow exclamation mark when I turn it off, so I just
+leave that all the time. Actually, that might even make a fun
+conversation starter when I'm shooting with fellow filmmakers!

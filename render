@@ -62,4 +62,8 @@ process.stdout.write(
 
 process.stdout.write(body)
 process.stdout.write('\n')
-process.stdout.write(foot)
+
+process.stdout.write(
+  foot
+    .replace('https://github.com/valeriangalliat/blog', `https://github.com/valeriangalliat/blog/tree/master/${file}`)
+)

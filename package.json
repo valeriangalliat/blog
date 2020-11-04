@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "lint": "standard . render"
+  },
   "dependencies": {
     "github-markdown-css": "^4.0.0",
     "highlight.js": "^9.18.1",
@@ -12,5 +15,8 @@
     "markdown-it-title": "^3.0.0",
     "normalize.css": "^8.0.1",
     "string": "^3.3.3"
+  },
+  "devDependencies": {
+    "standard": "^16.0.1"
   }
 }

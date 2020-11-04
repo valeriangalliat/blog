@@ -34,21 +34,21 @@ md.use(require('markdown-it-footnote'))
 md.use(require('markdown-it-highlightjs'), { auto: false })
 md.use(require('markdown-it-title'))
 
-const file = process.argv[2];
+const file = process.argv[2]
 const head = fs.readFileSync(path.resolve(__dirname, 'head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, 'foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
 const env = {}
 const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
 const lines = md.render(markdown, env).replace(/\.md(["#])/g, '.html$1').trim().split('\n')
-const slice = bodyClass === 'post' ? 2 : 1;
+const slice = bodyClass === 'post' ? 2 : 1
 const header = lines.slice(0, slice).join('\n').replace(/<h1>([^<]*)<small>/, '<h1 class="has-subtitle"><span>$1</span><small>')
 const body = lines.slice(slice).join('\n')
 
 let hero = '<header>'
 
 if (meta.hero) {
-  const focus = meta.focus ? ` background-position: ${meta.focus};` : '';
+  const focus = meta.focus ? ` background-position: ${meta.focus};` : ''
   hero = `<header class="hero" style="background-image: url(${meta.hero});${focus}">`
 }
 

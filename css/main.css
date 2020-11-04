@@ -54,7 +54,6 @@ h1.has-subtitle span {
 
 h1.has-subtitle small {
     font-size: inherit;
-    color: #333;
 
     /* Force subtitle on its own line if it doesn't fit on the same line
      * as the main title. */
@@ -77,7 +76,7 @@ th, td {
 }
 
 tr:nth-child(even) {
-    background: #fafafa;
+    background: #f8f8f8;
 }
 
 blockquote {
@@ -88,12 +87,6 @@ blockquote {
 
 dt {
     font-weight: bold;
-}
-
-dd > ul > li,
-dd > ol > li {
-    left: 0;
-    padding-right: 0;
 }
 
 code, kbd, samp {
@@ -366,11 +359,6 @@ nav .social a:hover svg {
 
 .posts li {
     display: flex;
-
-    /* Unset general `li` styling. */
-    left: 0;
-    padding-right: 0;
-
     align-items: baseline;
     justify-content: space-between;
 }
@@ -383,7 +371,7 @@ nav .social a:hover svg {
 }
 
 .posts li:not(:last-child) {
-    border-bottom: 1px solid #fafafa;
+    border-bottom: 1px solid #f8f8f8;
 }
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only

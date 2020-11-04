@@ -13,11 +13,6 @@
 
 .posts li {
     display: flex;
-
-    /* Unset general `li` styling. */
-    left: 0;
-    padding-right: 0;
-
     align-items: baseline;
     justify-content: space-between;
 }
@@ -30,7 +25,7 @@
 }
 
 .posts li:not(:last-child) {
-    border-bottom: 1px solid #fafafa;
+    border-bottom: 1px solid #f8f8f8;
 }
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only

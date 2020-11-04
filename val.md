@@ -55,3 +55,6 @@ Links
 * [Email](mailto:val@codejam.info) <small>| `val@codejam.info`</small>
 
 </div>
+
+Don't hesitate to contact me on any of the relevant platforms above if
+you have any question or want to get in touch!

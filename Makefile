@@ -6,7 +6,7 @@ ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main.css dist/js/ma
 build: dist $(HTML) $(ASSETS)
 
 dist:
-	git clone --branch gh-pages $$(git remote get-url origin) dist
+	git worktree add dist gh-pages
 
 clean:
 	rm -f $(HTML)

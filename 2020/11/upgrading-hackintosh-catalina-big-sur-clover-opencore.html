@@ -1,0 +1,363 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/valeriangalliat/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>LinkedIn</title>
+                <use href="/img/icons/458-linkedin.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore</h1>
+<p>November 14, 2020</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So this is that exciting time of the year where Apple releases a new
+macOS version. Upgrading to Big Sur was the perfect opportunity for me
+to start my Hackintosh from a clean slate, and use a different
+bootloader.</p>
+<p>So far, I’ve been using Clover, first on <a href="../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">High Sierra</a>,
+then I switched my unsupported NVIDIA graphic card to a supported AMD
+one in order to <a href="../10/upgrade-hackintosh-high-sierra-catalina.html">upgrade to Catalina</a></p>
+<p>One month later, I’m here again, upgrading to Big Sur. I tried upgrading
+Clover first, like the last time for Catalina (where the upgrade was
+nearly seamless) but this time I realized that they made some changes
+that would require me to update my current configuration in order for it
+to work.</p>
+<p>So I figured if I had to configure something, it might as well be OpenCore.</p>
+<h2 id="why-opencore"><a class="header-anchor" href="#why-opencore">¶</a> Why OpenCore?</h2>
+<p>If I was to make a comparison, I would say that OpenCore is to Clover
+what Arch is to Ubuntu.</p>
+<p>In the way that with Clover, like with Ubuntu, you don’t need to know a
+lot to have it working, which is convenient and was great for me to get
+started with Hackintoshes. I could just use Clover installer and tick
+more or less randomly stuff there based on stuff I read online, and then
+do the same thing with MultiBeast, tweak a couple things with Clover
+Configurator and that would get the job done.</p>
+<p>I’m not saying that it was easy, far from it, it took a lot of effort to
+get to the proper configuration of all of those tools in order for my
+Hackintosh to work, but I didn’t have to really <em>understand</em> much, it
+was more a matter of trial and error, and patience.</p>
+<p>The downside to this approach though, is that when something doesn’t
+work, or when something breaks, well since you don’t know much about
+what’s going on, you’re kinda fucked.</p>
+<p>And I don’t blame Clover for this, FWIW you <em>can</em> learn the underlying
+details of Clover, and maybe avoid using MultiBeast and so on, but I
+find that harder when the seemingly “easy” option is right there under
+my nose, and it seems to be the most encouraged way.</p>
+<p>With OpenCore, like with Arch, the main, recommended way (and maybe the
+only way) is to take a deep breath, and follow a detailed manual on how
+to install and configure everything yourself, in a mostly manual way.
+But they make that <em>easier</em> as far as learning is concerned by being
+smaller and simpler systems to understand!</p>
+<p>In other words, you don’t need to learn a lot about Ubuntu or Clover to
+get them to work but if you were to want to learn them, that would be a
+massive task as they’re such complex systems (which is a side product of
+being easy to use without learning). But while you need to learn how
+Arch and OpenCore work to get them running, that also makes them much
+easier to learn by being far less complex.</p>
+<p>OpenCore required me to learn a lot on how Hackintoshes work, as well as
+about devices, chipsets, firmwares in general, and how macOS deal with
+those.</p>
+<p>The <a href="https://dortania.github.io/OpenCore-Install-Guide/">OpenCore Install Guide</a> is amazing at teaching
+everything that you need to understand, especially they not only tell
+you what to do, but why you do it, and thanks to it, I could
+install and configure only the things that I really needed for my
+particular system to work. I know everything that’s there because I was
+required to put it there myself, and I know everything that was changed
+in the configuration because I had to configure it myself.</p>
+<p>This means that if something breaks, it’s going to be easier to
+identify, because I know precisely what parts are there, and what’s
+their purpose, since I was required to make the decision for myself to
+put them there. And there’s less parts overall because I added only the
+ones I need!  Obviously it’s easier finding an issue in a handful of
+parts that you know, rather than in a fuckton of parts that you have no
+clue what they do and what put it there.</p>
+<p>Now that I told you why I’m interested to move to OpenCore, here’s how I
+did it. And it was much easier than I expected.</p>
+<h2 id="installing-macos-big-sur-with-opencore-and-the-issues-i-encountered"><a class="header-anchor" href="#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">¶</a> Installing macOS Big Sur with OpenCore <small>and the issues I encountered</small></h2>
+<p>First, here’s the relevant details of my machine:</p>
+<dl>
+<dt>Motherboard</dt>
+<dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16813130924">MSI H110M PRO-D</a> (RTL8111H Ethernet chipset,  Realtek ALC887 audio chipset)</dd>
+<dt>CPU</dt>
+<dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16819117563">Intel Core i5-6500 Skylake</a></dd>
+<dt>Wi-Fi card</dt>
+<dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133">TP-Link TL-WDN4800 N900</a> (Atheros AR9380 chipset)</dd>
+</dl>
+<p>I followed <a href="https://dortania.github.io/OpenCore-Install-Guide/">the guide</a>, so as instructed for my specific system, I:</p>
+<ul>
+<li>downloaded the latest <a href="https://github.com/acidanthera/OpenCorePkg/releases"><code>OpenCorePkg</code></a>
+(0.6.3 at the time I did that),</li>
+<li>downloaded <a href="https://github.com/corpnewt/ProperTree">ProperTree</a> to edit <code>.plist</code> files,</li>
+<li>downloaded Big Sur from the App Store,</li>
+<li>formatted a USB drive as Mac OS Extended (HFS+) with a GUID partition
+map (I learnt that from Disk Utility, this automatically creates a
+209.7 MB EFI partition on the drive),</li>
+<li>ran <code>sudo /Applications/Install\ macOS\Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume</code> (where <code>MyVolume</code> was… my volume) to create the
+installation media,</li>
+<li>mounted the EFI partition of the USB key by running <code>sudo diskutil mount /dev/diskXsY</code> where <code>X</code> was the drive number and <code>Y</code> the
+partition number (found using <code>diskutil list</code>),</li>
+<li>copied OpenCore <code>DEBUG</code> version to it and removed unneeded files as
+instructed by the guide,</li>
+<li>added <code>HfsPlus.efi</code> from the <a href="https://github.com/acidanthera/OcBinaryData/blob/master/Drivers/HfsPlus.efi"><code>OcBinaryData</code> repo</a>,</li>
+<li>added <a href="https://github.com/acidanthera/VirtualSMC/releases">VirtualSMC</a>,
+<a href="https://github.com/acidanthera/Lilu/releases">Lilu</a>,
+<a href="https://github.com/acidanthera/WhateverGreen/releases">WhateverGreen</a>,
+<a href="https://github.com/acidanthera/AppleALC/releases">AppleALC</a> and
+<a href="https://github.com/Mieze/RTL8111_driver_for_OS_X/releases">RealtekRTL8111</a>
+kexts,</li>
+<li>built and added <a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/plug.html">SSDT-PLUG</a>
+and <a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/ec-fix.html">SSDT-EC</a>,
+using <a href="https://github.com/corpnewt/SSDTTime">SSDTTime</a>, which required
+me to dump the DSDT from my firmware first (<a href="https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html#from-clover">using F4 inside Clover</a>),
+and added as well as a prebuilt version of <a href="https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml">SSDT-USBX</a>.</li>
+</ul>
+<p>Note that I would also have needed to add <a href="https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/">USBInjectAll</a>
+but I didn’t at that point because the guide said it shouldn’t be needed
+for desktop Skylake and newer. It turned out I needed it at least until
+I build the USB map for my machine.</p>
+<p>Then I configured my <code>config.plist</code> from <code>Sample.plist</code> using the
+desktop <a href="https://dortania.github.io/OpenCore-Install-Guide/config.plist/skylake.html">Skylake</a> guide and ProperTree downloaded earlier,
+which means I:</p>
+<ul>
+<li>used ProperTree’s “OC Clean Snapshot” (<code>Cmd</code> + <code>Shift</code> + <code>R</code>) feature
+to automatically configure all the SSDTs, EFI drivers and kexts I
+added,</li>
+<li>in <code>Kernel/Quirks</code>, set <code>PanicNoKextDump</code>, <code>PowerTimeoutKernelPanic</code>
+and <code>XhciPortLimit</code> to <code>True</code>,</li>
+<li>in <code>Misc/Debug</code> set <code>AppleDebug</code>, <code>ApplePanic</code>, <code>DisableWatchDog</code> to
+<code>True</code> and <code>Target</code> to 67,</li>
+<li>in <code>Misc/Security</code> set <code>AllowNvramReset</code> and <code>AllowSetDefault</code> to
+<code>True</code>, <code>ScanPolicy</code> to 0, <code>SecureBootModel</code> to <code>Default</code> and <code>Vault</code>
+to <code>Optional</code>,</li>
+<li>in <code>NVRAM</code>, set <code>boot-args</code> to <code>-v debug=0x100 keepsyms=1 alcid=11</code>,
+the 3 first arguments being to get detailed logs to make debugging
+easier (those were a blessing), and the latter one sets the audio
+layout for AppleALC, which I figured was 11 on my earlier Hackintosh
+setups,</li>
+<li>used <a href="https://github.com/corpnewt/GenSMBIOS">GenSMBIOS</a> to generate
+a <code>iMac17,1</code> SMBIOS and configured the matching parameters in
+<code>PlatformInfo/Generic</code>.</li>
+</ul>
+<p>Note that I later had to change <code>SecureBootModel</code> to <code>Disabled</code>, more on
+that below.</p>
+<p>I also made sure that my BIOS settings matched the recommended ones in
+the guide, which they already did.</p>
+<p>Then I booted my OpenCore USB and launched the installer “Install macOS
+Big Sur (External)”.</p>
+<h3 id="waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media"><a class="header-anchor" href="#waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media">¶</a> <code>Waiting on IOProviderClass IOResourceMatch boot-uuid-media</code></h3>
+<p>The first issue I encountered is this message in the logs when launching
+the installer. It turns out the installer wasn’t able to detect the USB
+key it was booting from and got stuck there, eventually crashing.</p>
+<p>I solved that by adding the <a href="https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/">USBInjectAll</a>
+kext, which allowed me to continue booting.</p>
+<h3 id="disk5-device-is-write-locked"><a class="header-anchor" href="#disk5-device-is-write-locked">¶</a> <code>disk5: device is write locked</code></h3>
+<p>I got a bunch of those messages during the boot after I fixed the USB
+issue, and it was hanging for a while on those, so I figured something
+was wrong and I shut down the computer and started looking up for
+solutions. It turns out nothing was wrong and I just needed to be
+patient.</p>
+<p>It eventually kept logging more stuff and booted to the installer UI.</p>
+<h3 id="cant-find-my-sata-drives-in-the-macos-installer"><a class="header-anchor" href="#cant-find-my-sata-drives-in-the-macos-installer">¶</a> Can’t find my SATA drives in the macOS installer</h3>
+<p>Everything seems fine, until I want to pick the drive to install to and
+there’s like all my USB drives but not my HDD nor SSD (both are plugged
+in SATA).</p>
+<p>I spend a while to figure that issue, there’s a <a href="https://www.reddit.com/r/hackintosh/comments/g8vx7k/opencore_no_satausb_hdd_partition_show_at_all_at/">couple</a>
+<a href="https://www.olarila.com/topic/8627-hdd-sata-not-detected-in-disk-utility/">threads</a>
+<a href="https://www.reddit.com/r/hackintosh/comments/ex8g4v/why_doesnt_my_hard_drive_show_in_disk_utility_on/">online</a>
+with a similar issue, some answers that recommend to disable Intel Rapid
+Storage Technology (which I don’t have), others recommending to use the
+<a href="https://github.com/khronokernel/Legacy-Kexts/blob/master/Injectors/Zip/SATA-unsupported.kext.zip">SATA-Unsupported</a>
+kext (that didn’t work either).</p>
+<p>In the end, I stumbled upon <a href="https://dortania.github.io/OpenCore-Install-Guide/extras/big-sur/#supported-hardware">Dortania’s Big Sur specific guide</a>
+(which was actually part of the “extras” of the guide I was reading but
+I didn’t notice before), where it explains that Big Sur dropped “certain
+SATA controllers”, and it seemed that mine was.</p>
+<p>They recommend using Catalina’s <code>AppleAHCIPort.kext</code> with any
+conflicting symbols patched, which they actually provide an
+<a href="https://github.com/dortania/OpenCore-Install-Guide/blob/master/extra-files/CtlnaAHCIPort.kext.zip">already patched file</a>
+for (thanks Dortania, much appreciated).</p>
+<p>That allowed me to see my SATA drives and I could keep on with the
+installation.</p>
+<h3 id="booting-on-macos-installer-just-reboots-into-recovery"><a class="header-anchor" href="#booting-on-macos-installer-just-reboots-into-recovery">¶</a> Booting on “macOS Installer” just reboots into recovery</h3>
+<p>The installation keeps on going, until it reboots. This is usual, and
+normally that’s where you boot from “macOS Installer” on the actual
+system drive rather than “Install macOS Big Sur” from the USB drive, and
+it keeps going from there.</p>
+<p>Here, it didn’t keep going, it just rebooted, forcing me into recovery
+(it somehow bypassed the OpenCore menu where I can choose what to boot
+from and would always go to recovery).</p>
+<p>There was only like 10 lines of log before it reboots, and it was so
+fast I couldn’t read them.</p>
+<p>That’s where the OpenCore setting earlier that generates text logs on
+the EFI partition was handy AF, since it read clearly at the end of the
+logs:</p>
+<pre><code class="hljs">#[EB.LD.OFS|OPEN!] Err(0xE) &lt;&quot;\\macOS Install Data\\Locked Files\\BootKernelExtensions.kc.j137ap.im4m&quot;&gt;
+</code></pre>
+<p>That allowed me to Google a bit further, and I somehow found <a href="https://www.reddit.com/r/hackintosh/comments/j37wbd/upgrading_to_big_sur_beta_9_issues/">this thread</a>
+among others that suggested disabling secure boot (by setting
+<code>SecureBootModel</code> to <code>Disabled</code> in <code>config.plist</code>).</p>
+<p>This worked and the installer kept doing its thing until I get to the
+setup screen!</p>
+<h3 id="no-wi-fi-on-big-sur"><a class="header-anchor" href="#no-wi-fi-on-big-sur">¶</a> No Wi-Fi on Big Sur</h3>
+<p>I go through the setup, but when it’s time to connect the network, I
+realize I don’t have the option to connect Wi-Fi. I expected that as the
+guide said in the beginning I would need an Ethernet connection, that
+said I kinda challenged that as I remember I could install macOS High
+Sierra using Wi-Fi back then.</p>
+<p>Well, it turns out that Mojave dropped support for my Wi-Fi chipset
+(Atheros AR9380), and I already had that problem when I moved from High
+Sierra to Catalina, where I had to replace
+<code>/System/Library/Extensions/IO80211Family.kext</code> by the one from my old
+High Sierra installation, which I could easily do by remounting the
+system partition as read-write using <code>sudo mount -uw /</code>.</p>
+<p>This wasn’t possible anymore as even my <code>root</code> user was denied this
+command.</p>
+<p>Again <a href="https://dortania.github.io/OpenCore-Install-Guide/extras/big-sur/#supported-hardware">Dortania’s guide</a>
+came in handy, mentioning a workaround to patch that kext so that it
+doesn’t conflict with the system version, and still be able to load it
+from OpenCore! And even better, there’s a
+<a href="https://github.com/khronokernel/IO80211-Patches">repo with already patched kexts</a> of previous
+macOS versions!</p>
+<p>So I get the High Sierra one, and that works!</p>
+<p>It works actually so well that my Wi-Fi network is automatically
+connected, like WTF bro, ur not supposed to do that, I never entered my
+passphrase.</p>
+<p>I investigated a bit, and in Keychain Access, it wasn’t actually my
+passphrase stored, but a 64 digits hexadecimal string.</p>
+<p>Well today, I learnt that WPA2 derives a PBKDF2 key from the SSID and
+passphrase in order to connect, and that macOS stores that key in NVRAM
+(which I now know what it is thanks to the OpenCore guide), which is how
+my new totally unrelated installation of Big Sur was able to
+automatically connect to my Wi-Fi network.</p>
+<h3 id="post-install"><a class="header-anchor" href="#post-install">¶</a> Post-install</h3>
+<p>The last step was to follow the <a href="https://dortania.github.io/OpenCore-Post-Install/">OpenCore Post-Install Guide</a>.</p>
+<p>Seems that mostly everything I need worked out of the box so I didn’t
+have much to fix there, the main thing was to generate the USB map to
+avoid using USBInjectAll and the <code>XhciPortLimit</code> quirk, as well as some
+cosmetic tweaks.</p>
+<h4 id="generating-the-usb-map"><a class="header-anchor" href="#generating-the-usb-map">¶</a> Generating the USB map</h4>
+<p>I’m not gonna go in the details of why this needs to be done as <a href="https://dortania.github.io/OpenCore-Post-Install/usb/">the guide</a>
+does one more time an amazing job at that, but this turned out much
+easier than I expected.</p>
+<p>Since I have an Intel system, I could use the <a href="https://github.com/corpnewt/USBMap">USBMap</a>
+tool and basically just plug something in all my USB ports (not even
+necessarily at the same time), and it would figure all the ones that
+were used, and generate a map of just those ports under the form of a
+kext.</p>
+<p>That’s literally all that I had to do, and I could indeed remove
+USBInjectAll and set the <code>XhciPortLimit</code> quirk to <code>False</code> and everything
+worked.</p>
+<h4 id="cosmetic-tweaks"><a class="header-anchor" href="#cosmetic-tweaks">¶</a> Cosmetic tweaks</h4>
+<p>Finally I followed the guide’s <a href="https://dortania.github.io/OpenCore-Post-Install/cosmetic/verbose.html">beauty</a>
+<a href="https://dortania.github.io/OpenCore-Post-Install/cosmetic/gui.html">treatment</a>,
+which meant I:</p>
+<ul>
+<li>added the <code>OpenCanopy.efi</code> driver to my EFI partition as well as the
+<code>Resources</code> folder from <a href="https://github.com/acidanthera/OcBinaryData"><code>OcBinaryData</code></a>,</li>
+<li>in <code>config.plist</code>, set <code>Misc/Boot/PickerMode</code>, to <code>External</code>,</li>
+<li>added <code>OpenCanopy.efi</code> to <code>UEFI/Drivers</code>,</li>
+<li>in <code>Misc/Debug</code>, set <code>AppleDebug</code> to <code>False</code> and <code>Target</code> to 3,</li>
+<li>removed <code>-v</code> from <code>boot-args</code>,</li>
+<li>on the EFI partition, replaced <code>BOOT/BOOTx64.efi</code>,
+<code>OC/Bootstrap/Bootstrap.efi</code>, <code>OC/Drivers/OpenRuntime.efi</code>,
+<code>OC/OpenCore.efi</code> by the ones from the <code>DEBUG</code> version.</li>
+</ul>
+<h2 id="wrapping-up"><a class="header-anchor" href="#wrapping-up">¶</a> Wrapping up</h2>
+<p>And that’s it, a working Big Sur installation using OpenCore for the
+first time!</p>
+<p>I spent basically a whole day on it, and looking back at it, it’s
+surprising how straightforward it was and how well it worked.</p>
+<p>Sure there’s a lot of little steps and different tools to use for very
+specific parts, but it’s also <em>very clear</em> what everything does and why
+we do it (thanks to the guide).</p>
+<p>At the end of the day, the biggest part was to figure precisely the
+parts specific to my system, mainly the fact that Big Sur dropped
+support for my SATA controller and that my Wi-Fi chipset was unsupported
+since Mojave, and the fixes for those.</p>
+<p>Now I know that, and especially now I have the SSDTs and USB map done,
+using OpenCore and hopefully upgrading to future versions will be even
+smoother… at least until macOS drops support for another one of my
+chipsets!</p>
+<h2 id="thanks"><a class="header-anchor" href="#thanks">¶</a> Thanks</h2>
+<p>I would also like to thank the Dortania team for their fabulous guide, I
+learnt so much while installing Big Sur with OpenCore and I’m still
+impressed at how well everything was explained and how detailed the
+explanations were.</p>
+<p>Also thanks to everybody who contributed to all the tools I mentioned in
+this post, those tools all felt really solid and far from “hacks” that I
+would expect for something we call Hackintosh, everything seemed
+cleanly built, well maintained and documented, with proper GitHub
+releases and everything, including prebuilt/prepatched options. Like I
+would say in French, c’est vraiment bien branlé.</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

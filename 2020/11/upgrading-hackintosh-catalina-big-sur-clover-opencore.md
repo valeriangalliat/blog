@@ -327,6 +327,11 @@ which meant I:
   `OC/Bootstrap/Bootstrap.efi`, `OC/Drivers/OpenRuntime.efi`,
   `OC/OpenCore.efi` by the ones from the `DEBUG` version.
 
+Finally I had to add the [display patch to force my screen in RBG mode](../10/too-much-contrast-external-screen-macos-catalina.md),
+but I couldn't do it by modifying `/System/Library/Displays` as the
+`/System` directory is immutable, but I learnt that you can do the same
+thing in `/Library/Displays` and it just works!
+
 ## Wrapping up
 
 And that's it, a working Big Sur installation using OpenCore for the

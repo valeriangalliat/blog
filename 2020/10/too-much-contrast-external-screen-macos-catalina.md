@@ -55,8 +55,13 @@ the full path would be `/System/Library/Displays/Contents/Resources/Overrides/Di
 You can't write in this folder by default at least in recent macOS
 versions like Catalina, and I've seen people suggesting to reboot in
 recovery mode to be able to do it from there, but as far as I'm
-concerned, a simple `mount -u -w /` as `root` allowed me to put the file
+concerned, a simple `mount -uw /` as `root` allowed me to put the file
 there.
+
+**Note:** when [migrating to Big Sur](../11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md),
+even the `mount -uw /` trick doesn't work, but I realized that you can
+just `mkdir -p /Library/Displays/Contents/Resources/Overrides` and put
+the `DisplayVendirID-` directory there, and it works as well!
 
 Then reboot the computer.
 
@@ -74,4 +79,3 @@ I set back the profile to "ASUS VP239".
 ![Preferences](../../img/2020/10/display-preferences.png)
 
 This gives an even better result and is likely more accurate.
-

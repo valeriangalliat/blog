@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Fix Facebook YouTube attachment layout on mobile](2019/11/fix-facebook-youtube-attachment-layout-mobile.md) <small>November 7, 2019</small>
 * [Recording bass and guitar for YouTube](2019/10/recording-bass-and-guitar-for-youtube.md) <small>October 17, 2019</small>
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
-* [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
 
 [More posts](posts.md)
 

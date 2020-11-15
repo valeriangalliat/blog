@@ -108,8 +108,12 @@ the full path would be <code>/System/Library/Displays/Contents/Resources/Overrid
 <p>You can’t write in this folder by default at least in recent macOS
 versions like Catalina, and I’ve seen people suggesting to reboot in
 recovery mode to be able to do it from there, but as far as I’m
-concerned, a simple <code>mount -u -w /</code> as <code>root</code> allowed me to put the file
+concerned, a simple <code>mount -uw /</code> as <code>root</code> allowed me to put the file
 there.</p>
+<p><strong>Note:</strong> when <a href="../11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">migrating to Big Sur</a>,
+even the <code>mount -uw /</code> trick doesn’t work, but I realized that you can
+just <code>mkdir -p /Library/Displays/Contents/Resources/Overrides</code> and put
+the <code>DisplayVendirID-</code> directory there, and it works as well!</p>
 <p>Then reboot the computer.</p>
 <h2 id="using-a-better-display-profile"><a class="header-anchor" href="#using-a-better-display-profile">¶</a> Using a better display profile</h2>
 <p>This forces the display in RGB mode, which is great, however this also

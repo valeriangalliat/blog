@@ -328,6 +328,10 @@ which meant I:</p>
 <code>OC/Bootstrap/Bootstrap.efi</code>, <code>OC/Drivers/OpenRuntime.efi</code>,
 <code>OC/OpenCore.efi</code> by the ones from the <code>DEBUG</code> version.</li>
 </ul>
+<p>Finally I had to add the <a href="../10/too-much-contrast-external-screen-macos-catalina.html">display patch to force my screen in RBG mode</a>,
+but I couldn’t do it by modifying <code>/System/Library/Displays</code> as the
+<code>/System</code> directory is immutable, but I learnt that you can do the same
+thing in <code>/Library/Displays</code> and it just works!</p>
 <h2 id="wrapping-up"><a class="header-anchor" href="#wrapping-up">¶</a> Wrapping up</h2>
 <p>And that’s it, a working Big Sur installation using OpenCore for the
 first time!</p>

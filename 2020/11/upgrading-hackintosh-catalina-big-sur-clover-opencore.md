@@ -290,7 +290,8 @@ automatically connect to my Wi-Fi network.
 The last step was to follow the [OpenCore Post-Install Guide](https://dortania.github.io/OpenCore-Post-Install/).
 
 Seems that mostly everything I need worked out of the box so I didn't
-have much to fix there, the main thing was to generate the USB map to
+have much to fix there, I just copied OpenCore's EFI from the USB to my
+SSD instead, and then the main thing was to generate the USB map to
 avoid using USBInjectAll and the `XhciPortLimit` quirk, as well as some
 cosmetic tweaks.
 
@@ -303,8 +304,8 @@ easier than I expected.
 Since I have an Intel system, I could use the [USBMap](https://github.com/corpnewt/USBMap)
 tool and basically just plug something in all my USB ports (not even
 necessarily at the same time), and it would figure all the ones that
-were used, and generate a map of just those ports under the form of a
-kext.
+were used. Then I marked the ones that were USB 2.0 as opposed to 3.0,
+and it generated a map of just those ports under the form of a kext.
 
 That's literally all that I had to do, and I could indeed remove
 USBInjectAll and set the `XhciPortLimit` quirk to `False` and everything
@@ -347,6 +348,10 @@ Now I know that, and especially now I have the SSDTs and USB map done,
 using OpenCore and hopefully upgrading to future versions will be even
 smoother... at least until macOS drops support for another one of my
 chipsets!
+
+I'm also amazed by the fact that all of this works without requiring any
+patching of the macOS installation, everything is contained in the
+OpenCore EFI partition, and the macOS system itself is 100% stock.
 
 ## Thanks
 

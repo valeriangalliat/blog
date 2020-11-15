@@ -6,6 +6,7 @@ Posts
 2020
 ----
 
+* [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/20/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>

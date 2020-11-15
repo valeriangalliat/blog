@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/10/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Recording bass and guitar for YouTube](2019/10/recording-bass-and-guitar-for-youtube.md) <small>October 17, 2019</small>
 * [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 * [Software `Fn Lock`](2019/06/software-fn-lock.md) <small>June 8, 2019</small>
-* [Arch Linux laptop, UEFI, encrypted disk and hibernation](2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.md) <small>June 8, 2019</small>
 
 [More posts](posts.md)
 

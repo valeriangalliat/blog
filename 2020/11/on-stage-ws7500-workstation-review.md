@@ -39,7 +39,9 @@ as well as 2 studio monitors. I was worried it would be a bit cramped there but 
 pretty deep as well so I still have plenty of room on the top platform
 to put random stuff there if I need to.
 
-![OnStage WS7500](../../img/2020/11/on-stage-ws7500.jpg)
+<figure class="center">
+  <img alt="OnStage WS7500" src="../../img/2020/11/on-stage-ws7500.jpg">
+</figure>
 
 I like that there is two possible positions for the upper platform
 (closer or further back). I put it closer to me because I'm in a pretty

@@ -1,6 +1,6 @@
 MSI BIOS freeze on save and boot menu
 =====================================
-September 2, 2020
+October 2, 2020
 
 I've been having an issue on my rig for the past couple of months where
 any time I go in the BIOS and go to the "Save & Exit", or any time I
@@ -29,7 +29,9 @@ CLR_CMOS". Enabling that gives access to another "Manual Mode" option,
 that, when enabled, allows to reset CMOS by pressing the power button
 for 6 seconds.
 
-![BIOS](../../img/2020/10/bios.jpg)
+<figure class="center">
+  <img alt="BIOS" src="../../img/2020/10/bios.jpg">
+</figure>
 
 This seems promising, but one of the reasons I want to clear CMOS is
 because I can't save my BIOS settings as it freezes when I reach the

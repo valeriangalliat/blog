@@ -76,6 +76,8 @@ I'm not sure where that calibration comes from, but it turns out macOS
 comes with a proper calibration for my screen, so in the display preferences,
 I set back the profile to "ASUS VP239".
 
-![Preferences](../../img/2020/10/display-preferences.png)
+<figure class="center">
+  <img alt="Preferences" src="../../img/2020/10/display-preferences.png">
+</figure>
 
 This gives an even better result and is likely more accurate.

@@ -1,3 +1,8 @@
+---
+hero: ../../img/2020/09/shakti.jpg
+focus: 25% 85%
+---
+
 What's currently playing at Shakti Rock Gym?
 ============================================
 September 24, 2020

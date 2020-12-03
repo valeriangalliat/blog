@@ -13,6 +13,7 @@ Posts
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/20/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
 * [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>
+* [What's currently playing at Shakti Rock Gym?](2020/09/what-s-currently-playing-at-shakti-rock-gym.md) <small>September 24, 2020</small>
 * [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>

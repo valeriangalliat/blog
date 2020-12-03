@@ -6,6 +6,7 @@ Posts
 2020
 ----
 
+* [macOS QuickTime screen recording at 48 kHz sample rate](2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md) <small>December 3, 2020</small>
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>

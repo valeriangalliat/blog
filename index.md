@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [macOS QuickTime screen recording at 48 kHz sample rate](2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md) <small>December 3, 2020</small>
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
 * [Fix Facebook YouTube attachment layout on mobile](2019/11/fix-facebook-youtube-attachment-layout-mobile.md) <small>November 7, 2019</small>
 * [Recording bass and guitar for YouTube](2019/10/recording-bass-and-guitar-for-youtube.md) <small>October 17, 2019</small>
-* [Starting to brew beer: things I wish I knew](2019/06/starting-to-brew-beer-things-i-wish-i-knew.md) <small>June 8, 2019</small>
 
 [More posts](posts.md)
 

@@ -6,9 +6,10 @@ Each time I write the title of a new article on this blog I feel even
 more like a nerd. So be it.
 
 When you do a screen recording on macOS, you can capture audio from your
-microphone. Or using a tool like [Background Music](https://github.com/kyleneideck/BackgroundMusic)
-you can even record your system sounds (use 0.4.0-SNAPSHOT on Big Sur,
-works like a charm)!
+microphone. Or using a tool like [BlackHole](https://github.com/ExistentialAudio/BlackHole)
+you can even record your system sounds (get the direct download URL from
+the [Homebrew formula](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/blackhole.rb)
+if you don't want to sign up)!
 
 Either way, by default the screen recording utility that you can open
 using <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> (which is the

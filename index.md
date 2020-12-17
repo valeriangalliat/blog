@@ -11,6 +11,16 @@ where I create content.
 Posts
 -----
 
+### WIP
+
+<div class="links posts">
+
+* [A decade in review](2020/06/a-decade-in-review.md) <small>June 17, 2020</small>
+
+</div>
+
+### Actual
+
 <div class="links posts">
 
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>

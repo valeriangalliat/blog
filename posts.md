@@ -3,6 +3,11 @@ Posts
 
 <div class="links posts">
 
+WIP
+---
+
+* [A decade in review](2020/06/a-decade-in-review.md) <small>June 17, 2020</small>
+
 2020
 ----
 

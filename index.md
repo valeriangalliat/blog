@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [What strings for BeaverCreek travel size acoustic electric guitar](2021/01/what-strings-for-beavercreek-travel-size-acoustic-electric-guitar.md) <small>January 22, 2021</small>
 * [macOS QuickTime screen recording at 48 kHz sample rate](2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md) <small>December 3, 2020</small>
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
 * [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
 * [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
-* [Fix Facebook YouTube attachment layout on mobile](2019/11/fix-facebook-youtube-attachment-layout-mobile.md) <small>November 7, 2019</small>
 
 [More posts](posts.md)
 

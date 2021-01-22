@@ -3,6 +3,11 @@ Posts
 
 <div class="links posts">
 
+2021
+----
+
+* [What strings for BeaverCreek travel size acoustic electric guitar](2021/01/what-strings-for-beavercreek-travel-size-acoustic-electric-guitar.md) <small>January 22, 2021</small>
+
 2020
 ----
 

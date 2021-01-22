@@ -37,10 +37,17 @@ here!
 >
 > Here are the product numbers to look for:
 >
-> * EXP16 (12-53) coated light gauge - phosphor bronze
-> * XTAPB1253 (NEW!) (12-53) coated light gauge - phosphor bronze
-> * EJ16 (12-53) uncoated light gauge - phosphor bronze
+> * [EXP16] (12-53) coated light gauge - phosphor bronze
+> * [XTAPB1253] (NEW!) (12-53) coated light gauge - phosphor bronze
+> * [EJ16] (12-53) uncoated light gauge - phosphor bronze
 >
 > Sincerely,
 
 Thank you Nigel! ✌️
+
+**Note:** I added the links to Strings and Beyond myself for
+convenience, as it's my favorite place to buy strings!
+
+[EXP16]: https://www.stringsandbeyond.com/daddario-acoustic-guitar-strings-exp16-light-blue-12-53.html
+[XTAPB1253]: https://www.stringsandbeyond.com/daddario-xt-phosphor-bronze-acoustic-guitar-strings-xtapb1253-regular-light-12-53.html
+[EJ16]: https://www.stringsandbeyond.com/daddario-acoustic-guitar-strings-ej16-light-12-53.html

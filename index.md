@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [YouTube comment notification but no comment on video](2021/01/youtube-comment-notification-but-no-comment-on-video.md) <small>January 23, 2021</small>
 * [What strings for BeaverCreek travel size acoustic electric guitar](2021/01/what-strings-for-beavercreek-travel-size-acoustic-electric-guitar.md) <small>January 22, 2021</small>
 * [macOS QuickTime screen recording at 48 kHz sample rate](2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md) <small>December 3, 2020</small>
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
 * [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
-* [Bass recording tips](2019/12/bass-recording-tips.md) <small>December 4, 2019</small>
 
 [More posts](posts.md)
 

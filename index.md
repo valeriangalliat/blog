@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [IKEA office chair: lock wheels on an uneven floor](2021/01/ikea-office-chair-lock-wheels-uneven-floor.md) <small>January 23, 2021</small>
 * [YouTube comment notification but no comment on video](2021/01/youtube-comment-notification-but-no-comment-on-video.md) <small>January 23, 2021</small>
 * [What strings for BeaverCreek travel size acoustic electric guitar](2021/01/what-strings-for-beavercreek-travel-size-acoustic-electric-guitar.md) <small>January 22, 2021</small>
 * [macOS QuickTime screen recording at 48 kHz sample rate](2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md) <small>December 3, 2020</small>
@@ -27,7 +28,6 @@ Posts
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 * [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 * [YouTube aspect ratio and video thumbnails](2020/04/youtube-aspect-ratio-and-video-thumbnails.md) <small>April 6, 2020</small>
-* [Node.js: migrating from `createCipher` to `createCipheriv`](2020/03/nodejs-migrating-createcipher-createcipheriv.md) <small>March 14, 2020</small>
 
 [More posts](posts.md)
 

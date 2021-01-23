@@ -6,6 +6,7 @@ Posts
 2021
 ----
 
+* [IKEA office chair: lock wheels on an uneven floor](2021/01/ikea-office-chair-lock-wheels-uneven-floor.md) <small>January 23, 2021</small>
 * [YouTube comment notification but no comment on video](2021/01/youtube-comment-notification-but-no-comment-on-video.md) <small>January 23, 2021</small>
 * [What strings for BeaverCreek travel size acoustic electric guitar](2021/01/what-strings-for-beavercreek-travel-size-acoustic-electric-guitar.md) <small>January 22, 2021</small>
 

@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [Instagram album with multiple aspect ratios](2021/01/instagram-album-with-multiple-aspect-ratios.md) <small>January 30, 2021</small>
 * [Franc Moody bass tone on Logic Pro](2021/01/franc-moody-bass-tone-logic-pro.md) <small>January 29, 2021</small>
 * [IKEA office chair: lock wheels on an uneven floor](2021/01/ikea-office-chair-lock-wheels-uneven-floor.md) <small>January 23, 2021</small>
 * [YouTube comment notification but no comment on video](2021/01/youtube-comment-notification-but-no-comment-on-video.md) <small>January 23, 2021</small>
@@ -27,7 +28,6 @@ Posts
 * [What's currently playing at Shakti Rock Gym?](2020/09/what-s-currently-playing-at-shakti-rock-gym.md) <small>September 24, 2020</small>
 * [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
 * [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
-* [My settings for Panasonic LUMIX LX100](2020/05/my-settings-for-panasonic-lumix-lx100.md) <small>May 22, 2020</small>
 
 [More posts](posts.md)
 

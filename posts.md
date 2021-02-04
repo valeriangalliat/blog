@@ -6,6 +6,7 @@ Posts
 2021
 ----
 
+* [Instagram album with multiple aspect ratios](2021/01/instagram-album-with-multiple-aspect-ratios.md) <small>January 30, 2021</small>
 * [Franc Moody bass tone on Logic Pro](2021/01/franc-moody-bass-tone-logic-pro.md) <small>January 29, 2021</small>
 * [IKEA office chair: lock wheels on an uneven floor](2021/01/ikea-office-chair-lock-wheels-uneven-floor.md) <small>January 23, 2021</small>
 * [YouTube comment notification but no comment on video](2021/01/youtube-comment-notification-but-no-comment-on-video.md) <small>January 23, 2021</small>

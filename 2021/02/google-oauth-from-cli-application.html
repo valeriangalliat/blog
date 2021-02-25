@@ -1,0 +1,182 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Google OAuth from a CLI application</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/valeriangalliat/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>LinkedIn</title>
+                <use href="/img/icons/458-linkedin.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>Google OAuth from a CLI application</h1>
+<p>February 25, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I like to make command line (CLI) applications and scripts, and some of
+them require to authenticate with a Google account.</p>
+<p>This requires OAuth, and the most popular and most documented way is
+from a web server and web application, where you redirect to (or open a
+pop-up to) a Google auth URL, giving it a redirect URL that they…
+redirect to once the auth is complete.</p>
+<p>Since the URL can be on <code>localhost</code>, this is not an issue for a CLI that
+runs on the user device, but it gets fairly annoying if the CLI runs on
+another device (e.g. a server).</p>
+<p>Or I mean, if your app doesn’t have a web server otherwise, you might
+just be lazy to implement one solely for the sake of OAuth.</p>
+<h2 id="a-note-about-limited-input-devices"><a class="header-anchor" href="#a-note-about-limited-input-devices">¶</a> A note about limited input devices</h2>
+<p>If your app runs on a TV, a toaster or some other kind of device where
+the user can’t open a link on the device itself to log in, you can use
+the <a href="https://developers.google.com/identity/protocols/oauth2/limited-input-device">limited input device flow</a> which lets you display a short URL and
+code so that Google can authenticate the user on your app without having
+to type anything on the actual device.</p>
+<p>This is a cool option to know about, but as far as I’m concerned, I can
+afford showing a fairly long URL in my CLI output for the user to
+open in their browser, so that’s what we’re going to look at today.</p>
+<h2 id="application-authentication-flow"><a class="header-anchor" href="#application-authentication-flow">¶</a> Application authentication flow</h2>
+<p>Everything is documented <a href="https://developers.google.com/youtube/v3/live/guides/auth/installed-apps">here</a> but I’ll quickly go over the basics in
+this article, with some JavaScript examples on Node.js.</p>
+<p>First, <a href="https://console.cloud.google.com/apis/credentials">in Google Cloud Platform</a>,
+you need to create a Oauth client ID of type <kbd>Desktop</kbd>. This
+will give you a client ID and client secret that you can configure
+in your app.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;your client ID&#x27;</span>
+<span class="hljs-keyword">const</span> clientSecret = <span class="hljs-string">&#x27;your client secret&#x27;</span>
+</code></pre>
+<p>Then you can create an OAuth client using the SDK.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { google } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;googleapis&#x27;</span>)
+
+<span class="hljs-keyword">const</span> oauth2Client = <span class="hljs-keyword">new</span> google.auth.OAuth2(clientId, clientSecret, <span class="hljs-string">&#x27;urn:ietf:wg:oauth:2.0:oob&#x27;</span>)
+</code></pre>
+<p>The third parameter here is the redirect URL, where the Google auth page
+would normally redirect to when the authentication is complete.</p>
+<p>As I mentioned earlier, we don’t want to deal with a web server, which
+is why we use the string <code>urn:ietf:wg:oauth:2.0:oob</code> instead (look it up
+in <a href="https://developers.google.com/youtube/v3/live/guides/auth/installed-apps">the documentation</a> for more details). This tells Google to
+show a code to the user instead of redirecting, which they can then
+paste into your app to complete the process.</p>
+<p>Here’s an example.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
+
+<span class="hljs-keyword">const</span> rl = readline.createInterface({
+  <span class="hljs-attr">input</span>: process.stdin,
+  <span class="hljs-attr">output</span>: process.stdout
+})
+
+<span class="hljs-keyword">const</span> authUrl = oauth2Client.generateAuthUrl({
+  <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
+  <span class="hljs-attr">scope</span>: [
+    <span class="hljs-string">&#x27;https://www.googleapis.com/auth/userinfo.profile&#x27;</span>,
+    <span class="hljs-string">&#x27;https://www.googleapis.com/auth/userinfo.email&#x27;</span>
+  ]
+})
+
+<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Authorize this app by visiting this URL: &#x27;</span>, authUrl)
+<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Enter the code from that page here: &#x27;</span>, resolve))
+rl.close()
+
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+  oauth2Client.getToken(code, <span class="hljs-function">(<span class="hljs-params">err, token</span>) =&gt;</span> err ? reject(err) : resolve(token))
+})
+
+oauth2Client.setCredentials(token)
+</code></pre>
+<p>Your <code>oauth2Client</code> is now authenticated, and you can use it to access
+the Google APIs that you requested in your scope, for example for
+YouTube (had we asked for the <code>https://www.googleapis.com/auth/youtube</code> scope):</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> youtube = google.youtube({
+  <span class="hljs-attr">version</span>: <span class="hljs-string">&#x27;v3&#x27;</span>,
+  <span class="hljs-attr">auth</span>: oauth2Client
+})
+</code></pre>
+<h2 id="bonus-integrating-with-firebase"><a class="header-anchor" href="#bonus-integrating-with-firebase">¶</a> Bonus: integrating with Firebase</h2>
+<p>By default, Firebase’s Google auth provider only comes with the option to
+redirect or open a pop-up, which won’t work in a CLI environment, but
+they also give you the option to authenticate using a Google auth token.</p>
+<p>This is the <code>id_token</code> of the token object we retrieved earlier using
+the application authentication flow.</p>
+<p>Which means we can easily do the following:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> firebase = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase&#x27;</span>)
+
+<span class="hljs-keyword">const</span> app = firebase.initializeApp({
+  <span class="hljs-comment">// Your config goes here.</span>
+})
+
+<span class="hljs-keyword">const</span> auth = app.auth()
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> firebase.auth.GoogleAuthProvider()
+
+<span class="hljs-comment">// Here, `token` is the result of `oauth2Client.getToken` in the earlier example.</span>
+<span class="hljs-keyword">const</span> credential = firebase.auth.GoogleAuthProvider.credential(token.id_token)
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> auth.signInWithCredential(credential)
+
+<span class="hljs-built_in">console</span>.log(result)
+</code></pre>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/02/google-oauth-from-cli-application.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

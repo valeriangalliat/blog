@@ -1,0 +1,29 @@
+#!/bin/sh -e
+
+printf 'Title: '
+read title
+printf 'Slug (without extension): '
+read slug
+
+year=$(date +%Y)
+dir=$(date +%Y/%m)
+path=$dir/$slug.md
+display_date=$(date '+%B %-d, %Y')
+link=$(echo "* [$title]($dir/$slug.md) <small>$display_date</small>")
+
+mkdir -p "$dir"
+
+cat << EOF > "$path"
+$title
+$(head -c "$(printf "$title" | wc -c)" /dev/zero | tr '\0' '=')
+$display_date
+
+EOF
+
+awk -i inplace -v "link=$link" '/<div class="links posts">/ { print; getline; print; print link; next } 1' index.md
+
+if ! grep -qzoP "\n$year\n----\n" posts.md; then
+    awk -i inplace -v "year=$year" '/<div class="links posts">/ { print; getline; print; print year; print "----\n\n"; next } 1' posts.md
+fi
+
+awk -i inplace -v "link=$link" '!found && /^----$/ { print; getline; print; print link; found = 1; next } 1' posts.md

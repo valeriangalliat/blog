@@ -11,6 +11,10 @@ dist:
 clean:
 	rm -f $(HTML)
 
+.PHONY: new
+new:
+	./new
+
 dist/index.html: index.md head.html foot.html
 	mkdir -p $$(dirname $@)
 	./render $< | sed 's/class="page"/class="page index"/' > $@

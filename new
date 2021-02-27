@@ -20,7 +20,12 @@ $display_date
 
 EOF
 
-awk -i inplace -v "link=$link" '/<div class="links posts">/ { print; getline; print; print link; next } 1' index.md
+awk '/<div class="links posts">/ { print NR } /More posts/ { print NR }' index.md | {
+    read start_index
+    read end_index
+
+    awk -i inplace -v "link=$link" "NR == ($start_index + 2) { print link } NR != ($end_index - 2)" index.md
+}
 
 if ! grep -qzoP "\n$year\n----\n" posts.md; then
     awk -i inplace -v "year=$year" '/<div class="links posts">/ { print; getline; print; print year; print "----\n\n"; next } 1' posts.md

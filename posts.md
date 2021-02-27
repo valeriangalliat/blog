@@ -6,6 +6,8 @@ Posts
 2021
 ----
 
+* [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
+* [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
 * [Google OAuth from a CLI application](2021/02/google-oauth-from-cli-application.md) <small>February 25, 2021</small>
 * [Instagram album with multiple aspect ratios](2021/01/instagram-album-with-multiple-aspect-ratios.md) <small>January 30, 2021</small>
 * [Franc Moody bass tone on Logic Pro](2021/01/franc-moody-bass-tone-logic-pro.md) <small>January 29, 2021</small>

@@ -32,6 +32,7 @@
  * the one used for the date. */
 .posts li > small {
     color: #bbb;
+    white-space: nowrap;
 }
 
 @media not all and (max-width: 38em) {

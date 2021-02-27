@@ -13,6 +13,8 @@ Posts
 
 <div class="links posts">
 
+* [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
+* [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
 * [Google OAuth from a CLI application](2021/02/google-oauth-from-cli-application.md) <small>February 25, 2021</small>
 * [Instagram album with multiple aspect ratios](2021/01/instagram-album-with-multiple-aspect-ratios.md) <small>January 30, 2021</small>
 * [Franc Moody bass tone on Logic Pro](2021/01/franc-moody-bass-tone-logic-pro.md) <small>January 29, 2021</small>
@@ -26,9 +28,6 @@ Posts
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 * [Too much contrast on external screen with macOS Catalina](2020/10/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
 * [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>
-* [What's currently playing at Shakti Rock Gym?](2020/09/what-s-currently-playing-at-shakti-rock-gym.md) <small>September 24, 2020</small>
-* [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>
-* [Arch Linux bulletproof no config color emoji](2020/05/arch-linux-bulletproof-no-config-color-emoji.md) <small>May 27, 2020</small>
 
 [More posts](posts.md)
 

@@ -1,0 +1,104 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>The Lambda function returned invalid JSON: the JSON output is not parsable</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/valeriangalliat/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>LinkedIn</title>
+                <use href="/img/icons/458-linkedin.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>The Lambda function returned invalid JSON: the JSON output is not parsable</h1>
+<p>February 26, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>There could be a number of reasons you’re getting this error message
+from your CloudFront distribution with a Lambda@Edge configured.</p>
+<p>For example, your Lambda function could actually be returning a poorly
+encoded response. But if you know you’re returning proper JSON, why
+could you get that error?</p>
+<p>Well, it turns out this error message is <em>also</em> a way for AWS to tell
+you that the (absolutely valid) JSON that your Lambda function returned
+was too big.</p>
+<p>Indeed, <a href="https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/lambda-requirements-limits.html#lambda-at-the-edge-exposing-body-size-limits-lambda-at-edge">a Lambda@Edge is limited to a 40 kB response body</a>,
+which is not a lot of kB if you ask me.</p>
+<p>And instead of returning a meaningful error when this happens (I
+confirmed in my case, this was the issue), we’re getting an invalid JSON
+error.</p>
+<p>Why? Maybe something in the stack of things involved on AWS between
+CloudFront and the Lambda function just <em>truncates</em> the response body to
+40 kB, and a truncated JSON is indeed invalid JSON.</p>
+<p>Regardless, if you’re getting this error on a Lambda@Edge, it’s worth
+checking your payload size, and it might save you hours of debugging
+your JSON structure and what could corrupt it!</p>
+<p>Cheers!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/02/lambda-json-output-not-parsable.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

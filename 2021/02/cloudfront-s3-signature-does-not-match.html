@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>CloudFront and S3: SignatureDoesNotMatch, the request signature we calculated does not match the signature you provided</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/valeriangalliat/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>LinkedIn</title>
+                <use href="/img/icons/458-linkedin.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>CloudFront and S3: <code>SignatureDoesNotMatch</code>, the request signature we calculated does not match the signature you provided</h1>
+<p>February 26, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Maybe you’re getting the following error from your CloudFront
+distribution like it happened to me.</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>SignatureDoesNotMatch<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>The request signature we calculated does not match the signature you provided. Check your key and signing method.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
+</code></pre>
+<p>If so, maybe like me you configured the <code>Managed-AllViewer</code> origin
+request policy, which forwards all the headers, cookies and query string
+parameters to the origin.</p>
+<p>The issue is, if your origin is S3, something between CloudFront and S3
+doesn’t expect all the headers, cookies and query string parameters to
+be passed and they don’t compute the signature in the same way,
+resulting in the above error.</p>
+<p>This means you can’t use the <code>Managed-AllViewer</code> request policy if your
+origin is S3.</p>
+<p>If like me you need to access extra headers or query string parameters
+from a Lambda@Edge (which you won’t be able to unless your request
+policy sends those), you can try making a custom request policy to
+whitelist only the headers and query parameters that you need. This did
+the trick for me!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/02/cloudfront-s3-signature-does-not-match.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

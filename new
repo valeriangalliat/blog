@@ -24,11 +24,14 @@ awk '/<div class="links posts">/ { print NR } /More posts/ { print NR }' index.m
     read start_index
     read end_index
 
-    awk -i inplace -v "link=$link" "NR == ($start_index + 2) { print link } NR != ($end_index - 2)" index.md
+    awk -v "link=$link" "NR == ($start_index + 2) { print link } NR != ($end_index - 2)" index.md > index.md.new
+    mv index.md.new index.md
 }
 
-if ! grep -qzoP "\n$year\n----\n" posts.md; then
-    awk -i inplace -v "year=$year" '/<div class="links posts">/ { print; getline; print; print year; print "----\n\n"; next } 1' posts.md
+if ! grep -A1 "^$year$" posts.md | grep -q '^----$'; then
+    awk -v "year=$year" '/<div class="links posts">/ { print; getline; print; print year; print "----\n\n"; next } 1' posts.md > posts.md.new
+    mv posts.md.new posts.md
 fi
 
-awk -i inplace -v "link=$link" '!found && /^----$/ { print; getline; print; print link; found = 1; next } 1' posts.md
+awk -v "link=$link" '!found && /^----$/ { print; getline; print; print link; found = 1; next } 1' posts.md > posts.md.new
+mv posts.md.new posts.md

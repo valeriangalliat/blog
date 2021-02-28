@@ -1,0 +1,121 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>Control MIDI instruments with keyboard knobs in Logic Pro</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body class="post">
+  <header>
+    <div class="header-inner">
+      <nav>
+        <ul>
+          <li><a href="/">Home</a></li>
+          <li><a href="/val.html">About</a></li>
+          <li><a href="https://photography.codejam.info/">Photography</a></li>
+        </ul>
+        <ul class="social">
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.linkedin.com/in/valeriangalliat/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>LinkedIn</title>
+                <use href="/img/icons/458-linkedin.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://soundcloud.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>SoundCloud</title>
+                <use href="/img/icons/452-soundcloud.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </nav>
+      <div class="content">
+<h1>Control MIDI instruments with keyboard knobs in Logic Pro</h1>
+<p>February 28, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>While this feature is well documented, see <a href="https://support.apple.com/en-ca/guide/logicpro/lgcp0155c51f/mac">assign hardware controls to screen controls in Logic Pro</a>,
+I found that page quite hard to find when looking it up (probably because I
+was using the wrong keywords), so I’m making this article in the hope to
+help other people who don’t necessarily think about the terms “hardware
+controls” and “screen controls”.</p>
+<p>I’ve also made a video about this, check it out!</p>
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/3YKvkiyXZMA" allowfullscreen></iframe>
+</figure>
+<p>I found this feature not very intuitive to find; the last time I needed
+it, I even knew it existed and that I did it in the past but I couldn’t
+figure where I could assign the physical knobs again.</p>
+<p>I’m using a MIDI keyboard, actually a microKORG synth that I plug as
+MIDI in Logic Pro, which comes with a set of knobs that, as a synth,
+allow controlling the cutoff, resonance, attack and release, and as a
+MIDI controller, send MIDI events.</p>
+<p>By default when this keyboard is plugged in MIDI, those knobs do
+nothing, and I was wondering how to make them control Logic’s virtual
+instruments.</p>
+<h2 id="assign-physical-knobs-to-virtual-instrument"><a class="header-anchor" href="#assign-physical-knobs-to-virtual-instrument">¶</a> Assign physical knobs to virtual instrument</h2>
+<p>For this, you need to open the <kbd>Smart Controls</kbd> panel (e.g. by
+pressing <kbd>B</kbd>). In this panel, make sure you’re in the
+<kbd>Controls</kbd> tab (it usually also shows <kbd>Transform</kbd> and
+<kbd>EQ</kbd>).</p>
+<p>On the top left of that panel, there’s a little <kbd>i</kbd> button,
+click it to show the inspector, which allows you to create external
+assignments!</p>
+<p>By the <kbd>Learn</kbd> button, you can select one of the controls on
+the right (e.g. <kbd>CUTOFF</kbd>), and turn the physical knob that you
+want to assign. Logic should understand the matching MIDI signal and add
+the assignment.</p>
+<figure class="center">
+  <img alt="Controls panel" src="../../img/2021/02/logic-pro-controls-assignment.jpg">
+</figure>
+<p>You can then click on another control, turn another physical knob again,
+until you’re satisfied, then you can stop the learning process by
+clicking again the <kbd>Learn</kbd> button.</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

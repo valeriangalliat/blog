@@ -5,12 +5,12 @@ March 12, 2016
 **Sidenote:** you can say your procrastination level is very high where
 you write an article like this in March.
 
-I got inspired by my friend [Hugo][hugo]'s article [Looking back at
-2015][hugo-2015] and decided to write my own (about two
+I got inspired by my friend [Kitty][kitty]'s article [Looking back at
+2015][kitty-2015] and decided to write my own (about two
 months later but shhh, it's never too late).
 
-[hugo]: http://hugogiraudel.com/
-[hugo-2015]: http://hugogiraudel.com/2016/01/05/looking-back-at-2015/
+[kitty]: http://kittygiraudel.com/
+[kitty-2015]: http://kittygiraudel.com/2016/01/05/looking-back-at-2015/
 
 This article is more a writing exercise for me than something you should
 read, unless you have nothing better to do than reading about my 2015
@@ -24,13 +24,13 @@ I began the year spending the vast majority of my free time programming
 and contributing to open source, with the motivation and productivity
 momentum being part of the [SassDoc][sassdoc] team gave me since mid 2014.
 
-I'm especially super thankful to [Hugo][tw-hugo], [Pascal][tw-pascal]
+I'm especially super thankful to [Kitty][tw-kitty], [Pascal][tw-pascal]
 and [Fabrice][tw-fabrice], we made an awesome team that I'm really proud
 being part of. I learnt so much by building SassDoc together, as much in
 programming as in open source project handling and team building.
 
 [sassdoc]: http://sassdoc.com/
-[tw-hugo]: https://twitter.com/HugoGiraudel
+[tw-kitty]: https://twitter.com/KittyGiraudel
 [tw-pascal]: https://twitter.com/pascalduez
 [tw-fabrice]: https://twitter.com/FWeinb
 
@@ -142,11 +142,11 @@ working with it for the final project of my studies.
 
 ### November 6
 
-I helped my friend [Hugo][hugo] to build [node-legofy][node-legofy],
+I helped my friend [Kitty][kitty] to build [node-legofy][node-legofy],
 a tool to convert an image to a mosaic of LEGO. We had a lot of fun
 writing this.
 
-[node-legofy]: https://github.com/HugoGiraudel/node-legofy
+[node-legofy]: https://github.com/KittyGiraudel/node-legofy
 
 ### December 7
 

@@ -6,6 +6,7 @@ Posts
 2021
 ----
 
+* [Why I shoot 24 FPS video](2021/03/why-i-shoot-24-fps-video.md) <small>March 6, 2021</small>
 * [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>
 * [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
 * [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
@@ -24,7 +25,7 @@ Posts
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
 * [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
-* [Too much contrast on external screen with macOS Catalina](2020/20/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
+* [Too much contrast on external screen with macOS Catalina](2020/10/too-much-contrast-external-screen-macos-catalina.md) <small>October 2, 2020</small>
 * [MSI BIOS freeze on save and boot menu](2020/10/msi-bios-freeze-on-save-and-boot-menu.md) <small>October 2, 2020</small>
 * [What's currently playing at Shakti Rock Gym?](2020/09/what-s-currently-playing-at-shakti-rock-gym.md) <small>September 24, 2020</small>
 * [My settings for GoPro HERO (2018) and HERO5 Black](2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.md) <small>June 16, 2020</small>

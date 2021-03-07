@@ -1,5 +1,5 @@
 html {
-    font: 1.25em/1.5 serif;
+    font: 1.25em/1.5 "Times", serif;
     color: #333;
 }
 
@@ -32,7 +32,7 @@ h2:not(:first-child) {
 }
 
 h1, h2, h3, h4, h5, h6 {
-    font-family: sans-serif;
+    font-family: "Helvetica Neue", sans-serif;
 }
 
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
@@ -90,6 +90,7 @@ dt {
 }
 
 code, kbd, samp {
+    font-family: "Courier", monospace;
     font-size: .75em;
     background: #f8f8f8;
     padding: .25em .5em;

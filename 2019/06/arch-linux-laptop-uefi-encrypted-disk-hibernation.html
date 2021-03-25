@@ -78,7 +78,7 @@
 <p>Based on <a href="https://gist.github.com/mattiaslundberg/8620837">this Gist</a>,
 with hibernation added.</p>
 <p>Updated on March 27, 2020.</p>
-<h2 id="installer-usb"><a class="header-anchor" href="#installer-usb">¶</a> Installer USB</h2>
+<h2 id="installer-usb"><a class="header-anchor" href="#installer-usb">Installer USB</a></h2>
 <p>Download the <a href="https://www.archlinux.org/download/">latest ISO</a> and
 <code>dd</code> it to your USB drive as per the <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">official documentation</a>.</p>
 <p>With GNU/Linux (replace <code>/dev/sdx</code> with the proper drive):</p>
@@ -87,7 +87,7 @@ with hibernation added.</p>
 <p>Then boot on the USB.</p>
 <p>If it won’t boot, you might need to disable Secure Boot in your
 motherboard settings.</p>
-<h2 id="installation"><a class="header-anchor" href="#installation">¶</a> Installation</h2>
+<h2 id="installation"><a class="header-anchor" href="#installation">Installation</a></h2>
 <p>Based on the <a href="https://wiki.archlinux.org/index.php/installation_guide">install guide</a>.</p>
 <p>Connect to Wi-Fi if necessary.</p>
 <pre><code class="hljs language-sh">wifi-menu
@@ -204,7 +204,7 @@ umount -R /mnt
 swapoff -a
 reboot
 </code></pre>
-<h2 id="post-installation"><a class="header-anchor" href="#post-installation">¶</a> Post installation</h2>
+<h2 id="post-installation"><a class="header-anchor" href="#post-installation">Post installation</a></h2>
 <p>Connect to Wi-Fi if necessary.</p>
 <pre><code class="hljs language-sh">wifi-menu
 </code></pre>
@@ -266,11 +266,11 @@ suspend and hibernate</li>
 <li><code>ack</code></li>
 </ul>
 <p>For some reason PulseAudio might require a reboot to work.</p>
-<h3 id="tlp"><a class="header-anchor" href="#tlp">¶</a> TLP</h3>
+<h3 id="tlp"><a class="header-anchor" href="#tlp">TLP</a></h3>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> tlp
 systemctl start tlp
 </code></pre>
-<h3 id="lightdm"><a class="header-anchor" href="#lightdm">¶</a> LightDM</h3>
+<h3 id="lightdm"><a class="header-anchor" href="#lightdm">LightDM</a></h3>
 <p>In <code>/etc/lightdm/lightdm.conf</code>, set <code>greeter-session=lightdm-mini-greeter</code>
 or whatever is the greeter of your choice.</p>
 <p>If using <code>lightdm-mini-greeter</code>, modify
@@ -287,13 +287,13 @@ TTY session the idle status doesn’t use the idle hint but uses the last
 TTY input instead, it is always considered to be idled if a X session is
 started with <code>xinit</code> or <code>startx</code>, which is why I resorted to use a
 display manager.</p>
-<h3 id="bluetooth"><a class="header-anchor" href="#bluetooth">¶</a> Bluetooth</h3>
+<h3 id="bluetooth"><a class="header-anchor" href="#bluetooth">Bluetooth</a></h3>
 <p>Enable Bluetooth.</p>
 <pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> bluetooth
 systemctl start bluetooth
 </code></pre>
 <p>In practice I usually don’t enable Bluetooth and I <code>systemctl start bluetooth</code> and <code>systemctl stop bluetooth</code> as I need it.</p>
-<h3 id="touchpad"><a class="header-anchor" href="#touchpad">¶</a> Touchpad</h3>
+<h3 id="touchpad"><a class="header-anchor" href="#touchpad">Touchpad</a></h3>
 <p>I add the following to <code>/etc/X11/xorg.conf.d/40-libinput.conf</code> to have
 the touchpad work the way I like it to (natural scrolling and having the
 whole surface clickable).</p>
@@ -304,7 +304,7 @@ whole surface clickable).</p>
         Option &quot;NaturalScrolling&quot; &quot;true&quot;
 EndSection
 </code></pre>
-<h3 id="auto-hibernate-after-sustained-suspend"><a class="header-anchor" href="#auto-hibernate-after-sustained-suspend">¶</a> Auto hibernate after sustained suspend</h3>
+<h3 id="auto-hibernate-after-sustained-suspend"><a class="header-anchor" href="#auto-hibernate-after-sustained-suspend">Auto hibernate after sustained suspend</a></h3>
 <p>If you want to have the system hibernate after being suspended for some
 time (3 hours by default as per <code>/etc/systemd/sleep.conf</code>
 <code>HibernateDelaySec</code>), run the following:</p>
@@ -315,10 +315,10 @@ suspend will suspend then hibernate, which is an easy way to make sure
 that in any case the system will hibernate if suspended for more than 3
 hours to save battery.</p>
 <p>Hack from <a href="https://www.reddit.com/r/Fedora/comments/auctgi/setting_systemctl_suspendthenhibernate_as_default/">this Reddit thread</a>.</p>
-<h3 id="displaylink-adapter-for-multiple-monitors-and-ethernet"><a class="header-anchor" href="#displaylink-adapter-for-multiple-monitors-and-ethernet">¶</a> DisplayLink adapter for multiple monitors and Ethernet</h3>
+<h3 id="displaylink-adapter-for-multiple-monitors-and-ethernet"><a class="header-anchor" href="#displaylink-adapter-for-multiple-monitors-and-ethernet">DisplayLink adapter for multiple monitors and Ethernet</a></h3>
 <p>On my work laptop, installing <code>displaylink</code> and <code>evdi</code> from the AUR just
 worked out of the box.</p>
-<h3 id="final-touch"><a class="header-anchor" href="#final-touch">¶</a> Final touch</h3>
+<h3 id="final-touch"><a class="header-anchor" href="#final-touch">Final touch</a></h3>
 <p>After logging in with my regular user, I finish the configuration by
 cloning and installing my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>.</p>
 <pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/valeriangalliat/dotfiles.git

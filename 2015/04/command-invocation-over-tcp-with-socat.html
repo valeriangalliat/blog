@@ -81,7 +81,7 @@ Docker <em>service</em> container once, and send it parallel TCP requests to
 run a specific command over some input, instead of having to invoke the
 container each time I want to call the command.</p>
 <p><a href="https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94303270">More</a> on the <a href="https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94271213">actual issue</a> (see “Parallelism”).</p>
-<h2 id="first-try-with-ncat"><a class="header-anchor" href="#first-try-with-ncat">¶</a> First try with Ncat</h2>
+<h2 id="first-try-with-ncat"><a class="header-anchor" href="#first-try-with-ncat">First try with Ncat</a></h2>
 <p>I originally thought of <a href="https://nmap.org/ncat/">Ncat</a> (that comes with <a href="http://nmap.org/">Nmap</a>) for this job. Ncat
 is an awesome netcat-like utility with some additions, particularly SSL
 support, the ability to handle multiple clients, and to run a program to
@@ -108,7 +108,7 @@ just close the opposite side of the conversation.</p>
 <p>Ha! Ncat is stopping everything when the input is consumed, even if the
 command <em>output</em> haven’t reached EOF yet. And there is no option to
 control this behavior, damned!</p>
-<h2 id="socat-to-the-rescue"><a class="header-anchor" href="#socat-to-the-rescue">¶</a> socat to the rescue</h2>
+<h2 id="socat-to-the-rescue"><a class="header-anchor" href="#socat-to-the-rescue">socat to the rescue</a></h2>
 <p><a href="http://www.dest-unreach.org/socat/">socat</a> can do all what Ncat can do,
 but also way much more.</p>
 <p>Here’s the working socat version:</p>
@@ -126,7 +126,7 @@ the output reached EOF (while Ncat exits <em>instantly</em> upon input end).
 <code>-t 10</code> tells socat to wait 10 seconds (instead of the 0.5 default) for
 the other part of the channel to finish once the first part is done.</p>
 <p>Exactly what I needed!</p>
-<h2 id="appendix"><a class="header-anchor" href="#appendix">¶</a> Appendix</h2>
+<h2 id="appendix"><a class="header-anchor" href="#appendix">Appendix</a></h2>
 <p>Alternatively, socat provides an <code>ignoreeof</code> option that will keep the
 port open until the command returns. This may be indefinite if the
 command stalls, and therefore using the timeout option may be preferable

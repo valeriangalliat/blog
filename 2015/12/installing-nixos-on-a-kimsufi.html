@@ -76,7 +76,7 @@
   </header>
   <div class="content">
 <p><strong>Sidenote:</strong> yes, I’m absolutely doing this on a December 24.</p>
-<h2 id="introduction"><a class="header-anchor" href="#introduction">¶</a> Introduction</h2>
+<h2 id="introduction"><a class="header-anchor" href="#introduction">Introduction</a></h2>
 <p>I recently obtained a <a href="https://www.kimsufi.com/">Kimsufi</a> server<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup> and
 wanted to install NixOS on it. Though the web installation wizard
 doesn’t know about NixOS, thus requiring some more manual steps to
@@ -85,7 +85,7 @@ install it.</p>
 Linux</a> and
 <a href="http://aborsu.github.io/2015/09/26/Install%20NixOS%20on%20So%20You%20Start%20dedicated%20server/">Install NixOS on a So You Start Dedicated server</a>
 articles.</p>
-<h2 id="get-the-network-info"><a class="header-anchor" href="#get-the-network-info">¶</a> Get the network info</h2>
+<h2 id="get-the-network-info"><a class="header-anchor" href="#get-the-network-info">Get the network info</a></h2>
 <p>I started from an Arch Linux installation (available on the web
 installation wizard). If you have another system running, you can skip
 this step.</p>
@@ -110,13 +110,13 @@ Address6=(<span class="hljs-string">&#x27;{{ IPV6_ADDR }}/{{ IPV6_NETMASK }}&#x2
 IPCustom=(<span class="hljs-string">&#x27;-6 route add {{ IPV6_GW }} dev eth0&#x27;</span> <span class="hljs-string">&#x27;-6 route add default via {{ IPV6_GW }}
 </span></code></pre>
 <p>You will need those when creating your NixOS configuration.</p>
-<h2 id="fake-boot-in-nixos-iso"><a class="header-anchor" href="#fake-boot-in-nixos-iso">¶</a> Fake boot in NixOS ISO</h2>
+<h2 id="fake-boot-in-nixos-iso"><a class="header-anchor" href="#fake-boot-in-nixos-iso">Fake boot in NixOS ISO</a></h2>
 <p>We cannot specify a custom ISO to boot in, so we need to boot in rescue
 mode and replicate the NixOS ISO system in order to do the
 <a href="#regular-installation">regular installation</a> steps.</p>
 <p>After restarting in rescue mode, you’ll receive a mail with the SSH
 credentials. Once there, execute the following steps:</p>
-<h3 id="predict-the-network-interface-name"><a class="header-anchor" href="#predict-the-network-interface-name">¶</a> Predict the network interface name</h3>
+<h3 id="predict-the-network-interface-name"><a class="header-anchor" href="#predict-the-network-interface-name">Predict the network interface name</a></h3>
 <p>In rescue mode the public network interface is <code>eth0</code> but in NixOS, with
 systemd, it’s a different name, and you’ll need to explicitly specify it
 for the network configuration. For this, run the following command:</p>
@@ -125,7 +125,7 @@ for the network configuration. For this, run the following command:</p>
 <p>Which will output:</p>
 <pre><code class="hljs language-sh">ID_NET_NAME_PATH={{ NETIF }}
 </code></pre>
-<h3 id="format-the-disk-optional"><a class="header-anchor" href="#format-the-disk-optional">¶</a> Format the disk (optional)</h3>
+<h3 id="format-the-disk-optional"><a class="header-anchor" href="#format-the-disk-optional">Format the disk (optional)</a></h3>
 <p>While this step is usually done in the
 <a href="#regular-installation">regular installation</a> procedure, we need to do
 this before because faking the NixOS ISO system requires more space than
@@ -142,7 +142,7 @@ mkfs.ext4 -L nixos-rescue /dev/sda4
 </code></pre>
 <p>The following commands assume this layout, obviously tweak them
 for your own needs.</p>
-<h3 id="prepare-the-working-directories"><a class="header-anchor" href="#prepare-the-working-directories">¶</a> Prepare the working directories</h3>
+<h3 id="prepare-the-working-directories"><a class="header-anchor" href="#prepare-the-working-directories">Prepare the working directories</a></h3>
 <p>We create an <code>image</code> directory to mount the installation ISO in, and a
 <code>rescue</code> directory to mount the 2GB <code>nixos-rescue</code> partition and
 replicate the ISO system in.</p>
@@ -150,20 +150,20 @@ replicate the ISO system in.</p>
 mount /dev/disk/by-label/nixos-rescue rescue
 mkdir rescue/nix
 </code></pre>
-<h3 id="get-the-iso-and-mount-it"><a class="header-anchor" href="#get-the-iso-and-mount-it">¶</a> Get the ISO and mount it</h3>
+<h3 id="get-the-iso-and-mount-it"><a class="header-anchor" href="#get-the-iso-and-mount-it">Get the ISO and mount it</a></h3>
 <p>Get the ISO URL of the NixOS release you want to install, see the
 <a href="http://nixos.org/nixos/download.html">download page</a>.</p>
 <p>In my case I fetched the latest unstable at this date:</p>
 <pre><code class="hljs language-sh">wget <span class="hljs-string">&#x27;https://nixos.org/releases/nixos/unstable/nixos-16.03pre73316.93d8671/nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso&#x27;</span>
 mount -o loop nixos-minimal-16.03pre73316.93d8671-x86_64-linux.iso image
 </code></pre>
-<h3 id="extract-the-store"><a class="header-anchor" href="#extract-the-store">¶</a> Extract the store</h3>
+<h3 id="extract-the-store"><a class="header-anchor" href="#extract-the-store">Extract the store</a></h3>
 <p>To extract the store from the ISO to the rescue system, we need to get
 the <code>squashfs-tools</code> package, then extract it:</p>
 <pre><code class="hljs language-sh">apt-get install squashfs-tools
 unsquashfs -d rescue/nix/store image/nix-store.squashfs <span class="hljs-string">&#x27;*&#x27;</span>
 </code></pre>
-<h3 id="populate-the-system"><a class="header-anchor" href="#populate-the-system">¶</a> Populate the system</h3>
+<h3 id="populate-the-system"><a class="header-anchor" href="#populate-the-system">Populate the system</a></h3>
 <p>We then recreate the needed
 <a href="https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard">FHS</a>
 entries and mount bind or copy whatever is needed from the host system:</p>
@@ -175,7 +175,7 @@ mount --<span class="hljs-built_in">bind</span> /sys sys
 </code></pre>
 <p>Also take note of the content of <code>/etc/resolv.conf</code> to manually copy it
 after <code>chroot</code>.</p>
-<h3 id="chroot-in-the-installation-system"><a class="header-anchor" href="#chroot-in-the-installation-system">¶</a> <code>chroot</code> in the installation system</h3>
+<h3 id="chroot-in-the-installation-system"><a class="header-anchor" href="#chroot-in-the-installation-system"><code>chroot</code> in the installation system</a></h3>
 <p>First need to find the right path for <code>init</code> and <code>bash</code>:</p>
 <pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*nixos*/init&#x27;</span>)
 BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*/bin/bash&#x27;</span> | tail -n 1)
@@ -189,7 +189,7 @@ find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string
 <pre><code class="hljs language-sh">chroot . /<span class="hljs-variable">$INIT</span>
 </code></pre>
 <p>Just after, restore the <code>/etc/resolv.conf</code>.</p>
-<h2 id="regular-installation"><a class="header-anchor" href="#regular-installation">¶</a> Regular installation</h2>
+<h2 id="regular-installation"><a class="header-anchor" href="#regular-installation">Regular installation</a></h2>
 <p>You can now install your system as if you were in the installation ISO:</p>
 <pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt
 mkdir /mnt/home
@@ -237,11 +237,11 @@ passwords for new users:</p>
 <pre><code class="hljs language-sh">umount -R /mnt
 <span class="hljs-built_in">exit</span>
 </code></pre>
-<h2 id="final-boot"><a class="header-anchor" href="#final-boot">¶</a> Final boot</h2>
+<h2 id="final-boot"><a class="header-anchor" href="#final-boot">Final boot</a></h2>
 <p>From the management panel, define the hard disk as default boot device,
 and reboot the system. You should be able to SSH with the user/password
 you created previously.</p>
-<h2 id="troubleshooting"><a class="header-anchor" href="#troubleshooting">¶</a> Troubleshooting</h2>
+<h2 id="troubleshooting"><a class="header-anchor" href="#troubleshooting">Troubleshooting</a></h2>
 <p>If your server doesn’t go up, you can’t connect, or whatever, boot back
 in rescue mode, and look what happened in the system logs with:</p>
 <pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt

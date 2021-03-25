@@ -9,6 +9,9 @@ dist:
 	git worktree add dist gh-pages
 
 clean:
+	rm -f $(HTML) $(ASSETS)
+
+clean-html:
 	rm -f $(HTML)
 
 .PHONY: new

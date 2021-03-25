@@ -141,7 +141,7 @@ partitions. And FAT32 doesn’t allow for more than 4 GB files.</p>
 <p><a href="../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html#bonus-windows-dual-boot">Last time I needed to do that</a>,
 Windows offered an older ISO that didn’t have that issue so I just used
 that. This is not anymore an option.</p>
-<h3 id="we-couldnt-create-a-new-partition-or-locate-an-existing-one-round-1"><a class="header-anchor" href="#we-couldnt-create-a-new-partition-or-locate-an-existing-one-round-1">¶</a> We couldn’t create a new partition or locate an existing one (round 1)</h3>
+<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1">¶</a> We couldn’t create a new partition or locate an existing one (round 1)</h3>
 <p>My first attempt was to make a bootable USB drive with two partitions. I
 found somewhere (can’t find the link anymore) an article that documented
 how you can make a FAT32 partition with everything but the <code>sources</code>
@@ -190,7 +190,7 @@ it’s not what I wanted, and I didn’t have the option to create that
 second EFI partition from the installer, and even if I created it
 manually, I couldn’t get the installer to use it instead of the first
 EFI partition that it identifies.</p>
-<h3 id="what-i-could-have-done-but-i-didnt-do-round-1"><a class="header-anchor" href="#what-i-could-have-done-but-i-didnt-do-round-1">¶</a> What I could have done, but I didn’t do (round 1)</h3>
+<h3 id="what-i-could-have-done-but-i-didn-t-do-round-1"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-1">¶</a> What I could have done, but I didn’t do (round 1)</h3>
 <p>An EFI partition is just a FAT32 partition anywhere on your drive really
 that contains an <code>EFI</code> directory with a bunch of EFI shit inside. And it
 just works like magic. Fucking awesome stuff.</p>
@@ -214,7 +214,7 @@ button which creates all the partition that Windows needs.</p>
 <p>But again, this only creates the Microsoft “MSR (Reserved)” 16 MB
 partition on top of the Windows “Primary” partition, but doesn’t create
 an extra “System” one, just like the first time.</p>
-<h3 id="what-i-could-have-done-but-i-didnt-do-round-2"><a class="header-anchor" href="#what-i-could-have-done-but-i-didnt-do-round-2">¶</a> What I could have done, but I didn’t do (round 2)</h3>
+<h3 id="what-i-could-have-done-but-i-didn-t-do-round-2"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-2">¶</a> What I could have done, but I didn’t do (round 2)</h3>
 <p>At that point what I could have done, was to manually create a regular
 100 MB non-EFI partition first, then let Windows use the rest, and at
 the end, format that 100 MB space as FAT32 and  manually move the EFI
@@ -238,7 +238,7 @@ offline), and then <code>offline disk</code>.</p>
 it’ll create not two, but three new partitions on the drive, including
 the “System” one. Win!</p>
 <p>Well, not really.</p>
-<h3 id="we-couldnt-create-a-new-partition-or-locate-an-existing-one-round-2"><a class="header-anchor" href="#we-couldnt-create-a-new-partition-or-locate-an-existing-one-round-2">¶</a> We couldn’t create a new partition or locate an existing one (round 2)</h3>
+<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2">¶</a> We couldn’t create a new partition or locate an existing one (round 2)</h3>
 <p>If you click “Next” at that point, which normally launches the
 installation process, you get this error instead:</p>
 <blockquote>
@@ -273,7 +273,7 @@ make the Arch Linux boot partition back with the backup of its
 contents.</li>
 </ol>
 <p>Both are pretty annoying to do but would have worked.</p>
-<h3 id="making-windows-boot-from-the-drive-its-installed-on"><a class="header-anchor" href="#making-windows-boot-from-the-drive-its-installed-on">¶</a> Making Windows boot from the drive it’s installed on</h3>
+<h3 id="making-windows-boot-from-the-drive-it-s-installed-on"><a class="header-anchor" href="#making-windows-boot-from-the-drive-it-s-installed-on">¶</a> Making Windows boot from the drive it’s installed on</h3>
 <p>Finally, all that’s left to do is to make a new partition in the empty
 100 MB space that I left at the beginning of the drive, format it as
 FAT32, and move everything that Windows added to the EFI partition of my

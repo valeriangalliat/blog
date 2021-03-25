@@ -22,8 +22,7 @@ md.use(require('markdown-it-front-matter'), metaString => {
 md.use(require('markdown-it-anchor'), {
   level: 2, // Do not permalink `<h1>`.
   slugify: slug => slugify(slug, { decamelize: false }),
-  permalink: true,
-  permalinkBefore: true
+  permalink: require('markdown-it-anchor').permalink.headerLink()
 })
 
 md.use(require('markdown-it-deflist'))

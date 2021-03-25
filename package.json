@@ -3,6 +3,7 @@
     "lint": "standard . render"
   },
   "dependencies": {
+    "@sindresorhus/slugify": "^1.1.0",
     "github-markdown-css": "^4.0.0",
     "highlight.js": "^9.18.1",
     "icomoon-free-npm": "0.0.0",
@@ -13,8 +14,7 @@
     "markdown-it-front-matter": "^0.2.1",
     "markdown-it-highlightjs": "^3.3.0",
     "markdown-it-title": "^3.0.0",
-    "normalize.css": "^8.0.1",
-    "string": "^3.3.3"
+    "normalize.css": "^8.0.1"
   },
   "devDependencies": {
     "standard": "^16.0.1"

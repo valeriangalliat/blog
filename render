@@ -3,10 +3,7 @@
 const path = require('path')
 const fs = require('fs')
 const mdit = require('markdown-it')
-const string = require('string')
-
-const slugify = s =>
-  string(s).slugify().toString()
+const slugify = require('@sindresorhus/slugify')
 
 const md = mdit({
   html: true,
@@ -24,7 +21,7 @@ md.use(require('markdown-it-front-matter'), metaString => {
 
 md.use(require('markdown-it-anchor'), {
   level: 2, // Do not permalink `<h1>`.
-  slugify,
+  slugify: slug => slugify(slug, { decamelize: false }),
   permalink: true,
   permalinkBefore: true
 })

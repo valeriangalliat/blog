@@ -6,6 +6,7 @@ Posts
 2021
 ----
 
+* [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>
 * [Why I shoot 24 FPS video](2021/03/why-i-shoot-24-fps-video.md) <small>March 6, 2021</small>
 * [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>
 * [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>

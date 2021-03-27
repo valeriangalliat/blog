@@ -13,6 +13,7 @@ Posts
 
 <div class="links posts">
 
+* [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>
 * [Why I shoot 24 FPS video](2021/03/why-i-shoot-24-fps-video.md) <small>March 6, 2021</small>
 * [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>
 * [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
@@ -27,7 +28,6 @@ Posts
 * [On-Stage WS7500 workstation review](2020/11/on-stage-ws7500-workstation-review.md) <small>November 15, 2020</small>
 * [Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore](2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md) <small>November 14, 2020</small>
 * [Windows dual boot with VeraCrypt full disk encryption](2020/11/windows-dual-boot-veracrypt-full-disk-encryption.md) <small>November 2, 2020</small>
-* [Upgrade a Hackintosh from High Sierra to Catalina](2020/10/upgrade-hackintosh-high-sierra-catalina.md) <small>October 2, 2020</small>
 
 [More posts](posts.md)
 

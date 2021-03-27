@@ -1,15 +1,17 @@
 footer {
-    margin: 10em 0 1em 0;
-    padding: 0 2em;
+    max-width: 45rem;
+    margin: 10em auto 3em auto;
+    padding: 0 .5em;
     display: flex;
     justify-content: center;
+    border-top: 1px solid #eee;
 }
 
 footer p {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     color: #bbb;
-    margin: 1em 0;
+    margin: 2em 0;
 }
 
 @media all and (max-width: 69em) {

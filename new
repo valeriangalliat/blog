@@ -2,8 +2,11 @@
 
 printf 'Title: '
 read title
-printf 'Slug (without extension): '
+
+suggested_slug=$(node -p "require('@sindresorhus/slugify')(process.argv[1], { decamelize: false })" "$title")
+printf "Slug [$suggested_slug]: "
 read slug
+slug=${slug:-$suggested_slug}
 
 year=$(date +%Y)
 dir=$(date +%Y/%m)

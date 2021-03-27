@@ -1,5 +1,4 @@
-Recover space from a VirtualBox disk
-====================================
+# Recover space from a VirtualBox disk
 January 18, 2015
 
 When you write large files in a dynamically sized  VirtualBox disk,

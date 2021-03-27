@@ -1,5 +1,4 @@
-macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>
-========================================================================================
+# macOS High Sierra <small>on a MSI H110M PRO-D, Skylake CPU and NVIDIA Pascal GPU</small>
 March 16, 2019
 
 I recently decided to install macOS on my desktop computer, which I
@@ -8,8 +7,7 @@ installing macOS on it, but I decided nevertheless to give it a try and
 see if my build can support it. Turns out it was a success, and this
 blog post will describe what was necessary to make it run smoothly!
 
-Build
------
+## Build
 
 First, here's the details of the machine build.
 
@@ -34,8 +32,7 @@ PSU
 Wi-Fi card
 : [TP-Link TL-WDN4800 N900](https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133)
 
-Why not Mojave?
----------------
+## Why not Mojave?
 
 I have a GTX 1060, so no Mojave for me. Indeed, NVIDIA didn't release
 the macOS drivers for Mojave yet and Apple don't natively support
@@ -56,8 +53,7 @@ From the [tonymacx86 install Mojave post](https://www.tonymacx86.com/threads/uni
 
 [More on the topic](https://www.macrumors.com/2018/11/01/nvidia-comment-on-macos-mojave-drivers/).
 
-Steps summary
--------------
+## Steps summary
 
 Based on the [tonymacx86 guide for High Sierra](https://www.tonymacx86.com/threads/unibeast-install-macos-high-sierra-on-any-supported-intel-based-pc.235474/),
 as well as a couple things from [this guide](https://medium.com/@dekablade01/installing-macos-siera-10-12-3-hackintosh-on-desktop-pc-15d077405478).
@@ -229,8 +225,7 @@ After this, you should be able to reboot, and from the Clover bootloader
 on your HDD, select "Boot macOS from Hackintosh" (in my case my
 partition is named Hackintosh), and have a fully functional Hackintosh!
 
-Updating
---------
+## Updating
 
 Actually, you're not that done. Soon enough you'll need to install
 updates. I'm not sure what exactly I fucked up with the above setup, but
@@ -264,8 +259,7 @@ version.
 
 After this, reboot and you should be set!
 
-Bonus: Windows dual boot
-------------------------
+## Bonus: Windows dual boot
 
 ### Prepare the USB
 

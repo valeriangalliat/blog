@@ -1,5 +1,4 @@
-urxvt terminfo on NetBSD
-========================
+# urxvt terminfo on NetBSD
 March 11, 2015
 
 When installing urxvt (rxvt-unicode) on NetBSD, the corresponding

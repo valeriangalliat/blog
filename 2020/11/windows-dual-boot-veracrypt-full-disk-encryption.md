@@ -1,5 +1,4 @@
-Windows dual boot with VeraCrypt full disk encryption
-=====================================================
+# Windows dual boot with VeraCrypt full disk encryption
 November 2, 2020
 
 ## TLDR

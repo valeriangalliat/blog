@@ -1,5 +1,4 @@
-YouTube comment notification but no comment on video
-====================================================
+# YouTube comment notification but no comment on video
 January 23, 2021
 
 Since about a year that I'm actively posting videos on YouTube, I'm
@@ -11,8 +10,7 @@ YouTube as well) but the comment is nowhere to be seen on the video.
 
 I've actually seen 3 different outcomes for this issue.
 
-Top comments
-------------
+## Top comments
 
 The first one was that the comment wasn't displaying when in "top
 comments" display mode under the video, for some reason.
@@ -24,8 +22,7 @@ was able to reply to it!
   <img alt="Newest first" src="../../img/2021/01/newest-first.png">
 </figure>
 
-Held for review & likely spam
------------------------------
+## Held for review & likely spam
 
 The second possibility was that the comment ended up in the "held for
 review" or "likely spam" tabs that you can find on the comments section
@@ -42,8 +39,7 @@ By the way the "likely spam" tab is gone for me, but I remember seeing
 there in the past and people online still mention it, so it might work
 for you.
 
-Just gone
----------
+## Just gone
 
 The third option though was that the comments were just completely gone,
 nowhere to be seen. Changing to "newest first" didn't help, and they
@@ -71,8 +67,7 @@ Except one of the last comments that was mentioning the YouTube Studio
 *app*, and that's when I considered the fact I was only going on YouTube
 Studio via my desktop browser, but I've never tried the *mobile app*.
 
-Use the mobile app!
--------------------
+## Use the mobile app!
 
 I went and downloaded the YouTube Studio mobile app, and went to the
 comments section, in the "held for review" part, and here they were! The

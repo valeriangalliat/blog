@@ -1,5 +1,4 @@
-Arch Linux bulletproof no config color emoji
-============================================
+# Arch Linux bulletproof no config color emoji
 May 27, 2020
 
 I (used to) use DejaVu (`ttf-dejavu`) as my main system and default font
@@ -10,8 +9,7 @@ installed, and instead being displayed as black and white glyphs.
 For a while, I've haven't been bothered enough by it to actually dig
 into it, but recently I've decided to spend the time to figure it out.
 
-TLDR
-----
+## TLDR
 
 If you use `ttf-dejavu`, remove it and install `ttf-bitstream-vera` instead,
 which is essentially the same font without the Unicode additions. Then
@@ -23,8 +21,7 @@ Alternatively, just remove DejaVu and make Noto your default font,
 period (which is even simpler and is what I've done in the end since I
 ended up liking the look of the Noto fonts even better).
 
-Why this bug happens
---------------------
+## Why this bug happens
 
 The black and white glyphs are from the `ttf-dejavu` font, which is
 essentially `tff-bitstream-vera` with added Unicode support, but that
@@ -55,8 +52,7 @@ At that point you can just remove DejaVu altogether, which is the
 solution I ended up going for, but if you want to keep the DejaVu/Vera
 font as your default system font, read on.
 
-The solution
-------------
+## The solution
 
 I've spent some more time digging, and I've eventually found a setup
 that so far seems to work consistently across browsers and websites, and

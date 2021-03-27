@@ -1,5 +1,4 @@
-macOS QuickTime screen recording at 48 kHz sample rate
-======================================================
+# macOS QuickTime screen recording at 48 kHz sample rate
 December 3, 2020
 
 Each time I write the title of a new article on this blog I feel even

@@ -1,5 +1,4 @@
-FreeBSD, Python and SSL certificate validation
-==============================================
+# FreeBSD, Python and SSL certificate validation
 May 22, 2015
 
 When not explicitely giving a SSL certificate file to Python `request`,

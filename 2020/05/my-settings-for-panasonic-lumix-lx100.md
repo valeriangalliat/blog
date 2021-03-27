@@ -3,8 +3,7 @@ hero: ../../img/2020/05/lumix.jpg
 focus: 50% 45%
 ---
 
-My settings for Panasonic LUMIX LX100
-=====================================
+# My settings for Panasonic LUMIX LX100
 May 22, 2020
 
 This article, well inspired by [Medo's My Settings for Panasonic LX100](https://www.medo64.com/2017/07/my-settings-for-panasonic-lx100/)
@@ -23,8 +22,7 @@ or not.
 The tables below are organized in the same way the LX100 settings menus
 are, and I've put in bold the values that I changed from default.
 
-Rec
----
+## Rec
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -68,8 +66,7 @@ Stabilizer | Vertical & horizontal |
 Face Recog. | OFF |
 Profile Setup | OFF | Kids and pets stuff
 
-Motion Picture
---------------
+## Motion Picture
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -94,8 +91,7 @@ Mic Level Adj. | LEVEL3 |
 4/4 | |
 Wind Cut | AUTO |
 
-Custom
-------
+## Custom
 
 Name | Value | Comment
 ---- | ----- | -------
@@ -149,8 +145,7 @@ Video Button | ON | I like to record videos
 9/9 | |
 Eye Sensor | (default) |
 
-Q.MENU
-------
+## Q.MENU
 
 Not a settings menu, but just to keep track of the settings I actually left default in the Q.MENU.
 
@@ -160,8 +155,7 @@ AF Mode | 49-Area | I tend to use that for photos, however I flip to *Face/Eye D
 Sensitivity | AUTO ISO | Unless I want to go manual temporarily
 White Balance | Auto White Balance |
 
-Bonus: NTSC mode for 60 FPS
----------------------------
+## Bonus: NTSC mode for 60 FPS
 
 For some reason even though I'm in Canada, my LX100 came in PAL mode
 which only allows me 24, 25 and 50 FPS.

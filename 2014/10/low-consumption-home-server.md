@@ -1,5 +1,4 @@
-Low consumption home server
-===========================
+# Low consumption home server
 October 26, 2014
 
 [CodeJam](../../2015/03/naming-things.md) is my little homemade piece
@@ -25,8 +24,7 @@ satisfied with it.
 performance. By relating to my "gaming" PC CPU score, *and with a lot of
 intuition*, I was expecting a score higher than 800 to fit my needs.
 
-Barebone PCs
-------------
+## Barebone PCs
 
 Naturally, I wanted to buy retail components and build the server
 myself. But I got advised to look at barebone PCs. So that's what I did.
@@ -43,8 +41,7 @@ consumption is pretty stunning!
 However we'll see below it was not my best option. Let's see what we
 need to build everything from scratch.
 
-General components
-------------------
+## General components
 
 I was expecting between 10 and 15 watts for the RAM, HDD and PSU
 combined, plus cooling. Not much to optimize here... maybe take a
@@ -58,8 +55,7 @@ HDD  | Western Digital Green Desktop 1 TiB SATA 6Gb/s | €54.75
 PSU  | LDLC QS-360 Quality Select 80PLUS Gold         | €44,95
 Case | Cooler Master Elite 342                        | €29.89
 
-Choosing the CPU
-----------------
+## Choosing the CPU
 
 After searching hardware websites for CPUs matching my criteria, I ended
 up with the following ones:
@@ -89,8 +85,7 @@ motherboard with an *integrated CPU*: the Gigabyte GA-C1037UN-EU, with
 an Intel Celeron 1037U. This CPU have a score of 1738, for 17 W TDP, and
 this for €79! This was **exactly** what I needed.
 
-Putting it all together
------------------------
+## Putting it all together
 
 <figure class="left">
   <a href="../../img/2014/10/codejam.jpg">

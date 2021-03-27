@@ -1,5 +1,4 @@
-Apache file with custom PHP version
-===================================
+# Apache file with custom PHP version
 September 16, 2014
 
 I once wanted to execute a single PHP file with a specific PHP version,

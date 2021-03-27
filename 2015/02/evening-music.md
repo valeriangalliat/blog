@@ -1,5 +1,4 @@
-Evening music
-=============
+# Evening music
 February 22, 2015
 
 I like to listen a few songs the night in my bed before actually
@@ -15,8 +14,7 @@ I'll use [mpc] to controll the MPD instance from the shell.
 [MPD]: http://www.musicpd.org/
 [mpc]: http://www.musicpd.org/clients/mpc/
 
-Play 10 songs and shut down
----------------------------
+## Play 10 songs and shut down
 
 ```sh
 mpc idleloop player | head -18; poweroff
@@ -34,8 +32,7 @@ number of lines are printed.
 
 Originally from [this tweet](https://twitter.com/valeriangalliat/status/569613240168292352).
 
-30 minutes of music and shut down
----------------------------------
+## 30 minutes of music and shut down
 
 ```sh
 sleep 30m; mpc idle player; poweroff
@@ -48,8 +45,7 @@ This one speaks for itself:
 
 Originally from [this tweet](https://twitter.com/valeriangalliat/status/569613564278910977).
 
-Bonus: progressively lower volume
----------------------------------
+## Bonus: progressively lower volume
 
 I also like the volume to go down slowly while listening to music before
 sleeping. This is extremely simple to do (here, I manage my sound with

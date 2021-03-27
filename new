@@ -17,8 +17,7 @@ link=$(echo "* [$title]($dir/$slug.md) <small>$display_date</small>")
 mkdir -p "$dir"
 
 cat << EOF > "$path"
-$title
-$(head -c "$(printf "$title" | wc -c)" /dev/zero | tr '\0' '=')
+# $title
 $display_date
 
 EOF
@@ -31,10 +30,10 @@ awk '/<div class="links posts">/ { print NR } /More posts/ { print NR }' index.m
     mv index.md.new index.md
 }
 
-if ! grep -A1 "^$year$" posts.md | grep -q '^----$'; then
-    awk -v "year=$year" '/<div class="links posts">/ { print; getline; print; print year; print "----\n\n"; next } 1' posts.md > posts.md.new
+if ! grep -q "^## $year$" posts.md; then
+    awk -v "year=$year" '/<div class="links posts">/ { print; getline; print; print "## " year; print "\n"; next } 1' posts.md > posts.md.new
     mv posts.md.new posts.md
 fi
 
-awk -v "link=$link" '!found && /^----$/ { print; getline; print; print link; found = 1; next } 1' posts.md > posts.md.new
+awk -v "link=$link" '!found && /^## / { print; getline; print; print link; found = 1; next } 1' posts.md > posts.md.new
 mv posts.md.new posts.md

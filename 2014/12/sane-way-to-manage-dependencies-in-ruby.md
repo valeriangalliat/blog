@@ -1,5 +1,4 @@
-Sane way to manage dependencies in Ruby
-=======================================
+# Sane way to manage dependencies in Ruby
 December 15, 2014
 
 I still don't know what's the proper way to deal with dependencies with

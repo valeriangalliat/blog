@@ -1,5 +1,4 @@
-Hello from the future
-=====================
+# Hello from the future
 July 1, 2014
 
 This post is a virtual first post, to indicate that this blog really

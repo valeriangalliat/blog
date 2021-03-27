@@ -1,5 +1,4 @@
-CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided
-=========================================================================================================================
+# CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided
 February 26, 2021
 
 Maybe you're getting the following error from your CloudFront

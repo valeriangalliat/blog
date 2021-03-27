@@ -1,5 +1,4 @@
-Control MIDI instruments with keyboard knobs in Logic Pro
-=========================================================
+# Control MIDI instruments with keyboard knobs in Logic Pro
 February 28, 2021
 
 While this feature is well documented, see [assign hardware controls to screen controls in Logic Pro](https://support.apple.com/en-ca/guide/logicpro/lgcp0155c51f/mac),

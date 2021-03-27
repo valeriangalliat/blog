@@ -1,13 +1,11 @@
-Starting to brew beer: things I wish I knew
-===========================================
+# Starting to brew beer: things I wish I knew
 June 8, 2019
 
 Last year, I started to [brew beer](https://photography.codejam.info/2018/2018-11-26-brewing.html)
 as a hobby with a friend. After [a couple of batches](https://github.com/valeriangalliat/sans-pression),
 here's a small article to share some learnings from that experience so far.
 
-Start with a 1 gallon kit
--------------------------
+## Start with a 1 gallon kit
 
 This might be the only thing we got straight right. If you never brewed
 beer before, start with a 1 gallon kit (e.g. [a kit like this](https://www.beergrains.com/1-Gallon-Starter-Kit/)),
@@ -28,8 +26,7 @@ undrinkable, you didn't waste a lot), and when you're satisfied with
 your experimental recipes, you can easily increase the quantities to
 make bigger batches of them.
 
-Get an auto-siphon
-------------------
+## Get an auto-siphon
 
 Maybe we just suck at using a regular siphon, but when trying to rack
 the beer with it, it took many attempts to get the stream running, and
@@ -51,8 +48,7 @@ it was to slow down.
   </a>
 </figure>
 
-Get a wort chiller
-------------------
+## Get a wort chiller
 
 When you start doing more than 1 gallon (e.g. 6 gallons) batches, get a
 wort chiller. It's somewhat pricey (count between $80 and $100 Canadian
@@ -87,8 +83,7 @@ Here, we have a 1/2" (sink) to 3/4" (garden hose) adapter.
   </a>
 </figure>
 
-Set up a blow-off instead of an airlock
----------------------------------------
+## Set up a blow-off instead of an airlock
 
 While airlocks are nice, it turned out for me that a blow-off is pretty
 much as easy to set up and prevents potential mess.
@@ -116,8 +111,7 @@ unless you really need that jar or tube.
   </a>
 </figure>
 
-Consider getting a carboy opener
---------------------------------
+## Consider getting a carboy opener
 
 This little tool that costs like 2 bucks might save you some time and
 energy. Get it just in case while you're at the brewing equipment store.
@@ -142,8 +136,7 @@ a while to get it open.
   </a>
 </figure>
 
-Get a grain filter basket or bag
---------------------------------
+## Get a grain filter basket or bag
 
 If you're gonna use the same mash tun to make your mash and to boil it,
 you're gonna have to get rid of the grains and clean it up before
@@ -173,8 +166,7 @@ filter in parallel instead of it delaying the start of your boil.
   </a>
 </figure>
 
-Optional: use swing top bottles
--------------------------------
+## Optional: use swing top bottles
 
 Swing top bottles are cool. Easy to open and close, no need for caps and
 capper, plus they make a very nice *pop* when you open them. Guaranteed
@@ -186,8 +178,7 @@ effect in parties.
   </a>
 </figure>
 
-Drink your homebrew while brewing
----------------------------------
+## Drink your homebrew while brewing
 
 Unelss it's your very first batch, brewing time is the best time to
 enjoy one of your previous homebrews!
@@ -204,8 +195,7 @@ enjoy one of your previous homebrews!
   </a>
 </figure>
 
-Mandatory: honor the hot scotchie tradition
--------------------------------------------
+## Mandatory: honor the hot scotchie tradition
 
 When draining the mash, sweep a little jar down the spigot to get some
 of that tasty warm malt juice. Pour a drop of your favorite single malt

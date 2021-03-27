@@ -2,8 +2,7 @@
 hero: ../../img/2021/01/screw-wheel.jpg
 ---
 
-IKEA office chair: lock wheels on an uneven floor
-=================================================
+# IKEA office chair: lock wheels on an uneven floor
 January 23, 2021
 
 I love my apartment. But there's one thing with it. It's not level.
@@ -17,8 +16,7 @@ surface? It rolls around. And the last thing I want when I'm sitting on
 my office chair, or when I'm not sitting on it for what it's worth, is
 it rolling around without my permission.
 
-Put it on a carpet
-------------------
+## Put it on a carpet
 
 The first thing I did was to put it on a carpet, and that straight up
 solved the issue. That's great, but the carpet comes with a bunch of
@@ -26,8 +24,7 @@ other inconvenience (like extra hassle when moving furniture around,
 need to clean it, having area limits, and so on) so I ditched that at
 some point and looked for another solution.
 
-Manual brakes
--------------
+## Manual brakes
 
 If you have the kind of wheels with brakes, just lock the brakes and
 you're good, but if you have this kind of wheel you would probably not
@@ -37,16 +34,14 @@ You can get replacement wheels with brakes, but I have an IKEA chair
 that have a special kind of nonstandard socket for the wheels so I
 didn't find any in Canada that had a reasonable price and shipping date.
 
-Elastics (don't do that)
-------------------------
+## Elastics (don't do that)
 
 One thing I tried was tying a whole bunch of elastics inside the wheels.
 And that did work. For 5 minutes. After that the elastics started to
 catch in the mechanism and broke one after the other and I ended up with
 a mess of bits of elastic all over the floor.
 
-Automatic brakes
-----------------
+## Automatic brakes
 
 But it turns out that I have an IKEA chair with an automatic brake, that
 brakes only when you're not sitting on it. So the chair is not moving
@@ -72,8 +67,7 @@ Obviously the mechanism is built in a way that you can't disassemble
 it without breaking it, so I was left with a limited number of
 solutions.
 
-Screw it
---------
+## Screw it
 
 What I ended up doing is take a bunch of screws, and screw them down
 the brake mechanism to lock it in place.

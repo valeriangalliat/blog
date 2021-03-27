@@ -1,5 +1,4 @@
-Installing Gogs on FreeBSD
-==========================
+# Installing Gogs on FreeBSD
 March 7, 2015
 
 [Gogs] is a self-hosted Git service, not unlike GitHub, but lightweight
@@ -8,8 +7,7 @@ on a FreeBSD host.
 
 [Gogs]: http://gogs.io/
 
-Preparation
------------
+## Preparation
 
 First, create the jail, start it, and open a shell into it. You can
 skip this step if you don't want to install it into a jail. Assuming
@@ -45,8 +43,7 @@ GOPATH=$HOME/go; export GOPATH
 echo 'GOPATH=$HOME/go; export GOPATH' >> ~/.profile
 ```
 
-Installation
-------------
+## Installation
 
 We can now install Gogs using the Go package manager:
 
@@ -77,8 +74,7 @@ cd gogs
 CC=gcc48 go build --tags sqlite
 ```
 
-Configuration
--------------
+## Configuration
 
 The default configuration can be extended by creating
 `custom/conf/app.ini`.
@@ -130,8 +126,7 @@ See the [other configuration options] and tweak to your tastes!
 
 [other configuration options]: http://gogs.io/docs/advanced/configuration_cheat_sheet.html
 
-Execution
----------
+## Execution
 
 Run the server with:
 
@@ -147,8 +142,7 @@ PATH=/bin:/usr/bin:/usr/local/bin
 @reboot cd ~/gogs && ./gogs web > logs/main.log
 ```
 
-Updating
---------
+## Updating
 
 To update Gogs to the latest version, basically replay the installation
 process:

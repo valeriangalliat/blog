@@ -1,5 +1,4 @@
-Git
-===
+# Git
 
 Last time I checked, `git` was *the* most used command in my history.
 Git is one of the first software I install on a new machine, with
@@ -8,29 +7,25 @@ Git is one of the first software I install on a new machine, with
 Here's all the stuff I collected about Git, that helped me better
 understand it and learn to use it properly.
 
-References
-----------
+## References
 
 * [Pro Git](https://git-scm.com/book/en/v2)
 * [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
 
-Tutorials (beginner)
---------------------
+## Tutorials (beginner)
 
 * [First steps (GitHub)](https://try.github.io/)
 * [Git for Beginners](http://www.sitepoint.com/git-for-beginners/)
 * [Enfin comprendre Git](http://www.miximum.fr/enfin-comprendre-git.html) (really complete introduction, in French)
 
-Tips & tricks
--------------
+## Tips & tricks
 
 * [Part 1](http://hugogiraudel.com/2014/03/10/git-tips-and-tricks-part-1/)
 * [Part 2](http://hugogiraudel.com/2014/03/17/git-tips-and-tricks-part-2/)
 * [Part 3](http://hugogiraudel.com/2014/03/24/git-tips-and-tricks-part-3/)
 * [Git tips from the trenches](https://ochronus.com/git-tips-from-the-trenches/)
 
-Deepening
----------
+## Deepening
 
 ### See how it works in the background
 
@@ -45,20 +40,17 @@ Deepening
 * [Git in six hundred words](http://maryrosecook.com/blog/post/git-in-six-hundred-words)
 * [Gitlet](http://gitlet.maryrosecook.com/docs/gitlet.html)
 
-Workflow & branching
---------------------
+## Workflow & branching
 
 * [A successful Git branching model](http://nvie.com/posts/a-successful-git-branching-model/)
 * [Comparing Workflows](http://www.atlassian.com/git/tutorials/comparing-workflows/)
 * [Using git-flow to automate your git branching workflow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
 
-The Hugo way
-------------
+## The Hugo way
 
 * [How I Use Git](https://hugogiraudel.com/2018/02/17/how-i-use-git/)
 
-Other interesting stuff
------------------------
+## Other interesting stuff
 
 * [Debugging in Git with Blame and Bisect](http://www.sitepoint.com/debugging-git-blame-bisect/)
 * [30 Git CLI options you should know about](https://medium.com/@porteneuve/30-git-cli-options-you-should-know-about-15423e8771df)
@@ -67,8 +59,7 @@ Other interesting stuff
 * [Getting solid at Git rebase vs. merge](https://medium.com/@porteneuve/getting-solid-at-git-rebase-vs-merge-4fa1a48c53aa) (excellent article, exactly my workflow)
 * [How to undo (almost) anything with Git](https://github.com/blog/2019-how-to-undo-almost-anything-with-git)
 
-Commit messages
----------------
+## Commit messages
 
 * [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
 * [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/)
@@ -99,14 +90,12 @@ Commit messages
   [2] https://git.codejam.info/
   ```
 
-GitHub
-------
+## GitHub
 
 * [GitHub Cheat Sheet](https://github.com/tiimgreen/github-cheat-sheet)
   (also see their list of [Git resources](https://github.com/tiimgreen/github-cheat-sheet#git-resources))
 
-Handling patches and pull requests
-----------------------------------
+## Handling patches and pull requests
 
 * [Care And Operation Of Your Linus Torvalds](https://www.kernel.org/doc/Documentation/SubmittingPatches)
 * [Gerrit Code Review - Signed-off-by Lines](http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html)

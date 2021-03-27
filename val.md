@@ -1,5 +1,4 @@
-Val <small>(Valérian Galliat)</small>
-=====================================
+# Val <small>(Valérian Galliat)</small>
 
 <div class="oversized">
 
@@ -7,8 +6,7 @@ Val <small>(Valérian Galliat)</small>
 
 </div>
 
-About
------
+## About
 
 I'm from Grenoble, in the beautiful French Alps, and currently living in
 Montreal, Canada.
@@ -37,8 +35,7 @@ I also happen to be a software developer, currently working at
 [Sportlogiq]: https://sportlogiq.com/en/about-us
 [Busbud]: https://www.busbud.com/en/about
 
-Links
------
+## Links
 
 <div class="links">
 

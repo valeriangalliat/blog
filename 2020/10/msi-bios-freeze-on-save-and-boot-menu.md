@@ -1,5 +1,4 @@
-MSI BIOS freeze on save and boot menu
-=====================================
+# MSI BIOS freeze on save and boot menu
 October 2, 2020
 
 I've been having an issue on my rig for the past couple of months where

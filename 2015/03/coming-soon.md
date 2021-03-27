@@ -1,5 +1,4 @@
-Coming soon
-===========
+# Coming soon
 March 25, 2015
 
 Coming soon. This is what I wrote like 10 months ago next to the "Blog"
@@ -13,8 +12,7 @@ attribute saying: "Between 1 week and 1 year, maybe". According to the
 date of this very post, it's needless to say it was more one year than
 one week.
 
-The need for a blog
--------------------
+## The need for a blog
 
 <figure class="left">
   <img alt="I should write a blog" src="../../img/2015/03/i-should-write-a-blog.jpg">
@@ -46,8 +44,7 @@ I'll publish them **in the past**. Because I can.
 
 [sp]: http://www.structuredprocrastination.com/
 
-Prose? Yet another programming language?
-----------------------------------------
+## Prose? Yet another programming language?
 
 I use to write *for computers*[^1]. Will I write well enough *for
 humans*?

@@ -1,5 +1,4 @@
-Minimal NixOS configuration profile
-===================================
+# Minimal NixOS configuration profile
 February 15, 2016
 
 I found that by default, NixOS comes with some X11 libraries and

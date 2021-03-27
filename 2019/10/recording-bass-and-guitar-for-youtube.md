@@ -1,5 +1,4 @@
-Recording bass and guitar for YouTube
-=====================================
+# Recording bass and guitar for YouTube
 October 17, 2019
 
 About a year ago, I started learning about how to make my own bass and
@@ -15,8 +14,7 @@ recordings!
 This article is somewhat specific to the gear and tools I use, but I'm
 pretty sure the general ideas can be applied to many different setups.
 
-Tools
------
+## Tools
 
 To start with, here's the gear and tools I'm using.
 
@@ -26,8 +24,7 @@ To start with, here's the gear and tools I'm using.
 * Video editing software: Adobe Premiere Pro
 * Publishing platform: YouTube
 
-Camera
-------
+## Camera
 
 ### Storage
 
@@ -75,8 +72,7 @@ When I'm satisfied with a take, I stop the recording and take note of
 the time and the number of the take in Logic so that I can easily match
 up the take with the associated video when editing.
 
-Interface
----------
+## Interface
 
 ### Hi-Z
 
@@ -103,8 +99,7 @@ doesn't sound distorted. Basically I end up turning up the sensitivity
 as much as possible regardless of the clipping LED as long as it still
 sounds good.
 
-Strings
--------
+## Strings
 
 Whether it's bass or guitar, you'll get a significant tone improvement
 by changing your strings before recording. New strings just got that
@@ -140,8 +135,7 @@ strings. It looks like I'm of the kind that destroys strings in a couple
 hours of playing, but if you're lucky enough you might be able to keep
 your new string tone for months without having to think about it.
 
-Logic
------
+## Logic
 
 ### Record and bounce in 24-bit 48 kHz
 
@@ -258,8 +252,7 @@ This won't actually delete the files from the disk; after doing that, go
 in the main window in *File*, *Project Management* and *Clean Up*. This
 will prompt you to actually move the unused audio files to the trash.
 
-Premiere
---------
+## Premiere
 
 While not directly related to bass and guitar covers, here's the little
 tips I needed with Premiere for doing those videos.
@@ -283,8 +276,7 @@ remaining files in the project panel and I remove the ones that are not
 used anymore. I'm not aware of an automated solution for this, but for
 this kind of project it's usually pretty quick.
 
-YouTube
--------
+## YouTube
 
 ### Prepare a cover picture first
 

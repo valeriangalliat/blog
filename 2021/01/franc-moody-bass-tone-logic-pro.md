@@ -3,8 +3,7 @@ hero: ../../img/2021/01/franc-moody-bass.jpg
 focus: 50% 25%
 ---
 
-Franc Moody bass tone on Logic Pro
-==================================
+# Franc Moody bass tone on Logic Pro
 January 29, 2021
 
 I'm obsessed by the bass tone in the Franc Moody songs.

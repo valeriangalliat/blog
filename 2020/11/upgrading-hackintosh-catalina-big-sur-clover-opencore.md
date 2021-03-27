@@ -1,5 +1,4 @@
-Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore
-=============================================================================
+# Upgrading my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore
 November 14, 2020
 
 So this is that exciting time of the year where Apple releases a new

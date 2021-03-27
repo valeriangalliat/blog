@@ -1,11 +1,9 @@
-Installing NixOS on a Kimsufi
-=============================
+# Installing NixOS on a Kimsufi
 December 24, 2015
 
 **Sidenote:** yes, I'm absolutely doing this on a December 24.
 
-Introduction
-------------
+## Introduction
 
 I recently obtained a [Kimsufi](https://www.kimsufi.com/) server[^1] and
 wanted to install NixOS on it. Though the web installation wizard
@@ -20,8 +18,7 @@ articles.
 [nixos-from-linux]: https://nixos.org/wiki/How_to_install_NixOS_from_Linux
 [nixos-so-you-start]: http://aborsu.github.io/2015/09/26/Install%20NixOS%20on%20So%20You%20Start%20dedicated%20server/
 
-Get the network info
---------------------
+## Get the network info
 
 I started from an Arch Linux installation (available on the web
 installation wizard). If you have another system running, you can skip
@@ -55,8 +52,7 @@ IPCustom=('-6 route add {{ IPV6_GW }} dev eth0' '-6 route add default via {{ IPV
 
 You will need those when creating your NixOS configuration.
 
-Fake boot in NixOS ISO
-----------------------
+## Fake boot in NixOS ISO
 
 We cannot specify a custom ISO to boot in, so we need to boot in rescue
 mode and replicate the NixOS ISO system in order to do the
@@ -182,8 +178,7 @@ chroot . /$INIT
 
 Just after, restore the `/etc/resolv.conf`.
 
-Regular installation
---------------------
+## Regular installation
 
 You can now install your system as if you were in the installation ISO:
 
@@ -250,15 +245,13 @@ umount -R /mnt
 exit
 ```
 
-Final boot
-----------
+## Final boot
 
 From the management panel, define the hard disk as default boot device,
 and reboot the system. You should be able to SSH with the user/password
 you created previously.
 
-Troubleshooting
----------------
+## Troubleshooting
 
 If your server doesn't go up, you can't connect, or whatever, boot back
 in rescue mode, and look what happened in the system logs with:

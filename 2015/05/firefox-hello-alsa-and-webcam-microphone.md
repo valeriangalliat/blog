@@ -1,5 +1,4 @@
-Firefox Hello, ALSA, and webcam microphone
-==========================================
+# Firefox Hello, ALSA, and webcam microphone
 May 3, 2015
 
 Yesterday, I finally tried Firefox Hello, one of the few free softwares
@@ -15,8 +14,7 @@ you *create* a session. The problem is Firefox was taking audio input
 from my default card instead of my webcam, where I had no microphone
 plugged in.
 
-Custom default PCM device
--------------------------
+## Custom default PCM device
 
 The solution for this was to configure the default ALSA capture device.
 Turns out there's already an entry for this on the

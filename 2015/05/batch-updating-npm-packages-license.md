@@ -1,5 +1,4 @@
-Batch updating npm packages license
-===================================
+# Batch updating npm packages license
 May 25, 2015
 
 Since a few weeks, npm have [deprecated] the old `package.json`
@@ -34,8 +33,7 @@ to this:
 
 for all the packages I have under the Unlicense (roughly 30 packages).
 
-Automation
-----------
+## Automation
 
 I did not want to do this by hand, so I automated this with some
 commands. I did not wrote this script at once, but here's what's
@@ -79,8 +77,7 @@ cat updated | xargs -I{} git -C {} log origin/master..
 cat updated | xargs -I{} sh -c 'cd {} && git push && npm install && npm publish'
 ```
 
-Was it worth it?
-----------------
+## Was it worth it?
 
 In the end, I think it took way more time to write this script (and blog
 post) than doing it manually. But it was also *incredibly more fun*!

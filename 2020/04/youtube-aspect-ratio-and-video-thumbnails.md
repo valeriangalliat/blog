@@ -1,5 +1,4 @@
-YouTube aspect ratio and video thumbnails
-=========================================
+# YouTube aspect ratio and video thumbnails
 April 6, 2020
 
 I've been making a couple of YouTube videos lately, and one thing I
@@ -9,8 +8,7 @@ In the first place I always recorded and published 16:9 videos as it
 seems to be quite the standard, but at some point I felt like having a
 little wider aspect ratio to get somewhat of a cinematographic look.
 
-First try: black borders
-------------------------
+## First try: black borders
 
 Fair enough. I start by just cropping my 16:9 shots but still export in
 16:9 so I have black borders on top and bottom. That's fine if viewed on
@@ -20,8 +18,7 @@ black borders on the top and bottom.
 
 That's completely stupid so I quickly gave up on that idea.
 
-Exporting in a different ratio
-------------------------------
+## Exporting in a different ratio
 
 I then tried exporting in a different ratio, for instance, 2:1 (also
 known as 18:9) which is essentially the aspect ratio of most modern
@@ -32,8 +29,7 @@ needs).
 This is great, except when you start to consider the video thumbnail,
 which is what this article is about.
 
-Thumbnails on YouTube
----------------------
+## Thumbnails on YouTube
 
 This is where things start to get funky. On the video page, before
 actually pressing play on the video, the thumbnail is gonna be
@@ -66,8 +62,7 @@ cropped on the video page. I guess you just shouldn't have this kind of
 montage for the thumbnail if you're gonna use an aspect ratio different
 from 16:9...  But wait, that's not even considering sharing on Facebook!
 
-Aspect ratio on Facebook YouTube attachments
---------------------------------------------
+## Aspect ratio on Facebook YouTube attachments
 
 The funny thing is while YouTube displays your thumbnail in 16:9 other
 than on the video page, where it fits your video aspect ratio, Facebook
@@ -82,8 +77,7 @@ And this means that if you have some kind of montage going on in the
 cover especially when it's dependent on the corners of the frame, you're
 always gonna be fucked.
 
-Conclusion
-----------
+## Conclusion
 
 If you want to make sure the content in the thumbnail is visible
 everywhere, I would recommend uploading 16:9 thumbnails, but designing

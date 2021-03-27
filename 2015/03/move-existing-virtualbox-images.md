@@ -1,5 +1,4 @@
-Move existing VirtualBox images
-===============================
+# Move existing VirtualBox images
 March 27, 2015
 
 I ran out of disk space in my home directory because VirtualBox images

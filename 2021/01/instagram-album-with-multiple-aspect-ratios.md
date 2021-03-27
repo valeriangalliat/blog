@@ -1,5 +1,4 @@
-Instagram album with multiple aspect ratios
-===========================================
+# Instagram album with multiple aspect ratios
 January 30, 2021
 
 Today I'm gonna share with you a tip to post multiple photos with different

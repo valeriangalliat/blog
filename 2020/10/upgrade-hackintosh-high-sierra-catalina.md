@@ -1,5 +1,4 @@
-Upgrade a Hackintosh from High Sierra to Catalina
-=================================================
+# Upgrade a Hackintosh from High Sierra to Catalina
 October 2, 2020
 
 As an owner of a NVIDIA GTX 1060, I've never been able to use macOS

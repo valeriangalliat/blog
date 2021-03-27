@@ -1,5 +1,4 @@
-Hey, I'm Val<small>,</small> <small>welcome to my blog!</small>
-===============================================================
+# Hey, I'm Val<small>,</small> <small>welcome to my blog!</small>
 
 I'm passionate software developer, and as importantly, an amateur
 musician, photograph, videographer, brewer and climber.
@@ -8,8 +7,7 @@ You'll find on this blog writings about the things that I care about and
 feel like are worth sharing, as well as links to the different platforms
 where I create content.
 
-Posts
------
+## Posts
 
 <div class="links posts">
 
@@ -33,8 +31,7 @@ Posts
 
 </div>
 
-Pages
------
+## Pages
 
 <div class="links">
 
@@ -43,8 +40,7 @@ Pages
 
 </div>
 
-Links
------
+## Links
 
 <div class="links">
 

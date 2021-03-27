@@ -3,8 +3,7 @@ hero: ../../img/2021/03/24-fps-video.jpg
 focus: 50% 10%
 ---
 
-Why I shoot 24 FPS video
-========================
+# Why I shoot 24 FPS video
 March 6, 2021
 
 I record video with a LX100, so keep in mind that with different gear,

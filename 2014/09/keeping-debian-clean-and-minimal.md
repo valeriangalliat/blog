@@ -1,5 +1,4 @@
-Keeping Debian clean and minimal
-================================
+# Keeping Debian clean and minimal
 September 25, 2014
 
 It's been a couple of years I'm running Debian on my workstations, both
@@ -23,8 +22,7 @@ indirection). Do you really expect an image manipulation tool (and all
 its related image and fonts libraries) to come with a network scanner?
 **I do not.**
 
-Kill it with fire!
-------------------
+## Kill it with fire!
 
 <figure class="left">
   <object data="http://i1.kym-cdn.com/photos/images/newsfeed/000/337/603/43f.gif" type="image/gif">

@@ -1,5 +1,4 @@
-Naming things
-=============
+# Naming things
 March 29, 2015
 
 **CodeJam** is the name I choose more than a year ago for both my domain
@@ -23,8 +22,7 @@ with free software; let's just code together and see where it leads!
 
 [jam session]: http://en.wikipedia.org/wiki/Jam_session
 
-Error: CodeJam is already defined
----------------------------------
+## Error: CodeJam is already defined
 
 <figure class="left">
   <img src="../../img/2015/03/naming-things.jpg">
@@ -47,8 +45,7 @@ web server including my blog and personal page, and would have resulted
 in a few dead links, unless I keep renewing `codejam.info` just to do
 301's. And the hardest part: finding a *new* name.
 
-So what?
---------
+## So what?
 
 The thing is, I like this name. Except the fact that Google already use
 it for its recruitment event, I believe it's a really good choice for

@@ -1,5 +1,4 @@
-Software <kbd>Fn Lock</kbd>
-===========================
+# Software <kbd>Fn Lock</kbd>
 June 8, 2019
 
 Most laptops feature a way to lock the function keys (`Fn Lock`), often by

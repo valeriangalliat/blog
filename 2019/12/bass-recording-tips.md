@@ -1,5 +1,4 @@
-Bass recording tips
-===================
+# Bass recording tips
 December 4, 2019
 
 This is a bass-specific update to my previous article about
@@ -51,8 +50,7 @@ While you can hear the bass clearly enough on all of them, I feel like
 the last ones have the bass cut through much more than the first ones
 (especially the last one). Here's the things I did to achieve that.
 
-Use a limiter
--------------
+## Use a limiter
 
 This is more likely the part that had the most significant impact on the
 perceived loudness of my bass tracks.
@@ -76,8 +74,7 @@ short and high peaks I somehow get (especially when I slap) and I can
 boost the actual part of the signal that I care about very close to 0
 dB, where it actually sounds loud without any kind of distortion.
 
-Don't worry about clipping the input signal
--------------------------------------------
+## Don't worry about clipping the input signal
 
 To calibrate the input sensitivity, most interfaces feature a LED that
 indicates clipping. I usually try and play something louder that I will
@@ -98,8 +95,7 @@ sounds good.
 For me this point is about halfway through the input signal knob in Hi-Z
 (high impedance) mode.
 
-Change the strings, or slap the shit out of them
-------------------------------------------------
+## Change the strings, or slap the shit out of them
 
 There's something with new strings that, to my opinion, just sound good,
 and that usually goes away pretty quickly. Recording bass shortly after
@@ -122,8 +118,7 @@ After this exercise, you get a much brighter tone with some of the
 "zing" that new strings have, and this improved a lot my recording
 quality without having to change my strings all the time.
 
-Next steps
-----------
+## Next steps
 
 While this gives me decent results, there's likely many ways to improve
 that even more. For example, I'm thinking it could be a good idea to add
@@ -134,8 +129,7 @@ between fingerstyle and slap loudness without bothering to put them on
 different tracks and mixing them separately. Stay tuned for my next
 cover to see if that makes a difference!
 
-Last thoughts
--------------
+## Last thoughts
 
 Overall, while those tips helped me get a thicker bass tone, I'm looking
 at one of my first covers, [Reciprok - Balance Toi](https://youtu.be/_ct_hFcDdfQ),

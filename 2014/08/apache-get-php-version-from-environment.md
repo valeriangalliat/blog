@@ -1,5 +1,4 @@
-Apache get PHP version from environment
-=======================================
+# Apache get PHP version from environment
 August 19, 2014
 
 Using [phpfarm] to compile custom PHP versions.
@@ -56,8 +55,7 @@ environment variable, that you can set for example from a `.htaccess`:
 SetEnv PHP_VERSION 5.6
 ```
 
-Variant: PHP version at project level
--------------------------------------
+## Variant: PHP version at project level
 
 If you don't need this to be configurable at environment level, you can
 simply configure the PHP version in the virtual host:

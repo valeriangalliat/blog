@@ -1,5 +1,4 @@
-What strings for BeaverCreek travel size acoustic electric guitar
-=================================================================
+# What strings for BeaverCreek travel size acoustic electric guitar
 January 22, 2021
 
 A couple months ago, I bought a [BeaverCreek travel size guitar][guitar]!

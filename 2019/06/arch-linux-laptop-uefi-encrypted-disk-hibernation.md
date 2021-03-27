@@ -1,5 +1,4 @@
-Arch Linux laptop, UEFI, encrypted disk and hibernation
-=======================================================
+# Arch Linux laptop, UEFI, encrypted disk and hibernation
 June 8, 2019
 
 Based on [this Gist](https://gist.github.com/mattiaslundberg/8620837),
@@ -7,8 +6,7 @@ with hibernation added.
 
 Updated on March 27, 2020.
 
-Installer USB
--------------
+## Installer USB
 
 Download the [latest ISO](https://www.archlinux.org/download/) and
 `dd` it to your USB drive as per the [official documentation](https://wiki.archlinux.org/index.php/USB_flash_installation_media).
@@ -24,8 +22,7 @@ Then boot on the USB.
 If it won't boot, you might need to disable Secure Boot in your
 motherboard settings.
 
-Installation
-------------
+## Installation
 
 Based on the [install guide](https://wiki.archlinux.org/index.php/installation_guide).
 
@@ -202,8 +199,7 @@ swapoff -a
 reboot
 ```
 
-Post installation
------------------
+## Post installation
 
 Connect to Wi-Fi if necessary.
 

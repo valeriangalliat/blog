@@ -1,5 +1,4 @@
-Too much contrast on external screen with macOS Catalina
-========================================================
+# Too much contrast on external screen with macOS Catalina
 October 2, 2020
 
 I recently [upgraded][upgrade] my [Hackintosh][hackintosh] from High

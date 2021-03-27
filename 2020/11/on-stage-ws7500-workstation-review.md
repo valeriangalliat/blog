@@ -3,8 +3,7 @@ hero: ../../img/2020/11/on-stage-ws7500-light.jpg
 focus: 50% 40%
 ---
 
-On-Stage WS7500 workstation review
-==================================
+# On-Stage WS7500 workstation review
 November 15, 2020
 
 I bought this workstation on [B&H](https://www.bhphotovideo.com/c/product/570386-REG/On_Stage_WS7500RB_WS7500_Studio_Workstation_Rosewood.html)
@@ -13,16 +12,14 @@ I like about it in this article, as I found there's not a lot of content
 about it online. I wrote mostly the same review on B&H, but I've got
 some extra formatting here. 😛
 
-Why did I get that workstation?
--------------------------------
+## Why did I get that workstation?
 
 First, I got this workstation to be able to have both my computer
 keyboard and my synth in front of me when producing, which is something
 I couldn't do with my former "regular" desk (not as deep, and no
 shelving) and the WS7500 does a fantastic job at that.
 
-Real estate
------------
+## Real estate
 
 I don't even use the keyboard tray for the keyboard as I find it a
 bit too low for me so I just use it as extra storage, but the fact
@@ -48,15 +45,13 @@ I like that there is two possible positions for the upper platform
 small space, but if you have the room, you can put it further back so it
 opens up a bit more the main surface.
 
-Assembly
---------
+## Assembly
 
 It was pretty straightforward to build, only the keyboard tray required
 me to think a bit but the rest was dead simple. And I could mount it by
 myself, no extra help needed!
 
-Look
-----
+## Look
 
 I really like the color, I find that it looks even better in real life
 than on the product photos.
@@ -68,8 +63,7 @@ on the wood texture on the left and front edges of the top surface.
 So yeah, it's not 100% perfect, just 99.9% perfect. That's fine with me,
 especially for the price. Well, about price.
 
-Price
------
+## Price
 
 I bought it from B&H for 214.95 USD, with free shipping and 45.54 USD of
 prepaid duties and taxes. That made a total of 260.49 USD, which was 352.93
@@ -89,14 +83,12 @@ Also major props to B&H for allowing me to prepay the duties and taxes,
 so I could just forget about it after ordering, and which likely made
 the shipping faster. Well, about shipping.
 
-Shipping
---------
+## Shipping
 
 Lastly, it shipped and arrived super fast even though it ships from the
 US (for free!) and I'm in Canada, so that was a great surprise, kudos to
 B&H for that!
 
-Conclusion
-----------
+## Conclusion
 
 This workstation is fucking awesome, I love it.

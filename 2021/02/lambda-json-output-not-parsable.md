@@ -1,5 +1,4 @@
-The Lambda function returned invalid JSON: the JSON output is not parsable
-==========================================================================
+# The Lambda function returned invalid JSON: the JSON output is not parsable
 February 26, 2021
 
 There could be a number of reasons you're getting this error message

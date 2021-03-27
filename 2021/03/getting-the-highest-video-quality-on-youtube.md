@@ -1,5 +1,4 @@
-Getting the highest video quality on YouTube
-============================================
+# Getting the highest video quality on YouTube
 March 26, 2021
 
 Do you export and upload your YouTube videos in 1080p? Do you find that

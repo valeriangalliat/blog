@@ -1,5 +1,4 @@
-Portable Rust installation
-==========================
+# Portable Rust installation
 March 15, 2015
 
 The [recommended Rust installation method][install] is to

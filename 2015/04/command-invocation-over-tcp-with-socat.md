@@ -1,5 +1,4 @@
-Command invocation over TCP with socat
-======================================
+# Command invocation over TCP with socat
 April 19, 2015
 
 I wanted to run a TCP server in a Docker container, invoking given
@@ -13,8 +12,7 @@ container each time I want to call the command.
 [parallelism-1]: https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94303270
 [parallelism-2]: https://github.com/sass-compatibility/sass-compatibility.github.io/pull/36#issuecomment-94271213
 
-First try with Ncat
--------------------
+## First try with Ncat
 
 I originally thought of [Ncat][] (that comes with [Nmap]) for this job. Ncat
 is an awesome netcat-like utility with some additions, particularly SSL
@@ -51,8 +49,7 @@ Ha! Ncat is stopping everything when the input is consumed, even if the
 command *output* haven't reached EOF yet. And there is no option to
 control this behavior, damned!
 
-socat to the rescue
--------------------
+## socat to the rescue
 
 [socat](http://www.dest-unreach.org/socat/) can do all what Ncat can do,
 but also way much more.
@@ -78,8 +75,7 @@ the other part of the channel to finish once the first part is done.
 
 Exactly what I needed!
 
-Appendix
---------
+## Appendix
 
 Alternatively, socat provides an `ignoreeof` option that will keep the
 port open until the command returns. This may be indefinite if the

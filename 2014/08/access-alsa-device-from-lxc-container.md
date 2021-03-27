@@ -1,5 +1,4 @@
-Access ALSA device from LXC container
-=====================================
+# Access ALSA device from LXC container
 August 20, 2014
 
 In LXC configuration file, allow cgroup access to `/dev/snd` and bind

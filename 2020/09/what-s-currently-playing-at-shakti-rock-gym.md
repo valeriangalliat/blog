@@ -3,16 +3,14 @@ hero: ../../img/2020/09/shakti.jpg
 focus: 25% 85%
 ---
 
-What's currently playing at Shakti Rock Gym?
-============================================
+# What's currently playing at Shakti Rock Gym?
 September 24, 2020
 
 Shakti is a rock climbing gym in Montreal, Canada, and it's my favorite
 gym. The first thing that struck me 4 years ago when I started climbing
 there is the music.
 
-TLDR
-----
+## TLDR
 
 I made a Shakti radio, and you can find it on [Spotify][spotify] and
 [YouTube][youtube]. Those are regular playlists, but they're updated in real time with
@@ -24,8 +22,7 @@ the songs that are playing in the gym.
 If you tune to the last song (or the one before to be safe), you should
 be able to listen *live* to the music at Shakti. Enjoy!
 
-What about the music at Shakti?
--------------------------------
+## What about the music at Shakti?
 
 It's just *so good*.
 
@@ -50,8 +47,7 @@ As my friend Alex puts it brilliantly:
 
 So why am I writing about that today?
 
-The problem with Shakti music
------------------------------
+## The problem with Shakti music
 
 When I'm at the gym, a lot of times I'm too lazy to go grab my phone and
 Shazam a song, and I always wished I could just lookup later "what
@@ -65,8 +61,7 @@ playing at Shakti because I knew it would be good.
 Basically, I wanted a Shakti radio. And since it didn't exist, I built
 it.
 
-Hacking the Shakti vibe to enjoy it *all the time*
---------------------------------------------------
+## Hacking the Shakti vibe to enjoy it *all the time*
 
 Regardless of who's putting the music at the gym, they always do it
 through the same Spotify account ([shaktirockgym](https://open.spotify.com/user/shaktirockgym)).

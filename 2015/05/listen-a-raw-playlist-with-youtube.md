@@ -1,5 +1,4 @@
-Listen a raw playlist with YouTube
-==================================
+# Listen a raw playlist with YouTube
 May 22, 2015
 
 Sometimes the easiest way to share a playlist is to just give a raw list
@@ -45,8 +44,7 @@ girls got rhythm
 EOF
 ```
 
-Continuing a playlist
----------------------
+## Continuing a playlist
 
 If you ever stop the script in the middle of a playlist, and want to
 continue later, just pipe the playlist file in `sed`:

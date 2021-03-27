@@ -1,5 +1,4 @@
-Debian recursive purge
-======================
+# Debian recursive purge
 October 7, 2014
 
 When running an `aptitude purge <package>`, unlike with `remove`, the

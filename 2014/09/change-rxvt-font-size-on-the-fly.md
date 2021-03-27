@@ -1,5 +1,4 @@
-Change rxvt font size on the fly
-================================
+# Change rxvt font size on the fly
 September 18, 2014
 
 Ever wanted to change the terminal font size (or even font family) on

@@ -1,5 +1,4 @@
-Looking back at 2015
-====================
+# Looking back at 2015
 March 12, 2016
 
 **Sidenote:** you can say your procrastination level is very high where
@@ -17,8 +16,7 @@ read, unless you have nothing better to do than reading about my 2015
 year. And I have the feeling that it will be quite long. Nevertheless, I
 make this page public.
 
-Programming, open source
-------------------------
+## Programming, open source
 
 I began the year spending the vast majority of my free time programming
 and contributing to open source, with the motivation and productivity
@@ -225,8 +223,7 @@ really worth mentioning, but I still do.
 [highlight.js]: https://highlightjs.org/
 [gas]: http://www.prix-carburants.gouv.fr/
 
-<abbr title="Away from keyboard">AFK</abbr>
--------------------------------------------
+## <abbr title="Away from keyboard">AFK</abbr>
 
 ### Summer
 

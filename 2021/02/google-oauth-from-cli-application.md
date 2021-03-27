@@ -1,5 +1,4 @@
-Google OAuth from a CLI application
-===================================
+# Google OAuth from a CLI application
 February 25, 2021
 
 I like to make command line (CLI) applications and scripts, and some of

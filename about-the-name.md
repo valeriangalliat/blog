@@ -1,5 +1,4 @@
-About the name
-==============
+# About the name
 
 I got [codejam.info](https://www.codejam.info/) years ago, with the idea
 to build a tech blog to share tips, thoughts and resources about code.
@@ -11,8 +10,7 @@ with programming.
 [Naming things]: 2015/03/naming-things.md
 [jam session]: https://en.wikipedia.org/wiki/Jam_session
 
-Jam
----
+## Jam
 
 A jam session essentially consists of people improvising music together,
 regardless of their level and without necessarily knowing each other, in
@@ -24,15 +22,13 @@ This is a very powerful concept, and it resonates with my vision of
 building software which is why CodeJam sounded like a perfect fit for my
 blog.
 
-What about Google Code Jam?
----------------------------
+## What about Google Code Jam?
 
 I later learnt that this name was already used by Google, for the Google
 Code Jam international programming competition, which is unfortunate,
 but I kept that name since I still believe in the message it symbolizes.
 
-Jamming further than code
--------------------------
+## Jamming further than code
 
 It turns out that with time, my interests shifted from being solely
 centered on programming and I now use that same domain name to share

@@ -1,5 +1,4 @@
-Fix Facebook YouTube attachment layout on mobile
-================================================
+# Fix Facebook YouTube attachment layout on mobile
 November 7, 2019
 
 When sharing YouTube videos on Facebook, depending if you use the

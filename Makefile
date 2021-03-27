@@ -39,8 +39,9 @@ dist/css/main-20210325.css: \
 	css/components/footer.css \
 	css/components/footnotes.css \
 	css/components/header.css \
-	css/components/nav.css \
 	css/components/hero.css \
+	css/components/nav.css \
+	css/components/oversized.css \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@

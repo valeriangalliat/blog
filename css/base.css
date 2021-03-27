@@ -11,20 +11,6 @@ html {
     padding-right: .5em;
 }
 
-/* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
- * so it should be 75em here, but I added 2em to break before the width of the
- * vertical scrollbar causes an horizontal scroll, and to keep some padding. */
-@media (min-width: 77em) {
-    .oversized {
-        /* I thought that I wanted a full sized container with a centered inner
-         * container that's 60rem wide, but 100vw doesn't account for the
-         * vertical scrollbar so it ends up causing an horizontal scrollbar.
-         *
-         * Instead a relative negative padding to expand to 60rem works. */
-        margin-left: -7.5rem;
-        margin-right: -7.5rem;
-    }
-}
 
 h2:not(:first-child) {
     border-top: 1px solid #eee;

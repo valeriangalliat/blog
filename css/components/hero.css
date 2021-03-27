@@ -18,7 +18,11 @@
     color: #fff;
 }
 
-.post .hero h1 + p {
+.post .hero .tagline {
+    color: #fff;
+}
+
+.post .hero .date {
     color: #ddd;
 }
 

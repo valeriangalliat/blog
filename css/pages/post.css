@@ -2,8 +2,16 @@
     margin-bottom: .5rem;
 }
 
-.post h1 + p {
+.post .tagline,
+.post .date {
     font-family: "Helvetica Neue", sans-serif;
-    color: #bbb;
     margin-top: 0;
+}
+
+.post .tagline {
+    margin-bottom: 0;
+}
+
+.post .date {
+    color: #bbb;
 }

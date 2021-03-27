@@ -11,24 +11,9 @@ html {
     padding-right: .5em;
 }
 
-/* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
- * so it should be 75em here, but I added 2em to break before the width of the
- * vertical scrollbar causes an horizontal scroll, and to keep some padding. */
-@media (min-width: 77em) {
-    .oversized {
-        /* I thought that I wanted a full sized container with a centered inner
-         * container that's 60rem wide, but 100vw doesn't account for the
-         * vertical scrollbar so it ends up causing an horizontal scrollbar.
-         *
-         * Instead a relative negative padding to expand to 60rem works. */
-        margin-left: -7.5rem;
-        margin-right: -7.5rem;
-    }
-}
-
-h2:not(:first-child) {
-    border-top: 1px solid #eee;
-    padding-top: 1em;
+h2 {
+    border-bottom: 1px solid #eee;
+    padding-bottom: 1rem;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -258,6 +243,49 @@ footer a:hover {
 header .content {
     margin-top: 6em;
 }
+.hero {
+    background-size: cover;
+    background-position: center;
+}
+
+.hero .header-inner {
+    background-color: rgba(0, 0, 0, .1);
+    padding-bottom: 1em;
+}
+
+.hero .content {
+    margin-top: 14vw;
+    margin-bottom: 8vw;
+}
+
+.hero h1 {
+    text-shadow: 1px 2px rgba(0, 0, 0, .1);
+    color: #fff;
+}
+
+.post .hero .tagline {
+    color: #fff;
+}
+
+.post .hero .date {
+    color: #ddd;
+}
+
+.hero, .hero nav a, .hero nav a:visited {
+    color: #ddd;
+}
+
+.hero nav a:hover {
+    color: #fff;
+}
+
+.hero nav .social svg {
+    --color-fill: #ddd;
+}
+
+.hero nav .social a:hover svg {
+    --color-fill: #fff;
+}
 nav {
     display: flex;
     justify-content: space-between;
@@ -316,44 +344,19 @@ nav .social svg {
 nav .social a:hover svg {
     --color-fill: #333;
 }
-.hero {
-    background-size: cover;
-    background-position: center;
-}
-
-.hero .header-inner {
-    background-color: rgba(0, 0, 0, .1);
-    padding-bottom: 1em;
-}
-
-.hero .content {
-    margin-top: 14vw;
-    margin-bottom: 8vw;
-}
-
-.hero h1 {
-    text-shadow: 1px 2px rgba(0, 0, 0, .1);
-    color: #fff;
-}
-
-.post .hero h1 + p {
-    color: #ddd;
-}
-
-.hero, .hero nav a, .hero nav a:visited {
-    color: #ddd;
-}
-
-.hero nav a:hover {
-    color: #fff;
-}
-
-.hero nav .social svg {
-    --color-fill: #ddd;
-}
-
-.hero nav .social a:hover svg {
-    --color-fill: #fff;
+/* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
+ * so it should be 75em here, but I added 2em to break before the width of the
+ * vertical scrollbar causes an horizontal scroll, and to keep some padding. */
+@media (min-width: 77em) {
+    .oversized {
+        /* I thought that I wanted a full sized container with a centered inner
+         * container that's 60rem wide, but 100vw doesn't account for the
+         * vertical scrollbar so it ends up causing an horizontal scrollbar.
+         *
+         * Instead a relative negative padding to expand to 60rem works. */
+        margin-left: -7.5rem;
+        margin-right: -7.5rem;
+    }
 }
 .index h1 {
     text-align: center;
@@ -401,8 +404,16 @@ nav .social a:hover svg {
     margin-bottom: .5rem;
 }
 
-.post h1 + p {
+.post .tagline,
+.post .date {
     font-family: "Helvetica Neue", sans-serif;
-    color: #bbb;
     margin-top: 0;
+}
+
+.post .tagline {
+    margin-bottom: 0;
+}
+
+.post .date {
+    color: #bbb;
 }

@@ -31,6 +31,10 @@ More recently, I was working on a cover of Lose My Cool, which also have
 a similar tone, but this time I went with a simpler path, which yielded
 surprisingly good results.
 
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/huOYEegVr2o" allowfullscreen></iframe>
+</figure>
+
 Like most of the time, I started from the Modern Stack bass amp in
 Logic. I disabled the default <kbd>Noise Gate</kbd> and <kbd>Channel EQ</kbd>
 it comes with, and I tweaked a couple settings on the amp:

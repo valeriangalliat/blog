@@ -8,6 +8,9 @@ build: dist $(HTML) $(ASSETS)
 dist:
 	git worktree add dist gh-pages
 
+pull:
+	git pull && git -C dist pull
+
 clean:
 	rm -f $(HTML) $(ASSETS)
 

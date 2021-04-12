@@ -4,6 +4,7 @@
 
 ## 2021
 
+* [Bundle Lambda function with private dependencies using CDK](2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.md) <small>April 12, 2021</small>
 * [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>
 * [Why I shoot 24 FPS video](2021/03/why-i-shoot-24-fps-video.md) <small>March 6, 2021</small>
 * [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>

@@ -3,7 +3,7 @@ January 18, 2015
 
 When you write large files in a dynamically sized  VirtualBox disk,
 deleting them won't help recovering the space at host level. The files
-will more likely still be on the file system, even if marked as free
+will more likely still be on the filesystem, even if marked as free
 space.
 
 To shrink a VirtualBox disk after removing large files, just zero out

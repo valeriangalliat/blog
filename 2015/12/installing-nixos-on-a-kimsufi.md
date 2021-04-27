@@ -160,7 +160,8 @@ First need to find the right path for `init` and `bash`:
 ```sh
 INIT=$(find . -type f -path '*nixos*/init')
 BASH=$(find . -type f -path '*/bin/bash' | tail -n 1)
-# See https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2
+
+# See <https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2>
 find . -type f -path '*-nix.conf' | xargs sed -i 's/sandbox = true/sandbox = false/'
 ```
 

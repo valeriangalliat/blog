@@ -179,7 +179,8 @@ after <code>chroot</code>.</p>
 <p>First need to find the right path for <code>init</code> and <code>bash</code>:</p>
 <pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*nixos*/init&#x27;</span>)
 BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*/bin/bash&#x27;</span> | tail -n 1)
-<span class="hljs-comment"># See https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2</span>
+
+<span class="hljs-comment"># See &lt;https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2&gt;</span>
 find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*-nix.conf&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;s/sandbox = true/sandbox = false/&#x27;</span>
 </code></pre>
 <p>Then modify the init script to execute <code>bash</code> instead of <code>systemd</code>:</p>

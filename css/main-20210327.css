@@ -24,6 +24,22 @@ h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
     margin: 2rem 0;
 }
 
+blockquote h1,
+blockquote h2,
+blockquote h3,
+blockquote h4,
+blockquote h5,
+blockquote h6,
+blockquote p,
+blockquote ul,
+blockquote ol,
+blockquote dl,
+blockquote blockquote,
+blockquote pre,
+blockquote figure {
+    margin: 1rem 0;
+}
+
 h1.has-subtitle {
     /* Set base size to the small font size, and then use the span inside
      * to make the text bigger.
@@ -69,10 +85,6 @@ blockquote {
     margin-left: 0;
     padding: 0 1em;
     border-left: .25rem solid #4183c4;
-}
-
-blockquote p {
-    margin: 1rem 0;
 }
 
 dt {

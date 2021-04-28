@@ -98,7 +98,7 @@ able to treat one tooth.
 
 I've read online experiences from people where the gum was taken from
 both sides of the palate in the same surgery, which I assume would allow
-to treat two different areas at the same time. But as you'll see later
+to treat two different areas at the same time. But as you'll see later,
 the palate wound was pretty painful and I was really happy to have one
 side that didn't hurt to allow me to eat at least a little bit.
 
@@ -115,8 +115,8 @@ In that scenario, there is two options; taking a whole chunk of gum
 directly from the palate, or taking a layer of gum from *under* the
 palate.
 
-The second one yields a thinner thinner graft but should be less painful
-during the recovery period.
+The second one yields a thinner graft but should be less painful during
+the recovery period.
 
 In my case, I had a full graft, which means my recovery period was not
 fun at all.
@@ -160,11 +160,11 @@ the graft to heal:
 > --- [Dr. Kyle Hornby "Can gum grafts fail?"](https://kitchenerfamilydentist.com/blog/can-gum-grafts-fail/ "See “What causes gum recession?”")
 
 Because of the palate wound, my eating was largely impacted (I lost 5 kg
-in 10 days to give you an idea). Even drinking was hurting, despite
-large doses of painkillers, so I was drinking only when really thirsty.
-I believe that this caused my blood to be very poor in nutriments
-supplied to my gums and ultimately might have caused the graft to fail
-(it's still too early to tell for sure).
+in 10 days to give you an idea). Even drinking water was hurting,
+despite large doses of painkillers, so I was drinking only when really
+thirsty. I believe that this caused my blood to be very poor in
+nutriments supplied to my gums and ultimately might have caused the
+graft to fail (it's still too early to tell for sure).
 
 By taking pig gum instead, I would have been able to maintain a more
 consistent diet which makes me think that this could have lead to a more
@@ -278,15 +278,7 @@ as I was eating. It's indeed supposed to fall after a few days:
 > Do not be alarmed if the bandage falls off within 1-3 days following
 > the surgery.
 >
-> Sutures (stitches) are resorbable and will come out within 5-10 days.
-> They may untie, become loose and hang down from the palate. Do **not**
-> attempt to pull or remove the sutures. If they are long and
-> bothersome, you can trim them with small scissors
->
-> --- [Dr. Kurt Van Winkle "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Sutures” and “Bandage”")
-
-The stitches did loosen soon after and became bothersome enough that I
-trimmed them with small scissors.
+> --- [Dr. Kurt Van Winkle "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Bandage”")
 
 A few hours after the plaster fell off, the palate wound started to hurt
 like a motherfucker. That pain lasted until the following Saturday.
@@ -306,6 +298,18 @@ painkillers I've taken in my whole life in such a short period of time.
 
 It was still lower than the maximum recommended daily dose per day for
 this kind of medicine, but not by much.
+
+While the palate plaster was off, the stitches that presumably used to
+hold it in place were also detaching, leaving a hanging sting in the
+middle of my mouth. This is also expected and you can safely cut it with
+small scissors.
+
+> Sutures (stitches) are resorbable and will come out within 5-10 days.
+> They may untie, become loose and hang down from the palate. Do **not**
+> attempt to pull or remove the sutures. If they are long and
+> bothersome, you can trim them with small scissors
+>
+> --- [Dr. Kurt Van Winkle "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Sutures”")
 
 I took my last Advil on Saturday morning when the pain woke me up at
 5 AM. Finally, when I got up a couple of hours later, after 3 days of
@@ -331,8 +335,8 @@ watch online courses and read books so it wasn't all lost.
 Monday and Tuesday were solid productive days at work. Note that I don't
 have many meetings and I usually don't need to talk a lot during those.
 
-Wednesday to Friday were the worst days since the surgery and I could do
-absolutely nothing. Consuming content was fine so I used that time to
+Wednesday to Friday were the worst days since the surgery, and I could
+do absolutely nothing. Consuming content was fine so I used that time to
 watch some more online courses.
 
 Saturday the pain was completely gone and I was back to high
@@ -393,19 +397,20 @@ lots of food in a record amount of time.
 After two weeks, the main limitation is that I can't bite into things
 since my grafted tooth is in the front and I need not use it. This means
 I can't have sandwiches or burgers, and I basically need to cut
-everything I eat in small pieces that I can chew only with my back teeth
-on only one side. Sad.
+everything I eat in small pieces that I chew only with my back teeth on
+only one side. Sad.
 
 ### Drinking 🍺
 
-I read online it was discouraged to have fizzy drinks and alcohol before
-the first follow up appointment, so I didn't have any of that. I tried a
-sip of kombucha after 3 days and it was stinging on my palate, I
-wouldn't have been able to drink it even if I wanted to.
+I read online that it was discouraged to have fizzy drinks and alcohol
+before the first follow up appointment, so I didn't have any of that
+(sad). I tried a sip of kombucha after 3 days and it was stinging on my
+palate, I wouldn't have been able to drink it even if I wanted to.
 
 On my follow up appointment 10 days after surgery, I asked my dentist
 about it and she told me it was fine to have fizzy drinks and alcohol
 again. I had a beer that night, and it tasted good and didn't hurt.
+Great.
 
 ### Exercising 🏋️
 
@@ -414,7 +419,9 @@ you shouldn't do any kind of activity that raises your heart rate for
 the first two weeks after surgery.
 
 On the other hand my dentist told me I could exercise since day 0 as
-long as it wasn't intense like running a marathon.
+long as it wasn't intense like running a marathon (but she probably knew
+that I would not *feel* like exercising at all after such a surgery,
+especially not a marathon).
 
 I went on a short low intensity bike ride 3 days after surgery. I felt
 fine but I might have increased my heart rate at points.
@@ -432,7 +439,7 @@ definitely didn't have as much in me as I used to, after losing nearly
 After the surgery I asked my dentist how one should go about kissing.
 She told me I could do it as soon as I felt like it, which made a lot of
 sense later when I realized I really did not want to be kissing anyone
-with the amount of pain or discomfort I had in my mouth!
+with the amount of pain and discomfort I had in my mouth!
 
 That also applies to anything else you would want to do with your mouth.
 
@@ -461,8 +468,8 @@ challenging, even soft foods. Drinking can be painful too, even water.
 
 This lead me to very poor nutrition for the first 10 days or so (I lost
 5 kg) and I believe that this negatively affected the chances of success
-of the graft, which heavily depends on a rich nutriment supply to the
-gum tissue at the graft site.
+of the graft, because it heavily depends on a rich nutriment supply to
+the gum tissue at the graft site.
 
 Taking gum from a pig is an option that comes to an extra cost, and
 while pig gum has lower chances of being accepted by the human body, I
@@ -472,8 +479,8 @@ discuss that with my dentist as this is a totally unfounded opinion for
 now.
 
 Either way, I wish I bought a blender and/or a juicer before the surgery
-as this would probably have made it easier for me to get the nutriments
-that I otherwise lacked.
+as this would have made it easier for me to get the nutriments that I
+otherwise lacked.
 
 I wish that your graft doesn't get too painful, and that you have
 successful results!

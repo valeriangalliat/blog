@@ -65,9 +65,14 @@ tr:nth-child(even) {
 }
 
 blockquote {
+    color: #666;
     margin-left: 0;
     padding: 0 1em;
     border-left: .25rem solid #4183c4;
+}
+
+blockquote p {
+    margin: 1rem 0;
 }
 
 dt {
@@ -79,6 +84,13 @@ code, kbd, samp {
     font-size: .75em;
     background: #f8f8f8;
     padding: .25em .5em;
+}
+
+kbd {
+    font-size: .6em;
+    border: 1px solid #ddd;
+    border-bottom: 2px solid #ddd;
+    border-radius: .75em;
 }
 
 hr {
@@ -101,6 +113,10 @@ a:hover {
 
 a:visited {
     color: #6e5494;
+}
+
+a[title] {
+    text-decoration: underline dotted;
 }
 
 ul {

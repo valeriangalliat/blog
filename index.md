@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 28, 2021</small>
 * [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>
 * [Bundle Lambda function with private dependencies using CDK](2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.md) <small>April 12, 2021</small>
 * [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>

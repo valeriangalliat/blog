@@ -43,7 +43,7 @@ At first, I thought about changing my domain. It meant changing my
 email, moving all the services I host at home: IRC, XMPP, mail server,
 web server including my blog and personal page, and would have resulted
 in a few dead links, unless I keep renewing `codejam.info` just to do
-301's. And the hardest part: finding a *new* name.
+301s. And the hardest part: finding a *new* name.
 
 ## So what?
 

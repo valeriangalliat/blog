@@ -47,7 +47,7 @@ it comes with, and I tweaked a couple settings on the amp:
   <img alt="Amp settings" src="../../img/2021/01/franc-moody-logic-amp.png">
 </figure>
 
-Then I added a <kbd>Pedalboard</kbD> plugin where I put the <kbd>Phase
+Then I added a <kbd>Pedalboard</kbd> plugin where I put the <kbd>Phase
 Tripper</kbd> pedal, with the default settings.
 
 <figure class="center">

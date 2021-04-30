@@ -357,6 +357,20 @@ I'm also amazed by the fact that all of this works without requiring any
 patching of the macOS installation, everything is contained in the
 OpenCore EFI partition, and the macOS system itself is 100% stock.
 
+## Upgrading (2021 edit)
+
+Just a quick edit to note that I've since then been able to do apply
+all Big Sur updates normally, without any issue.
+
+While it's usually recommended to update OpenCore as well as your kexts
+before doing updates, I didn't bother doing so and it always worked
+flawlessly so far. I can just let macOS reboot into update mode and let
+it do its thing, it reboots a couple of times and always pick the right
+boot option by default to get successful updates.
+
+I will upgrade OpenCore and the kexts for the next major release, if I
+don't run into an issue until then.
+
 ## Thanks
 
 I would also like to thank the Dortania team for their fabulous guide, I

@@ -33,8 +33,20 @@ This will create a `dist` directory that is setup to track the
 
 After building:
 
-```
+```sh
 cd dist
-git commit -am 'Build'
+git add .
+git commit -m 'Build'
 git push
 ```
+
+## Create a new post
+
+```sh
+make new
+```
+
+This will prompt you for a title, suggest a slug or let you use a custom
+one, and will update `index.md` to add the post to the latest articles
+(and remove the oldest one), as well as `posts.md`, and create the post
+Markdown file with an empty template.

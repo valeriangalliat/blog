@@ -177,9 +177,9 @@ Also that would be a pretty fun fact.
 So you decided to have a gum graft, and it's now surgery day. What to
 expect? Here's my experience.
 
-I shown up at the dentist for my appointment. She needed to do two local
-anesthesia, one on the palate and one near the tooth that was to be
-grafted.
+I showed up at the dentist for my appointment. She needed to do two
+local anesthesia, one on the palate and one near the tooth that was to
+be grafted.
 
 ### Anesthesia
 

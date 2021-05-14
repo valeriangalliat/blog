@@ -6,9 +6,7 @@ more like a nerd. So be it.
 
 When you do a screen recording on macOS, you can capture audio from your
 microphone. Or using a tool like [BlackHole](https://github.com/ExistentialAudio/BlackHole)
-you can even record your system sounds (get the direct download URL from
-the [Homebrew formula](https://github.com/Homebrew/homebrew-cask/blob/master/Casks/blackhole.rb)
-if you don't want to sign up)!
+you can even record your system sounds.
 
 Either way, by default the screen recording utility that you can open
 using <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> (which is the

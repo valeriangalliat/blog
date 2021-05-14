@@ -4,6 +4,7 @@
 
 ## 2021
 
+* [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
 * [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 88, 2021</small>
 * [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>
 * [Bundle Lambda function with private dependencies using CDK](2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.md) <small>April 12, 2021</small>

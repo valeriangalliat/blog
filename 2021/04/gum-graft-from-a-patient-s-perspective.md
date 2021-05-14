@@ -49,7 +49,7 @@ my gum recession.
 > with this approach is that you lose gum tissue as recession occurs
 > over time.
 >
-> --- [Dr. Kyle Hornby "Can gum grafts fail?"](https://kitchenerfamilydentist.com/blog/can-gum-grafts-fail/ "See “What causes gum recession?”")
+> --- [Dr. Kyle Hornby, "Can gum grafts fail?"](https://kitchenerfamilydentist.com/blog/can-gum-grafts-fail/ "See “What causes gum recession?”")
 
 ### Properly brushing your teeth 🪥
 
@@ -64,7 +64,7 @@ upwards movement for the bottom teeth.
 > Also, you may want to transition to a more circular motion with the
 > bristles instead of side-to-side scrubbing.
 >
-> --- [Dr. Kyle Hornby "A rational approach to managing gum recession"](https://kitchenerfamilydentist.com/blog/a-rational-approach-to-managing-gum-recession/ "See “Forceful tooth brushing”")
+> --- [Dr. Kyle Hornby, "A rational approach to managing gum recession"](https://kitchenerfamilydentist.com/blog/a-rational-approach-to-managing-gum-recession/ "See “Forceful tooth brushing”")
 
 > * **Use a soft bristled toothbrush** -- to prevent damage to the
 >   enamel, only use a soft-bristle toothbrush.
@@ -75,7 +75,7 @@ upwards movement for the bottom teeth.
 >   circular motions, all tooth surfaces will be gently brushed, avoid a
 >   sawing or scrubbing motion.
 >
-> --- [Kathleen Davis "Caring for teeth and gums"](https://www.medicalnewstoday.com/articles/298531#how_to_brush)
+> --- [Kathleen Davis, "Caring for teeth and gums"](https://www.medicalnewstoday.com/articles/298531#how_to_brush)
 
 I believe that this is also related to genetics, as I'm pretty sure lots
 of people brush like I did before without ever having gum issues, and
@@ -157,7 +157,7 @@ the graft to heal:
 > nutrition. When this doesn't occur, graft tissue can die off and gum
 > grafts fail.
 >
-> --- [Dr. Kyle Hornby "Can gum grafts fail?"](https://kitchenerfamilydentist.com/blog/can-gum-grafts-fail/ "See “What causes gum recession?”")
+> --- [Dr. Kyle Hornby, "Can gum grafts fail?"](https://kitchenerfamilydentist.com/blog/can-gum-grafts-fail/ "See “What causes gum recession?”")
 
 Because of the palate wound, my eating was largely impacted (I lost 5 kg
 in 10 days to give you an idea). Even drinking water was hurting,
@@ -278,7 +278,7 @@ as I was eating. It's indeed supposed to fall after a few days:
 > Do not be alarmed if the bandage falls off within 1-3 days following
 > the surgery.
 >
-> --- [Dr. Kurt Van Winkle "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Bandage”")
+> --- [Dr. Kurt Van Winkle, "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Bandage”")
 
 A few hours after the plaster fell off, the palate wound started to hurt
 like a motherfucker. That pain lasted until the following Saturday.
@@ -309,7 +309,7 @@ small scissors.
 > attempt to pull or remove the sutures. If they are long and
 > bothersome, you can trim them with small scissors
 >
-> --- [Dr. Kurt Van Winkle "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Sutures”")
+> --- [Dr. Kurt Van Winkle, "Periodontal cosmetic procedures instructions"](https://www.vanwinkleperio.com/procedures/after-surgery-instructions/soft-tissue-grafting/ "See “Sutures”")
 
 I took my last Advil on Saturday morning when the pain woke me up at
 5 AM. Finally, when I got up a couple of hours later, after 3 days of

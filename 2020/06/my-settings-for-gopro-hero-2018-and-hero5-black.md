@@ -9,6 +9,10 @@ June 16, 2020
 Following my article on how I [configure my Panasonic LX100](../05/my-settings-for-panasonic-lumix-lx100.md),
 I wanted to make a similar article on my GoPro HERO (2018) and HERO5 Black configuration.
 
+Some of those settings are based on the recommendations of [this video](https://youtu.be/3DoKXA8tCq0)
+(which I highly recommend on tuning GoPro settings), with my personal
+tweaks and adaptations for the HERO (2018).
+
 ## Make your HERO (2018) a HERO5 Black
 
 First things first, the hardware for the HERO (2018) and HERO5 Black is
@@ -189,11 +193,23 @@ overly perfectionist about. 😂
 
 ### Audio
 
-I used to have that to "Off" but after watching [this
-video](https://youtu.be/3DoKXA8tCq0) which I highly recommend on tuning
-GoPro settings, I turned it up to "High".
+On my HERO (2018) with the HERO5 Black firmware, the "Low" and "Medium"
+settings do absolutely nothing (as in, they generate a WAW file but it's
+completely silent).
 
-Also sliding after the Protune menu I noticed there was a "Manual Audio
-Control" panel, so I enabled that and ticked "Stereo Only", which should
+As for the "High" one, it gives me two channels, one for each mic (the
+"left" one is on top of the GoPro, and the "right" one is actually on
+the right). This WAV file sound exactly the same as the MP4 audio, I
+made no difference in terms of processing, so I just use the audio from
+the MP4 (which is also in better sync, as the WAV doesn't exactly match
+with the video and needs to be manually synced).
+
+The left and right channels of the MP4 audio do match exactly what we
+have in the WAV in terms of directionality, so we can easily make it
+mono, using only the top or right mic in some situations if that
+improves the quality or can help remove unwanted noises.
+
+Finally, sliding after the Protune menu, we can find a "Manual Audio
+Control" panel, that I enabled, and ticked "Stereo Only", which should
 be the same as setting "Wind" to "Off" on more recent GoPro (like in the
-video I mention).
+video I mentioned in the beginning of this article).

@@ -248,3 +248,7 @@ input.
 
 I hope this comparison was useful to you, and that you found the tool
 that suits you best!
+
+Also, not so long ago I wrote an article on [how to capture screen recording audio at 48 kHz](../../2020/12/macos-quicktime-screen-recording-48-khz-sample-rate.md)
+instead of 44.1 kHz, so you might find that interesting as well if you
+want to keep the sample rate consistent in your production pipeline.

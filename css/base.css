@@ -1,5 +1,5 @@
 html {
-    font: 1.25em/1.5 "Times", serif;
+    font: 1.25em/1.5 "Times New Roman", serif;
     color: #333;
 }
 
@@ -144,6 +144,6 @@ ol {
     overflow: hidden;
 }
 
-img {
+img, video {
     max-width: 100%;
 }

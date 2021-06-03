@@ -56,4 +56,4 @@ dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
 
 serve:
-	cd dist; if python --version 2>&1 | grep -q 'Python 2'; then python -m SimpleHTTPServer; else python -m http.server; fi
+	cd dist && python3 -m http.server

@@ -251,7 +251,7 @@ and more kilometers while being less and tired and needing less water.
 Soon enough I could bike for 20, 40, even 80 kilometers straight! This
 was a rewarding experience and was really worth the initial pain.
 
-<figure class="center">
+<figure class="grid grid-2">
   <a href="../../img/2016/03/bike/01.jpg">
     <img src="../../img/2016/03/bike/01.thumb.jpg">
   </a>
@@ -276,7 +276,7 @@ At the end of the summer, I walked roughly 20,000 vertical meters among
 30 tracks.
 
 <div class="oversized">
-  <figure class="center">
+  <figure class="grid grid-3">
     <a href="../../img/2016/03/mountain/01.jpg">
       <img src="../../img/2016/03/mountain/01.thumb.jpg">
     </a>
@@ -338,7 +338,7 @@ in Paris the day before had an engine problem in the middle of the trip
 and we were stuck in a garage for half a day. Fortunately they could fix
 the engine and I got to my destination on time.
 
-<figure class="center">
+<figure class="grid grid-2">
   <a href="../../img/2016/03/airport/01.jpg">
     <img src="../../img/2016/03/airport/01.thumb.jpg">
   </a>
@@ -395,7 +395,7 @@ since ever. Let's [play that funky music][funk]!
 [funk]: https://youtu.be/_pHT9yYFdZg
 
 <div class="oversized">
-  <figure class="center">
+  <figure class="grid grid-3">
     <a href="../../img/2016/03/guitar/01.jpg">
       <img src="../../img/2016/03/guitar/01.thumb.jpg">
     </a>
@@ -425,7 +425,7 @@ in ideal conditions for another month. And even once the roads were
 covered by a couple centimeters of snow, biking on it was surprisingly
 good, and even really enjoyable when the snow is fresh!
 
-<figure class="center">
+<figure class="grid grid-2">
   <a href="../../img/2016/03/bike-2/01.jpg">
     <img src="../../img/2016/03/bike-2/01.thumb.jpg">
   </a>
@@ -452,7 +452,7 @@ walked around the whole island and could visit a decent part of it.
 [cagoule]: https://youtu.be/Ud_-AuBmp6Q
 
 <div class="oversized">
-  <figure class="center">
+  <figure class="grid grid-3">
     <a href="../../img/2016/03/ny/01.jpg">
       <img src="../../img/2016/03/ny/01.thumb.jpg">
     </a>

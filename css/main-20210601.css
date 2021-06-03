@@ -1,5 +1,5 @@
 html {
-    font: 1.25em/1.5 "Times", serif;
+    font: 1.25em/1.5 "Times New Roman", serif;
     color: #333;
 }
 
@@ -144,7 +144,7 @@ ol {
     overflow: hidden;
 }
 
-img {
+img, video {
     max-width: 100%;
 }
 .header-anchor {
@@ -172,21 +172,49 @@ img {
     height: 0;
 }
 figure {
-    margin-left: 0;
-    margin-right: 0;
+    /* Ensures eventual `figcaption`'s width is at most the image width. */
+    display: grid;
+    justify-content: start;
+
+    /* Close to what a space would otherwise be. */
+    gap: .25rem;
 }
 
-figure img, figure object {
-    display: inline-block;
-    max-width: 100%;
+figcaption {
+    text-align: center;
+    margin-top: .25rem;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+    padding: .25em .75em;
+    background-color: #4183c4;
+    color: #fff;
 }
 
-figure.video {
+figure img {
+    /* Remove the extra spacing below the picture when it's inline and
+     * aligned to the baseline. */
+    vertical-align: top;
+}
+
+figure.full {
+    /* Useful if using a video wrapper inside a figure that also have a
+     * caption (so when the figure itself cannot be the video wrapper),
+     * as the left justification otherwise doesn't play well with it. */
+    justify-content: normal;
+}
+
+figure.center, figure.grid {
+    justify-content: center;
+}
+
+.video {
     position: relative;
+
+    /* Force 16:9 ratio. */
     padding-bottom: 56.25%;
 }
 
-figure.video iframe, figure.video video {
+.video iframe, .video video {
     position: absolute;
     top: 0;
     left: 0;
@@ -195,13 +223,7 @@ figure.video iframe, figure.video video {
     border: 0;
 }
 
-@media all and (max-width: 42em) {
-    figure {
-        text-align: center;
-    }
-}
-
-@media not all and (max-width: 42em) {
+@media (min-width: 42em) {
     figure.left {
         float: left;
         margin: 0 1em 0 0;
@@ -211,14 +233,41 @@ figure.video iframe, figure.video video {
         float: right;
         margin: 0 0 0 1em;
     }
+
+    figure.grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    figure.grid figcaption {
+        /* Make this a full size row. */
+        flex-basis: 100%;
+
+        /* Already handled by the gap. */
+        margin-top: 0;
+    }
+
+    figure.grid > :not(figcaption) {
+        flex-basis: 100%;
+    }
+
+    figure.grid-grow > :not(figcaption) {
+        flex-grow: 1;
+    }
+
+    figure.grid-2 > :not(figcaption) {
+        flex-basis: calc((100% - .25rem) / 2);
+    }
+
+    figure.grid-3 > :not(figcaption) {
+        flex-basis: calc((100% - .5rem) / 3);
+    }
 }
 
-figure.center {
-    text-align: center;
-}
-
-figure.center img {
-    margin: 0 auto;
+@media (min-width: 42em) and (max-width: 77em) {
+    figure.grid-3 > :not(figcaption) {
+        flex-basis: calc((100% - .25rem) / 2);
+    }
 }
 footer {
     max-width: 45rem;
@@ -236,7 +285,7 @@ footer p {
     margin: 2em 0;
 }
 
-@media all and (max-width: 69em) {
+@media (max-width: 69em) {
     footer {
         margin-left: auto;
         margin-right: auto;
@@ -264,7 +313,7 @@ footer a:hover {
     padding: 1em 2em 0;
 }
 
-@media all and (max-width: 69em) {
+@media (max-width: 69em) {
     .header-inner {
         padding: 1em 0 0;
     }
@@ -335,7 +384,7 @@ nav ul {
     margin: 1em -1em;
 }
 
-@media all and (max-width: 69em) {
+@media (max-width: 69em) {
     nav {
         margin-left: auto;
         margin-right: auto;
@@ -344,7 +393,7 @@ nav ul {
     }
 }
 
-@media all and (max-width: 42em) {
+@media (max-width: 42em) {
     nav {
         flex-direction: column;
     }
@@ -407,7 +456,7 @@ nav .social a:hover svg {
     justify-content: space-between;
 }
 
-@media all and (max-width: 38em) {
+@media (max-width: 38em) {
     .posts li {
         margin-bottom: .5em;
         flex-direction: column-reverse;
@@ -425,7 +474,7 @@ nav .social a:hover svg {
     white-space: nowrap;
 }
 
-@media not all and (max-width: 38em) {
+@media (min-width: 38em) {
     .posts small {
         text-align: right;
     }

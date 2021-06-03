@@ -4,6 +4,7 @@
 
 ## 2021
 
+* [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>
 * [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
 * [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 88, 2021</small>
 * [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>

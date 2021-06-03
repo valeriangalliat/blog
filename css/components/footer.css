@@ -14,7 +14,7 @@ footer p {
     margin: 2em 0;
 }
 
-@media all and (max-width: 69em) {
+@media (max-width: 69em) {
     footer {
         margin-left: auto;
         margin-right: auto;

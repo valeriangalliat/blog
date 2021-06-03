@@ -17,7 +17,7 @@
     justify-content: space-between;
 }
 
-@media all and (max-width: 38em) {
+@media (max-width: 38em) {
     .posts li {
         margin-bottom: .5em;
         flex-direction: column-reverse;
@@ -35,7 +35,7 @@
     white-space: nowrap;
 }
 
-@media not all and (max-width: 38em) {
+@media (min-width: 38em) {
     .posts small {
         text-align: right;
     }

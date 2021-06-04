@@ -17,9 +17,18 @@ It comes in two sizes, 35 L and 65 L. I myself have the 35 L version
 
 If like me, you're coming from more "traditional" brewing, e.g. with
 just pots, no grain basket, no recirculating and so forth, the BrewZilla
-can be a tad confusing. My goal with this blog post is hopefully make
+can be a tad confusing. My goal with this blog post is to hopefully make
 it more clear how to brew efficiently with the BrewZilla (both for the
 beer efficiency and for your own time and energy).
+
+But first, if you speak French, you might want to checkout the video I
+made when I unboxed and first brewed with the BrewZilla!
+
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/arQ4Yutbitk" allowfullscreen></iframe>
+</figure>
+
+Otherwise, with no further due, let's get into this blog post.
 
 ## Where to put your BrewZilla?
 

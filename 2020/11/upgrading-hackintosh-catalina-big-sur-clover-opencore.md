@@ -128,9 +128,9 @@ I followed [the guide][guide], so as instructed for my specific system, I:
   and [SSDT-EC](https://dortania.github.io/Getting-Started-With-ACPI/Universal/ec-fix.html),
   using [SSDTTime](https://github.com/corpnewt/SSDTTime), which required
   me to dump the DSDT from my firmware first ([using F4 inside Clover](https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html#from-clover)),
-  and added as well as a prebuilt version of [SSDT-USBX](https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml).
+  and added as well a prebuilt version of [SSDT-USBX](https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml).
 
-Note that I would also have needed to add [USBInjectAll](https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/)
+Note that I would also have needed to add [USBInjectAll](https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/),
 but I didn't at that point because the guide said it shouldn't be needed
 for desktop Skylake and newer. It turned out I needed it at least until
 I build the USB map for my machine.
@@ -141,9 +141,9 @@ which means I:
 
 [skylake]: https://dortania.github.io/OpenCore-Install-Guide/config.plist/skylake.html
 
-* used ProperTree's "OC Clean Snapshot" (`Cmd` + `Shift` + `R`) feature
-  to automatically configure all the SSDTs, EFI drivers and kexts I
-  added,
+* used ProperTree's "OC Clean Snapshot" (<kbd>Command</kbd> +
+  <kbd>Shift</kbd> + <kbd>R</kbd>) feature to automatically configure
+  all the SSDTs, EFI drivers and kexts I added,
 * in `Kernel/Quirks`, set `PanicNoKextDump`, `PowerTimeoutKernelPanic`
   and `XhciPortLimit` to `True`,
 * in `Misc/Debug` set `AppleDebug`, `ApplePanic`, `DisableWatchDog` to
@@ -324,7 +324,7 @@ which meant I:
 * removed `-v` from `boot-args`,
 * on the EFI partition, replaced `BOOT/BOOTx64.efi`,
   `OC/Bootstrap/Bootstrap.efi`, `OC/Drivers/OpenRuntime.efi`,
-  `OC/OpenCore.efi` by the ones from the `DEBUG` version.
+  `OC/OpenCore.efi` by the ones from the `RELEASE` version.
 
 Finally I had to add the [display patch to force my screen in RBG mode](../10/too-much-contrast-external-screen-macos-catalina.md),
 but I couldn't do it by modifying `/System/Library/Displays` as the
@@ -359,8 +359,8 @@ OpenCore EFI partition, and the macOS system itself is 100% stock.
 
 ## Upgrading (2021 edit)
 
-Just a quick edit to note that I've since then been able to do apply
-all Big Sur updates normally, without any issue.
+Just a quick edit to note that I've since then been able to apply all
+Big Sur updates normally, without any issue.
 
 While it's usually recommended to update OpenCore as well as your kexts
 before doing updates, I didn't bother doing so and it always worked
@@ -373,7 +373,7 @@ don't run into an issue until then.
 
 ## Thanks
 
-I would also like to thank the Dortania team for their fabulous guide, I
+I would also like to thank the Dortania team for their fabulous guide. I
 learnt so much while installing Big Sur with OpenCore and I'm still
 impressed at how well everything was explained and how detailed the
 explanations were.

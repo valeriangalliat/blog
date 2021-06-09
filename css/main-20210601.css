@@ -241,14 +241,14 @@ figure.center, figure.grid {
 
     figure.grid figcaption {
         /* Make this a full size row. */
-        flex-basis: 100%;
+        width: 100%;
 
         /* Already handled by the gap. */
         margin-top: 0;
     }
 
     figure.grid > :not(figcaption) {
-        flex-basis: 100%;
+        width: 100%;
     }
 
     figure.grid-grow > :not(figcaption) {
@@ -256,17 +256,17 @@ figure.center, figure.grid {
     }
 
     figure.grid-2 > :not(figcaption) {
-        flex-basis: calc((100% - .25rem) / 2);
+        width: calc((100% - .25rem) / 2);
     }
 
     figure.grid-3 > :not(figcaption) {
-        flex-basis: calc((100% - .5rem) / 3);
+        width: calc((100% - .5rem) / 3);
     }
 }
 
 @media (min-width: 42em) and (max-width: 77em) {
     figure.grid-3 > :not(figcaption) {
-        flex-basis: calc((100% - .25rem) / 2);
+        width: calc((100% - .25rem) / 2);
     }
 }
 footer {
@@ -309,18 +309,8 @@ footer a:hover {
 .footnotes p {
     margin: 0;
 }
-.header-inner {
-    padding: 1em 2em 0;
-}
-
-@media (max-width: 69em) {
-    .header-inner {
-        padding: 1em 0 0;
-    }
-}
-
 header .content {
-    margin-top: 6em;
+    margin-top: 5em;
 }
 .hero {
     background-size: cover;
@@ -329,7 +319,7 @@ header .content {
 
 .hero .header-inner {
     background-color: rgba(0, 0, 0, .1);
-    padding-bottom: 1em;
+    padding: 4em 0 1em;
 }
 
 .hero .content {
@@ -349,26 +339,11 @@ header .content {
 .post .hero .date {
     color: #ddd;
 }
-
-.hero, .hero nav a, .hero nav a:visited {
-    color: #ddd;
-}
-
-.hero nav a:hover {
-    color: #fff;
-}
-
-.hero nav .social svg {
-    --color-fill: #ddd;
-}
-
-.hero nav .social a:hover svg {
-    --color-fill: #fff;
-}
 nav {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
+    padding: 1em 2em;
 
     /* Dirty fix to prevent horizontal scroll in some cased because of negative
      * margin below. */
@@ -389,7 +364,7 @@ nav ul {
         margin-left: auto;
         margin-right: auto;
         max-width: 45rem;
-        padding: 0 .5em;
+        padding: 1em .5em;
     }
 }
 

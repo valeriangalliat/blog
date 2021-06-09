@@ -2,6 +2,7 @@ nav {
     display: flex;
     justify-content: space-between;
     flex-wrap: wrap;
+    padding: 1em 2em;
 
     /* Dirty fix to prevent horizontal scroll in some cased because of negative
      * margin below. */
@@ -22,7 +23,7 @@ nav ul {
         margin-left: auto;
         margin-right: auto;
         max-width: 45rem;
-        padding: 0 .5em;
+        padding: 1em .5em;
     }
 }
 

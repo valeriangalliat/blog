@@ -5,7 +5,7 @@
 
 .hero .header-inner {
     background-color: rgba(0, 0, 0, .1);
-    padding-bottom: 1em;
+    padding: 4em 0 1em;
 }
 
 .hero .content {
@@ -24,20 +24,4 @@
 
 .post .hero .date {
     color: #ddd;
-}
-
-.hero, .hero nav a, .hero nav a:visited {
-    color: #ddd;
-}
-
-.hero nav a:hover {
-    color: #fff;
-}
-
-.hero nav .social svg {
-    --color-fill: #ddd;
-}
-
-.hero nav .social a:hover svg {
-    --color-fill: #fff;
 }

@@ -68,14 +68,14 @@ figure.center, figure.grid {
 
     figure.grid figcaption {
         /* Make this a full size row. */
-        flex-basis: 100%;
+        width: 100%;
 
         /* Already handled by the gap. */
         margin-top: 0;
     }
 
     figure.grid > :not(figcaption) {
-        flex-basis: 100%;
+        width: 100%;
     }
 
     figure.grid-grow > :not(figcaption) {
@@ -83,16 +83,16 @@ figure.center, figure.grid {
     }
 
     figure.grid-2 > :not(figcaption) {
-        flex-basis: calc((100% - .25rem) / 2);
+        width: calc((100% - .25rem) / 2);
     }
 
     figure.grid-3 > :not(figcaption) {
-        flex-basis: calc((100% - .5rem) / 3);
+        width: calc((100% - .5rem) / 3);
     }
 }
 
 @media (min-width: 42em) and (max-width: 77em) {
     figure.grid-3 > :not(figcaption) {
-        flex-basis: calc((100% - .25rem) / 2);
+        width: calc((100% - .25rem) / 2);
     }
 }

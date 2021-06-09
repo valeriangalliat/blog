@@ -6,9 +6,9 @@ aspect ratios (e.g. square, portrait, landscape) in the same Instagram post!
 
 Here's an example of what you can achieve with this tip:
 
-<figure class="center">
-  <img alt="" width="49%" src="../../img/2021/01/insta-album-p1.jpg">
-  <img alt="" width="49%" src="../../img/2021/01/insta-album-p2.jpg">
+<figure class="grid grid-2">
+  <img src="../../img/2021/01/insta-album-p1.jpg">
+  <img src="../../img/2021/01/insta-album-p2.jpg">
 </figure>
 
 I've also shared this as a YouTube video, but keep reading if you want the text

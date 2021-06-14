@@ -69,11 +69,15 @@ table {
      * the container. */
     display: block;
     overflow: auto;
+
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
 }
 
 th, td {
-    padding: .25em .75em;
+    padding: .5em 1em;
     border: 1px solid #ddd;
+    text-align: left;
 }
 
 tr:nth-child(even) {
@@ -92,7 +96,7 @@ dt {
 }
 
 code, kbd, samp {
-    font-family: "Courier", monospace;
+    font-family: "Courier New", monospace;
     font-size: .75em;
     background: #f8f8f8;
     padding: .25em .5em;

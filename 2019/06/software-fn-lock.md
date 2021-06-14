@@ -1,8 +1,9 @@
 # Software <kbd>Fn Lock</kbd>
 June 8, 2019
 
-Most laptops feature a way to lock the function keys (`Fn Lock`), often by
-pressing `Fn` + `Esc` or changing some BIOS or UEFI settings.
+Most laptops feature a way to lock the function keys (<kbd>Fn Lock</kbd>),
+often by pressing </kbd>Fn</kbd> + <kbd>Esc</kbd> or changing some BIOS
+or UEFI settings.
 
 However, my laptop (ASUS VivoBook, X510UA-BB51-CB) does not have any way
 to lock the function keys, forcing me to press the `Fn` key every time I

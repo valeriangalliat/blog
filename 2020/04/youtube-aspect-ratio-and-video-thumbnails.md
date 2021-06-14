@@ -66,7 +66,7 @@ from 16:9...  But wait, that's not even considering sharing on Facebook!
 
 The funny thing is while YouTube displays your thumbnail in 16:9 other
 than on the video page, where it fits your video aspect ratio, Facebook
-instead displays them in 17.3/9 (yep). That's some kind of weird middle
+instead displays them in 17.3:9 (yep). That's some kind of weird middle
 ground between 16:9 and 2:1 (18:9).
 
 This means again that if you go for a 2:1 thumbnail, even on Facebook

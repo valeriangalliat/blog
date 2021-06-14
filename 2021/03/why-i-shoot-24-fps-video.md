@@ -23,11 +23,11 @@ ones over 30 FPS as I'm not interested in those for this point).
 If we bring it back down to the frame level, each frame is allowed
 respectively:
 
-* 3.3 MB (100 / 30)
-* 4.1 MB (100 / 24)
-* 0.6 MB (20 / 30)
-* 0.8 MB (24 / 30)
-* 1 MB (24 / 24)
+* 3.3 MB (100 &divide; 30)
+* 4.1 MB (100 &divide; 24)
+* 0.6 MB (20 &divide; 30)
+* 0.8 MB (24 &divide; 30)
+* 1 MB (24 &divide; 24)
 
 You can see that with the options that the LX100 offers, by shooting 24
 FPS instead of 30, we can allow more bytes for each frame, resulting in

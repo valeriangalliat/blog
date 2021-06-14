@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 14, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>
 * [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
 * [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
 * [Google OAuth from a CLI application](2021/02/google-oauth-from-cli-application.md) <small>February 25, 2021</small>
 * [Instagram album with multiple aspect ratios](2021/01/instagram-album-with-multiple-aspect-ratios.md) <small>January 30, 2021</small>
-* [Franc Moody bass tone on Logic Pro](2021/01/franc-moody-bass-tone-logic-pro.md) <small>January 29, 2021</small>
 
 [More posts](posts.md)
 

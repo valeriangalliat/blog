@@ -4,6 +4,7 @@
 
 ## 2021
 
+* [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 14, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>
 * [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
 * [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>

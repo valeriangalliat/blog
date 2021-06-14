@@ -1,0 +1,365 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <title>My custom Premiere Pro export presets</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210601.css">
+  <link rel="icon" href="data:,">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header class="hero" style="background-image: url(../../img/2021/06/premiere-pro-presets.jpg); background-position: 50% 25%;">
+    <div class="header-inner">
+      <div class="content">
+<h1>My custom Premiere Pro export presets</h1>
+<p class="date">June 14, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I’m publishing videos mainly to YouTube and Instagram. While Premiere
+comes with exports presets for YouTube out of the box, they don’t have
+any for Instagram. Also it turns out that even for YouTube, my main
+publishing format is not part of the default YouTube presets. Let’s dig
+into it!</p>
+<h2 id="youtube-1440p-2k-quad-hd"><a class="header-anchor" href="#youtube-1440p-2k-quad-hd">YouTube 1440p 2K Quad HD</a></h2>
+<p>Based on the “YouTube 2160p 4K Ultra HD” preset, this presets fills the
+gap between 1080p and 4K by allowing you to export a 1440p 2K video for
+YouTube.</p>
+<p>I like to export in 2K because it allows me to
+<a href="../03/getting-the-highest-video-quality-on-youtube.html">get a higher video quality on YouTube</a>
+by forcing the VP9 codec instead of AVC, even when viewed in 1080p.</p>
+<p>Also, with my source footage being 4K, 1440p still allows me a decent
+cropping margin without loosing quality, and otherwise gets me that
+extra crispness you get when downscaling 4K footage.</p>
+<p>To make that preset:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Setting</th>
+<th>Value</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Export Settings</td>
+<td>Preset</td>
+<td>YouTube 2160p 4K Ultra HD</td>
+<td>Base preset</td>
+</tr>
+<tr>
+<td>Basic Video Settings</td>
+<td>Width</td>
+<td>2560</td>
+<td></td>
+</tr>
+<tr>
+<td>Basic Video Settings</td>
+<td>Height</td>
+<td>1440</td>
+<td></td>
+</tr>
+<tr>
+<td>Encoding Settings</td>
+<td>Level</td>
+<td>5.1</td>
+<td>Instead of 5.2</td>
+</tr>
+<tr>
+<td>Bitrate Settings</td>
+<td>Target Bitrate</td>
+<td>20</td>
+<td>Instead of 40</td>
+</tr>
+<tr>
+<td>Bitrate Settings</td>
+<td>Maximum Bitrate</td>
+<td>20</td>
+<td>Instead of 40</td>
+</tr>
+</tbody>
+</table>
+<h3 id="why-set-the-level-to-5-1"><a class="header-anchor" href="#why-set-the-level-to-5-1">Why set the level to 5.1?</a></h3>
+<p>The main reason is that when I first created this preset, Premiere
+actually defaulted the 4K preset to 5.1 as well, so I kept it the same.</p>
+<p>When a Premiere upgrade changed the 4K preset to 5.2, I then asked
+myself whether I should mirror the Premiere update or keep 5.1 for my
+2K preset.</p>
+<p>This forced me to learn a bit about H.264 levels first. Basically,
+a level define the maximum values for a number of encoding properties
+like bitrate, buffer size, macroblocks, luma settings and more. You can
+read more about that on <a href="https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels">Wikipedia</a>,
+<a href="http://help.encoding.com/knowledge-base/article/do-you-have-any-information-on-h-264-levels/">Encoding.com</a>
+and <a href="http://blog.mediacoderhq.com/h264-profiles-and-levels/">MediaCoder</a>.</p>
+<p>For 2K and even 4K (unless it’s 60 FPS or more), a level of 5.1 is way
+enough. While YouTube doesn’t give profile recommendations on their
+<a href="https://support.google.com/youtube/answer/1722171">recommended upload settings</a>,
+they do so on their <a href="https://support.google.com/youtube/answer/2853702">live encoder settings</a>:</p>
+<ul>
+<li>H.264, 4.1 for up to 1080p 30 FPS,</li>
+<li>H.264, 4.2 for 1080p 60 FPS,</li>
+<li>H.264, 5.0 for 1440p 30 FPS,</li>
+<li>H.264, 5.1 for 1440p 60 FPS,</li>
+<li>H.264, 5.1 for 2160p 30 FPS,</li>
+<li>H.264, 5.2 for 2160p 60 FPS.</li>
+</ul>
+<p>I usually export 24 FPS video, so I could even safely go down to 5.0,
+but I don’t want my preset to be limited to 30 FPS or lower.</p>
+<p>The reason Premiere bumped the 4K preset from 5.1 to 5.2 is likely to
+support 4K 60 FPS exports out of the box, because there’s only one
+preset regardless of the frame rate.</p>
+<p>For the same reason, I’ll leave 5.1 for my 2K preset; it’s just high
+enough to support 2K 60 FPS.</p>
+<h3 id="why-a-bitrate-of-20-specifically"><a class="header-anchor" href="#why-a-bitrate-of-20-specifically">Why a bitrate of 20 specifically?</a></h3>
+<p>Premiere defaults to a bitrate of 16 Mbps for 1080p and 40 Mbps for 4K.
+I’m looking for something in between.</p>
+<p>Technically, 1440p is 1.33 times 1080p and 2160p is 1.5 times 1440p (and
+2 times 1080p).</p>
+<p>Based on that, I could define a bitrate of 1.33 × 16 = 21.28 Mbps, or 1
+÷ 1.5 × 40 = 26.66 Mbps.</p>
+<p>Since I expect those videos to be watched mostly in 1080p, I round
+down the bitrate to 20 and call it a day. This allows me to force the
+1440p VP9 encoder on YouTube while keeping a file size that’s nearly as
+small as a 1080p export would be.</p>
+<p>To put this in context, we can also look at <a href="https://support.google.com/youtube/answer/1722171">YouTube’s recommended upload settings</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Type</th>
+<th>Video bitrate (24, 25, 30 FPS)</th>
+<th>Video bitrate (48, 50, 60 FPS)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2160p (4K)</td>
+<td>35–45 Mbps</td>
+<td>53–68 Mbps</td>
+</tr>
+<tr>
+<td>1440p (2K)</td>
+<td>16 Mbps</td>
+<td>24 Mbps</td>
+</tr>
+<tr>
+<td>1080p</td>
+<td>8 Mbps</td>
+<td>12 Mbps</td>
+</tr>
+</tbody>
+</table>
+<p>We can see that Premiere’s default 4K bitrate of 40 Mbps is just in the
+middle of the recommended range by YouTube for standard frame rates, but
+is probably too low if you were to export a high frame rate video.</p>
+<p>Contrarily, Premiere’s default 1080p bitrate of 16 Mbps is double what
+YouTube themselves recommend for standard frame rates, and even higher
+than the high frame rate recommendation.</p>
+<p>Finally, my 2K preset bitrate of 20 Mbps is right in the middle of what
+YouTube recommends between standard and high frame rates, making this a
+somewhat versatile preset.</p>
+<h3 id="a-note-about-1-vs-2-pass-vbr"><a class="header-anchor" href="#a-note-about-1-vs-2-pass-vbr">A note about 1 vs 2 pass <abbr title="Variable bitrate">VBR</abbr></a></h3>
+<p>In “Bitrate Settings”, we also have an encoding option letting us choose
+from CBR, 1 pass VBR and 2 pass VBR. CBR stands for constant bitrate,
+and VBR for variable bitrate.</p>
+<p>Premiere defaults its YouTube presets to 1 pass VBR.</p>
+<p>When rendering the video, the VBR encoder supports a 2 pass process
+where it first analyses the whole video so that
+<a href="https://www.quora.com/How-big-is-the-difference-between-VBR-1-pass-and-VBR-2-pass-in-terms-of-quality-when-encoding-a-video">it can be more efficient</a>
+at actually encoding it in the second pass, resulting in a smaller file
+size for a similar quality, or a higher quality for a similar file size
+(in case of Premiere where we fix a target and maximum bitrate). The
+downside is that rendering takes nearly twice as long.</p>
+<p>Spending double the time for roughly a 30% increase in quality is a
+tradeoff you’ll have to do for yourself, but as far as I’m concerned,
+Premiere takes already long enough to encode that I’m not willing to
+make it even worse.</p>
+<h2 id="instagram"><a class="header-anchor" href="#instagram">Instagram</a></h2>
+<p>On to the Instagram presets!</p>
+<p>I based all of my Instagram presets off Premiere’s YouTube 1080p preset,
+meaning we’re rendering with H.264 level 4.2, and a bitrate (both target
+and maximum) of 16 Mbps. To reuse the previous preset table:</p>
+<table>
+<thead>
+<tr>
+<th>Section</th>
+<th>Setting</th>
+<th>Value</th>
+<th>Comment</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Export Settings</td>
+<td>Preset</td>
+<td>YouTube 1080p Full HD</td>
+<td>Base preset</td>
+</tr>
+<tr>
+<td>Encoding Settings</td>
+<td>Level</td>
+<td>4.2</td>
+<td>Default for preset</td>
+</tr>
+<tr>
+<td>Bitrate Settings</td>
+<td>Target Bitrate</td>
+<td>16</td>
+<td>Default for preset</td>
+</tr>
+<tr>
+<td>Bitrate Settings</td>
+<td>Maximum Bitrate</td>
+<td>16</td>
+<td>Default for preset</td>
+</tr>
+</tbody>
+</table>
+<p>Aside from that, my 4 Instagram presets only differ in the resolution.</p>
+<h3 id="resolution-and-aspect-ratio"><a class="header-anchor" href="#resolution-and-aspect-ratio">Resolution and aspect ratio</a></h3>
+<p>While there’s many websites giving settings when searching “Instagram
+video resolution” or “Instagram video specification”, the only resource
+I’ve found from Instagram themselves is on
+<a href="https://help.instagram.com/1631821640426723">their help center</a>.</p>
+<p>They recommend an aspect ratio between 1.91:1 and 4:5, with a width of
+1080 pixels, meaning that the height will vary between 566 and 1350
+pixels.</p>
+<p>I derived 4 presets out of that:</p>
+<table>
+<thead>
+<tr>
+<th>Preset</th>
+<th>Resolution</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Square</td>
+<td>1080x1080</td>
+</tr>
+<tr>
+<td>Portrait</td>
+<td>1080x1350</td>
+</tr>
+<tr>
+<td>Landscape</td>
+<td>1080x608</td>
+</tr>
+<tr>
+<td>Story</td>
+<td>1080x1920</td>
+</tr>
+</tbody>
+</table>
+<p>Here, the landscape one could be even wider if I wanted to, but most of
+my content is shot in 16:9 so I’ll keep it that way.</p>
+<h3 id="a-note-about-bitrate"><a class="header-anchor" href="#a-note-about-bitrate">A note about bitrate</a></h3>
+<p>For the bitrate, I didn’t find any official Instagram recommendation,
+but various websites recommend 3.5 Kbps, and this matches what the app
+does when recoding the video before upload (you can see that by saving
+the post or story to camera roll and inspecting the file).</p>
+<p>This makes the 16 Mbps of my presets sound a bit overkill, but I’d
+rather provide a top quality video to the app and let it recode it.</p>
+<p>There is no evidence that Instagram would skip the recoding process if
+we provide a compressed-enough video, so if recoding is going to happen
+either way, I’d rather provide a top quality input to get the best
+result.</p>
+<p><strong>Sidenote:</strong> inspecting the Instagram recoded video also shows that
+they resize the video to a width of 720 pixels, preserving the aspect
+ratio and frame rate. So even though they allow a maximum width of 1080
+pixels, they seem to conform videos to a width of 720 pixels on their
+side.</p>
+<h3 id="a-note-about-distribution"><a class="header-anchor" href="#a-note-about-distribution">A note about distribution</a></h3>
+<p>As far as distribution is concerned, at least from desktop, they serve
+videos with a width of 640 pixels, a bitrate of 1 Mbps, and conform the
+frame rate to 30 FPS (which matches their
+<a href="https://help.instagram.com/1038071743007909">requirement for IGTV of minimum 30 FPS</a>, even
+though they don’t give any information about timeline videos otherwise).</p>
+<h3 id="a-note-about-frame-rate"><a class="header-anchor" href="#a-note-about-frame-rate">A note about frame rate</a></h3>
+<p>Even though Instagram appears to conform videos to 30 FPS upon serving,
+I still keep my timeline FPS settings in my export file, and let the
+conversion up to Instagram.</p>
+<p>Most of the time for me, it means I stick to 24 FPS.</p>
+<p>As noted above, the version Instagram processes on the device prior to
+uploading preserves the original frame rate, so this might be a sign
+that they conserve the video with the original frame rate on their
+servers, potentially allowing 24 FPS distribution at some point in the
+future.</p>
+<h3 id="a-note-about-video-length"><a class="header-anchor" href="#a-note-about-video-length">A note about video length</a></h3>
+<p>Videos in Instagram posts are limited to one minute, but to be very
+precise, on a 24 FPS timeline, it turned out to be 59 seconds and 21
+frames. A single more frame and Instagram will prompt you to publish the
+video on IGTV instead.</p>
+<h3 id="final-word"><a class="header-anchor" href="#final-word">Final word</a></h3>
+<p>At that point, you have all the information you need to recreate those
+presets on your side, and you know precisely why each setting was
+chosen.</p>
+<p>Don’t forget in Premiere once you customize your export settings, you
+can save the preset to easily use it in other projects!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/06/my-custom-premiere-pro-export-presets.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main.js"></script>
+</body>
+</html>

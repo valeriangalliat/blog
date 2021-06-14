@@ -87,7 +87,7 @@ runs on the user device, but it gets fairly annoying if the CLI runs on
 another device (e.g. a server).</p>
 <p>Or I mean, if your app doesn’t have a web server otherwise, you might
 just be lazy to implement one solely for the sake of OAuth.</p>
-<h2 id="a-note-about-limited-input-devices"><a class="header-anchor" href="#a-note-about-limited-input-devices">A note about limited input devices</a></h2>
+<h2 id="a-note-about-limited-input-devices" tabindex="-1"><a class="header-anchor" href="#a-note-about-limited-input-devices">A note about limited input devices</a></h2>
 <p>If your app runs on a TV, a toaster or some other kind of device where
 the user can’t open a link on the device itself to log in, you can use
 the <a href="https://developers.google.com/identity/protocols/oauth2/limited-input-device">limited input device flow</a> which lets you display a short URL and
@@ -96,7 +96,7 @@ to type anything on the actual device.</p>
 <p>This is a cool option to know about, but as far as I’m concerned, I can
 afford showing a fairly long URL in my CLI output for the user to
 open in their browser, so that’s what we’re going to look at today.</p>
-<h2 id="application-authentication-flow"><a class="header-anchor" href="#application-authentication-flow">Application authentication flow</a></h2>
+<h2 id="application-authentication-flow" tabindex="-1"><a class="header-anchor" href="#application-authentication-flow">Application authentication flow</a></h2>
 <p>Everything is documented <a href="https://developers.google.com/youtube/v3/live/guides/auth/installed-apps">here</a> but I’ll quickly go over the basics in
 this article, with some JavaScript examples on Node.js.</p>
 <p>First, <a href="https://console.cloud.google.com/apis/credentials">in Google Cloud Platform</a>,
@@ -152,7 +152,7 @@ YouTube (had we asked for the <code>https://www.googleapis.com/auth/youtube</cod
   <span class="hljs-attr">auth</span>: oauth2Client
 })
 </code></pre>
-<h2 id="bonus-integrating-with-firebase"><a class="header-anchor" href="#bonus-integrating-with-firebase">Bonus: integrating with Firebase</a></h2>
+<h2 id="bonus-integrating-with-firebase" tabindex="-1"><a class="header-anchor" href="#bonus-integrating-with-firebase">Bonus: integrating with Firebase</a></h2>
 <p>By default, Firebase’s Google auth provider only comes with the option to
 redirect or open a pop-up, which won’t work in a CLI environment, but
 they also give you the option to authenticate using a Google auth token.</p>

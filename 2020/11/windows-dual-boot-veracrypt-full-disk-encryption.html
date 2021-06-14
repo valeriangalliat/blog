@@ -76,7 +76,7 @@
     </div>
   </header>
   <div class="content">
-<h2 id="tldr"><a class="header-anchor" href="#tldr">TLDR</a></h2>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr">TLDR</a></h2>
 <ol>
 <li>To make a bootable USB with recent Windows ISO that contain an
 <code>install.wim</code> of more than 4 GB, it’s easier to use <a href="https://rufus.ie/">Rufus</a>
@@ -94,7 +94,7 @@ Windows on, and later on, format it as FAT32 and move whatever the
 installer added to your existing EFI partition to that new one.</li>
 </ol>
 <p>If you want to feel the pain, read on.</p>
-<h2 id="the-whole-story"><a class="header-anchor" href="#the-whole-story">The whole story</a></h2>
+<h2 id="the-whole-story" tabindex="-1"><a class="header-anchor" href="#the-whole-story">The whole story</a></h2>
 <p>I have a laptop with a 500 GB SSD and a 1 TB HDD. It’s currently running
 Arch Linux which takes all the SSD, and the HDD is empty.</p>
 <p>I wanted to add a Windows dual boot on the HDD, and have it encrypted
@@ -109,7 +109,7 @@ of cake.</p>
 this blog post the issues I encountered, especially since the symptoms,
 and, as usual with Windows, the errors messages, were really obscure and
 misleading.</p>
-<h2 id="why-bother-encrypting"><a class="header-anchor" href="#why-bother-encrypting">Why bother encrypting?</a></h2>
+<h2 id="why-bother-encrypting" tabindex="-1"><a class="header-anchor" href="#why-bother-encrypting">Why bother encrypting?</a></h2>
 <p>Most of the issues I ran into were because I wanted to have full disk
 encryption on Windows. Why bother?</p>
 <p>It’s the first time I’ll have a laptop running Windows, and while I
@@ -125,7 +125,7 @@ being exposed<sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>.
 option to encrypt the partition at install time but turns out there’s no
 such option, and later on, you need to pay extra for the native Windows
 encryption features, so that’s why I went with VeraCrypt instead.</p>
-<h2 id="making-a-windows-bootable-usb"><a class="header-anchor" href="#making-a-windows-bootable-usb">Making a Windows bootable USB</a></h2>
+<h2 id="making-a-windows-bootable-usb" tabindex="-1"><a class="header-anchor" href="#making-a-windows-bootable-usb">Making a Windows bootable USB</a></h2>
 <p>The first challenge was to make a working Windows bootable USB. This
 have been an issue for the past couple of years when making a Windows
 bootable USB without using a tool like Rufus (usually when you’re making
@@ -142,7 +142,7 @@ partitions. And FAT32 doesn’t allow for more than 4 GB files.</p>
 <p><a href="../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html#bonus-windows-dual-boot">Last time I needed to do that</a>,
 Windows offered an older ISO that didn’t have that issue so I just used
 that. This is not anymore an option.</p>
-<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1">We couldn’t create a new partition or locate an existing one (round 1)</a></h3>
+<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1" tabindex="-1"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-1">We couldn’t create a new partition or locate an existing one (round 1)</a></h3>
 <p>My first attempt was to make a bootable USB drive with two partitions. I
 found somewhere (can’t find the link anymore) an article that documented
 how you can make a FAT32 partition with everything but the <code>sources</code>
@@ -161,18 +161,18 @@ so it’s basically useless at that point.</p>
 can’t find the <code>install.wim</code> or other sources it needs to continue with
 the installation, essentially it didn’t understand the second NTFS
 partition thingy.</p>
-<h3 id="second-attempt-rufus"><a class="header-anchor" href="#second-attempt-rufus">Second attempt, Rufus</a></h3>
+<h3 id="second-attempt-rufus" tabindex="-1"><a class="header-anchor" href="#second-attempt-rufus">Second attempt, Rufus</a></h3>
 <p><a href="https://rufus.ie/">Rufus</a> is a neat, Windows only piece of software to
 make Windows bootable USB drives. Since I have a Windows on my desktop
 computer, I just booted it instead to use Rufus to make the drive.</p>
 <p>Rufus does something pretty similar to my first attempt, but does it in
 a way that actually works, so that allowed me to complete the install!</p>
-<h2 id="encrypting-the-partition"><a class="header-anchor" href="#encrypting-the-partition">Encrypting the partition</a></h2>
+<h2 id="encrypting-the-partition" tabindex="-1"><a class="header-anchor" href="#encrypting-the-partition">Encrypting the partition</a></h2>
 <p>Once Windows installed, I installed VeraCrypt and started the system
 partition encryption process.</p>
 <p>This does a “pretest” that just tries the VeraCrypt bootloader without
 actually encrypting anything.</p>
-<h3 id="authorization-failed-wrong-password-pim-or-hash"><a class="header-anchor" href="#authorization-failed-wrong-password-pim-or-hash">Authorization failed, wrong password, PIM or hash</a></h3>
+<h3 id="authorization-failed-wrong-password-pim-or-hash" tabindex="-1"><a class="header-anchor" href="#authorization-failed-wrong-password-pim-or-hash">Authorization failed, wrong password, PIM or hash</a></h3>
 <p>When I launched the VeraCrypt system partition encryption, it gave me a
 message telling me that my system partition wasn’t on the same drive
 that the partition Windows was booting from, which is unsupported. But I
@@ -191,7 +191,7 @@ it’s not what I wanted, and I didn’t have the option to create that
 second EFI partition from the installer, and even if I created it
 manually, I couldn’t get the installer to use it instead of the first
 EFI partition that it identifies.</p>
-<h3 id="what-i-could-have-done-but-i-didn-t-do-round-1"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-1">What I could have done, but I didn’t do (round 1)</a></h3>
+<h3 id="what-i-could-have-done-but-i-didn-t-do-round-1" tabindex="-1"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-1">What I could have done, but I didn’t do (round 1)</a></h3>
 <p>An EFI partition is just a FAT32 partition anywhere on your drive really
 that contains an <code>EFI</code> directory with a bunch of EFI shit inside. And it
 just works like magic. Fucking awesome stuff.</p>
@@ -208,14 +208,14 @@ reinstall Windows, but this time keeping extra room for the EFI
 partition.</p>
 <p>Will that make any difference in my life? No. Will I spend an extra 2+
 hours to do it? Yes.</p>
-<h3 id="back-to-square-one"><a class="header-anchor" href="#back-to-square-one">Back to square one</a></h3>
+<h3 id="back-to-square-one" tabindex="-1"><a class="header-anchor" href="#back-to-square-one">Back to square one</a></h3>
 <p>I go back to the partitioning step of the Windows installer, and I
 remove all the partitions form the Windows drive, and just hit the “New”
 button which creates all the partition that Windows needs.</p>
 <p>But again, this only creates the Microsoft “MSR (Reserved)” 16 MB
 partition on top of the Windows “Primary” partition, but doesn’t create
 an extra “System” one, just like the first time.</p>
-<h3 id="what-i-could-have-done-but-i-didn-t-do-round-2"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-2">What I could have done, but I didn’t do (round 2)</a></h3>
+<h3 id="what-i-could-have-done-but-i-didn-t-do-round-2" tabindex="-1"><a class="header-anchor" href="#what-i-could-have-done-but-i-didn-t-do-round-2">What I could have done, but I didn’t do (round 2)</a></h3>
 <p>At that point what I could have done, was to manually create a regular
 100 MB non-EFI partition first, then let Windows use the rest, and at
 the end, format that 100 MB space as FAT32 and  manually move the EFI
@@ -223,7 +223,7 @@ stuff from the SSD EFI partition to the one I reserved earlier.</p>
 <p>But I kinda wanted to find a way to make the Windows installer create
 that partition itself, and have it install to it directly without me
 having to move anything at the end (spoiler: I failed).</p>
-<h3 id="thinking-out-of-the-box"><a class="header-anchor" href="#thinking-out-of-the-box">Thinking out of the box</a></h3>
+<h3 id="thinking-out-of-the-box" tabindex="-1"><a class="header-anchor" href="#thinking-out-of-the-box">Thinking out of the box</a></h3>
 <p>That’s when things get interesting. The next thing I tried, which in
 retrospective was still a smart idea even though it didn’t work, was to
 find a way to deactivate or like, virtually “disconnect” the SSD
@@ -239,7 +239,7 @@ offline), and then <code>offline disk</code>.</p>
 it’ll create not two, but three new partitions on the drive, including
 the “System” one. Win!</p>
 <p>Well, not really.</p>
-<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2">We couldn’t create a new partition or locate an existing one (round 2)</a></h3>
+<h3 id="we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2" tabindex="-1"><a class="header-anchor" href="#we-couldn-t-create-a-new-partition-or-locate-an-existing-one-round-2">We couldn’t create a new partition or locate an existing one (round 2)</a></h3>
 <p>If you click “Next” at that point, which normally launches the
 installation process, you get this error instead:</p>
 <blockquote>
@@ -264,7 +264,7 @@ get the same error message.</p>
 created, and start the installation process.</p>
 <p>This works, but I still can’t use VeraCrypt as Windows is still booting
 form the EFI partition on the SSD.</p>
-<h3 id="two-things-i-could-have-done-instead"><a class="header-anchor" href="#two-things-i-could-have-done-instead">Two things I could have done instead</a></h3>
+<h3 id="two-things-i-could-have-done-instead" tabindex="-1"><a class="header-anchor" href="#two-things-i-could-have-done-instead">Two things I could have done instead</a></h3>
 <ol>
 <li>Open the laptop and physically unplug the SSD.</li>
 <li>Backup the contents of my Arch Linux boot partition, then remove it
@@ -274,14 +274,14 @@ make the Arch Linux boot partition back with the backup of its
 contents.</li>
 </ol>
 <p>Both are pretty annoying to do but would have worked.</p>
-<h3 id="making-windows-boot-from-the-drive-it-s-installed-on"><a class="header-anchor" href="#making-windows-boot-from-the-drive-it-s-installed-on">Making Windows boot from the drive it’s installed on</a></h3>
+<h3 id="making-windows-boot-from-the-drive-it-s-installed-on" tabindex="-1"><a class="header-anchor" href="#making-windows-boot-from-the-drive-it-s-installed-on">Making Windows boot from the drive it’s installed on</a></h3>
 <p>Finally, all that’s left to do is to make a new partition in the empty
 100 MB space that I left at the beginning of the drive, format it as
 FAT32, and move everything that Windows added to the EFI partition of my
 SSD back to that new “System” partition.</p>
 <p>This works and I could finally get the VeraCrypt pretest to pass and
 thus encrypt the whole partition.</p>
-<h2 id="bonus-install-windows-without-a-microsoft-account"><a class="header-anchor" href="#bonus-install-windows-without-a-microsoft-account">Bonus, install Windows without a Microsoft account</a></h2>
+<h2 id="bonus-install-windows-without-a-microsoft-account" tabindex="-1"><a class="header-anchor" href="#bonus-install-windows-without-a-microsoft-account">Bonus, install Windows without a Microsoft account</a></h2>
 <p>When Windows is done installing, which takes ages so you’re likely
 focusing on something else, it first surprises you with a loud Cortana
 voice that tells you a bunch if shit you don’t need to hear.</p>
@@ -314,7 +314,7 @@ have some numbers around there too, and then type <code>netsh interface set inte
 you’ll get the option to create an offline account.</p>
 <p>Then you can replace <code>disable</code> by <code>enable</code> in the previous command to
 turn the network interface back on.</p>
-<h2 id="conclusion"><a class="header-anchor" href="#conclusion">Conclusion</a></h2>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion">Conclusion</a></h2>
 <p>After all this shit I’m kind of tired to write a conclusion, but in
 summary, at the beginning, I thought oh, I’ve made dual boots all my
 life, it should be pretty trivial I’m just gonna enable some kind of

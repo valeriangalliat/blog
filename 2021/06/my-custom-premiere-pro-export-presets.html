@@ -81,7 +81,7 @@ comes with exports presets for YouTube out of the box, they don’t have
 any for Instagram. Also it turns out that even for YouTube, my main
 publishing format is not part of the default YouTube presets. Let’s dig
 into it!</p>
-<h2 id="youtube-1440p-2k-quad-hd"><a class="header-anchor" href="#youtube-1440p-2k-quad-hd">YouTube 1440p 2K Quad HD</a></h2>
+<h2 id="youtube-1440p-2k-quad-hd" tabindex="-1"><a class="header-anchor" href="#youtube-1440p-2k-quad-hd">YouTube 1440p 2K Quad HD</a></h2>
 <p>Based on the “YouTube 2160p 4K Ultra HD” preset, this presets fills the
 gap between 1080p and 4K by allowing you to export a 1440p 2K video for
 YouTube.</p>
@@ -140,7 +140,7 @@ extra crispness you get when downscaling 4K footage.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="why-set-the-level-to-5-1"><a class="header-anchor" href="#why-set-the-level-to-5-1">Why set the level to 5.1?</a></h3>
+<h3 id="why-set-the-level-to-5-1" tabindex="-1"><a class="header-anchor" href="#why-set-the-level-to-5-1">Why set the level to 5.1?</a></h3>
 <p>The main reason is that when I first created this preset, Premiere
 actually defaulted the 4K preset to 5.1 as well, so I kept it the same.</p>
 <p>When a Premiere upgrade changed the 4K preset to 5.2, I then asked
@@ -171,7 +171,7 @@ support 4K 60 FPS exports out of the box, because there’s only one
 preset regardless of the frame rate.</p>
 <p>For the same reason, I’ll leave 5.1 for my 2K preset; it’s just high
 enough to support 2K 60 FPS.</p>
-<h3 id="why-a-bitrate-of-20-specifically"><a class="header-anchor" href="#why-a-bitrate-of-20-specifically">Why a bitrate of 20 specifically?</a></h3>
+<h3 id="why-a-bitrate-of-20-specifically" tabindex="-1"><a class="header-anchor" href="#why-a-bitrate-of-20-specifically">Why a bitrate of 20 specifically?</a></h3>
 <p>Premiere defaults to a bitrate of 16 Mbps for 1080p and 40 Mbps for 4K.
 I’m looking for something in between.</p>
 <p>Technically, 1440p is 1.33 times 1080p and 2160p is 1.5 times 1440p (and
@@ -218,7 +218,7 @@ than the high frame rate recommendation.</p>
 <p>Finally, my 2K preset bitrate of 20 Mbps is right in the middle of what
 YouTube recommends between standard and high frame rates, making this a
 somewhat versatile preset.</p>
-<h3 id="a-note-about-1-vs-2-pass-vbr"><a class="header-anchor" href="#a-note-about-1-vs-2-pass-vbr">A note about 1 vs 2 pass <abbr title="Variable bitrate">VBR</abbr></a></h3>
+<h3 id="a-note-about-1-vs-2-pass-vbr" tabindex="-1"><a class="header-anchor" href="#a-note-about-1-vs-2-pass-vbr">A note about 1 vs 2 pass <abbr title="Variable bitrate">VBR</abbr></a></h3>
 <p>In “Bitrate Settings”, we also have an encoding option letting us choose
 from CBR, 1 pass VBR and 2 pass VBR. CBR stands for constant bitrate,
 and VBR for variable bitrate.</p>
@@ -234,7 +234,7 @@ downside is that rendering takes nearly twice as long.</p>
 tradeoff you’ll have to do for yourself, but as far as I’m concerned,
 Premiere takes already long enough to encode that I’m not willing to
 make it even worse.</p>
-<h2 id="instagram"><a class="header-anchor" href="#instagram">Instagram</a></h2>
+<h2 id="instagram" tabindex="-1"><a class="header-anchor" href="#instagram">Instagram</a></h2>
 <p>On to the Instagram presets!</p>
 <p>I based all of my Instagram presets off Premiere’s YouTube 1080p preset,
 meaning we’re rendering with H.264 level 4.2, and a bitrate (both target
@@ -276,7 +276,7 @@ and maximum) of 16 Mbps. To reuse the previous preset table:</p>
 </tbody>
 </table>
 <p>Aside from that, my 4 Instagram presets only differ in the resolution.</p>
-<h3 id="resolution-and-aspect-ratio"><a class="header-anchor" href="#resolution-and-aspect-ratio">Resolution and aspect ratio</a></h3>
+<h3 id="resolution-and-aspect-ratio" tabindex="-1"><a class="header-anchor" href="#resolution-and-aspect-ratio">Resolution and aspect ratio</a></h3>
 <p>While there’s many websites giving settings when searching “Instagram
 video resolution” or “Instagram video specification”, the only resource
 I’ve found from Instagram themselves is on
@@ -313,7 +313,7 @@ pixels.</p>
 </table>
 <p>Here, the landscape one could be even wider if I wanted to, but most of
 my content is shot in 16:9 so I’ll keep it that way.</p>
-<h3 id="a-note-about-bitrate"><a class="header-anchor" href="#a-note-about-bitrate">A note about bitrate</a></h3>
+<h3 id="a-note-about-bitrate" tabindex="-1"><a class="header-anchor" href="#a-note-about-bitrate">A note about bitrate</a></h3>
 <p>For the bitrate, I didn’t find any official Instagram recommendation,
 but various websites recommend 3.5 Kbps, and this matches what the app
 does when recoding the video before upload (you can see that by saving
@@ -329,13 +329,13 @@ they resize the video to a width of 720 pixels, preserving the aspect
 ratio and frame rate. So even though they allow a maximum width of 1080
 pixels, they seem to conform videos to a width of 720 pixels on their
 side.</p>
-<h3 id="a-note-about-distribution"><a class="header-anchor" href="#a-note-about-distribution">A note about distribution</a></h3>
+<h3 id="a-note-about-distribution" tabindex="-1"><a class="header-anchor" href="#a-note-about-distribution">A note about distribution</a></h3>
 <p>As far as distribution is concerned, at least from desktop, they serve
 videos with a width of 640 pixels, a bitrate of 1 Mbps, and conform the
 frame rate to 30 FPS (which matches their
 <a href="https://help.instagram.com/1038071743007909">requirement for IGTV of minimum 30 FPS</a>, even
 though they don’t give any information about timeline videos otherwise).</p>
-<h3 id="a-note-about-frame-rate"><a class="header-anchor" href="#a-note-about-frame-rate">A note about frame rate</a></h3>
+<h3 id="a-note-about-frame-rate" tabindex="-1"><a class="header-anchor" href="#a-note-about-frame-rate">A note about frame rate</a></h3>
 <p>Even though Instagram appears to conform videos to 30 FPS upon serving,
 I still keep my timeline FPS settings in my export file, and let the
 conversion up to Instagram.</p>
@@ -345,12 +345,12 @@ uploading preserves the original frame rate, so this might be a sign
 that they conserve the video with the original frame rate on their
 servers, potentially allowing 24 FPS distribution at some point in the
 future.</p>
-<h3 id="a-note-about-video-length"><a class="header-anchor" href="#a-note-about-video-length">A note about video length</a></h3>
+<h3 id="a-note-about-video-length" tabindex="-1"><a class="header-anchor" href="#a-note-about-video-length">A note about video length</a></h3>
 <p>Videos in Instagram posts are limited to one minute, but to be very
 precise, on a 24 FPS timeline, it turned out to be 59 seconds and 21
 frames. A single more frame and Instagram will prompt you to publish the
 video on IGTV instead.</p>
-<h3 id="final-word"><a class="header-anchor" href="#final-word">Final word</a></h3>
+<h3 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word">Final word</a></h3>
 <p>At that point, you have all the information you need to recreate those
 presets on your side, and you know precisely why each setting was
 chosen.</p>

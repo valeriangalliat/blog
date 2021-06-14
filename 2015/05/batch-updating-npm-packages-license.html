@@ -95,7 +95,7 @@ but it looks like it’s not the case anymore!</p>
 }
 </code></pre>
 <p>for all the packages I have under the Unlicense (roughly 30 packages).</p>
-<h2 id="automation"><a class="header-anchor" href="#automation">Automation</a></h2>
+<h2 id="automation" tabindex="-1"><a class="header-anchor" href="#automation">Automation</a></h2>
 <p>I did not want to do this by hand, so I automated this with some
 commands. I did not wrote this script at once, but here’s what’s
 resulting of my <code>history</code>, with a drastic cleanup (there was <em>a lot</em> of
@@ -135,7 +135,7 @@ cat updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin
 <span class="hljs-comment"># Push, install dependencies and publish</span>
 cat updated | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish&#x27;</span>
 </code></pre>
-<h2 id="was-it-worth-it"><a class="header-anchor" href="#was-it-worth-it">Was it worth it?</a></h2>
+<h2 id="was-it-worth-it" tabindex="-1"><a class="header-anchor" href="#was-it-worth-it">Was it worth it?</a></h2>
 <p>In the end, I think it took way more time to write this script (and blog
 post) than doing it manually. But it was also <em>incredibly more fun</em>!</p>
 <p>I hope this may be useful to other people in the same case as me, so it

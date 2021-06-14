@@ -85,7 +85,7 @@ software to do the magic.</p>
 the last one is proprietary and costs 99 USD before tax.</p>
 <p>In this post I’ll try to go over the 3 of them and tell you the pros and
 cons. But first, let’s look at my particular use case.</p>
-<h2 id="requirements"><a class="header-anchor" href="#requirements">Requirements</a></h2>
+<h2 id="requirements" tabindex="-1"><a class="header-anchor" href="#requirements">Requirements</a></h2>
 <p>The task I want to achieve is doing a screen recording (using QuickTime,
 through <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd>) during
 which I open Logic Pro, create a new project, and record some music in
@@ -106,7 +106,7 @@ setups without adding a lot of overhead, which justifies its price,
 but considering that I’m going to use like 1% of what it’s capable
 of, that makes it pretty expensive for my needs.</li>
 </ol>
-<h2 id="background-music"><a class="header-anchor" href="#background-music">Background Music</a></h2>
+<h2 id="background-music" tabindex="-1"><a class="header-anchor" href="#background-music">Background Music</a></h2>
 <p><a href="https://github.com/kyleneideck/BackgroundMusic">Background Music</a> is a
 macOS audio utility which allows you to manage per-application volume,
 auto-pause music when other audio sources are playing, and record system
@@ -137,7 +137,7 @@ while Logic is set to output audio to Background Music’s interface (and
 Background Music being configured to then output to my speakers),
 there’s a pretty significant delay that makes it impossible to play
 live while recording. Bummer.</p>
-<h3 id="making-it-low-latency"><a class="header-anchor" href="#making-it-low-latency">Making it low latency</a></h3>
+<h3 id="making-it-low-latency" tabindex="-1"><a class="header-anchor" href="#making-it-low-latency">Making it low latency</a></h3>
 <p>This can be mitigated by using a multi-output device (in <em>Audio MIDI
 Setup</em>, it’s native to macOS Core Audio) to send the audio output
 both to my speakers for monitoring, and to Background Music for
@@ -180,7 +180,7 @@ Audio interface (output) 🔊 | Background Music 🎱
 it really wants to) and I can use it to capture the system sounds, and
 get a low latency monitoring output directly sent to my speakers without
 going through Background Music.</p>
-<h2 id="blackhole"><a class="header-anchor" href="#blackhole">BlackHole</a></h2>
+<h2 id="blackhole" tabindex="-1"><a class="header-anchor" href="#blackhole">BlackHole</a></h2>
 <p><a href="https://github.com/ExistentialAudio/BlackHole">BlackHole</a> is open
 source, and is sponsored by Existential Audio, which means that their
 main download link requires you to subscribe (for free) on Existential
@@ -214,7 +214,7 @@ opened Logic during a screen recording, because Logic resets Core Audio
 on start or when opening a new project, but this was many months ago
 and I just tried again with the latest version and the issue doesn’t
 happen anymore, so that will be my go-to from now on!</p>
-<h2 id="loopback"><a class="header-anchor" href="#loopback">Loopback</a></h2>
+<h2 id="loopback" tabindex="-1"><a class="header-anchor" href="#loopback">Loopback</a></h2>
 <p>Finally, <a href="https://rogueamoeba.com/loopback/">Loopback</a> is made by Rogue
 Amoeba and costs 99 USD. It’s got a very neat UI and is a vary capable
 software, that can deal with complex audio input and output routing
@@ -234,7 +234,7 @@ output to my speakers as well as an independent output to Loopback for
 screen recording purpose, the same way we did with BlackHole.</p>
 <p>But that that point 99 USD is a very high price for what we’re doing
 with it.</p>
-<h2 id="conclusion"><a class="header-anchor" href="#conclusion">Conclusion</a></h2>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion">Conclusion</a></h2>
 <p>Background Music, BlackHole and Loopback are all great software, and
 while they’re all capable of capturing the system audio onto a screen
 recording, they’re all built with different use cases in mind and they

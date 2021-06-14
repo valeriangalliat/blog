@@ -86,7 +86,7 @@ it doesn’t support customizing the Docker command used to bundle the
 Lambda function.</p>
 <p>In particular, I need to install dependencies from private repositories
 which requires some credentials to be present in the container.</p>
-<h2 id="cdk-lambda-asset-bundling"><a class="header-anchor" href="#cdk-lambda-asset-bundling">CDK Lambda asset bundling</a></h2>
+<h2 id="cdk-lambda-asset-bundling" tabindex="-1"><a class="header-anchor" href="#cdk-lambda-asset-bundling">CDK Lambda asset bundling</a></h2>
 <p>Instead, CDK offers a way to write custom bundling logic for Lambda
 functions (which is what <code>PythonFunction</code> uses internally); from their <a href="https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-readme.html#bundling-asset-code">documentation</a>:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
@@ -163,7 +163,7 @@ actual issue is the exception that happened during the exception
 handling (<code>[Errno 5] Input/output error</code>)</p>
 <p>It seems that even with their filesystem resilient implementation, we
 still get some IO error when using Docker on macOS.</p>
-<h2 id="the-fix"><a class="header-anchor" href="#the-fix">The fix</a></h2>
+<h2 id="the-fix" tabindex="-1"><a class="header-anchor" href="#the-fix">The fix</a></h2>
 <p>To mitigate that, I modified the suggested command slightly so that we
 install the dependencies in <code>/tmp</code> which is won’t require pip to do any
 cross filesystem operations, and then add that to the <code>cp</code> command we

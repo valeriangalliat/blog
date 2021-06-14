@@ -81,7 +81,7 @@ originally built as a gaming PC. I didn’t get the parts with the idea of
 installing macOS on it, but I decided nevertheless to give it a try and
 see if my build can support it. Turns out it was a success, and this
 blog post will describe what was necessary to make it run smoothly!</p>
-<h2 id="build"><a class="header-anchor" href="#build">Build</a></h2>
+<h2 id="build" tabindex="-1"><a class="header-anchor" href="#build">Build</a></h2>
 <p>First, here’s the details of the machine build.</p>
 <dl>
 <dt>Motherboard</dt>
@@ -99,7 +99,7 @@ blog post will describe what was necessary to make it run smoothly!</p>
 <dt>Wi-Fi card</dt>
 <dd><a href="https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133">TP-Link TL-WDN4800 N900</a></dd>
 </dl>
-<h2 id="why-not-mojave"><a class="header-anchor" href="#why-not-mojave">Why not Mojave?</a></h2>
+<h2 id="why-not-mojave" tabindex="-1"><a class="header-anchor" href="#why-not-mojave">Why not Mojave?</a></h2>
 <p>I have a GTX 1060, so no Mojave for me. Indeed, NVIDIA didn’t release
 the macOS drivers for Mojave yet and Apple don’t natively support
 Maxwell and Pascal NVIDIA cards, since those are not used by any Apple
@@ -116,10 +116,10 @@ you have a Maxwell or Pascal based NVIDIA card, stay on High Sierra
 for now.</strong></p>
 </blockquote>
 <p><a href="https://www.macrumors.com/2018/11/01/nvidia-comment-on-macos-mojave-drivers/">More on the topic</a>.</p>
-<h2 id="steps-summary"><a class="header-anchor" href="#steps-summary">Steps summary</a></h2>
+<h2 id="steps-summary" tabindex="-1"><a class="header-anchor" href="#steps-summary">Steps summary</a></h2>
 <p>Based on the <a href="https://www.tonymacx86.com/threads/unibeast-install-macos-high-sierra-on-any-supported-intel-based-pc.235474/">tonymacx86 guide for High Sierra</a>,
 as well as a couple things from <a href="https://medium.com/@dekablade01/installing-macos-siera-10-12-3-hackintosh-on-desktop-pc-15d077405478">this guide</a>.</p>
-<h3 id="prepare-the-usb"><a class="header-anchor" href="#prepare-the-usb">Prepare the USB</a></h3>
+<h3 id="prepare-the-usb" tabindex="-1"><a class="header-anchor" href="#prepare-the-usb">Prepare the USB</a></h3>
 <ol>
 <li>Download High Sierra from the App Store. You more likely won’t be
 able to find it by searching for it, but the <a href="https://itunes.apple.com/us/app/macos-high-sierra/id1246284741?mt=12">direct link</a>
@@ -150,7 +150,7 @@ USB issues regardless of the port (that’s why USBInjectAll is needed
 above). Then it works seamlessly on USB 3.0 ports as well, including
 the front USB 3.0.</li>
 </ol>
-<h3 id="setup-the-bios"><a class="header-anchor" href="#setup-the-bios">Setup the BIOS</a></h3>
+<h3 id="setup-the-bios" tabindex="-1"><a class="header-anchor" href="#setup-the-bios">Setup the BIOS</a></h3>
 <ol>
 <li>Go into the BIOS settings, for me by spamming the <code>&lt;Del&gt;</code> key on boot.</li>
 <li>Reset the BIOS form whatever custom settings were there, for my by
@@ -163,7 +163,7 @@ set “Serial(COM) Port0” to “Disabled”.</li>
 to “Enabled”.</li>
 <li>Then in “Save &amp; Exit”, actually save and exit.</li>
 </ol>
-<h3 id="install-macos"><a class="header-anchor" href="#install-macos">Install macOS</a></h3>
+<h3 id="install-macos" tabindex="-1"><a class="header-anchor" href="#install-macos">Install macOS</a></h3>
 <ol>
 <li>Boot on the USB, for me by spamming the <kbd>F11</kbd> key on boot,
 and selecting my USB key in the menu. I have a weird issue where I
@@ -194,8 +194,8 @@ time estimate. At the end it reboots automatically.</li>
 You’ll be able to finish the installation process by configuring your
 system, and end up on the desktop.</li>
 </ol>
-<h3 id="post-installation"><a class="header-anchor" href="#post-installation">Post-installation</a></h3>
-<h4 id="drivers-with-multibeast"><a class="header-anchor" href="#drivers-with-multibeast">Drivers with MultiBeast</a></h4>
+<h3 id="post-installation" tabindex="-1"><a class="header-anchor" href="#post-installation">Post-installation</a></h3>
+<h4 id="drivers-with-multibeast" tabindex="-1"><a class="header-anchor" href="#drivers-with-multibeast">Drivers with MultiBeast</a></h4>
 <ol>
 <li>On the installation USB that should be automatically mounted, open
 the MultiBeast app. The selected drivers are inspired by
@@ -215,7 +215,7 @@ install the latest version of Clover manually after because we’ll
 need some extra customization of the Clover installation for the GPU.</li>
 <li>In “Build”, click “Install”.</li>
 </ol>
-<h4 id="bootloader-with-clover"><a class="header-anchor" href="#bootloader-with-clover">Bootloader with Clover</a></h4>
+<h4 id="bootloader-with-clover" tabindex="-1"><a class="header-anchor" href="#bootloader-with-clover">Bootloader with Clover</a></h4>
 <ol>
 <li>Also on the installation USB, open Clover Configurator.</li>
 <li>In “Install/Update Clover”, click “Check Now”, then “Download”.</li>
@@ -247,13 +247,13 @@ be necessary, looks like it mostly customizes what you see in the
 important, when it’s on “Detect” I have a black screen on boot), and
 tick “NvidiaWeb”. “Inject System ID” should be already ticked.</li>
 </ol>
-<h4 id="nvidia-driver"><a class="header-anchor" href="#nvidia-driver">NVIDIA driver</a></h4>
+<h4 id="nvidia-driver" tabindex="-1"><a class="header-anchor" href="#nvidia-driver">NVIDIA driver</a></h4>
 <p>I used <a href="https://github.com/Benjamin-Dobell/nvidia-update">nVidia Update</a>
 to install and patch the latest drivers (apparently the official
 installer needs patching to be able to run for some reason).</p>
 <pre><code class="hljs language-sh">bash &lt;(curl -s https://raw.githubusercontent.com/Benjamin-Dobell/nvidia-update/master/nvidia-update.sh)
 </code></pre>
-<h4 id="note-on-audio"><a class="header-anchor" href="#note-on-audio">Note on audio</a></h4>
+<h4 id="note-on-audio" tabindex="-1"><a class="header-anchor" href="#note-on-audio">Note on audio</a></h4>
 <p>I could find no way to get the HDMI audio working properly. I’ve managed
 to get <em>only</em> the HDMI audio working (still no clue how) but even then,
 it would not let me change the volume from the system, and my screen
@@ -270,11 +270,11 @@ card only have one HDMI port so there’s not much more I can do here.</p>
 <p>Other than that, this <a href="https://www.reddit.com/r/hackintosh/comments/4sil5p/audio_mechanic_old_patchfix_removal_applealc/">Audio Mechanic</a>
 thread on Reddit have been pretty useful for me to figure out audio things
 (other than HDMI audio).</p>
-<h4 id="you-re-done"><a class="header-anchor" href="#you-re-done">You’re done!</a></h4>
+<h4 id="you-re-done" tabindex="-1"><a class="header-anchor" href="#you-re-done">You’re done!</a></h4>
 <p>After this, you should be able to reboot, and from the Clover bootloader
 on your HDD, select “Boot macOS from Hackintosh” (in my case my
 partition is named Hackintosh), and have a fully functional Hackintosh!</p>
-<h2 id="updating"><a class="header-anchor" href="#updating">Updating</a></h2>
+<h2 id="updating" tabindex="-1"><a class="header-anchor" href="#updating">Updating</a></h2>
 <p>Actually, you’re not that done. Soon enough you’ll need to install
 updates. I’m not sure what exactly I fucked up with the above setup, but
 updates don’t work 100% out of the box, but it’s not bothering me enough
@@ -300,8 +300,8 @@ is still the same, the script will skip installation, and here we need
 to force it to install the driver again regardless if there’s a new
 version.</p>
 <p>After this, reboot and you should be set!</p>
-<h2 id="bonus-windows-dual-boot"><a class="header-anchor" href="#bonus-windows-dual-boot">Bonus: Windows dual boot</a></h2>
-<h3 id="prepare-the-usb-1"><a class="header-anchor" href="#prepare-the-usb-1">Prepare the USB</a></h3>
+<h2 id="bonus-windows-dual-boot" tabindex="-1"><a class="header-anchor" href="#bonus-windows-dual-boot">Bonus: Windows dual boot</a></h2>
+<h3 id="prepare-the-usb-1" tabindex="-1"><a class="header-anchor" href="#prepare-the-usb-1">Prepare the USB</a></h3>
 <ol>
 <li><a href="https://www.microsoft.com/en-us/software-download/windows10ISO">Download Windows 10 ISO</a>.
 Make sure you take the “April 2018 Update” and not the “October 2018
@@ -314,7 +314,7 @@ to prepare the USB for you.</li>
 partition, and just copy the contents of the ISO to the FAT32
 partition.</li>
 </ol>
-<h3 id="install-windows"><a class="header-anchor" href="#install-windows">Install Windows</a></h3>
+<h3 id="install-windows" tabindex="-1"><a class="header-anchor" href="#install-windows">Install Windows</a></h3>
 <p>Boot on the USB, and in the Windows installer, make sure to select the
 partition that you already prepared for Windows. After the installation,
 you should be able to pick “Boot Microsoft EFI Boot from EFI” in Clover,

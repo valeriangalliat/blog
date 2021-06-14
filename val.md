@@ -13,9 +13,10 @@ Montreal, Canada.
 
 One of my favorite things in life is summiting mountains, whether it's
 hiking, rock climbing or skiing. I usually bring a beer at the summit
-(possibly homebrewed), which I not only love drinking, but also [taking
-pictures of][beer]. But it's [not just about beer][photography], I like
-taking pictures in general.
+(possibly [homebrewed](https://github.com/valeriangalliat/sans-pression)),
+which I not only love drinking, but also [taking pictures of][beer]. But
+it's [not just about beer][photography], I like taking pictures in
+general.
 
 [beer]: https://photography.codejam.info/beer.html
 [photography]: https://photography.codejam.info/
@@ -26,12 +27,13 @@ You’ll often see me riding bikes, whether it's [with][motorcycle] or
 I'm addicted to music, and when I'm not listening to some, it's more
 likely because I'm [playing][channel].
 
-I also happen to be a software developer, currently working at
-[Sportlogiq], and previously at [Busbud].
+I also happen to be an independent software developer, specialized in
+backend and infrastructure. Previously, I was working at [Sportlogiq],
+and before that, [Busbud].
 
 [bike]: https://www.codejam.info/img/2020/06/gopro.jpg
 [motorcycle]: https://photography.codejam.info/photos/hd/P2570525.jpg
-[channel]: https://www.youtube.com/channel/UCzpErreSO-Fv2oY5t-YXvRw
+[channel]: https://www.youtube.com/FunkyVal
 [Sportlogiq]: https://sportlogiq.com/en/about-us
 [Busbud]: https://www.busbud.com/en/about
 

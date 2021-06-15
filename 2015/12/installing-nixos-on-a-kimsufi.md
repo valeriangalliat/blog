@@ -12,10 +12,11 @@ install it.
 
 This blog post is an (up-to-date) mix of [How to install NixOS from
 Linux][nixos-from-linux] and
-[Install NixOS on a So You Start Dedicated server][nixos-so-you-start]
+[Install NixOS on a So you Start dedicated server][nixos-so-you-start]
 articles.
 
-[nixos-from-linux]: https://nixos.org/wiki/How_to_install_NixOS_from_Linux
+[nixos-from-linux]: https://nixos.wiki/wiki/NixOS_Installation_Guide#Installing_from_Linux
+[nixos-from-linux-original-link]: https://nixos.org/wiki/How_to_install_NixOS_from_Linux
 [nixos-so-you-start]: http://aborsu.github.io/2015/09/26/Install%20NixOS%20on%20So%20You%20Start%20dedicated%20server/
 
 ## Get the network info

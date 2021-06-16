@@ -54,6 +54,17 @@ shortcuts, like <kbd>Alt</kbd> + <kbd>F4</kbd>?
 | PSU  | LDLC QS-360 Quality Select 80PLUS Gold         | €44,95 |
 | Case | Cooler Master Elite 342                        | €29.89 |
 
+## Description lists
+
+Motherboard
+: [MSI H110M PRO-D](https://www.newegg.ca/Product/Product.aspx?Item=N82E16813130924) (RTL8111H Ethernet chipset,  Realtek ALC887 audio chipset)
+
+CPU
+: [Intel Core i5-6500 Skylake](https://www.newegg.ca/Product/Product.aspx?Item=N82E16819117563)
+
+Wi-Fi card
+: [TP-Link TL-WDN4800 N900](https://www.newegg.ca/Product/Product.aspx?Item=N82E16833704133) (Atheros AR9380 chipset)
+
 ## Footnotes
 
 I forgot that I added support for footnotes at some point[^1], so now I

@@ -1,10 +1,8 @@
 # Val <small>(Valérian Galliat)</small>
 
-<div class="oversized">
-
-![Val](img/val.jpg)
-
-</div>
+<figure class="oversized">
+  <img alt="Val" src="img/val.jpg">
+</figure>
 
 ## About
 

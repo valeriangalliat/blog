@@ -44,8 +44,8 @@ const body = lines.slice(slice).join('\n')
 let hero = '<header>'
 
 if (meta.hero) {
-  const focus = meta.focus ? ` background-position: ${meta.focus};` : ''
-  hero = `<header class="hero" style="background-image: url(${meta.hero});${focus}">`
+  const focus = meta.focus ? `; background-position: ${meta.focus}` : ''
+  hero = `<header class="hero" style="background-image: url(${meta.hero})${focus}">`
 }
 
 process.stdout.write(

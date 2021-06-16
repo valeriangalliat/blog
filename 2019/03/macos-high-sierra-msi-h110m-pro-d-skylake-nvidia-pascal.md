@@ -91,7 +91,7 @@ as well as a couple things from [this guide](https://medium.com/@dekablade01/ins
 
 ### Setup the BIOS
 
-1. Go into the BIOS settings, for me by spamming the `<Del>` key on boot.
+1. Go into the BIOS settings, for me by spamming the <kbd>Delete</kbd> key on boot.
 1. Reset the BIOS form whatever custom settings were there, for my by
    going in "Save &amp; Exit" and selecting "Restore Defaults".
 1. In "Overclocking", "CPU Features", make sure "Intel VT-D Tech" is

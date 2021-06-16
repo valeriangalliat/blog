@@ -1,3 +1,7 @@
+---
+image: img/val.jpg
+---
+
 # Val <small>(Valérian Galliat)</small>
 
 <figure class="oversized">

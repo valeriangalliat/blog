@@ -1,3 +1,7 @@
+---
+excerpt: All the posts I've written so far.
+---
+
 # Posts
 
 <div class="links posts">

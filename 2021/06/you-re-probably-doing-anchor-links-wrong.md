@@ -5,7 +5,7 @@ focus: 50% 80%
 
 # You're (probably) doing anchor links wrong
 Studying the accessibility of anchor links  
-June 14, 2021
+June 15, 2021
 
 I'm the original author of [markdown-it-anchor](https://github.com/valeriangalliat/markdown-it-anchor),
 a [markdown-it](https://github.com/markdown-it/markdown-it) plugin to

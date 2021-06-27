@@ -26,8 +26,14 @@ phones, as well as being a good compromise between 16:9 and 21:9 (the
 "proper" cinema aspect ratio, but that might be a tad too wide for my
 needs).
 
-This is great, except when you start to consider the video thumbnail,
-which is what this article is about.
+Just keep in mind that YouTube will normalize on width
+and not height, meaning that for 1080p on a 2:1 video, YouTube will
+recode it to 1920x960 and not 2160x1080, so it's something to keep in
+mind when exporting for YouTube. Instagram behaves in the same way, as
+mentioned in the [article on my Premiere presets](../..//2021/06/my-custom-premiere-pro-export-presets.md#resolution-and-aspect-ratio).
+
+This method works great, except when you start to consider the video
+thumbnail, which is what this article is about.
 
 ## Thumbnails on YouTube
 

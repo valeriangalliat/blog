@@ -22,6 +22,8 @@ $display_date
 
 EOF
 
+echo "$path"
+
 awk '/<div class="links posts">/ { print NR } /More posts/ { print NR }' index.md | {
     read start_index
     read end_index

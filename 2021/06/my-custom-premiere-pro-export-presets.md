@@ -222,6 +222,10 @@ precise, on a 24 FPS timeline, it turned out to be 59 seconds and 21
 frames. A single more frame and Instagram will prompt you to publish the
 video on IGTV instead.
 
+Also stories are limited to 15 seconds, and on a 24 FPS timeline, they
+allow up to a length of 15 seconds and 10 frames, otherwise they will
+start splitting the story.
+
 ### Final word
 
 At that point, you have all the information you need to recreate those

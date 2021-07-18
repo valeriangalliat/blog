@@ -111,7 +111,7 @@ Finally, my 2K preset bitrate of 20 Mbps is right in the middle of what
 YouTube recommends between standard and high frame rates, making this a
 somewhat versatile preset.
 
-### A note about 1 vs 2 pass <abbr title="Variable bitrate">VBR</abbr>
+### A note about 1 vs. 2 pass <abbr title="Variable bitrate">VBR</abbr>
 
 In "Bitrate Settings", we also have an encoding option letting us choose
 from CBR, 1 pass VBR and 2 pass VBR. CBR stands for constant bitrate,

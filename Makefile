@@ -17,9 +17,14 @@ clean:
 clean-html:
 	rm -f $(HTML)
 
-.PHONY: new
 new:
-	./new
+	./scripts/new
+
+rotate-css:
+	./scripts/rotate-css
+
+serve:
+	cd dist && python3 -m http.server
 
 dist/index.html: index.md head.html foot.html
 	mkdir -p $$(dirname $@)
@@ -54,6 +59,3 @@ dist/js/main.js: js/main.js
 
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
-
-serve:
-	cd dist && python3 -m http.server

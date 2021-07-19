@@ -13,7 +13,7 @@ excerpt: All the posts I've written so far.
 * [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
 * [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>
 * [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
-* [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 88, 2021</small>
+* [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 28, 2021</small>
 * [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>
 * [Bundle Lambda function with private dependencies using CDK](2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.md) <small>April 12, 2021</small>
 * [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>

@@ -1,5 +1,19 @@
 /* eslint-env browser */
 
+function el (name, attrs = {}, children = []) {
+  const element = document.createElement(name)
+
+  for (const [key, value] of Object.entries(attrs)) {
+    element[key] = value
+  }
+
+  for (const child of children) {
+    element.appendChild(child)
+  }
+
+  return element
+}
+
 /**
  * Adapted from <https://stackoverflow.com/questions/45866873/cropping-an-html-canvas-to-the-width-height-of-its-visible-pixels-content>.
  */
@@ -114,12 +128,12 @@ function trimCanvas (ctx) {
  * canvas than it needs, and then trim it to the edges keeping a square ratio.
  */
 function emojiFavicon (emoji) {
-  const canvas = document.createElement('canvas')
-
   // Use a bigger canvas than the font size as on most systems a 64px emoji
   // rendered that way will overflow a 64px by 64px canvas.
-  canvas.height = 128
-  canvas.width = 128
+  const canvas = el('canvas', {
+    height: 128,
+    width: 128
+  })
 
   const ctx = canvas.getContext('2d')
   ctx.font = '64px sans-serif'
@@ -128,25 +142,12 @@ function emojiFavicon (emoji) {
   // Fit the canvas to non-transparent edge pixels keeping a square ratio.
   trimCanvas(ctx)
 
-  const favicon = document.createElement('link')
-  favicon.rel = 'icon'
-  favicon.href = canvas.toDataURL()
+  const favicon = el('link', {
+    rel: 'icon',
+    href: canvas.toDataURL()
+  })
 
   document.head.appendChild(favicon)
-}
-
-function el (name, attrs = {}, children = []) {
-  const element = document.createElement(name)
-
-  for (const [key, value] of Object.entries(attrs)) {
-    element[key] = value
-  }
-
-  for (const child of children) {
-    element.appendChild(child)
-  }
-
-  return element
 }
 
 function emptyFormData (form) {
@@ -188,24 +189,25 @@ async function searchBlog (form) {
   const postsDocument = parser.parseFromString(posts, 'text/html')
 
   const lis = await Promise.all(items.map(async item => {
-    const url = item.path.replace(/\.md$/, '.html')
-    const a = postsDocument.querySelector(`a[href="${url}"]`)
+    const relativeUrl = item.path.replace(/\.md$/, '.html')
+    const url = `/${relativeUrl}`
+    const a = postsDocument.querySelector(`a[href="${relativeUrl}"]`)
 
     if (a) {
       const li = a.parentNode
+      a.href = url
       const small = li.querySelector('small')
       li.customSortValue = small ? Date.parse(small.textContent) : 0
       return li
     }
 
     // Fallback to fetching `<h1>` from actual page.
-    const absoluteUrl = `/${url}`
-    const html = await fetch(absoluteUrl).then(res => res.text())
+    const html = await fetch(url).then(res => res.text())
     const pageDocument = parser.parseFromString(html, 'text/html')
 
     return el('li', { customSortValue: 0 }, [
       el('a', {
-        href: absoluteUrl,
+        href: url,
         textContent: pageDocument.querySelector('h1').textContent
       }),
       el('small', {

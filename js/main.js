@@ -179,7 +179,7 @@ async function searchBlog (form) {
       .then(res => res.text())
   ])
 
-  const items = result.items.filter(item => !['posts.md', 'index.md'].includes(item.path))
+  const items = result.items.filter(item => !['index.md', 'posts.md'].includes(item.path))
 
   if (!items.length) {
     return formMessage(form, 'No matches found on the blog. 🥺')

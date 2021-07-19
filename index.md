@@ -52,3 +52,15 @@ where I create content.
 [More links](val.md#links)
 
 </div>
+
+## Search
+
+<form class="search" onsubmit="return onSearchSubmit(this)">
+  <p>Looking for something? Search the blog!</p>
+  <p>
+    <input type="text" name="query" placeholder="🔎">
+    <button type="submit">Submit</button>
+  </p>
+  <div class="links posts"></div>
+  <div class="message"></div>
+</form>

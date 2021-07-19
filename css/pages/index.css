@@ -40,3 +40,7 @@
         text-align: right;
     }
 }
+
+.search p, .search ul {
+    margin: 1rem 0;
+}

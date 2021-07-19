@@ -135,4 +135,102 @@ function emojiFavicon (emoji) {
   document.head.appendChild(favicon)
 }
 
+function el (name, attrs = {}, children = []) {
+  const element = document.createElement(name)
+
+  for (const [key, value] of Object.entries(attrs)) {
+    element[key] = value
+  }
+
+  for (const child of children) {
+    element.appendChild(child)
+  }
+
+  return element
+}
+
+function emptyFormData (form) {
+  form.querySelector('.posts').textContent = ''
+  form.querySelector('.message').textContent = ''
+}
+
+function formMessage (form, text) {
+  emptyFormData(form)
+
+  form.querySelector('.message').appendChild(el('p', {
+    textContent: text
+  }))
+}
+
+async function searchBlog (form) {
+  const query = form.query.value.trim().toLowerCase()
+
+  if (!query.length) {
+    return
+  }
+
+  const fullQuery = `${query} in:file language:markdown repo:valeriangalliat/blog`
+
+  const [result, posts] = await Promise.all([
+    fetch(`https://api.github.com/search/code?q=${encodeURIComponent(fullQuery)}`)
+      .then(res => res.json()),
+    fetch('/posts.html')
+      .then(res => res.text())
+  ])
+
+  const items = result.items.filter(item => !['posts.md', 'index.md'].includes(item.path))
+
+  if (!items.length) {
+    return formMessage(form, 'No matches found on the blog. 🥺')
+  }
+
+  const parser = new DOMParser()
+  const postsDocument = parser.parseFromString(posts, 'text/html')
+
+  const lis = await Promise.all(items.map(async item => {
+    const url = item.path.replace(/\.md$/, '.html')
+    const a = postsDocument.querySelector(`a[href="${url}"]`)
+
+    if (a) {
+      const li = a.parentNode
+      const small = li.querySelector('small')
+      li.customSortValue = small ? Date.parse(small.textContent) : 0
+      return li
+    }
+
+    // Fallback to fetching `<h1>` from actual page.
+    const absoluteUrl = `/${url}`
+    const html = await fetch(absoluteUrl).then(res => res.text())
+    const pageDocument = parser.parseFromString(html, 'text/html')
+
+    return el('li', { customSortValue: 0 }, [
+      el('a', {
+        href: absoluteUrl,
+        textContent: pageDocument.querySelector('h1').textContent
+      }),
+      el('small', {
+        textContent: '—'
+      })
+    ])
+  }))
+
+  lis.sort((a, b) => b.customSortValue - a.customSortValue)
+
+  const ul = el('ul', {}, lis)
+
+  emptyFormData(form)
+  form.querySelector('.posts').appendChild(ul)
+}
+
+// eslint-disable-next-line no-unused-vars
+function onSearchSubmit (form) {
+  searchBlog(form)
+    .catch(err => {
+      console.error(err)
+      formMessage(form, 'An error occurred! Check the console. 🤭')
+    })
+
+  return false
+}
+
 emojiFavicon('🍺')

@@ -52,7 +52,7 @@ if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(env.excerpt[bodyClass === 'post' ? 1 : 0])}">\n`
 }
 
-let image = meta.image || meta.hero
+const image = meta.image || meta.hero
 
 if (image) {
   let absoluteImage = image

@@ -1,7 +1,7 @@
 MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
 ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/458-linkedin.svg
-ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20210719.css dist/js/main.js $(ICONS)
+ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20210719.css dist/js/main-20210719.js $(ICONS)
 
 build: dist $(HTML) $(ASSETS)
 
@@ -57,7 +57,7 @@ dist/css/main-20210719.css: \
 	css/pages/post.css
 	cat $^ > $@
 
-dist/js/main.js: js/main.js
+dist/js/main-20210719.js: js/main.js
 	cp $^ $@
 
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg

@@ -21,7 +21,10 @@ new:
 	./scripts/new
 
 rotate-css:
-	./scripts/rotate-css
+	./scripts/rotate css
+
+rotate-js:
+	./scripts/rotate js
 
 serve:
 	cd dist && python3 -m http.server

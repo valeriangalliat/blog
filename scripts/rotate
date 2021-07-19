@@ -1,0 +1,8 @@
+#!/bin/sh -e
+
+type=$1; shift
+date=$(date +%Y%m%d)
+
+sed -i.rotate "s/$type\/main-[0-9]*\.$type/$type\/main-$date.$type/g" Makefile head.html foot.html
+rm *.rotate
+rm "dist/$type/main-"*".$type"

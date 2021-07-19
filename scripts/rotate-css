@@ -1,7 +1,0 @@
-#!/bin/sh -e
-
-date=$(date +%Y%m%d)
-
-sed -i.rotate-css "s/css\/main-[0-9]*\.css/css\/main-$date.css/g" Makefile head.html
-rm *.rotate-css
-rm dist/css/main-*.css

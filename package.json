@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "standard . render",
+    "lint": "standard --fix . render",
     "watch": "chokidar '**/*.md' -c 'make -j16'"
   },
   "dependencies": {

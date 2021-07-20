@@ -26,6 +26,9 @@ rotate-css:
 rotate-js:
 	./scripts/rotate js
 
+lint:
+	./scripts/lint
+
 lint-js:
 	npm run lint
 

@@ -23,7 +23,7 @@ You need Node.js and GNU `make` to build.
 
 ```sh
 npm install
-make -j8
+make -j16
 ```
 
 This will create a `dist` directory that is setup to track the

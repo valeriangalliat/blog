@@ -155,12 +155,9 @@ function emptyFormData (form) {
   form.querySelector('.message').textContent = ''
 }
 
-function formMessage (form, text) {
+function formMessage (form, textContent) {
   emptyFormData(form)
-
-  form.querySelector('.message').appendChild(el('p', {
-    textContent: text
-  }))
+  form.querySelector('.message').appendChild(el('p', { textContent }))
 }
 
 async function searchBlog (form) {
@@ -170,10 +167,10 @@ async function searchBlog (form) {
     return
   }
 
-  const fullQuery = `${query} in:file language:markdown repo:valeriangalliat/blog`
+  const q = `${query} in:file language:markdown repo:valeriangalliat/blog`
 
   const [result, posts] = await Promise.all([
-    fetch(`https://api.github.com/search/code?q=${encodeURIComponent(fullQuery)}`)
+    fetch(`https://api.github.com/search/code?q=${encodeURIComponent(q)}`)
       .then(res => res.json()),
     fetch('/posts.html')
       .then(res => res.text())

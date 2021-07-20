@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Intercept a macOS app traffic using mitmproxy](2021/07/intercept-macos-app-traffic-mitmproxy.md) <small>July 20, 2021</small>
 * [Adding search capability to a static blog using the GitHub API](2021/07/search-static-blog-github-api.md) <small>July 20, 2021</small>
 * [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 15, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>

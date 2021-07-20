@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [Intercept a macOS app traffic using mitmproxy](2021/07/intercept-macos-app-traffic-mitmproxy.md) <small>July 20, 2021</small>
 * [Adding search capability to a static blog using the GitHub API](2021/07/search-static-blog-github-api.md) <small>July 20, 2021</small>
 * [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 15, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>
 * [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
 * [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
-* [Google OAuth from a CLI application](2021/02/google-oauth-from-cli-application.md) <small>February 25, 2021</small>
 
 [More posts](posts.md)
 

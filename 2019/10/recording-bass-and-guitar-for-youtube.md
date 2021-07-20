@@ -213,9 +213,9 @@ Looks like there's lot to say about the audio loudness online, and I
 found this 3 parts article while researching on the topic that seems to
 explain it pretty well.
 
-* [Loudness Normalization: Part 1 - What's The Problem?](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/13/loudness-normalization-part-1-whats-the-problem)
-* [Loudness Normalization: Part 2 - The Standards](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/14/loudness-normalization-part-2-the-standards)
-* [Loudness Normalization: Part 3 - Logic Pro X's Loudness Meter](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/16/loudness-normalization-part-3-logics-loudness-meter)
+* [Loudness normalization: part 1 - what's the problem?](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/13/loudness-normalization-part-1-whats-the-problem)
+* [Loudness normalization: part 2 - the standards](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/14/loudness-normalization-part-2-the-standards)
+* [Loudness normalization: part 3 - Logic Pro X's loudness meter](https://www.pro-tools-expert.com/logic-pro-expert/logic-pro-blog/2017/06/16/loudness-normalization-part-3-logics-loudness-meter)
 
 Looks like for online streaming we should aim for
 16 <abbr title="Loudness units relative to full scale">LUFS</abbr>,

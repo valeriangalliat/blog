@@ -10,12 +10,12 @@ understand it and learn to use it properly.
 ## References
 
 * [Pro Git](https://git-scm.com/book/en/v2)
-* [Git Magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
+* [Git magic](http://www-cs-students.stanford.edu/~blynn/gitmagic/)
 
 ## Tutorials (beginner)
 
 * [First steps (GitHub)](https://try.github.io/)
-* [Git for Beginners](http://www.sitepoint.com/git-for-beginners/)
+* [Git for beginners](http://www.sitepoint.com/git-for-beginners/)
 * [Enfin comprendre Git](http://www.miximum.fr/enfin-comprendre-git.html) (really complete introduction, in French)
 
 ## Tips & tricks
@@ -29,9 +29,9 @@ understand it and learn to use it properly.
 
 ### See how it works in the background
 
-* [A Hacker's Guide to Git](http://wildlyinaccurate.com/a-hackers-guide-to-git)
+* [A hacker's guide to Git](http://wildlyinaccurate.com/a-hackers-guide-to-git)
 * [Git from the inside out](https://codewords.recurse.com/issues/two/git-from-the-inside-out)
-* [Git from the Bottom Up](http://jwiegley.github.io/git-from-the-bottom-up/)
+* [Git from the bottom up](http://jwiegley.github.io/git-from-the-bottom-up/)
 * [Cheat sheet about Git states](http://codepen.io/HugoGiraudel/full/d7a439ac945a29dcad9f02d831b731e6/)
 
 ### Reimplementing Git
@@ -43,26 +43,26 @@ understand it and learn to use it properly.
 ## Workflow & branching
 
 * [A successful Git branching model](http://nvie.com/posts/a-successful-git-branching-model/)
-* [Comparing Workflows](http://www.atlassian.com/git/tutorials/comparing-workflows/)
+* [Comparing workflows](http://www.atlassian.com/git/tutorials/comparing-workflows/)
 * [Using git-flow to automate your git branching workflow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
 
 ## The Hugo way
 
-* [How I Use Git](https://hugogiraudel.com/2018/02/17/how-i-use-git/)
+* [How I use Git](https://hugogiraudel.com/2018/02/17/how-i-use-git/)
 
 ## Other interesting stuff
 
-* [Debugging in Git with Blame and Bisect](http://www.sitepoint.com/debugging-git-blame-bisect/)
+* [Debugging in Git with blame and bisect](http://www.sitepoint.com/debugging-git-blame-bisect/)
 * [30 Git CLI options you should know about](https://medium.com/@porteneuve/30-git-cli-options-you-should-know-about-15423e8771df)
 * [Git rebase, le couteau suisse de votre historique](http://www.miximum.fr/git-rebase.html) (French)
-* [Abandon your DVCS and Return to Sanity](http://bitquabit.com/post/unorthodocs-abandon-your-dvcs-and-return-to-sanity/) (keep in mind DVCS are not perfect)
+* [Abandon your DVCS and return to sanity](http://bitquabit.com/post/unorthodocs-abandon-your-dvcs-and-return-to-sanity/) (keep in mind DVCS are not perfect)
 * [Getting solid at Git rebase vs. merge](https://medium.com/@porteneuve/getting-solid-at-git-rebase-vs-merge-4fa1a48c53aa) (excellent article, exactly my workflow)
 * [How to undo (almost) anything with Git](https://github.com/blog/2019-how-to-undo-almost-anything-with-git)
 
 ## Commit messages
 
-* [A Note About Git Commit Messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
-* [How to Write a Git Commit Message](http://chris.beams.io/posts/git-commit/)
+* [A note about Git commit messages](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
+* [How to write a Git commit message](http://chris.beams.io/posts/git-commit/)
 
 ### Personal notes
 
@@ -80,7 +80,7 @@ understand it and learn to use it properly.
   Another sentence.
   ```
 
-  or use link references like this:
+  Or use link references like this:
 
   ```text
   Some message referencing a link [1] in a sentence, and maybe even
@@ -92,15 +92,15 @@ understand it and learn to use it properly.
 
 ## GitHub
 
-* [GitHub Cheat Sheet](https://github.com/tiimgreen/github-cheat-sheet)
+* [GitHub cheat sheet](https://github.com/tiimgreen/github-cheat-sheet)
   (also see their list of [Git resources](https://github.com/tiimgreen/github-cheat-sheet#git-resources))
 
 ## Handling patches and pull requests
 
-* [Care And Operation Of Your Linus Torvalds](https://www.kernel.org/doc/Documentation/SubmittingPatches)
-* [Gerrit Code Review - Signed-off-by Lines](http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html)
-* [What is the Sign Off feature in Git for?](https://stackoverflow.com/questions/1962094/what-is-the-sign-off-feature-in-git-for/14044024#14044024)
-* ["Merge pull request" Considered Harmful](http://blog.spreedly.com/2014/06/24/merge-pull-request-considered-harmful/)
+* [Care and operation of your Linus Torvalds](https://lwn.net/Articles/139918/) (originally on [kernel.org](https://www.kernel.org/doc/Documentation/SubmittingPatches))
+* [Gerrit code review - signed-off-by lines](http://gerrit.googlecode.com/svn/documentation/2.0/user-signedoffby.html)
+* [What is the sign-off feature in Git for?](https://stackoverflow.com/questions/1962094/what-is-the-sign-off-feature-in-git-for/14044024#14044024)
+* ["Merge pull request" considered harmful](http://blog.spreedly.com/2014/06/24/merge-pull-request-considered-harmful/)
 
 Especially, the part about "slightly modifying patches" in the first
 three links:

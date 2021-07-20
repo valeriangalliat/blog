@@ -64,7 +64,7 @@ OpenCore required me to learn a lot on how Hackintoshes work, as well as
 about devices, chipsets, firmwares in general, and how macOS deal with
 those.
 
-The [OpenCore Install Guide][guide] is amazing at teaching
+The [OpenCore install guide][guide] is amazing at teaching
 everything that you need to understand, especially they not only tell
 you what to do, but why you do it, and thanks to it, I could
 install and configure only the things that I really needed for my
@@ -286,7 +286,7 @@ automatically connect to my Wi-Fi network.
 
 ### Post-install
 
-The last step was to follow the [OpenCore Post-Install Guide](https://dortania.github.io/OpenCore-Post-Install/).
+The last step was to follow the [OpenCore post-install guide](https://dortania.github.io/OpenCore-Post-Install/).
 
 Seems that mostly everything I need worked out of the box so I didn't
 have much to fix there, I just copied OpenCore's EFI from the USB to my

@@ -6,7 +6,7 @@ focus: 50% 45%
 # My settings for Panasonic LUMIX LX100
 May 22, 2020
 
-This article, well inspired by [Medo's My Settings for Panasonic LX100](https://www.medo64.com/2017/07/my-settings-for-panasonic-lx100/)
+This article, well inspired by [Medo's My settings for Panasonic LX100](https://www.medo64.com/2017/07/my-settings-for-panasonic-lx100/)
 article, lists my custom settings for the LX100, which is the camera
 that use for [photography](https://photography.codejam.info/) and [video shooting](https://www.youtube.com/channel/UCzpErreSO-Fv2oY5t-YXvRw).
 

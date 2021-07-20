@@ -98,7 +98,7 @@ distortion from the GoPro lens and give a more regular camera feel.
 
 First, it's useful to understand all the Protune settings before
 tweaking them. There's countless articles about that, but one of my
-favorite is [GoPro Protune Settings Explained on havecamerawilltravel.com](https://havecamerawilltravel.com/gopro/gopro-protune-settings-explained/).
+favorite is [GoPro Protune settings explained on havecamerawilltravel.com](https://havecamerawilltravel.com/gopro/gopro-protune-settings-explained/).
 
 ### Color
 

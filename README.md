@@ -29,6 +29,22 @@ make -j16
 This will create a `dist` directory that is setup to track the
 `gh-pages` branch of this repository and contains the built site.
 
+## Development
+
+Use `make serve` to start a development server on port 8000.
+
+Use `make watch` to watch for changes on Markdown files and
+automatically run `make` to render the updated files.
+
+For convenience, run `make dev` which does both at the same time.
+
+## Lint
+
+Use `make lint` to lint (and fix) `index.md` and `posts.md`, making sure
+the titles and dates are consistent with that of the actual posts.
+
+Use `make lint-js` to lint the JavaScript code.
+
 ## Deploy
 
 After building:
@@ -50,3 +66,12 @@ This will prompt you for a title, suggest a slug or let you use a custom
 one, and will update `index.md` to add the post to the latest articles
 (and remove the oldest one), as well as `posts.md`, and create the post
 Markdown file with an empty template.
+
+## Rotate compiled CSS and JS
+
+Compiled CSS and JS files are suffixed with their compiled date, to be
+able to bypass caching in a way that's agnostic of the content delivery
+service the blog is hosted on.
+
+To rotate the CSS and JS files, appending the current date at the end,
+use `make rotate-css` and `make rotate-js` respectively.

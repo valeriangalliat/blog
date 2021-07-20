@@ -1,36 +1,46 @@
 #!/bin/sh -e
 #
-# Checks that date and title match between actual articles and
+# Ensures that date and title match between actual articles and
 # `index.md` and `posts.md` listings.
 #
 
-input() {
-    # Just label the whole file with path and line, then filter only the
-    # posts list, then find the links.
-    grep -Hn '^' index.md \
-        | sed '1,/:## Posts/d;/:## Pages/,$d' \
-        | grep '</small>$'
+process() {
+    file=$1; shift
+    passthrough=false
 
-    grep -Hn '^* .*</small>$' posts.md
+    cat "$file" | while IFS= read line; do
+        if "$passthrough"; then
+            echo "$line"
+            continue
+        fi
+
+        if [ "$line" = "## Pages" ]; then
+            passthrough=true
+        fi
+
+        if ! echo "$line" | grep -q '^* .*</small>$'; then
+            echo "$line"
+            continue
+        fi
+
+        path=$(echo "$line" | sed 's/^.*](//;s/).*//')
+        head=$(grep -A4 '^# ' "$path")
+        title=$(echo "$head" | head -1 | sed 's/^# //')
+        date=$(echo "$head" | grep -B1 '^$' | head -1)
+        expected="* [$title]($path) <small>$date</small>"
+
+        if [ "$line" != "$expected" ]; then
+            echo "Mismatch in $file" >&2
+            echo "  Actual: $line" >&2
+            echo "  Expected: $expected" >&2
+            echo "  Fixing..." >&2
+        fi
+
+        echo "$expected"
+    done > "$file.new"
+
+    mv "$file.new" "$file"
 }
 
-input | while IFS=: read file line match; do
-    title=$(echo "$match" | sed 's/^[^\[]*\[//;s/].*//')
-    path=$(echo "$match" | sed 's/^.*](//;s/).*//')
-    date=$(echo "$match" | sed 's/.*<small>//;s/<\/small>.*//')
-    head=$(grep -A4 '^# ' "$path")
-    post_title=$(echo "$head" | head -1 | sed 's/^# //')
-    post_date=$(echo "$head" | grep -B1 '^$' | head -1)
-
-    if [ "$title" != "$post_title" ]; then
-        echo "Title mismatch in $file:$line"
-        echo "  Actual: $title"
-        echo "  Expected: $post_title"
-    fi
-
-    if [ "$date" != "$post_date" ]; then
-        echo "date mismatch in $file:$line"
-        echo "  Actual: $date"
-        echo "  Expected: $post_date"
-    fi
-done
+process index.md
+process posts.md

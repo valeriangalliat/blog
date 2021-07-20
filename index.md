@@ -37,6 +37,7 @@ where I create content.
 
 * [Git](resources/git.md) <small>| how I learnt Git</small>
 * [Vim](resources/vim.md) <small>| how I learnt Vim</small>
+* [Simple](resources/simple.md) <small>| why I write boring code</small>
 
 </div>
 

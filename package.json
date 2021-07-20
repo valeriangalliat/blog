@@ -1,6 +1,7 @@
 {
   "scripts": {
-    "lint": "standard . render"
+    "lint": "standard . render",
+    "watch": "chokidar '**/*.md' -c 'make -j16'"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^1.1.0",
@@ -19,6 +20,7 @@
     "normalize.css": "^8.0.1"
   },
   "devDependencies": {
+    "chokidar-cli": "^2.1.0",
     "standard": "^16.0.1"
   }
 }

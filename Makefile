@@ -26,8 +26,17 @@ rotate-css:
 rotate-js:
 	./scripts/rotate js
 
+lint-js:
+	npm run lint
+
+watch:
+	npm run watch
+
 serve:
 	cd dist && python3 -m http.server
+
+dev:
+	make watch & make serve
 
 dist/index.html: index.md head.html foot.html
 	mkdir -p $$(dirname $@)

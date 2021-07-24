@@ -21,23 +21,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
-    margin: 2rem 0;
-}
-
-blockquote h1,
-blockquote h2,
-blockquote h3,
-blockquote h4,
-blockquote h5,
-blockquote h6,
-blockquote p,
-blockquote ul,
-blockquote ol,
-blockquote dl,
-blockquote blockquote,
-blockquote pre,
-blockquote figure {
-    margin: 1rem 0;
+    margin: var(--vertical-margin, 2rem) 0;
 }
 
 h1.has-subtitle {
@@ -59,6 +43,10 @@ h1.has-subtitle small {
     /* Force subtitle on its own line if it doesn't fit on the same line
      * as the main title. */
     display: inline-block;
+}
+
+blockquote > * {
+    --vertical-margin: 1rem;
 }
 
 table {

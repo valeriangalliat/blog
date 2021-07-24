@@ -182,10 +182,12 @@ using <a href="https://github.com/corpnewt/SSDTTime">SSDTTime</a>, which require
 me to dump the DSDT from my firmware first (<a href="https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html#from-clover">using F4 inside Clover</a>),
 and added as well a prebuilt version of <a href="https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml">SSDT-USBX</a>.</li>
 </ul>
-<p>Note that I would also have needed to add <a href="https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/">USBInjectAll</a>,
+<div class="note">
+<p><strong>Note:</strong> I would also have needed to add <a href="https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/">USBInjectAll</a>,
 but I didn’t at that point because the guide said it shouldn’t be needed
 for desktop Skylake and newer. It turned out I needed it at least until
 I build the USB map for my machine.</p>
+</div>
 <p>Then I configured my <code>config.plist</code> from <code>Sample.plist</code> using the
 desktop <a href="https://dortania.github.io/OpenCore-Install-Guide/config.plist/skylake.html">Skylake</a> guide and ProperTree downloaded earlier,
 which means I:</p>
@@ -209,8 +211,9 @@ setups,</li>
 a <code>iMac17,1</code> SMBIOS and configured the matching parameters in
 <code>PlatformInfo/Generic</code>.</li>
 </ul>
-<p>Note that I later had to change <code>SecureBootModel</code> to <code>Disabled</code>, more on
-that below.</p>
+<div class="note">
+<p><strong>Note:</strong> I later had to change <code>SecureBootModel</code> to <code>Disabled</code>, <a href="#booting-on-macos-installer-just-reboots-into-recovery">more on that below</a>.</p>
+</div>
 <p>I also made sure that my BIOS settings matched the recommended ones in
 the guide, which they already did.</p>
 <p>Then I booted my OpenCore USB and launched the installer “Install macOS

@@ -1,6 +1,90 @@
+:root {
+    --black: #1b1f23;
+    --white: #ffffff;
+    --gray-0: #fafbfc;
+    --gray-1: #f6f8fa;
+    --gray-2: #e1e4e8;
+    --gray-3: #d1d5da;
+    --gray-4: #959da5;
+    --gray-5: #6a737d;
+    --gray-6: #586069;
+    --gray-7: #444d56;
+    --gray-8: #2f363d;
+    --gray-9: #24292e;
+    --blue-0: #f1f8ff;
+    --blue-1: #dbedff;
+    --blue-2: #c8e1ff;
+    --blue-3: #79b8ff;
+    --blue-4: #2188ff;
+    --blue-5: #0366d6;
+    --blue-6: #005cc5;
+    --blue-7: #044289;
+    --blue-8: #032f62;
+    --blue-9: #05264c;
+    --green-0: #f0fff4;
+    --green-1: #dcffe4;
+    --green-2: #bef5cb;
+    --green-3: #85e89d;
+    --green-4: #34d058;
+    --green-5: #28a745;
+    --green-6: #22863a;
+    --green-7: #176f2c;
+    --green-8: #165c26;
+    --green-9: #144620;
+    --yellow-0: #fffdef;
+    --yellow-1: #fffbdd;
+    --yellow-2: #fff5b1;
+    --yellow-3: #ffea7f;
+    --yellow-4: #ffdf5d;
+    --yellow-5: #ffd33d;
+    --yellow-6: #f9c513;
+    --yellow-7: #dbab09;
+    --yellow-8: #b08800;
+    --yellow-9: #735c0f;
+    --orange-0: #fff8f2;
+    --orange-1: #ffebda;
+    --orange-2: #ffd1ac;
+    --orange-3: #ffab70;
+    --orange-4: #fb8532;
+    --orange-5: #f66a0a;
+    --orange-6: #e36209;
+    --orange-7: #d15704;
+    --orange-8: #c24e00;
+    --orange-9: #a04100;
+    --red-0: #ffeef0;
+    --red-1: #ffdce0;
+    --red-2: #fdaeb7;
+    --red-3: #f97583;
+    --red-4: #ea4a5a;
+    --red-5: #d73a49;
+    --red-6: #cb2431;
+    --red-7: #b31d28;
+    --red-8: #9e1c23;
+    --red-9: #86181d;
+    --purple-0: #f5f0ff;
+    --purple-1: #e6dcfd;
+    --purple-2: #d1bcf9;
+    --purple-3: #b392f0;
+    --purple-4: #8a63d2;
+    --purple-5: #6f42c1;
+    --purple-6: #5a32a3;
+    --purple-7: #4c2889;
+    --purple-8: #3a1d6e;
+    --purple-9: #29134e;
+    --pink-0: #ffeef8;
+    --pink-1: #fedbf0;
+    --pink-2: #f9b3dd;
+    --pink-3: #f692ce;
+    --pink-4: #ec6cb9;
+    --pink-5: #ea4aaa;
+    --pink-6: #d03592;
+    --pink-7: #b93a86;
+    --pink-8: #99306f;
+    --pink-9: #6d224f;
+}
 html {
     font: 1.25em/1.5 "Times New Roman", serif;
-    color: #333;
+    color: var(--gray-8);
 }
 
 .content {
@@ -12,7 +96,7 @@ html {
 }
 
 h2 {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--gray-2);
     padding-bottom: .5rem;
 }
 
@@ -21,23 +105,7 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
-    margin: 2rem 0;
-}
-
-blockquote h1,
-blockquote h2,
-blockquote h3,
-blockquote h4,
-blockquote h5,
-blockquote h6,
-blockquote p,
-blockquote ul,
-blockquote ol,
-blockquote dl,
-blockquote blockquote,
-blockquote pre,
-blockquote figure {
-    margin: 1rem 0;
+    margin: var(--vertical-margin, 2rem) 0;
 }
 
 h1.has-subtitle {
@@ -61,6 +129,10 @@ h1.has-subtitle small {
     display: inline-block;
 }
 
+blockquote > * {
+    --vertical-margin: 1rem;
+}
+
 table {
     width: 100%;
     border-collapse: collapse;
@@ -76,19 +148,19 @@ table {
 
 th, td {
     padding: .5em 1em;
-    border: 1px solid #ddd;
+    border: 1px solid var(--gray-2);
     text-align: left;
 }
 
 tr:nth-child(even) {
-    background: #f8f8f8;
+    background: var(--gray-1);
 }
 
 blockquote {
-    color: #666;
+    color: var(--gray-6);
     margin-left: 0;
     padding: 0 1em;
-    border-left: .25rem solid #4183c4;
+    border-left: .25rem solid var(--blue-5);
 }
 
 dt {
@@ -98,24 +170,31 @@ dt {
 code, kbd, samp {
     font-family: "Courier New", monospace;
     font-size: .75em;
-    background: #f8f8f8;
+    background: var(--gray-1);
     padding: .25em .5em;
+}
+
+.hljs {
+    display: block;
+    overflow-x: auto;
+    background: var(--gray-1);
+    padding: 1em;
 }
 
 kbd {
     font-size: .6em;
-    border: 1px solid #ddd;
-    border-bottom: 2px solid #ddd;
+    border: 1px solid var(--gray-2);
+    border-bottom: 2px solid var(--gray-2);
     border-radius: .75em;
 }
 
 hr {
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--gray-2);
     border-bottom: 0;
 }
 
 a {
-    color: #4183c4;
+    color: var(--blue-5);
     text-decoration: none;
 }
 
@@ -128,7 +207,7 @@ a:hover {
 }
 
 a:visited {
-    color: #6e5494;
+    color: var(--purple-5);
 }
 
 a[title] {
@@ -156,16 +235,43 @@ button, input, optgroup, select, textarea {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     line-height: normal;
-    padding: .25em .75em;
+    padding: .5em 1em;
+    border: 1px solid var(--gray-3);
+    border-radius: .25em;
+}
+
+/* Visible focus for everything, need to explicitly override `normalize.css`
+ * behavior for `:focus-visible`. */
+button:focus,
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="reset"]:focus-visible,
+[type="submit"]:focus-visible,
+input:focus,
+optgroup:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--blue-3);
+}
+
+button {
+    background: var(--blue-5);
+    color: var(--white);
+    border: 1px solid var(--blue-6);
+}
+
+button:hover {
+    background: var(--blue-6);
+    cursor: pointer;
 }
 .header-anchor {
-    color: #333;
+    color: var(--gray-8);
     margin-left: -1.5ch;
     padding-left: 1.5ch;
 }
 
 .header-anchor:visited {
-    color: #333;
+    color: var(--gray-8);
 }
 
 .header-anchor:hover {
@@ -175,7 +281,7 @@ button, input, optgroup, select, textarea {
 .header-anchor:hover::before,
 .header-anchor:focus::before {
     content: '#';
-    color: #4183c4;
+    color: var(--blue-5);
     position: relative;
     float: left;
     left: -1.5ch;
@@ -197,8 +303,8 @@ figcaption {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     padding: .25em .75em;
-    background-color: #4183c4;
-    color: #fff;
+    background-color: var(--blue-5);
+    color: var(--white);
 }
 
 figure img {
@@ -286,13 +392,13 @@ footer {
     padding: 0 .5em;
     display: flex;
     justify-content: center;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--gray-2);
 }
 
 footer p {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
-    color: #bbb;
+    color: var(--gray-4);
     margin: 2em 0;
 }
 
@@ -306,11 +412,11 @@ footer p {
 }
 
 footer a, footer a:visited {
-    color: #666;
+    color: var(--gray-6);
 }
 
 footer a:hover {
-    color: #333;
+    color: var(--gray-8);
     text-decoration: none;
 }
 .footnotes-sep {
@@ -340,15 +446,15 @@ header .content {
 
 .hero h1 {
     text-shadow: 1px 2px rgba(0, 0, 0, .1);
-    color: #fff;
+    color: var(--white);
 }
 
 .post .hero .tagline {
-    color: #fff;
+    color: var(--white);
 }
 
 .post .hero .date {
-    color: #ddd;
+    color: var(--gray-2);
 }
 nav {
     display: flex;
@@ -394,20 +500,38 @@ nav li {
 }
 
 nav a, nav a:visited {
-    color: #666;
+    color: var(--gray-6);
 }
 
 nav a:hover {
-    color: #333;
+    color: var(--gray-8);
     text-decoration: none;
 }
 
 nav .social svg {
-    --color-fill: #666;
+    --color-fill: var(--gray-6);
 }
 
 nav .social a:hover svg {
-    --color-fill: #333;
+    --color-fill: var(--gray-8);
+}
+.note {
+    margin: 2rem 0;
+    background: var(--blue-0);
+    border-top: .25rem solid var(--blue-5);
+    padding: 1em;
+}
+
+.note :first-child {
+    margin-top: 0;
+}
+
+.note :last-child {
+    margin-bottom: 0;
+}
+
+.note > * {
+    --vertical-margin: 1rem;
 }
 /* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
  * so it should be 75em here, but I added 2em to break before the width of the
@@ -450,13 +574,13 @@ nav .social a:hover svg {
 }
 
 .posts li:not(:last-child) {
-    border-bottom: 1px solid #f8f8f8;
+    border-bottom: 1px solid var(--gray-1);
 }
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only
  * the one used for the date. */
 .posts li > small {
-    color: #bbb;
+    color: var(--gray-4);
     white-space: nowrap;
 }
 
@@ -484,5 +608,5 @@ nav .social a:hover svg {
 }
 
 .post .date {
-    color: #bbb;
+    color: var(--gray-4);
 }

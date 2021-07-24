@@ -151,5 +151,32 @@ button, input, optgroup, select, textarea {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     line-height: normal;
-    padding: .25em .75em;
+    padding: .5em 1em;
+    border: 1px solid var(--gray-3);
+    border-radius: .25em;
+}
+
+/* Visible focus for everything, need to explicitly override `normalize.css`
+ * behavior for `:focus-visible`. */
+button:focus,
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="reset"]:focus-visible,
+[type="submit"]:focus-visible,
+input:focus,
+optgroup:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--blue-3);
+}
+
+button {
+    background: var(--blue-5);
+    color: var(--white);
+    border: 1px solid var(--blue-6);
+}
+
+button:hover {
+    background: var(--blue-6);
+    cursor: pointer;
 }

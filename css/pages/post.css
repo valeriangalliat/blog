@@ -13,5 +13,5 @@
 }
 
 .post .date {
-    color: #bbb;
+    color: var(--gray-4);
 }

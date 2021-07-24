@@ -4,13 +4,13 @@ footer {
     padding: 0 .5em;
     display: flex;
     justify-content: center;
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--gray-2);
 }
 
 footer p {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
-    color: #bbb;
+    color: var(--gray-4);
     margin: 2em 0;
 }
 
@@ -24,10 +24,10 @@ footer p {
 }
 
 footer a, footer a:visited {
-    color: #666;
+    color: var(--gray-6);
 }
 
 footer a:hover {
-    color: #333;
+    color: var(--gray-8);
     text-decoration: none;
 }

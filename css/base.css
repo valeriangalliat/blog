@@ -1,6 +1,6 @@
 html {
     font: 1.25em/1.5 "Times New Roman", serif;
-    color: #333;
+    color: var(--gray-8);
 }
 
 .content {
@@ -12,7 +12,7 @@ html {
 }
 
 h2 {
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid var(--gray-2);
     padding-bottom: .5rem;
 }
 
@@ -76,19 +76,19 @@ table {
 
 th, td {
     padding: .5em 1em;
-    border: 1px solid #ddd;
+    border: 1px solid var(--gray-2);
     text-align: left;
 }
 
 tr:nth-child(even) {
-    background: #f8f8f8;
+    background: var(--gray-1);
 }
 
 blockquote {
-    color: #666;
+    color: var(--gray-6);
     margin-left: 0;
     padding: 0 1em;
-    border-left: .25rem solid #4183c4;
+    border-left: .25rem solid var(--blue-5);
 }
 
 dt {
@@ -98,24 +98,24 @@ dt {
 code, kbd, samp {
     font-family: "Courier New", monospace;
     font-size: .75em;
-    background: #f8f8f8;
+    background: var(--gray-1);
     padding: .25em .5em;
 }
 
 kbd {
     font-size: .6em;
-    border: 1px solid #ddd;
-    border-bottom: 2px solid #ddd;
+    border: 1px solid var(--gray-2);
+    border-bottom: 2px solid var(--gray-2);
     border-radius: .75em;
 }
 
 hr {
-    border-top: 1px solid #eee;
+    border-top: 1px solid var(--gray-2);
     border-bottom: 0;
 }
 
 a {
-    color: #4183c4;
+    color: var(--blue-5);
     text-decoration: none;
 }
 
@@ -128,7 +128,7 @@ a:hover {
 }
 
 a:visited {
-    color: #6e5494;
+    color: var(--purple-5);
 }
 
 a[title] {

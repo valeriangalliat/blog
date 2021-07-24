@@ -13,8 +13,8 @@ figcaption {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     padding: .25em .75em;
-    background-color: #4183c4;
-    color: #fff;
+    background-color: var(--blue-5);
+    color: var(--white);
 }
 
 figure img {

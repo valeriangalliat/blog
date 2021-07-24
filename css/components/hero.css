@@ -15,13 +15,13 @@
 
 .hero h1 {
     text-shadow: 1px 2px rgba(0, 0, 0, .1);
-    color: #fff;
+    color: var(--white);
 }
 
 .post .hero .tagline {
-    color: #fff;
+    color: var(--white);
 }
 
 .post .hero .date {
-    color: #ddd;
+    color: var(--gray-2);
 }

@@ -42,18 +42,18 @@ nav li {
 }
 
 nav a, nav a:visited {
-    color: #666;
+    color: var(--gray-6);
 }
 
 nav a:hover {
-    color: #333;
+    color: var(--gray-8);
     text-decoration: none;
 }
 
 nav .social svg {
-    --color-fill: #666;
+    --color-fill: var(--gray-6);
 }
 
 nav .social a:hover svg {
-    --color-fill: #333;
+    --color-fill: var(--gray-8);
 }

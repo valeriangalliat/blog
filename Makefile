@@ -56,6 +56,7 @@ dist/css/github.css: node_modules/highlight.js/styles/github.css
 	cp $< $@
 
 dist/css/main-20210719.css: \
+	css/colors.css \
 	css/base.css \
 	css/components/anchor.css \
 	css/components/figure.css \
@@ -74,3 +75,13 @@ dist/js/main-20210719.js: js/main.js
 
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
+
+css/colors.css:
+	echo ':root {' > $@
+	curl -s 'https://raw.githubusercontent.com/cdnjs/cdnjs/master/ajax/libs/Primer/17.4.0/base.css' \
+		| grep -o '@media (prefers-color-scheme: light){[^}]*}}' \
+		| head -1 \
+		| npx prettier --stdin-filepath base.css \
+		| grep color-scale | sed 's/.*color-scale-/    --/' \
+		>> $@
+	echo '}' >> $@

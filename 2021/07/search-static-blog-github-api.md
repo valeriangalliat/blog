@@ -294,7 +294,8 @@ JS combined, including helpers. And this is awesome.
 
 In reality, I want to search not only blog posts, but also pages. Pages
 don't have a date for me to sort with, and are not listed in
-`posts.html` so I can't find their title instantly.
+`posts.html` so I can't find their title instantly. Also [some of my titles](../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html)
+include a `<small>` element, so it's something to take into account.
 
 In [the real code][source-code], I have to do a couple more things for
 this to work.
@@ -315,6 +316,9 @@ running it at every iteration of the `sort` function, and removes the
 need to use the `<small>` element content for sorting, as it's not
 always valid.
 
+I also replaced `li.querySelector('small')` by `li.lastElementChild` to
+support posts that include a `<small>` element in the title.
+
 Here's the full code:
 
 ```js
@@ -326,7 +330,7 @@ const lis = await Promise.all(items.map(async item => {
   if (a) {
     const li = a.parentNode
     a.href = url
-    const small = li.querySelector('small')
+    const small = li.lastElementChild
     li.customSortValue = small ? Date.parse(small.textContent) : 0
     return li
   }

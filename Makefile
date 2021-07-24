@@ -65,6 +65,7 @@ dist/css/main-20210719.css: \
 	css/components/header.css \
 	css/components/hero.css \
 	css/components/nav.css \
+	css/components/note.css \
 	css/components/oversized.css \
 	css/pages/index.css \
 	css/pages/post.css

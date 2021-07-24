@@ -130,10 +130,14 @@ I followed [the guide][guide], so as instructed for my specific system, I:
   me to dump the DSDT from my firmware first ([using F4 inside Clover](https://dortania.github.io/Getting-Started-With-ACPI/Manual/dump.html#from-clover)),
   and added as well a prebuilt version of [SSDT-USBX](https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml).
 
-Note that I would also have needed to add [USBInjectAll](https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/),
+<div class="note">
+
+**Note:** I would also have needed to add [USBInjectAll](https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/),
 but I didn't at that point because the guide said it shouldn't be needed
 for desktop Skylake and newer. It turned out I needed it at least until
 I build the USB map for my machine.
+
+</div>
 
 Then I configured my `config.plist` from `Sample.plist` using the
 desktop [Skylake][skylake] guide and ProperTree downloaded earlier,
@@ -160,8 +164,11 @@ which means I:
   a `iMac17,1` SMBIOS and configured the matching parameters in
   `PlatformInfo/Generic`.
 
-Note that I later had to change `SecureBootModel` to `Disabled`, more on
-that below.
+<div class="note">
+
+**Note:** I later had to change `SecureBootModel` to `Disabled`, [more on that below](#booting-on-macos-installer-just-reboots-into-recovery).
+
+</div>
 
 I also made sure that my BIOS settings matched the recommended ones in
 the guide, which they already did.

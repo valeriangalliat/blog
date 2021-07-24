@@ -102,8 +102,12 @@ through in mitmproxy.
   <img alt="mitmproxy screenshot" src="../../img/2021/07/mitmproxy.png">
 </figure>
 
+<div class="note">
+
 **Note:** I usually delete the certificate after I'm done inspecting
 requests, just to be safe.
+
+</div>
 
 ## Identifying the friend activity endpoint
 

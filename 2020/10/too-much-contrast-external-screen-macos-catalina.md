@@ -57,10 +57,14 @@ recovery mode to be able to do it from there, but as far as I'm
 concerned, a simple `mount -uw /` as `root` allowed me to put the file
 there.
 
+<div class="note">
+
 **Note:** when [migrating to Big Sur](../11/upgrading-hackintosh-catalina-big-sur-clover-opencore.md),
 even the `mount -uw /` trick doesn't work, but I realized that you can
 just `mkdir -p /Library/Displays/Contents/Resources/Overrides` and put
 the `DisplayVendirID-` directory there, and it works as well!
+
+</div>
 
 Then reboot the computer.
 

@@ -1,0 +1,18 @@
+.note {
+    margin: 2rem 0;
+    background: var(--blue-0);
+    border-top: .25rem solid var(--blue-5);
+    padding: 1em;
+}
+
+.note :first-child {
+    margin-top: 0;
+}
+
+.note :last-child {
+    margin-bottom: 0;
+}
+
+.note > * {
+    --vertical-margin: 1rem;
+}

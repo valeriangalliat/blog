@@ -1,7 +1,11 @@
 # Installing NixOS on a Kimsufi
 December 24, 2015
 
+<div class="note">
+
 **Sidenote:** yes, I'm absolutely doing this on a December 24.
+
+</div>
 
 ## Introduction
 

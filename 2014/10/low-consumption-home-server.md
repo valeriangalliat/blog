@@ -19,10 +19,14 @@ electricity bill fairly low.
 This blog post will explain how I choose it, and why I'm pretty
 satisfied with it.
 
+<div class="note">
+
 **Note:** I'm relying on
 [cpubenchmark.net](http://www.cpubenchmark.net/) to compare the CPUs
 performance. By relating to my "gaming" PC CPU score, *and with a lot of
 intuition*, I was expecting a score higher than 800 to fit my needs.
+
+</div>
 
 ## Barebone PCs
 

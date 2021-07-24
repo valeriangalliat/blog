@@ -39,10 +39,14 @@ outside than having a slow workflow dealing with post stabilization.
 Also takes about 4 times less space which is convenient, and most
 importantly, uses **a lot less battery**.
 
-Note that stabilization crops the footage by 10%, but I'm fine with that
+<div class="note">
+
+**Note:** stabilization crops the footage by 10%, but I'm fine with that
 as the GoPro is already pretty damn wide by default, but if for some
 reason I were to want those 10% back and don't need stabilization (or
 not that much), I would turn off built-in stabilization.
+
+</div>
 
 In some cases I will shoot 2.7K or 4K, like if I shoot a bit wider than
 I need and plan to crop in post, so that I can keep a decent image

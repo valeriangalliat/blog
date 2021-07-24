@@ -27,9 +27,13 @@ there's an upper platform for the screen and such gives me *so much
 room* that I can put both the synth and the computer keyboard in front
 of me on the main surface.
 
-Note that I have some felt pads under my synth which makes it just high
+<div class="note">
+
+**Note:** I have some felt pads under my synth which makes it just high
 enough for my keyboard wire to go under it, leaving me with a super neat
 and clean setup.
+
+</div>
 
 The upper platform is pretty big as well, I can easily fit my 23" screen
 as well as 2 studio monitors. I was worried it would be a bit cramped there but it's not! And it's

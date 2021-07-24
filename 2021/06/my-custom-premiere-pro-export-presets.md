@@ -187,11 +187,15 @@ we provide a compressed-enough video, so if recoding is going to happen
 either way, I'd rather provide a top quality input to get the best
 result.
 
+<div class="note">
+
 **Sidenote:** inspecting the Instagram recoded video also shows that
 they resize the video to a width of 720 pixels, preserving the aspect
 ratio and frame rate. So even though they allow a maximum width of 1080
 pixels, they seem to conform videos to a width of 720 pixels on their
 side.
+
+</div>
 
 ### A note about distribution
 

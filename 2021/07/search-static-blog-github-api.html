@@ -295,7 +295,8 @@ form.querySelector(<span class="hljs-string">&#x27;.posts&#x27;</span>).appendCh
 JS combined, including helpers. And this is awesome.</p>
 <p>In reality, I want to search not only blog posts, but also pages. Pages
 don’t have a date for me to sort with, and are not listed in
-<code>posts.html</code> so I can’t find their title instantly.</p>
+<code>posts.html</code> so I can’t find their title instantly. Also <a href="../../2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">some of my titles</a>
+include a <code>&lt;small&gt;</code> element, so it’s something to take into account.</p>
 <p>In <a href="https://github.com/valeriangalliat/blog/blob/01ded0c8defe399526032030bf17b912be6b6319/js/main.js#L163">the real code</a>, I have to do a couple more things for
 this to work.</p>
 <ol>
@@ -313,6 +314,8 @@ the sorting function. Not exactly clean, but so convenient.</p>
 running it at every iteration of the <code>sort</code> function, and removes the
 need to use the <code>&lt;small&gt;</code> element content for sorting, as it’s not
 always valid.</p>
+<p>I also replaced <code>li.querySelector('small')</code> by <code>li.lastElementChild</code> to
+support posts that include a <code>&lt;small&gt;</code> element in the title.</p>
 <p>Here’s the full code:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> lis = <span class="hljs-keyword">await</span> <span class="hljs-built_in">Promise</span>.all(items.map(<span class="hljs-keyword">async</span> item =&gt; {
   <span class="hljs-keyword">const</span> relativeUrl = item.path.replace(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
@@ -322,7 +325,7 @@ always valid.</p>
   <span class="hljs-keyword">if</span> (a) {
     <span class="hljs-keyword">const</span> li = a.parentNode
     a.href = url
-    <span class="hljs-keyword">const</span> small = li.querySelector(<span class="hljs-string">&#x27;small&#x27;</span>)
+    <span class="hljs-keyword">const</span> small = li.lastElementChild
     li.customSortValue = small ? <span class="hljs-built_in">Date</span>.parse(small.textContent) : <span class="hljs-number">0</span>
     <span class="hljs-keyword">return</span> li
   }

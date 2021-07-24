@@ -193,7 +193,7 @@ async function searchBlog (form) {
     if (a) {
       const li = a.parentNode
       a.href = url
-      const small = li.querySelector('small')
+      const small = li.lastElementChild
       li.customSortValue = small ? Date.parse(small.textContent) : 0
       return li
     }

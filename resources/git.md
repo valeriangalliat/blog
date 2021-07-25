@@ -20,9 +20,9 @@ understand it and learn to use it properly.
 
 ## Tips & tricks
 
-* [Part 1](http://hugogiraudel.com/2014/03/10/git-tips-and-tricks-part-1/)
-* [Part 2](http://hugogiraudel.com/2014/03/17/git-tips-and-tricks-part-2/)
-* [Part 3](http://hugogiraudel.com/2014/03/24/git-tips-and-tricks-part-3/)
+* [Part 1](https://kittygiraudel.com/2014/03/10/git-tips-and-tricks-part-1/)
+* [Part 2](https://kittygiraudel.com/2014/03/17/git-tips-and-tricks-part-2/)
+* [Part 3](https://kittygiraudel.com/2014/03/24/git-tips-and-tricks-part-3/)
 * [Git tips from the trenches](https://ochronus.com/git-tips-from-the-trenches/)
 
 ## Deepening
@@ -32,7 +32,7 @@ understand it and learn to use it properly.
 * [A hacker's guide to Git](http://wildlyinaccurate.com/a-hackers-guide-to-git)
 * [Git from the inside out](https://codewords.recurse.com/issues/two/git-from-the-inside-out)
 * [Git from the bottom up](http://jwiegley.github.io/git-from-the-bottom-up/)
-* [Cheat sheet about Git states](http://codepen.io/HugoGiraudel/full/d7a439ac945a29dcad9f02d831b731e6/)
+* [Cheat sheet about Git states](http://codepen.io/KittyGiraudel/full/d7a439ac945a29dcad9f02d831b731e6/)
 
 ### Reimplementing Git
 
@@ -46,9 +46,9 @@ understand it and learn to use it properly.
 * [Comparing workflows](http://www.atlassian.com/git/tutorials/comparing-workflows/)
 * [Using git-flow to automate your git branching workflow](http://jeffkreeftmeijer.com/2010/why-arent-you-using-git-flow/)
 
-## The Hugo way
+## The Kitty way
 
-* [How I use Git](https://hugogiraudel.com/2018/02/17/how-i-use-git/)
+* [How I use Git](https://kittygiraudel.com/2018/02/17/how-i-use-git/)
 
 ## Other interesting stuff
 

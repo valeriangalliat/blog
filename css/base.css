@@ -45,7 +45,8 @@ h1.has-subtitle small {
     display: inline-block;
 }
 
-blockquote > * {
+blockquote > *,
+details > * {
     --vertical-margin: 1rem;
 }
 

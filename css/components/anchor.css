@@ -1,11 +1,11 @@
 .header-anchor {
-    color: var(--gray-8);
+    color: var(--black);
     margin-left: -1.5ch;
     padding-left: 1.5ch;
 }
 
 .header-anchor:visited {
-    color: var(--gray-8);
+    color: var(--black);
 }
 
 .header-anchor:hover {

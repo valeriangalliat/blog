@@ -1,6 +1,7 @@
 html {
     font: 1.25em/1.5 "Times New Roman", serif;
-    color: var(--gray-8);
+    background: var(--white);
+    color: var(--black);
 }
 
 .content {
@@ -149,6 +150,8 @@ img, video {
 }
 
 button, input, optgroup, select, textarea {
+    background: transparent;
+    color: var(--black);
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     line-height: normal;

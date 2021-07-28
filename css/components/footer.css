@@ -28,6 +28,6 @@ footer a, footer a:visited {
 }
 
 footer a:hover {
-    color: var(--gray-8);
+    color: var(--black);
     text-decoration: none;
 }

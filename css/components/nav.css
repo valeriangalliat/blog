@@ -51,6 +51,10 @@ nav a:hover {
 }
 
 nav .social svg {
+    vertical-align: middle;
+}
+
+nav .social svg {
     --color-fill: var(--gray-6);
 }
 

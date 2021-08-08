@@ -1,3 +1,7 @@
+---
+hero: https://photography.codejam.info/photos/hd/P2650099.jpg
+---
+
 # A journey to scripting Firefox Sync / Lockwise: figuring the protocol
 August 8, 2021
 

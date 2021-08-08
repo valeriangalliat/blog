@@ -1,3 +1,7 @@
+---
+hero: https://photography.codejam.info/photos/hd/P2650056.jpg
+---
+
 # A journey to scripting Firefox Sync / Lockwise: hybrid OAuth
 Impersonating the Android app to replace deprecated BrowserID with OAuth  
 August 8, 2021

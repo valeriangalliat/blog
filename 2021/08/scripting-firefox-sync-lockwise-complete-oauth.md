@@ -1,3 +1,7 @@
+---
+hero: https://photography.codejam.info/photos/hd/P2650060.jpg
+---
+
 # A journey to scripting Firefox Sync / Lockwise: complete OAuth
 August 8, 2021
 

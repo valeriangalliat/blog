@@ -25,3 +25,7 @@
 .post .hero .date {
     color: var(--gray-2);
 }
+
+.hero code {
+    background: none;
+}

@@ -1,3 +1,7 @@
+---
+hero: https://photography.codejam.info/photos/hd/P2650052.jpg
+---
+
 # A journey to scripting Firefox Sync / Lockwise: understanding BrowserID
 Migrating from unmaintained browserid-crypto (`jwcrypto`) to a generic implementation  
 August 8, 2021

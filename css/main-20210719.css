@@ -84,7 +84,8 @@
 }
 html {
     font: 1.25em/1.5 "Times New Roman", serif;
-    color: var(--gray-8);
+    background: var(--white);
+    color: var(--black);
 }
 
 .content {
@@ -129,7 +130,9 @@ h1.has-subtitle small {
     display: inline-block;
 }
 
-blockquote > * {
+blockquote > *,
+details,
+dd > * {
     --vertical-margin: 1rem;
 }
 
@@ -232,6 +235,8 @@ img, video {
 }
 
 button, input, optgroup, select, textarea {
+    background: transparent;
+    color: var(--black);
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     line-height: normal;
@@ -264,14 +269,32 @@ button:hover {
     background: var(--blue-6);
     cursor: pointer;
 }
+
+.float-wrapper::after {
+    display: table;
+    clear: both;
+    content: "";
+}
+
+.float-inner {
+    overflow: hidden;
+}
+
+.float-inner > :first-child {
+    margin-top: 0;
+}
+
+.float-inner > :last-child {
+    margin-bottom: 0;
+}
 .header-anchor {
-    color: var(--gray-8);
+    color: var(--black);
     margin-left: -1.5ch;
     padding-left: 1.5ch;
 }
 
 .header-anchor:visited {
-    color: var(--gray-8);
+    color: var(--black);
 }
 
 .header-anchor:hover {
@@ -416,7 +439,7 @@ footer a, footer a:visited {
 }
 
 footer a:hover {
-    color: var(--gray-8);
+    color: var(--black);
     text-decoration: none;
 }
 .footnotes-sep {
@@ -504,8 +527,12 @@ nav a, nav a:visited {
 }
 
 nav a:hover {
-    color: var(--gray-8);
+    color: var(--black);
     text-decoration: none;
+}
+
+nav .social svg {
+    vertical-align: middle;
 }
 
 nav .social svg {
@@ -513,7 +540,7 @@ nav .social svg {
 }
 
 nav .social a:hover svg {
-    --color-fill: var(--gray-8);
+    --color-fill: var(--black);
 }
 .note {
     margin: 2rem 0;
@@ -522,11 +549,11 @@ nav .social a:hover svg {
     padding: 1em;
 }
 
-.note :first-child {
+.note > :first-child {
     margin-top: 0;
 }
 
-.note :last-child {
+.note > :last-child {
     margin-bottom: 0;
 }
 

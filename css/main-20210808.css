@@ -479,6 +479,10 @@ header .content {
 .post .hero .date {
     color: var(--gray-2);
 }
+
+.hero code {
+    background: none;
+}
 nav {
     display: flex;
     justify-content: space-between;

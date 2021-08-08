@@ -102,8 +102,9 @@ to type anything on the actual device.</p>
 afford showing a fairly long URL in my CLI output for the user to
 open in their browser, so that’s what we’re going to look at today.</p>
 <h2 id="application-authentication-flow" tabindex="-1"><a class="header-anchor" href="#application-authentication-flow">Application authentication flow</a></h2>
-<p>Everything is documented <a href="https://developers.google.com/youtube/v3/live/guides/auth/installed-apps">here</a> but I’ll quickly go over the basics in
-this article, with some JavaScript examples on Node.js.</p>
+<p>Everything is documented <a href="https://developers.google.com/identity/protocols/oauth2/native-app">here</a> (lookup “manual copy/paste”) but I’ll
+quickly go over the basics in this article, with some JavaScript
+examples on Node.js.</p>
 <p>First, <a href="https://console.cloud.google.com/apis/credentials">in Google Cloud Platform</a>,
 you need to create a Oauth client ID of type <kbd>Desktop</kbd>. This
 will give you a client ID and client secret that you can configure
@@ -120,7 +121,7 @@ in your app.</p>
 would normally redirect to when the authentication is complete.</p>
 <p>As I mentioned earlier, we don’t want to deal with a web server, which
 is why we use the string <code>urn:ietf:wg:oauth:2.0:oob</code> instead (look it up
-in <a href="https://developers.google.com/youtube/v3/live/guides/auth/installed-apps">the documentation</a> for more details). This tells Google to
+in <a href="https://developers.google.com/identity/protocols/oauth2/native-app">the documentation</a> for more details). This tells Google to
 show a code to the user instead of redirecting, which they can then
 paste into your app to complete the process.</p>
 <p>Here’s an example.</p>

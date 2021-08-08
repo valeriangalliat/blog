@@ -453,6 +453,7 @@ header .content {
     margin-top: 5em;
 }
 .hero {
+    position: relative;
     background-size: cover;
     background-position: center;
 }
@@ -482,6 +483,30 @@ header .content {
 
 .hero code {
     background: none;
+}
+
+.hero:hover .hero-credit {
+    opacity: 1;
+}
+
+.hero-credit {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+    position: absolute;
+    right: 1em;
+    bottom: .5em;
+    opacity: 0;
+    transition: opacity 100ms;
+}
+
+.hero-credit,
+.hero-credit:visited {
+    color: var(--gray-2);
+}
+
+.hero-credit:hover {
+    color: var(--white);
+    text-decoration: none;
 }
 nav {
     display: flex;

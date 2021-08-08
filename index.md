@@ -11,6 +11,12 @@ where I create content.
 
 <div class="links posts">
 
+* [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
+* [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
+* [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>
+* [A journey to scripting Firefox Sync / Lockwise: figuring the protocol](2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.md) <small>August 8, 2021</small>
+* [A journey to scripting Firefox Sync / Lockwise: existing clients](2021/08/scripting-firefox-sync-lockwise-existing-clients.md) <small>August 8, 2021</small>
+* [Why I switched to Firefox Lockwise as my password manager](2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.md) <small>August 8, 2021</small>
 * [Intercept a macOS app traffic using mitmproxy](2021/07/intercept-macos-app-traffic-mitmproxy.md) <small>July 20, 2021</small>
 * [Adding search capability to a static blog using the GitHub API](2021/07/search-static-blog-github-api.md) <small>July 20, 2021</small>
 * [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 15, 2021</small>
@@ -20,12 +26,6 @@ where I create content.
 * [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
 * [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 28, 2021</small>
 * [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>
-* [Bundle Lambda function with private dependencies using CDK](2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.md) <small>April 12, 2021</small>
-* [Getting the highest video quality on YouTube](2021/03/getting-the-highest-video-quality-on-youtube.md) <small>March 26, 2021</small>
-* [Why I shoot 24 FPS video](2021/03/why-i-shoot-24-fps-video.md) <small>March 6, 2021</small>
-* [Control MIDI instruments with keyboard knobs in Logic Pro](2021/02/control-midi-instruments-keyboard-knobs-logic-pro.md) <small>February 28, 2021</small>
-* [CloudFront and S3: `SignatureDoesNotMatch`, the request signature we calculated does not match the signature you provided](2021/02/cloudfront-s3-signature-does-not-match.md) <small>February 26, 2021</small>
-* [The Lambda function returned invalid JSON: the JSON output is not parsable](2021/02/lambda-json-output-not-parsable.md) <small>February 26, 2021</small>
 
 [More posts](posts.md)
 

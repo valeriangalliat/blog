@@ -42,7 +42,7 @@ During this year of administration of my little server, I experimented
 with FreeBSD jails, setting up, hosting and maintaining a web, mail,
 IRC, XMPP server, among others.
 
-While I did not experience with real word charge and scaling, it tought
+While I did not experience with real-world charge and scaling, it taught
 me one or two things about system administration.
 
 [home-server]: ../../2014/10/low-consumption-home-server.md

@@ -32,10 +32,11 @@ open in their browser, so that's what we're going to look at today.
 
 ## Application authentication flow
 
-Everything is documented [here] but I'll quickly go over the basics in
-  this article, with some JavaScript examples on Node.js.
+Everything is documented [here][native-app] (lookup "manual copy/paste") but I'll
+quickly go over the basics in this article, with some JavaScript
+examples on Node.js.
 
-[here]: https://developers.google.com/youtube/v3/live/guides/auth/installed-apps
+[native-app]: https://developers.google.com/identity/protocols/oauth2/native-app
 
 First, [in Google Cloud Platform](https://console.cloud.google.com/apis/credentials), 
 you need to create a Oauth client ID of type <kbd>Desktop</kbd>. This
@@ -60,7 +61,7 @@ would normally redirect to when the authentication is complete.
 
 As I mentioned earlier, we don't want to deal with a web server, which
 is why we use the string `urn:ietf:wg:oauth:2.0:oob` instead (look it up
-in [the documentation][here] for more details). This tells Google to
+in [the documentation][native-app] for more details). This tells Google to
 show a code to the user instead of redirecting, which they can then
 paste into your app to complete the process.
 

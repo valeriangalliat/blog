@@ -1,0 +1,255 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>A journey to scripting Firefox Sync / Lockwise: existing clients</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210719.css">
+  <link rel="icon" href="data:,">
+  <meta property="og:title" content="A journey to scripting Firefox Sync / Lockwise: existing clients">
+  <meta property="og:description" content="This article is part of a series about scripting Firefox Sync / Lockwise.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>A journey to scripting Firefox Sync / Lockwise: existing clients</h1>
+<p class="date">August 8, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<p>This article is part of a series about scripting Firefox Sync / Lockwise.</p>
+<ol>
+<li>A journey to scripting Firefox Sync / Lockwise: existing clients</li>
+<li><a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
+<li><a href="scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
+<li><a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
+<li><a href="scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
+</ol>
+</div>
+<p>Recently, I switched to <a href="https://lockwise.firefox.com/">Firefox Lockwise</a>
+as my password manager, for a <a href="why-i-switched-to-firefox-lockwise-as-my-password-manager.html">number of reasons which I detailed here</a>.</p>
+<p>There is currently no CLI for Lockwise, and while it’s not a critical
+thing for me, I like to have the option to use my password manager from
+the CLI, and to interact with it programmatically. So I figured it would
+be a good exercise to build it myself.</p>
+<p>I spent way more time digging in the Firefox Accounts and Firefox Sync
+protocols than I’m willing to admit, and now I finally managed to
+programmatically connect to my Firefox Account and interact with Firefox
+Sync, I’m going to share that journey in a series of blog posts. Fasten
+your seatbelts!</p>
+<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="#fair-warning">Fair warning</a></h2>
+<p>You might not be interested in the whole story, especially in two
+following posts, where I explain how I started by implemented the legacy
+BrowserID authentication mechanism (because it’s what’s documented and
+used nearly everywhere), before <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">figuring that there is also support for OAuth</a>
+which seems to be the most modern, recommended way to interact with the
+API, and turned out to be much simpler to implement (<a href="scripting-firefox-sync-lockwise-complete-oauth.html">until it wasn’t</a>).</p>
+<p>While the two implementations share a lot of code, if you just want to
+know what’s the best way to interact with Firefox Sync in 2021, go
+straight to <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">hybrid OAuth</a>,
+which still requires prompting the user’s email/password to open a
+Firefox Accounts session first (concretely means that users have to
+trust you more), or to <a href="scripting-firefox-sync-lockwise-complete-oauth.html">complete OAuth</a>
+which, while it requires contacting Mozilla to obtain your own OAuth
+credentials, frees you from the responsibility of handling the user’s
+password and primary encryption key.</p>
+<p>In both cases, the part to call the Firefox Sync API once the
+authentication is performed remains the same and is explained
+<a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">in the second post</a>.</p>
+<p>That being said, if you want the whole story, let’s get started!</p>
+<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="#our-good-old-friend-stack-overflow">Our good old friend Stack Overflow</a></h2>
+<p>I started looking for an API, and possibly existing API clients, and I
+quickly figured Lockwise was built on top of Firefox Sync’s <code>passwords</code>
+collection.</p>
+<p>Looking up “Firefox Sync API” lead me to <a href="https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist">this post from 2016 on Stack Overflow</a>,
+where the top answer, which is also the only answer, points to the <a href="https://mozilla-services.readthedocs.io/en/latest/sync/index.html">Sync client documentation</a>
+and mentions an existing <a href="https://github.com/mozilla-services/syncclient">Python client</a>.</p>
+<p>While there’s a lot of documentation on the first link, it seems to
+only explain the protocol specification, but it’s unclear where to start
+as there’s no mention of an URL to query the API and how to authenticate
+to it.</p>
+<p>Looking at the client should give us a more concrete understanding.</p>
+<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="#official-python-client">Official Python client</a></h2>
+<p>The first thing I notice is that the repository hasn’t been updated
+since 2016 and is now archived, which means it’s probably not
+up-to-date, definitely not actively maintained, and it’s even
+<a href="https://github.com/mozilla-services/syncclient/blob/efe0d49a8bd00d341b6e926f6783325b3fe7b676/syncclient/client.py#L11">documented as a proof of concept</a>.</p>
+<p>I try to use it but <code>pip install -r requirements.txt</code> fails with some
+weird error. Since I also noticed there was a <a href="#unofficial-node-js-client">Node.js client</a>, I
+I left it at that.</p>
+<p>I later came back to it while writing this post, and it turns out after
+fixing some <code>requirements.txt</code> versions issues, it does run
+successfully! But it doesn’t implement the collection decryption part so
+it would only have solved part of my problem.</p>
+<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="#unofficial-node-js-client">Unofficial Node.js client</a></h2>
+<p>There is also a <a href="https://github.com/zaach/node-fx-sync">Node.js client</a>,
+last updated in 2014.</p>
+<p>Out of the box, I cannot install it with <code>npm install fx-sync</code>, it fails
+with the <code>jwcrypto</code> dependency post-install script. <a href="https://www.npmjs.com/package/jwcrypto">On npm</a>
+this package is marked as deprecated, with a recommendation of using <a href="https://www.npmjs.com/package/browserid-crypto">browserid-crypto</a>
+instead (which seems to be API-compatible), so after a quick <code>sed -i 's/jwcrypto/browserid-crypto/g'</code>,
+I try again.</p>
+<p>Sadly I get the same error, and realize that the post-install script was
+broken because of a small issue that had to do with minifying the JS
+output. I made a <a href="https://github.com/mozilla/browserid-crypto/pull/122">quick fix</a>
+for it, which finally allowed the <code>fx-sync</code> package to install.</p>
+<p>But the excitement dropped quickly as I get the following error during
+the login step:</p>
+<pre><code class="hljs language-js">{
+  <span class="hljs-string">&quot;code&quot;</span>: <span class="hljs-number">400</span>,
+  <span class="hljs-string">&quot;errno&quot;</span>: <span class="hljs-number">125</span>,
+  <span class="hljs-string">&quot;error&quot;</span>: <span class="hljs-string">&quot;Request blocked&quot;</span>,
+  <span class="hljs-string">&quot;message&quot;</span>: <span class="hljs-string">&quot;The request was blocked for security reasons&quot;</span>,
+  <span class="hljs-string">&quot;info&quot;</span>: <span class="hljs-string">&quot;https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md#response-format&quot;</span>,
+  <span class="hljs-string">&quot;verificationMethod&quot;</span>: <span class="hljs-string">&quot;email-captcha&quot;</span>,
+  <span class="hljs-string">&quot;verificationReason&quot;</span>: <span class="hljs-string">&quot;login&quot;</span>
+}
+</code></pre>
+<p>The login request is blocked for security reasons, and it’s unclear what
+to do to fix it. While investigating, I find <a href="https://github.com/mozilla/fxa/issues/5794">this GitHub issue</a>
+with the same error. While there is no solution in that issue, the OP
+mentions an “unblock code” which sounds interesting to me, so I figured
+I’ll try it myself.</p>
+<p><a href="https://github.com/zaach/node-fx-sync">node-fx-sync</a> uses
+<a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a> to interact
+with Firefox Accounts, and looking at the package API, it contains a
+method to send an unblock code, and a way to forward it to the <code>signIn</code>
+method, so I integrate this flow to allow continuing the process using
+the code sent to the account email.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
+
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(<span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>)
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">login</span> (<span class="hljs-params">email, pass</span>) </span>{
+  <span class="hljs-keyword">const</span> params = {
+    <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>
+  }
+
+  <span class="hljs-keyword">try</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> client.signIn(email, pass, params)
+  } <span class="hljs-keyword">catch</span> (err) {
+    <span class="hljs-keyword">if</span> (err.code === <span class="hljs-number">400</span> &amp;&amp; err.errno === <span class="hljs-number">125</span>) {
+      <span class="hljs-keyword">await</span> client.sendUnblockCode(email)
+      params.unblockCode = <span class="hljs-keyword">await</span> promptUserForCode()
+      <span class="hljs-keyword">return</span> client.signIn(email, pass, params)
+    }
+
+    <span class="hljs-keyword">throw</span> err
+  }
+}
+</code></pre>
+<p>At that point, I hadn’t run the <a href="#official-python-client">Python client</a>
+yet, but when I did so later, I realized that it <em>just worked</em>, without the
+need for an unblock code. How was that possible? I looked at the source
+and figured the only difference was that <a href="https://github.com/mozilla/PyFxA">PyFxA</a>,
+the Python client for Firefox Accounts, <a href="https://github.com/mozilla/PyFxA/blob/6c3f803b3c27c665f417b0c5bd3ca79add8e2027/fxa/core.py#L78">sent <code>reason=login</code></a>
+as part of the login parameters by default, which made the
+authentication successful without external verification. Sweet!</p>
+<pre><code class="hljs language-js">client.signIn(email, pass, {
+  <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
+})
+</code></pre>
+<p>After this patch, I got <code>fx-sync</code> to work without the need for an
+unblock code, and it was successfully able to access my Firefox Sync
+collections and decrypt them.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> FxSync = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fx-sync&#x27;</span>)
+
+<span class="hljs-keyword">const</span> sync = <span class="hljs-keyword">new</span> FxSync({
+  <span class="hljs-attr">email</span>: <span class="hljs-string">&#x27;...&#x27;</span>,
+  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;...&#x27;</span>
+})
+
+<span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> sync.fetch(<span class="hljs-string">&#x27;passwords&#x27;</span>)
+
+<span class="hljs-built_in">console</span>.log(passwords)
+</code></pre>
+<p>This is a great start, but there’s something with using a package that
+hasn’t been updated since 2014 that just doesn’t feel right to me.</p>
+<p>Also, this client only allows <em>read</em> access, but I would also like to be
+able to add new objects, or update and delete existing ones. While I
+could just implement this feature in the existing code, this feels like
+a great opportunity to understand better how the protocol works by
+making our own client. Let’s dig into it!</p>
+<div class="note">
+<p>Check out the other posts in this series!</p>
+<ol>
+<li>A journey to scripting Firefox Sync / Lockwise: existing clients</li>
+<li><a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
+<li><a href="scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
+<li><a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
+<li><a href="scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
+</ol>
+</div>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/08/scripting-firefox-sync-lockwise-existing-clients.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

@@ -1,0 +1,1408 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>A journey to scripting Firefox Sync / Lockwise: complete OAuth</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210719.css">
+  <link rel="icon" href="data:,">
+  <meta property="og:title" content="A journey to scripting Firefox Sync / Lockwise: complete OAuth">
+  <meta property="og:description" content="This article is part of a series about scripting Firefox Sync / Lockwise.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>A journey to scripting Firefox Sync / Lockwise: complete OAuth</h1>
+<p class="date">August 8, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<p>This article is part of a series about scripting Firefox Sync / Lockwise.</p>
+<ol>
+<li><a href="scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
+<li><a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
+<li><a href="scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
+<li><a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
+<li>A journey to scripting Firefox Sync / Lockwise: complete OAuth</li>
+</ol>
+</div>
+<p>OK, this grew a bit out of hand. It all started a month ago when I just
+wanted to programmatically access my Firefox Lockwise passwords. This
+brought me on a long journey where I got to play with <a href="scripting-firefox-sync-lockwise-existing-clients.html">legacy clients from 8 years ago</a>,
+<a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html">the Firefox Accounts and Firefox Sync APIs</a>,
+<a href="scripting-firefox-sync-lockwise-understanding-browserid.html">the low level details of the BrowserID protocol</a>
+and finally <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">its modern counterpart OAuth</a>.</p>
+<p>But as I explained <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#going-further">at the end of the last article</a>,
+this approach still had room for improvement as we weren’t using the
+full benefits of OAuth. In particular, we still needed access to the
+<em>plaintext user password</em> in order to authenticate to Firefox Accounts,
+which results in <em>a “god mode” session token</em> that gives <em>full,
+unrestricted access</em> to the user account, including fetching their
+<em>primary key material</em> which is a requirement in order to decrypt the
+Firefox Sync collections.</p>
+<p>This is unideal and we can do better. The good thing is that even though
+it wasn’t exactly easy to figure out, it’s possible.</p>
+<h2 id="logging-in-with-oauth" tabindex="-1"><a class="header-anchor" href="#logging-in-with-oauth">Logging in with OAuth</a></h2>
+<p>The first thing we’ll need to change is logging in with OAuth instead of
+email/password.</p>
+<p>The <a href="https://github.com/mozilla/fxa-crypto-relier/tree/master/docs">fxa-crypto-relier</a>
+package is of great help for understanding how it works, but it seems to
+be designed solely with browser extensions in mind, and is not directly
+usable for us on the CLI. Otherwise, the <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">integration with Firefox Accounts</a>
+page seems to be the main documentation about implementing OAuth.</p>
+<p>It notably mentions that the <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#preparing-for-production">OAuth endpoints</a>
+can be <a href="https://accounts.firefox.com/.well-known/openid-configuration">dynamically discovered</a>
+through the standard <a href="https://openid.net/connect/">OpenID Connect protocol</a>,
+meaning that our OAuth authorization endpoint will concretely be
+<code>https://accounts.firefox.com/authorization</code>.</p>
+<p>The <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#user-authentication-with-oauth-20--openid-connect-in-a-nutshell">user authentication in a nutshell</a>
+part does a great job at explaining the Firefox Accounts OAuth flow:</p>
+<blockquote>
+<ol>
+<li>Create a state token (randomly generated and unguessable) and
+associate it with a local session.</li>
+<li>Send <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#authorization-query-parameters"><code>/authorization</code> request</a>
+to Firefox Accounts. Upon completion, Firefox Accounts redirects
+back to your app with state and code.</li>
+<li>Confirm the returned state token by comparing it with the state
+token associated with the local session.</li>
+<li>Exchange the code for an access token and possibly a refresh token.</li>
+<li>If you asked for <code>scope=profile</code> you can fetch user profile
+information, using the access token, from the FxA profile server.</li>
+<li>Associate the profile information with the local session and create
+an account in the local application database as needed.</li>
+</ol>
+</blockquote>
+<p>Sweet and simple. Since we don’t have our own OAuth credentials
+(<a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">mostly because I don’t like sending emails</a>),
+we’ll <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app">keep using the client ID from the Android app</a>.</p>
+<h3 id="generating-the-authorization-url" tabindex="-1"><a class="header-anchor" href="#generating-the-authorization-url">Generating the authorization URL</a></h3>
+<p>Let’s start by building the authorization URL. The parameters we need
+<a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#authorization-query-parameters">are listed here</a>.</p>
+<blockquote>
+<ol>
+<li><code>client_id</code> (required).</li>
+<li><code>scope</code> (required). This is a space separated string. Review the
+list of <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#scopes">scopes</a>.</li>
+<li><code>state</code> (required). This must be a randomly generated unguessable string.</li>
+<li><code>code_challenge</code> (required for PKCE). This is a hash of a randomly
+generated string.</li>
+<li><code>code_challenge_method</code> (required for PKCE) As of this writing only
+<code>S256</code> is supported.</li>
+<li><code>access_type</code> (suggested). This should be either <code>online</code> or <code>offline</code>.</li>
+</ol>
+</blockquote>
+<p>I omitted other parameters that are not relevant to us. Let’s look in
+more details at the ones we’ll use.</p>
+<dl>
+<dt><code>scope</code></dt>
+<dd>
+<p>We use the scope <code>https://identity.mozilla.com/apps/oldsync</code> because
+<a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/scopes.md#url-scopes">it is the one we need</a>
+to access Firefox Sync data.</p>
+<p>While <code>oldsync</code> here makes me feel like there must be something “new”
+somewhere, it seems to be the latest and greatest way to access the Sync
+data, so be it.</p>
+</dd>
+<dt><code>state</code></dt>
+<dd>
+<p>The <a href="https://auth0.com/docs/protocols/state-parameters">state parameter</a>
+is designed to mitigate CSRF attacks. We’ll mimic what
+fxa-crypto-relier does and create <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/OAuthUtils.js#L77">16 bytes worth of random data</a>
+and encode it <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/util.js#L32">as a Base64URL string</a>.
+They also trim that final string to 16 characters but it seems that
+this is mostly for code reuse purpose rather than out of actual
+necessity so we’ll leave that part alone.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+</code></pre>
+</dd>
+<dt><code>code_challenge</code> and <code>code_challenge_method</code></dt>
+<dd>
+<p>The code challenge is a standard <a href="https://auth0.com/docs/flows/authorization-code-flow-with-proof-key-for-code-exchange-pkce">PKCE</a>
+challenge, and the challenge method is <code>S256</code> (the only one
+supported). Those parameters are <strong>required for public clients</strong>.
+While it’s not mentioned on the previous page, it’s made clear on the
+<a href="https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-18">Firefox Accounts API documentation</a>:</p>
+<blockquote>
+<p>Required for public OAuth clients, who must authenticate their
+authorization code use via PKCE.</p>
+</blockquote>
+<p>Since the Android app we took the client ID from is a public client,
+we’ll pass those parameters.</p>
+<p>Note that even though the <code>code_challenge_method</code> is
+<a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#authorization-query-parameters">documented</a>
+with a lowercase <code>s</code>, it’s actually <a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/validators.js#L116">validated as uppercase</a>.
+I fixed it in the quote earlier to prevent unnecessary issues.</p>
+</dd>
+<dt><code>access_type</code></dt>
+<dd>
+<p>We set it to <code>offline</code> to get back a refresh token. This step is
+optional but keep it in mind if you want to be able to refresh the
+token without user interaction.</p>
+</dd>
+</dl>
+<p>This gives us the following piece of code:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> qs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;querystring&#x27;</span>)
+
+<span class="hljs-keyword">const</span> authorizationUrl = <span class="hljs-string">&#x27;https://accounts.firefox.com/authorization&#x27;</span>
+<span class="hljs-keyword">const</span> scope = <span class="hljs-string">&#x27;https://identity.mozilla.com/apps/oldsync&#x27;</span>
+<span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;...&#x27;</span>
+
+<span class="hljs-comment">// To prevent CSRF attacks.</span>
+<span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+
+<span class="hljs-comment">// Dead simple PKCE challenge implementation.</span>
+<span class="hljs-keyword">const</span> codeVerifier = crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<span class="hljs-keyword">const</span> codeChallenge = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(codeVerifier).digest(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+
+<span class="hljs-keyword">const</span> params = {
+  <span class="hljs-attr">client_id</span>: clientId,
+  scope,
+  state,
+  <span class="hljs-attr">code_challenge_method</span>: <span class="hljs-string">&#x27;S256&#x27;</span>,
+  <span class="hljs-attr">code_challenge</span>: codeChallenge,
+  <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>
+}
+
+<span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${authorizationUrl}</span>?<span class="hljs-subst">${qs.stringify(params)}</span>`</span>
+
+<span class="hljs-built_in">console</span>.log(url)
+</code></pre>
+<p>The code verifier is <a href="https://datatracker.ietf.org/doc/html/rfc7636#section-4.1">defined by PKCE</a>
+as a string of <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/OAuthUtils.js#L78">43 Base64URL charaters</a>,
+which is effectively 32 bytes of entropy, hence <code>crypto.randomBytes(32)</code>.</p>
+<blockquote>
+<p>It is <strong>recommended</strong> that the output of a suitable random number
+generator be used to create a 32-octet sequence. The octet sequence is
+then Base64URL encoded to produce a 43-octet URL safe string to use as
+the code verifier.</p>
+</blockquote>
+<p>The code challenge is also defined as a Base64URL encoded SHA-256 hash
+of the code verifier, giving us a working two lines client
+implementation of PKCE.</p>
+<div class="note">
+<p><strong>Note:</strong> I didn’t use a library like <a href="https://www.npmjs.com/package/pkce-challenge">pkce-challenge</a>
+here because of a weird validation quirk in the Firefox Accounts OAuth
+token endpoint that we’ll use later.</p>
+<p>While the <a href="https://datatracker.ietf.org/doc/html/rfc7636#section-4.1">PKCE spec</a>
+defines the alphabet of the code verifier as <code>ALPHA / DIGIT / &quot;-&quot; / &quot;.&quot; / &quot;_&quot; / &quot;~&quot;</code>,
+the OAuth endpoint <a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/oauth/validators.js#L29">limits it to a Base64URL alphabet</a>
+(ironically with a link to the RFC), leaving out the <code>.</code> and <code>~</code>
+characters, and resulting in validation issues when using the
+pkce-challenge library.</p>
+<p>That being said this quirk is only for the <a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/oauth/token.js#L353"><code>https://oauth.accounts.firefox.com/v1/token</code></a>
+endpoint as exposed by Mozilla through OpenID Connect, but the alternate
+endpoint <a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/oauth/token.js#L382"><code>https://api.accounts.firefox.com/v1/oauth/token</code></a>
+performs <a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/validators.js#L22">proper validation</a>
+and otherwise seems to behave in a consistent way, so it’s possible to
+use it instead.</p>
+<p>For now we just implement our Base64URL compatible PKCE challenge, since
+it’s also a good way to see how PKCE works for learning purpose.</p>
+</div>
+<p>By visiting the generated URL, the user will be prompted to sign in with
+their Firefox Account, and will be redirected to the configured OAuth
+redirect URL, with an authorization code in the query string.</p>
+<figure class="center">
+  <img alt="Sign in to Firefox Sync page" src="../../img/2021/08/sign-in-firefox-sync.png">
+</figure>
+<p>Since we didn’t register our own OAuth app, and we borrowed the Android
+client ID instead, we’re going to be redirected to the URL that’s
+configured for the Android app. This is fine for educational purpose but
+we’d need to register for proper OAuth credentials for this to be usable
+in production.</p>
+<p>As a good security practice to not leave the code in the URL, this page
+will itself redirect to another page without the code in the URL, so we
+can’t just extract it from there.</p>
+<p>In order to grab the code and go on with the OAuth flow, we’ll intercept
+the redirect in the developer tools network tab. Make sure to tick the
+persist/preserve logs option before logging in, otherwise the request
+including the code will be wiped during the redirect. To find it more
+easily, filter only HTML documents. The one we’re looking for starts
+with <code>https://lockbox.firefox.com/fxa/android-redirect.html?code=</code>.</p>
+<figure class="center">
+  <img alt="Network tab intercepting OAuth redirect" src="../../img/2021/08/network-tab.png">
+</figure>
+<p>In the headers section on the right we can copy the value of the <code>code</code>
+parameter, which we can feed to our script to continue the
+authentication. Brilliant.</p>
+<div class="note">
+<p><strong>Note:</strong> for a legitimate OAuth client where you control the redirect
+URL, don’t forget to validate that the <code>state</code> parameter matches the one
+you originally passed in the authorization URL!</p>
+</div>
+<h3 id="trading-the-oauth-code-for-an-access-token" tabindex="-1"><a class="header-anchor" href="#trading-the-oauth-code-for-an-access-token">Trading the OAuth code for an access token</a></h3>
+<p>The next step is to trade the code we get back from the OAuth flow for a
+proper token. Thanks to the <a href="https://accounts.firefox.com/.well-known/openid-configuration">OpenID Connect configuration</a>,
+we know that the token endpoint is <code>https://oauth.accounts.firefox.com/v1/token</code>.
+A quick search leads us to its <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/api.md#post-v1token">API documentation</a>.</p>
+<p>This is where we’ll send the code from the redirect URL, as well as the
+PKCE code verifier we created earlier. But first we need to prompt the
+user for the code. In a basic CLI, this would look something like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
+
+<span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: process.stdin, <span class="hljs-attr">output</span>: process.stdout })
+
+<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
+  .finally(<span class="hljs-function">() =&gt;</span> rl.close())
+</code></pre>
+<p>Then we can prepare the payload and send it to the token endpoint.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
+
+<span class="hljs-keyword">const</span> tokenEndpoint = <span class="hljs-string">&#x27;https://oauth.accounts.firefox.com/v1/token&#x27;</span>
+
+<span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> fetch(tokenEndpoint, {
+  <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+  <span class="hljs-attr">headers</span>: {
+    <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>
+  },
+  <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify({
+    <span class="hljs-attr">client_id</span>: clientId,
+    <span class="hljs-attr">grant_type</span>: <span class="hljs-string">&#x27;authorization_code&#x27;</span>,
+    <span class="hljs-attr">code_verifier</span>: codeVerifier,
+    code
+  })
+})
+  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+
+<span class="hljs-built_in">console</span>.log(oauthToken)
+</code></pre>
+<p>We get back an object that includes the OAuth access token, as well as a
+refresh token if we specified <code>access_type: 'offline'</code> earlier.</p>
+<p>This is great, but it doesn’t actually allows us to connect to Firefox
+Sync. Why? Because as we saw in the <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#unmasking-the-x-keyid-header">previous post</a>,
+and specifically in <a href="https://github.com/mozilla-services/tokenserver#using-oauth">the TokenServer documentation</a>,
+we need the <code>kid</code> field of some kind of encryption key that we
+definitely don’t have.</p>
+<blockquote>
+<p>To access the user’s Sync data using OAuth, the client must obtain an
+FxA OAuth <code>access_token</code> with scope <code>https://identity.mozilla.com/apps/oldsync</code>,
+and the corresponding encryption key as a JWK. They send the OAuth
+token in the <code>Authorization</code> header, and the <code>kid</code> field of the
+encryption key in the <code>X-KeyID</code> header.</p>
+</blockquote>
+<p>This is not helping me a lot, but definitely just the access token we
+managed to get is not enough. Previously, when we had the user’s
+password and a session token for their Firefox Account, we could easily
+compute the Sync key and hash it to <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#actually-computing-the-x-keyid-header">make the <code>X-KeyID</code> header</a>
+with the <code>keyRotationTimestamp</code>, but with our OAuth token, we can do
+none of that anymore.</p>
+<h2 id="getting-scoped-keys-the-theory" tabindex="-1"><a class="header-anchor" href="#getting-scoped-keys-the-theory">Getting scoped keys: the theory</a></h2>
+<p>By browsing the Firefox Ecosystem Platform, where I was already reading
+about <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">how to integrate with Firefox Accounts</a>,
+I find a page about <a href="https://mozilla.github.io/ecosystem-platform/docs/process/becoming-a-sync-client">becoming a Sync client</a>.</p>
+<p>Sadly, this page is not very useful at the moment.</p>
+<figure class="center">
+  <img alt="Becoming a Sync client ridiculous documentation" src="../../img/2021/08/becoming-a-sync-client.png">
+</figure>
+<p>When we first <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#unmasking-the-x-keyid-header">started playing with OAuth</a>,
+we encountered <a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1455219">a Bugzilla issue</a>
+for the TokenServer to accept OAuth tokens. This issue contains <a href="https://docs.google.com/document/d/1IvQJFEBFz0PnL4uVlIvt8fBS_IPwSK-avK0BRIHucxQ">a link
+to the OAuth flow spec on Google Docs</a>
+titled “Scoped encryption keys for Firefox Accounts”, and the first
+thing in there is a note that it now <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys">lives on the Firefox Ecosystem Platform</a>.</p>
+<p>It is nested in the “topic deep dives” category of the “for FxA
+engineers” group, which explains why I didn’t notice it before, and
+makes me feel like I’m probably not the target audience of this
+document. 😆</p>
+<div class="note">
+<p><strong>Note:</strong> this document is approximately 6000 words. That’s about as
+long as one blog post in this series. Is it as useful though?
+Definitely.</p>
+<p><a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys">Scoped encryption keys for Firefox Accounts</a>
+is a masterpiece on end-to-end encryption, explaining in details how
+they derive scoped keys for third-party apps to encrypt the user’s data,
+in a way that algorithmically requires the user’s password, but without
+exposing it to the app in question. All of that with support for
+changing the primary password, as well as rotating and revoking keys.</p>
+<p>While it’s very technical and requires some base cryptography knowledge,
+it’s a fantastic piece that I would definitely recommend reading carefully
+if you’re interested in this topic. Even if you’re new to cryptography,
+you might end up opening dozens if not hundreds of tabs to understand
+what’s going on, but it’ll sure be worth the journey.</p>
+</div>
+<p>In this document, we notably read that Mozilla implemented <em>an extension
+to OAuth</em> in order to securely share encryption keys with third-party
+apps.</p>
+<blockquote>
+<p>To achieve this, we propose an extension to the standard OAuth
+authorization flow by which relying applications can obtain encryption
+keys in a secure and controlled manner.</p>
+</blockquote>
+<p>They describe this in the <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#protocol-flow">protocol flow</a>
+section, which I’ll sum up here (fasten your seatbelts).</p>
+<ol>
+<li>Generate a <a href="https://neuromancer.sk/std/nist/P-256">P-256 elliptic curve</a>
+keypair (P-256 stands for “256-bit prime field Weierstrass curve”,
+and is also known as <code>secp256r1</code> and <code>prime256v1</code>) to be used for
+<a href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman"><abbr title="Elliptic curve Diffie–Hellman">ECDH</abbr></a>.</li>
+<li>Send the public key as a Base64URL encoded <a href="https://datatracker.ietf.org/doc/html/rfc7517"><abbr title="JSON Web Key">JWK</abbr></a>
+in the OAuth parameters under <code>keys_jwk</code>.</li>
+</ol>
+<p>This will make the token endpoint return not only the access and refresh
+tokens, but also a <code>keys_jwe</code> property. It’s formatted with
+<a href="https://datatracker.ietf.org/doc/html/rfc7516#section-3.1"><abbr title="JSON Web Encryption">JWE</abbr> compact serialization</a>,
+meaning that we have 5 Base64URL encoded segments separated by <code>.</code>: a
+JSON header, an encryption key (empty in our case), the encryption <a href="https://en.wikipedia.org/wiki/Initialization_vector"><abbr title="Initialization vector">IV</abbr></a>,
+the <a href="https://en.wikipedia.org/wiki/Ciphertext">ciphertext</a>, and the
+<a href="https://en.wikipedia.org/wiki/Galois/Counter_Mode">AES-GCM</a>
+authentication tag.</p>
+<ol start="3">
+<li>Split the individual segments from <code>keys_jwe</code> and decode them.</li>
+<li>Use the ephemeral public key that’s included in the JSON header as
+<code>epk</code> to perform ECDH against the private key of our initial P-256
+keypair.</li>
+</ol>
+<div class="note">
+<p><strong>Note:</strong> according to Mozilla’s documentation, it seems that the key
+we just established with ECDH should allow to decrypt the ciphertext
+segment, which is a JWK of the application scoped key, including the
+<code>kid</code> field that we need to transmit to the TokenServer. In practice we
+just get unusable garbage, so something was definitely missing.</p>
+<p>The following step is not documented by Mozilla. It’s what <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L130">the Rust code</a>
+behind the browser and mobile apps is doing, as well as <a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">the code</a>
+from the (now dead) Firefox Send app.</p>
+</div>
+<ol start="5">
+<li>Perform <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-4.6">Concat KDF</a>
+(<a href="#deriving-the-shared-secret-with-concat-kdf">I’ll come back to this later</a>)
+on the previously derived key using a carefully crafted <code>OtherInfo</code>
+buffer to obtain a symmetric key.</li>
+<li>Use that key to decrypt the ciphertext segment with AES-256-GCM,
+using the IV and authentication tag included in the payload, as well
+as the raw Base64URL encoded header as <a href="https://datatracker.ietf.org/doc/html/rfc5084#section-1.5"><abbr title="Additional authenticated data">AAD</abbr></a>.</li>
+</ol>
+<p>The result JWK is our scoped key, and includes the <code>kid</code> field that we
+need to send to the TokenServer in the <code>X-KeyID</code> header. The symmetric
+key in the <code>k</code> field is the one we’ll be able to use to encrypt and
+decrypt the user’s data for that scope.</p>
+<p><a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#granting-access-to-sync-data">In the case of Firefox Sync</a>,
+that <code>k</code> field is a 64 bytes key bundle, that can be decoded and split
+in two 32 bytes slices to obtain the Sync encryption key and HMAC key
+<a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#derive-sync-key">as we’ve done before</a>.</p>
+<p>Now that’s a lot to unpack, so let’s go through all of this again in
+details, and this time with some actual code.</p>
+<h2 id="getting-scoped-keys-the-code" tabindex="-1"><a class="header-anchor" href="#getting-scoped-keys-the-code">Getting scoped keys: the code</a></h2>
+<p>Let’s go back to <a href="#generating-the-authorization-url">the code to make the authorization URL</a>
+and include the <code>keys_jwk</code> field, that we found about earlier.</p>
+<h3 id="sending-our-ecdh-public-key-in-keys-jwk" tabindex="-1"><a class="header-anchor" href="#sending-our-ecdh-public-key-in-keys-jwk">Sending our ECDH public key in <code>keys_jwk</code></a></h3>
+<p>First, we generate a <a href="https://neuromancer.sk/std/nist/P-256">P-256 elliptic curve</a>
+keypair. It stands for “256-bit prime field Weierstrass curve”, and it’s
+also known as <code>secp256r1</code> and <code>prime256v1</code>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
+
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
+  <span class="hljs-attr">namedCurve</span>: <span class="hljs-string">&#x27;P-256&#x27;</span>
+})
+</code></pre>
+<p>Then we serialize the public key as a Base64URL encoded JWK.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> publicJwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+<span class="hljs-keyword">const</span> keysJwk = Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(publicJwk)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+</code></pre>
+<p>Finally, we add it to the parameters of our initial example.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> params = {
+  <span class="hljs-attr">client_id</span>: clientId,
+  scope,
+  state,
+  <span class="hljs-attr">code_challenge_method</span>: <span class="hljs-string">&#x27;S256&#x27;</span>,
+  <span class="hljs-attr">code_challenge</span>: codeChallenge,
+  <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
+  <span class="hljs-attr">keys_jwk</span>: keysJwk
+}
+</code></pre>
+<p>Indeed, after going through the OAuth flow and inputting the result
+code, we now get back an extra <code>keys_jwe</code> parameter <a href="#trading-the-oauth-code-for-an-access-token">from the token endpoint</a>!
+I’ll continue from this step where we have the result of the token
+endpoint in a <code>oauthToken</code> variable.</p>
+<h3 id="parsing-keys-jwe" tabindex="-1"><a class="header-anchor" href="#parsing-keys-jwe">Parsing <code>keys_jwe</code></a></h3>
+<p>Because <code>keys_jwe</code> is formatted according to <a href="https://datatracker.ietf.org/doc/html/rfc7516#section-3.1">JWE compact serialization</a>
+it’s made of 5 Base64URL encoded segments separated by a <code>.</code>, so let’s
+parse it.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawSegments = oauthToken.keys_jwe.split(<span class="hljs-string">&#x27;.&#x27;</span>)
+<span class="hljs-keyword">const</span> rawHeader = rawSegments[<span class="hljs-number">0</span>]
+<span class="hljs-keyword">const</span> segments = rawSegments.map(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> Buffer.from(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
+<span class="hljs-keyword">const</span> header = <span class="hljs-built_in">JSON</span>.parse(segments[<span class="hljs-number">0</span>])
+<span class="hljs-keyword">const</span> iv = segments[<span class="hljs-number">2</span>]
+<span class="hljs-keyword">const</span> ciphertext = segments[<span class="hljs-number">3</span>]
+<span class="hljs-keyword">const</span> authTag = segments[<span class="hljs-number">4</span>]
+</code></pre>
+<p>We left alone <code>segments[1]</code> because as we saw, it’s defined as an
+encryption key by the JWE format but is not used in this protocol.</p>
+<p>The parsed header looks something like this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;enc&quot;</span>: <span class="hljs-string">&quot;A256GCM&quot;</span>,
+  <span class="hljs-attr">&quot;alg&quot;</span>: <span class="hljs-string">&quot;ECDH-ES&quot;</span>,
+  <span class="hljs-attr">&quot;kid&quot;</span>: <span class="hljs-string">&quot;IGJXkJzwHacMq2Qc52NZ_FBmt-uksqyXs8jC-pViIXM&quot;</span>,
+  <span class="hljs-attr">&quot;epk&quot;</span>: {
+    <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;EC&quot;</span>,
+    <span class="hljs-attr">&quot;crv&quot;</span>: <span class="hljs-string">&quot;P-256&quot;</span>,
+    <span class="hljs-attr">&quot;x&quot;</span>: <span class="hljs-string">&quot;UmI2Qm4DLbawF4E6UlmMvYAEomULFEBQiiJ7rxaQnY8&quot;</span>,
+    <span class="hljs-attr">&quot;y&quot;</span>: <span class="hljs-string">&quot;cSC0O-tPAeJXl2s-2ACCxN6wCpDRnhB_ginYIBmfTgU&quot;</span>
+  }
+}
+</code></pre>
+<p>The <code>epk</code> property contains a JWK representation of the public key
+matching the private key that Firefox Accounts used for its part of
+ECDH. We’ll refer to it as <code>peerKey</code>. In combination with the private
+key from the initial P-256 keypair <a href="#sending-our-ecdh-public-key-in-keys-jwk">we created earlier</a>
+in the <code>kp</code> variable, we can establish a shared secret through ECDH.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> peerKey = crypto.createPublicKey({
+  <span class="hljs-attr">key</span>: header.epk,
+  <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span>
+})
+
+<span class="hljs-keyword">const</span> ikm = crypto.diffieHellman({
+  <span class="hljs-attr">privateKey</span>: kp.privateKey,
+  <span class="hljs-attr">publicKey</span>: peerKey
+})
+</code></pre>
+<p>We’ll name this shared secret <code>ikm</code>, for input keying material, as we’re
+effectively going to use it as input for a key derivation function.</p>
+<h3 id="deriving-the-shared-secret-with-concat-kdf" tabindex="-1"><a class="header-anchor" href="#deriving-the-shared-secret-with-concat-kdf">Deriving the shared secret with Concat KDF</a></h3>
+<p>Here, we use <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-4.6">Concat KDF</a>,
+defined in more details in section 5.8.1 of <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf">NIST SP 800-56A</a>
+“The single step key derivation function” to derive that shared secret
+into the actual decryption key for our ciphertext.</p>
+<div class="note">
+<p><strong>Note:</strong> this process is not part of any public documentation at the
+time of writing, and is the result of more hours that I’m willing to
+admit, going through Mozilla’s codebase on GitHub, between the
+<a href="https://github.com/mozilla/"><code>mozilla</code></a>,
+<a href="https://github.com/mozilla-lockwise/"><code>mozilla-lockwise</code></a>,
+<a href="https://github.com/mozilla-mobile/"><code>mozilla-mobile</code></a> and
+<a href="https://github.com/mozilla-services/"><code>mozilla-services</code></a> organizations.</p>
+<p>I was trying to understand specifically how the Lockwise mobile app
+manages to access the Firefox Sync passwords, and it took me a while to
+realize that the mobile apps were calling into native Rust code that was
+taking care of the heavy lifting for OAuth and encryption (especially
+because the <a href="https://en.wikipedia.org/wiki/Snake_case">snake case</a>
+functions <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/fxa-client/src/internal/oauth.rs#L311">from the Rust code</a>
+are converted to <a href="https://en.wikipedia.org/wiki/Camel_case">camel case</a>
+in <a href="https://github.com/mozilla-lockwise/lockwise-android/blob/d3c0511f73c34e8759e1bb597f2d3dc9bcc146f0/app/src/main/java/mozilla/lockbox/store/AccountStore.kt#L298">other</a>
+<a href="https://github.com/mozilla-lockwise/lockwise-ios/blob/4d68f1283558a20e240527a8235c779becb1aa08/lockbox-ios/Store/AccountStore.swift#L186">languages</a>).</p>
+<p>The most interesting part was the <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/fxa-client/src/internal/oauth.rs#L325"><code>handle_oauth_response</code></a>,
+function, which calls into <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/fxa-client/src/internal/scoped_keys.rs#L58"><code>decrypt_keys_jwe</code></a>,
+<a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L60"><code>decrypt_jwe</code></a>,
+<a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L94"><code>derive_shared_secret</code></a>,
+and finally <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L130"><code>get_secret_from_ikm</code></a>
+where we get the Concat KDF implementation details.</p>
+<p>I later found the <a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">implementation in Firefox Send</a>
+which was also really useful to figure this out.</p>
+</div>
+<p><a href="https://crypto.stackexchange.com/a/85672">This answer on Stack Exchange</a>
+gives a great overview of how Concat KDF works:</p>
+<blockquote>
+<p>Concat KDF hashes the concatenation of a 4-byte counter initialized at 1
+(big-endian), the shared secret obtained by ECDH, and some other
+information passed as input. The counter is incremented and the process
+is repeated until enough data was produced.</p>
+</blockquote>
+<p>Since in our case the output key length is equal to the hash length
+(they’re both 256 bits), we only need a partial implementation of Concat
+KDF that performs a single iteration and doesn’t bother trimming the
+output to the desired length.</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
+<span class="hljs-comment">// integer as a buffer.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
+  <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
+  buffer.writeUint32BE(number)
+  <span class="hljs-keyword">return</span> buffer
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sha256</span> (<span class="hljs-params">buffer</span>) </span>{
+  <span class="hljs-keyword">return</span> crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(buffer).digest()
+}
+
+<span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
+<span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
+<span class="hljs-comment">// need matches the hash length.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) </span>{
+  <span class="hljs-keyword">return</span> sha256(Buffer.concat([uint32BE(<span class="hljs-number">1</span>), key, otherInfo]))
+}
+</code></pre>
+<p>That being said, for fun, here’s my understanding of a full Concat KDF
+function (I’m not a cryptography expert though so get that properly
+reviewed if you’re going to use it).</p>
+<details>
+  <summary>See the implementation</summary>
+<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, keyLengthBits, otherInfo</span>) </span>{
+  <span class="hljs-keyword">const</span> hashLengthBits = <span class="hljs-number">256</span>
+  <span class="hljs-keyword">const</span> hashLengthBytes = <span class="hljs-built_in">Math</span>.ceil(hashLengthBits / <span class="hljs-number">8</span>)
+  <span class="hljs-keyword">const</span> keyLengthBytes = <span class="hljs-built_in">Math</span>.ceil(keyLengthBits / <span class="hljs-number">8</span>)
+  <span class="hljs-keyword">const</span> out = Buffer.alloc(keyLengthBytes)
+  <span class="hljs-keyword">const</span> iterations = <span class="hljs-built_in">Math</span>.ceil(keyLengthBytes / hashLengthBytes)
+
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; iterations; i++) {
+    <span class="hljs-keyword">const</span> hash = sha256(Buffer.concat([uint32BE(i + <span class="hljs-number">1</span>), key, otherInfo]))
+    <span class="hljs-keyword">const</span> offset = hashLengthBytes * i
+    hash.copy(out, offset)
+  }
+
+  <span class="hljs-keyword">return</span> out
+}
+</code></pre>
+</details>
+<p>Anyways, we need to compute the <code>OtherInfo</code> parameter first. Concat KDF
+only defines it <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf">as a bit string</a>
+(see section 5.8.1.2), but Mozilla crafts a very specific one that we
+need to reproduce. From their <a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L142">Rust code</a>
+and the <a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">Firefox Send JavaScript code</a>,
+I ended up with:</p>
+<pre><code class="hljs language-js"><span class="hljs-comment">// Internal Mozilla format for Concat KDF `OtherInfo`, copied from</span>
+<span class="hljs-comment">// Firefox Application Services and Firefox Send code.</span>
+<span class="hljs-keyword">const</span> otherInfo = Buffer.concat([
+  uint32BE(header.enc.length),
+  Buffer.from(header.enc),
+  uint32BE(<span class="hljs-number">0</span>),
+  uint32BE(<span class="hljs-number">0</span>),
+  uint32BE(<span class="hljs-number">256</span>)
+])
+</code></pre>
+<details>
+  <summary>See the original code for comparison</summary>
+<p><a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L142">In Rust</a>:</p>
+<pre><code class="hljs language-rust"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">get_secret_from_ikm</span></span>(
+    ikm: InputKeyMaterial,
+    apu: &amp;<span class="hljs-built_in">str</span>,
+    apv: &amp;<span class="hljs-built_in">str</span>,
+    alg: &amp;<span class="hljs-built_in">str</span>,
+) -&gt; <span class="hljs-built_in">Result</span>&lt;digest::Digest&gt; {
+    <span class="hljs-keyword">let</span> secret = ikm.derive(|z| {
+        <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> buf: <span class="hljs-built_in">Vec</span>&lt;<span class="hljs-built_in">u8</span>&gt; = <span class="hljs-built_in">vec!</span>[];
+
+        <span class="hljs-comment">// Concat KDF (1 iteration since `keyLen &lt;= hashLen`).</span>
+        <span class="hljs-comment">// See RFC 7518 section 4.6 for reference.</span>
+        buf.extend_from_slice(&amp;<span class="hljs-number">1u32</span>.to_be_bytes());
+        buf.extend_from_slice(&amp;z);
+
+        <span class="hljs-comment">// `OtherInfo`</span>
+        buf.extend_from_slice(&amp;(alg.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
+        buf.extend_from_slice(alg.as_bytes());
+        buf.extend_from_slice(&amp;(apu.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
+        buf.extend_from_slice(apu.as_bytes());
+        buf.extend_from_slice(&amp;(apv.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
+        buf.extend_from_slice(apv.as_bytes());
+        buf.extend_from_slice(&amp;<span class="hljs-number">256u32</span>.to_be_bytes());
+
+        digest::digest(&amp;digest::SHA256, &amp;buf)
+    })?;
+    <span class="hljs-literal">Ok</span>(secret)
+}
+</code></pre>
+<p><a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">In JavaScript</a>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> encoder = <span class="hljs-keyword">new</span> TextEncoder()
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtherInfo</span> (<span class="hljs-params">enc</span>) </span>{
+  <span class="hljs-keyword">const</span> name = encoder.encode(enc)
+  <span class="hljs-keyword">const</span> length = <span class="hljs-number">256</span>
+  <span class="hljs-keyword">const</span> buffer = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(name.length + <span class="hljs-number">16</span>)
+  <span class="hljs-keyword">const</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-built_in">DataView</span>(buffer)
+  <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(buffer)
+  <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>
+
+  dv.setUint32(i, name.length)
+  i += <span class="hljs-number">4</span>
+  result.set(name, i)
+  i += name.length
+  dv.setUint32(i, <span class="hljs-number">0</span>)
+  i += <span class="hljs-number">4</span>
+  dv.setUint32(i, <span class="hljs-number">0</span>)
+  i += <span class="hljs-number">4</span>
+  dv.setUint32(i, length)
+
+  <span class="hljs-keyword">return</span> result
+}
+</code></pre>
+</details>
+<p>We can now derive that <code>OtherInfo</code> together with the input key material
+we established earlier to get the decryption key.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> key = concatKdf(ikm, otherInfo)
+</code></pre>
+<h3 id="decrypting-the-ciphertext" tabindex="-1"><a class="header-anchor" href="#decrypting-the-ciphertext">Decrypting the ciphertext</a></h3>
+<p>Finally, we have everything we need to decrypt the ciphertext of the JWE
+that <a href="#parsing-keys-jwe">we got back earlier</a>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
+
+decipher.setAuthTag(authTag)
+decipher.setAAD(rawHeader)
+
+<span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">JSON</span>.parse(Buffer.concat([
+  decipher.update(ciphertext),
+  decipher.final()
+]))
+
+<span class="hljs-built_in">console</span>.log(keys)
+</code></pre>
+<p>This gives us something like this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span>: {
+    <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;oct&quot;</span>,
+    <span class="hljs-attr">&quot;scope&quot;</span>: <span class="hljs-string">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span>,
+    <span class="hljs-attr">&quot;k&quot;</span>: <span class="hljs-string">&quot;e_9j35zPyTng1QT1ioegeZxPQOVUS10FdMNV1YIZuJ8zJIvQ-OZMiHiy3tLCMcc_mKTEopDpjzS9kqq-FmS4og&quot;</span>,
+    <span class="hljs-attr">&quot;kid&quot;</span>: <span class="hljs-string">&quot;1628100899317-sLLG5AsHn9Fc1gPhW_rfaQ&quot;</span>
+  }
+}
+</code></pre>
+<p>If we had requested an <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#application-specific-keys">application specific key</a>,
+we would have gotten back a 32 bytes scoped key <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#deriving-scoped-keys-ks">as defined in “deriving scoped keys”</a>.</p>
+<p>However since we requested the special scope
+<code>https://identity.mozilla.com/apps/oldsync</code> which is meant to give
+access to Firefox Sync in a backwards compatible way, <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#granting-access-to-sync-data">it’s treated a bit differently</a>
+and we get 64 bytes of key material, the same that we previously
+<a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#derive-sync-key">derived from the user’s primary key</a>
+using HKDF in the <code>deriveKeys</code> function of our non-OAuth implementation.</p>
+<p>The main difference is that here, the Firefox Accounts login page
+<a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/deriver/ScopedKeys.js#L107">is the one</a>
+to perform HKDF, so that we never get access to the user’s primary key,
+which is a cool security feature.</p>
+<h2 id="putting-it-all-together" tabindex="-1"><a class="header-anchor" href="#putting-it-all-together">Putting it all together</a></h2>
+<p>Because the JWK we get back after decrypting <code>keys_jwe</code> from that custom
+OAuth dance contains the same 64 bytes of key material that we used to
+derive from the user’s primary key, it means that by splitting it in two
+32 bytes slices, we get the exact same Sync encryption key and HMAC key
+than before.</p>
+<p>As importantly, this JWK also contains the <code>kid</code> field which is the
+missing piece of the puzzle to be able to <a href="https://github.com/mozilla-services/tokenserver#using-oauth">call the TokenServer</a>
+in order to get the Firefox Sync API credentials.</p>
+<blockquote>
+<p>To access the user’s Sync data using OAuth, the client must obtain an
+FxA OAuth <code>access_token</code> with scope <code>https://identity.mozilla.com/apps/oldsync</code>,
+and the corresponding encryption key as a JWK. They send the OAuth
+token in the <code>Authorization</code> header, <strong>and the <code>kid</code> field of the
+encryption key in the <code>X-KeyID</code> header</strong>.</p>
+</blockquote>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
+
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+  <span class="hljs-attr">headers</span>: {
+    <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
+    <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].kid
+  }
+})
+  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+</code></pre>
+<p>From there, the rest of the code is going to be <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">the same as our original BrowserID implementation</a>!</p>
+<p>The only difference is that we already have the Sync key bundle in our
+JWK, so we don’t need the <code>deriveKeys</code> function anymore. Instead, we
+only to need to split the <code>k</code> field to separate the encryption key from
+the HMAC key:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k)
+
+<span class="hljs-keyword">const</span> syncKeyBundle = {
+  <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
+  <span class="hljs-attr">hmacKey</span>: rawBundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
+}
+</code></pre>
+<p>This is enough to decrypt the response of <code>storage/crypto/keys</code>, which
+in turn gives us the keys to decrypt the user’s passwords, bookmarks
+and other collections.</p>
+<h2 id="the-code-all-the-code" tabindex="-1"><a class="header-anchor" href="#the-code-all-the-code">The code, all the code!</a></h2>
+<p>If you were to take all the small blocks of code from this post and put
+them together, you would get something like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
+<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> qs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;querystring&#x27;</span>)
+<span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
+<span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
+
+<span class="hljs-keyword">const</span> authorizationUrl = <span class="hljs-string">&#x27;https://accounts.firefox.com/authorization&#x27;</span>
+<span class="hljs-keyword">const</span> tokenEndpoint = <span class="hljs-string">&#x27;https://oauth.accounts.firefox.com/v1/token&#x27;</span>
+<span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
+<span class="hljs-keyword">const</span> scope = <span class="hljs-string">&#x27;https://identity.mozilla.com/apps/oldsync&#x27;</span>
+<span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;e7ce535d93522896&#x27;</span>
+
+<span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
+<span class="hljs-comment">// integer as a buffer.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
+  <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
+  buffer.writeUint32BE(number)
+  <span class="hljs-keyword">return</span> buffer
+}
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sha256</span> (<span class="hljs-params">buffer</span>) </span>{
+  <span class="hljs-keyword">return</span> crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(buffer).digest()
+}
+
+<span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
+<span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
+<span class="hljs-comment">// need matches the hash length.</span>
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) </span>{
+  <span class="hljs-keyword">return</span> sha256(Buffer.concat([uint32BE(<span class="hljs-number">1</span>), key, otherInfo]))
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-comment">// To prevent CSRF attacks.</span>
+  <span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+
+  <span class="hljs-comment">// Dead simple PKCE challenge implementation.</span>
+  <span class="hljs-keyword">const</span> codeVerifier = crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> codeChallenge = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(codeVerifier).digest(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+
+  <span class="hljs-comment">// Keypair to obtain a shared secret from Firefox Accounts via ECDH.</span>
+  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
+    <span class="hljs-attr">namedCurve</span>: <span class="hljs-string">&#x27;P-256&#x27;</span>
+  })
+
+  <span class="hljs-keyword">const</span> publicJwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+  <span class="hljs-keyword">const</span> keysJwk = Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(publicJwk)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+
+  <span class="hljs-keyword">const</span> params = {
+    <span class="hljs-attr">client_id</span>: clientId,
+    scope,
+    state,
+    <span class="hljs-attr">code_challenge_method</span>: <span class="hljs-string">&#x27;S256&#x27;</span>,
+    <span class="hljs-attr">code_challenge</span>: codeChallenge,
+    <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
+    <span class="hljs-attr">keys_jwk</span>: keysJwk
+  }
+
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${authorizationUrl}</span>?<span class="hljs-subst">${qs.stringify(params)}</span>`</span>
+
+  <span class="hljs-built_in">console</span>.log(url)
+
+  <span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: process.stdin, <span class="hljs-attr">output</span>: process.stdout })
+
+  <span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
+    .finally(<span class="hljs-function">() =&gt;</span> rl.close())
+
+  <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> fetch(tokenEndpoint, {
+    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>
+    },
+    <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify({
+      <span class="hljs-attr">client_id</span>: clientId,
+      <span class="hljs-attr">grant_type</span>: <span class="hljs-string">&#x27;authorization_code&#x27;</span>,
+      <span class="hljs-attr">code_verifier</span>: codeVerifier,
+      code
+    })
+  })
+    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+
+  <span class="hljs-keyword">const</span> rawSegments = oauthToken.keys_jwe.split(<span class="hljs-string">&#x27;.&#x27;</span>)
+  <span class="hljs-keyword">const</span> rawHeader = rawSegments[<span class="hljs-number">0</span>]
+  <span class="hljs-keyword">const</span> segments = rawSegments.map(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> Buffer.from(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
+  <span class="hljs-keyword">const</span> header = <span class="hljs-built_in">JSON</span>.parse(segments[<span class="hljs-number">0</span>])
+  <span class="hljs-keyword">const</span> iv = segments[<span class="hljs-number">2</span>]
+  <span class="hljs-keyword">const</span> ciphertext = segments[<span class="hljs-number">3</span>]
+  <span class="hljs-keyword">const</span> authTag = segments[<span class="hljs-number">4</span>]
+
+  <span class="hljs-keyword">const</span> peerKey = crypto.createPublicKey({
+    <span class="hljs-attr">key</span>: header.epk,
+    <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span>
+  })
+
+  <span class="hljs-keyword">const</span> ikm = crypto.diffieHellman({
+    <span class="hljs-attr">privateKey</span>: kp.privateKey,
+    <span class="hljs-attr">publicKey</span>: peerKey
+  })
+
+  <span class="hljs-comment">// Internal Mozilla format for Concat KDF `OtherInfo`, copied from</span>
+  <span class="hljs-comment">// Firefox Application Services and Firefox Send code.</span>
+  <span class="hljs-keyword">const</span> otherInfo = Buffer.concat([
+    uint32BE(header.enc.length),
+    Buffer.from(header.enc),
+    uint32BE(<span class="hljs-number">0</span>),
+    uint32BE(<span class="hljs-number">0</span>),
+    uint32BE(<span class="hljs-number">256</span>)
+  ])
+
+  <span class="hljs-keyword">const</span> key = concatKdf(ikm, otherInfo)
+  <span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
+
+  decipher.setAuthTag(authTag)
+  decipher.setAAD(rawHeader)
+
+  <span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">JSON</span>.parse(Buffer.concat([
+    decipher.update(ciphertext),
+    decipher.final()
+  ]))
+
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
+      <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].kid
+    }
+  })
+    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+
+  <span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k)
+
+  <span class="hljs-keyword">const</span> syncKeyBundle = {
+    <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
+    <span class="hljs-attr">hmacKey</span>: rawBundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
+  }
+
+  <span class="hljs-built_in">console</span>.log(token)
+  <span class="hljs-built_in">console</span>.log(syncKeyBundle)
+}
+
+main()
+</code></pre>
+<p>From there, you have everything you need to <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">actually call Firefox Sync</a>
+and decrypt its responses. This piece of code is already long enough so
+I won’t include that part again here.</p>
+<p>Needless to say this code is not production ready, and can be considered
+to be more of an academic resource for learning purpose. If you’re going
+to use it, please refactor it in a more maintainable way and add proper
+error handling! Also if you need help integrating Firefox Accounts to
+your app, feel free to <a href="/val.html#links">reach out</a>, I’m open to
+contracting work.</p>
+<h2 id="a-note-about-granular-scopes" tabindex="-1"><a class="header-anchor" href="#a-note-about-granular-scopes">A note about granular scopes</a></h2>
+<p>Mozilla’s <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/scopes.md#url-scopes">OAuth scopes documentation</a>
+mentions a set of scopes that would allow granular access to the Sync
+data, for instance <code>https://identity.mozilla.com/apps/oldsync/bookmarks</code>
+to get access to the user’s bookmarks data only but not other
+collections, <code>https://identity.mozilla.com/apps/oldsync#read</code> to get
+read-only access, or even
+<code>https://identity.mozilla.com/apps/oldsync/history#write</code> for write-only
+access to just the history collection.</p>
+<p>Because the encryption key is shared by every Firefox Sync client, we
+can decrypt any of the user’s Sync collections, even if we had requested
+a more restricted scope.</p>
+<p>The permissions are instead implemented at the API level, so that for
+instance, a Sync client with a “bookmarks” scope in its OAuth token
+cannot retrieve data from the “history” collection, <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#granting-access-to-sync-data">as explained here</a>:</p>
+<blockquote>
+<p>The existing Sync service does not support using different encryption
+keys to access different subsets of its data, so we must give the same
+key material for scope <code>sync</code> or for <code>sync:bookmarks</code>. But we can
+enforce access restrictions at the service level by ensuring that an
+access token with scope <code>sync:bookmarks</code> cannot be used to retrieve
+the user’s encrypted history data.</p>
+</blockquote>
+<p>Similarly, I assume that read/write restrictions are also ensured at
+the service level, by only allowing <code>GET</code> requests for clients with a
+<code>#read</code> scope, or <code>POST</code>, <code>PUT</code> and <code>DELETE</code> for <code>#write</code> clients.</p>
+<p>In practice though, I couldn’t find any such restriction in <a href="https://github.com/mozilla-services/syncstorage-rs"><code>syncstorage-rs</code></a>,
+the code behind the Firefox Sync API. I also found out that I couldn’t
+request granular scopes during the OAuth process. When I requested a
+collection-specific scope, a read-only or a write-only scope, the OAuth
+token endpoint didn’t return a <code>keys_jwe</code> even though I specified
+<code>keys_jwk</code> as part of the authorization parameters.</p>
+<p>This makes me think that while the granular scopes are documented,
+they’re not yet implemented, and the only way to get access to Firefox
+Sync data right now is to request full access.</p>
+<p>Please let me know if I missed something, or if this was to change!</p>
+<h2 id="a-note-about-client-id-and-redirect-url" tabindex="-1"><a class="header-anchor" href="#a-note-about-client-id-and-redirect-url">A note about client ID and redirect URL</a></h2>
+<p>In this post, for convenience and learning purpose, we used the public
+OAuth client ID <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app">from the Android app</a>,
+because we’d otherwise need to <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">email Mozilla</a>
+to “document our expectations and timelines” to get proper OAuth
+credentials.</p>
+<p>As we saw, I’m not interested in documenting my expectations and
+timeline. This means that we need to inspect the network traffic during
+the OAuth redirect to harvest the authorization code and inject it back
+in our script. But if you’re reading this, you might be have a real-life
+application that justifies getting your own OAuth credentials. If it’s
+your case, everything you need to know is <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">here</a>.</p>
+<p>Lastly, even if I could configure my own OAuth redirect URL, the current
+flow doesn’t make it convenient to build a CLI or embedded application.
+Maybe accessing Firefox Sync collections from a TV, toaster, or a remote
+headless server isn’t the top use cases one would think of, but I
+wouldn’t be surprised if someone came up with applications for those.</p>
+<p>For example, Google have an <a href="https://developers.google.com/identity/protocols/oauth2/limited-input-device">alternative flow for limited input devices</a>
+which works by displaying a short URL and code to the user to grant
+permissions to an embedded application from a more capable device.</p>
+<p>They also support <a href="../02/google-oauth-from-cli-application.html">a copy/paste method</a>
+where instead of being redirected, the user gets back a code to paste in
+the application, making it convenient for a CLI running on a remote
+headless server, where you otherwise would need to setup SSH port
+forwarding or similar to support a loopback redirect URL.</p>
+<p>While Google discourages this method, it solves a real use case for me
+and I think that it’s a good inspiration for future improvements to the
+Firefox Accounts OAuth flow. The limited input device method is also a
+nice fallback!</p>
+<h2 id="a-note-about-security-and-more" tabindex="-1"><a class="header-anchor" href="#a-note-about-security-and-more">A note about security, and more…</a></h2>
+<p>I strongly believe that proper security is achieved by ensuring that the
+most secure options are the easiest to implement and to use by design.
+Obviously this is idealistic and not always possible.</p>
+<p>In the case of Lockwise and Firefox Sync, not only the OAuth method was
+far from obvious to learn about, but I think that the <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">manual process</a>
+required to create new OAuth clients adds some unnecessary friction to
+building a more secure web.</p>
+<p>While the complete OAuth flow we explored in this posts brings great
+security improvements by introducing a mechanism to grant third-party
+access to the user’s data without revealing their password and primary
+key, it is in practice much harder to implement than the Firefox
+Accounts “god mode” session token that I started with, which also
+happens to comes with a fully featured JS client and easy to find
+real-world examples online.</p>
+<p>Overall, it feels to me that Mozilla doesn’t expect people to be
+interested in building third-party apps off Firefox Sync. For example
+<a href="https://github.com/mozilla/fxa/issues/5794#issuecomment-652025759">in this response on GitHub</a>
+they seem surprised that someone would try to authenticate to Firefox
+Accounts from their own code, or <a href="https://www.mail-archive.com/sync-dev@mozilla.org/msg01711.html">in this email thread reply</a>,
+Ryan is curious about why one would want to programmatically access
+Firefox Sync data, and the fact the <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys">scoped encryption keys</a>
+documentation is hidden in a “for FxA engineers” section shows that they
+only expect Mozillians to build off those blocks.</p>
+<p>It’s undeniable that the openness of Let’s Encrypt (alright, also the
+fact it’s free) greatly contributed to its whopping success, and the
+<a href="https://letsencrypt.org/docs/client-options/">literally hundreds</a> of
+third-party clients and integrations demonstrate that. I think that the
+ecosystem Mozilla built around Firefox Accounts and Firefox Sync
+features some awesome pieces of technology and infrastructure that are
+well worth basing off and extending, and I could see it having a similar
+success if it was more inviting to integrate with.</p>
+<h2 id="closing-thoughts" tabindex="-1"><a class="header-anchor" href="#closing-thoughts">Closing thoughts</a></h2>
+<p>After nearly 20,000 words, this is the end of this in-depth exploration
+of Lockwise, Firefox Sync and their underlying APIs and protocols.</p>
+<p>This series is the result of the distillation of <a href="#documentation">FORTY TWO pieces of content online</a>
+as well as learning from the code of <a href="#code">11 different repositories</a>.</p>
+<p>While I thought that I would just quickly put together a CLI app to my
+access my Lockwise passwords, my quest for perfection pushed me to
+continue and spend <strong>a whole month</strong> to grasp all the details of the
+protocol, and not only have functional code to read and write to Firefox
+Sync, but more importantly write everything down in a comprehensive way,
+that I believe is the most up-to-date, accurate and practical
+documentation on the topic as of the time of writing.</p>
+<p>In this last post, we saw how to leverage the full OAuth flow to access
+Firefox Sync collections without ever gaining access to the user’s
+password and primary key, effectively delegating more of the security
+responsibilities to Firefox Accounts.</p>
+<p>Generally, we gained a deep understanding of how Firefox Accounts and
+Firefox Sync implement end-to-end encryption for its user data, and how
+they do so in a way that’s reviewable, and that we tested by interacting
+at a low level with their APIs and encryption schemes. While I’m not
+qualified to tell if this is bulletproof for any possible threat model,
+I definitely feel <em>even more confident</em> using Lockwise as my password
+manager after reviewing its underlying implementation.</p>
+<p>I’m grateful for Mozilla to share their source code and publicly document
+the protocols they use and designed, even if it was not always perfectly
+accurate or up-to-date. Their work allowed me to deepen my understanding
+of cryptography in order to build a compatible client, and I believe
+that the schemes behind Firefox Accounts and Sync encryption are
+exemplary in respect to encrypting user data end-to-end, without
+sacrificing too much (if any) convenience or flexibility.</p>
+<h2 id="bonus-references" tabindex="-1"><a class="header-anchor" href="#bonus-references">Bonus: references</a></h2>
+<p>Let’s use the following script to extract all the references from this
+series.</p>
+<pre><code class="hljs language-sh">grep -Eoh <span class="hljs-string">&#x27;[(&lt;]http[^)]+[)&gt;]&#x27;</span> 2021/08/scripting-firefox-sync-lockwise-* \
+  | sed <span class="hljs-string">&#x27;s/^.//;s/.$//&#x27;</span> | sed <span class="hljs-string">&#x27;s/#.*$//&#x27;</span> \
+  | sort | uniq -c
+</code></pre>
+<p>With some quick filtering and formatting, here’s the list!</p>
+<h3 id="documentation" tabindex="-1"><a class="header-anchor" href="#documentation">Documentation</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">References</th>
+<th>Domain</th>
+<th>Name</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>auth0.com</code></td>
+<td><a href="https://auth0.com/docs/applications/confidential-and-public-applications">Confidential and public applications</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>auth0.com</code></td>
+<td><a href="https://auth0.com/docs/flows/authorization-code-flow-with-proof-key-for-code-exchange-pkce">Authorization code flow with proof key for code exchange (PKCE)</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>auth0.com</code></td>
+<td><a href="https://auth0.com/docs/protocols/state-parameters">Prevent attacks and redirect users with OAuth 2.0 state parameters</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>base64.guru</code></td>
+<td><a href="https://base64.guru/standards/base64url">Base64URL</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>bugzilla.mozilla.org</code></td>
+<td><a href="https://bugzilla.mozilla.org/show_bug.cgi?id=1455219">Accept FxA OAuth tokens for authorization in TokenServer</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>crypto.stackexchange.com</code></td>
+<td><a href="https://crypto.stackexchange.com/a/85672">How does the Concat KDF work?</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>datatracker.ietf.org</code></td>
+<td><a href="https://datatracker.ietf.org/doc/html/rfc5084">Using AES-CCM and AES-GCM authenticated encryption in the cryptographic message syntax (CMS)</a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>datatracker.ietf.org</code></td>
+<td><a href="https://datatracker.ietf.org/doc/html/rfc7516">JSON Web Encryption (JWE)</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>datatracker.ietf.org</code></td>
+<td><a href="https://datatracker.ietf.org/doc/html/rfc7517">JSON Web Key (JWK)</a></td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td><code>datatracker.ietf.org</code></td>
+<td><a href="https://datatracker.ietf.org/doc/html/rfc7518">JSON Web Algorithms (JWA)</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>datatracker.ietf.org</code></td>
+<td><a href="https://datatracker.ietf.org/doc/html/rfc7636">Proof key for code exchange by OAuth public clients</a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>docs.google.com</code></td>
+<td><a href="https://docs.google.com/document/d/1IvQJFEBFz0PnL4uVlIvt8fBS_IPwSK-avK0BRIHucxQ">Scoped encryption keys for Firefox Accounts</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>en.wikipedia.org</code></td>
+<td><a href="https://en.wikipedia.org/wiki/Elliptic-curve_Diffie%E2%80%93Hellman">Elliptic curve Diffie–Hellman</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa-auth-server/blob/master/fxa-oauth-server/docs/api.md">Firefox Accounts OAuth server API</a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa-auth-server/wiki/onepw-protocol">onepw protocol</a></td>
+</tr>
+<tr>
+<td style="text-align:right">9</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md">Firefox Accounts authentication server API</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/api.md">Firefox Accounts OAuth server API</a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/scopes.md">OAuth scopes</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa-crypto-relier/tree/master/docs">Firefox Accounts scoped key relier documentation</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa/issues/5794">Unable to sign in with fxa-js-client</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/fxa/pull/5993">Unified fxa-auth-client</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/hawk/blob/main/API.md">Hawk introduction</a></td>
+</tr>
+<tr>
+<td style="text-align:right">11</td>
+<td><code>github.com</code></td>
+<td><a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md">BrowserID specification</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>hacks.mozilla.org</code></td>
+<td><a href="https://hacks.mozilla.org/2011/07/introducing-browserid-easier-and-safer-authentication-on-the-web/">Introducing BrowserID – easier and safer authentication on the web</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>medium.com</code></td>
+<td><a href="https://medium.com/mozilla-tech/how-firefox-sync-keeps-your-secrets-if-tls-fails-14420d45885c">How Firefox Sync keeps your secrets if TLS fails</a></td>
+</tr>
+<tr>
+<td style="text-align:right">8</td>
+<td><code>mozilla.github.io</code></td>
+<td><a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys">Scoped encryption keys for Firefox Accounts</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>mozilla.github.io</code></td>
+<td><a href="https://mozilla.github.io/ecosystem-platform/docs/process/becoming-a-sync-client">Becoming a Sync client</a></td>
+</tr>
+<tr>
+<td style="text-align:right">9</td>
+<td><code>mozilla.github.io</code></td>
+<td><a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">Integration with FxA</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>mozilla.github.io</code></td>
+<td><a href="https://mozilla.github.io/id-specs/docs/formats/keys/">BrowserID specs - public key format</a></td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td><code>mozilla-services.readthedocs.io</code></td>
+<td><a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">SyncStorage API v1.5</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>mozilla-services.readthedocs.io</code></td>
+<td><a href="https://mozilla-services.readthedocs.io/en/latest/sync/index.html">Sync client documentation</a></td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td><code>mozilla-services.readthedocs.io</code></td>
+<td><a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html">Global storage version 5</a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>neuromancer.sk</code></td>
+<td><a href="https://neuromancer.sk/std/nist/P-256">Standard curve database - P-256</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>nodejs.org</code></td>
+<td><a href="https://nodejs.org/api/crypto.html">Node.js documentation - <code>crypto</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><code>nvlpubs.nist.gov</code></td>
+<td><a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf">Recommendation for pair-wise key establishment schemes using discrete logarithm cryptography</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>openid.net</code></td>
+<td><a href="https://openid.net/connect/">OpenID Connect</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>stackoverflow.com</code></td>
+<td><a href="https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist">Firefox Sync API - does it exist?</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>vladikoff.github.io</code></td>
+<td><a href="https://vladikoff.github.io/app-services-site/docs/accounts/welcome.html">About Firefox Accounts</a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>mail-archive.com</code></td>
+<td><a href="https://www.mail-archive.com/sync-dev@mozilla.org/msg01710.html">Getting <code>X-KeyID</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><code>mail-archive.com</code></td>
+<td><a href="https://www.mail-archive.com/sync-dev@mozilla.org/msg01711.html">Re: Getting <code>X-KeyID</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">4</td>
+<td><code>npmjs.com</code></td>
+<td><a href="https://www.npmjs.com/package/browserid-crypto">browserid-crypto</a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><code>npmjs.com</code></td>
+<td><a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a></td>
+</tr>
+</tbody>
+</table>
+<h3 id="code" tabindex="-1"><a class="header-anchor" href="#code">Code</a></h3>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">References</th>
+<th>Path</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/fxa-client/src/internal/oauth.rs"><code>mozilla/application-services/components/fxa-client/src/internal/oauth.rs</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/fxa-client/src/internal/scoped_keys.rs"><code>mozilla/application-services/components/fxa-client/src/internal/scoped_keys.rs</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td><a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs"><code>mozilla/application-services/components/support/jwcrypto/src/ec.rs</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js"><code>mozilla/browserid-crypto/lib/algs/ds.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js"><code>mozilla/browserid-crypto/lib/algs/rs.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa/blob/6027041fe4d7accb37e0704271545a0bff80adfd/packages/fxa-auth-server/lib/routes/sign.js"><code>mozilla/fxa/packages/fxa-auth-server/lib/routes/sign.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa/blob/96161f37753101c1a64d9588d5cdc5434243e91f/packages/fxa-js-client/client/FxAccountClient.js"><code>mozilla/fxa/packages/fxa-js-client/client/FxAccountClient.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa/blob/d1283314c15d81a85f08dcba5bce329db7c6fd51/packages/fxa-auth-server/lib/routes/oauth/key_data.js"><code>mozilla/fxa/packages/fxa-auth-server/lib/routes/oauth/key_data.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/oauth/validators.js"><code>mozilla/fxa/packages/fxa-auth-server/lib/oauth/validators.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/oauth/token.js"><code>mozilla/fxa/packages/fxa-auth-server/lib/routes/oauth/token.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa/blob/e5df5808be80f7e846e8ea973ed72bee454b027f/packages/fxa-auth-server/lib/routes/validators.js"><code>mozilla/fxa/packages/fxa-auth-server/lib/routes/validators.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/deriver/ScopedKeys.js"><code>mozilla/fxa-crypto-relier/src/deriver/ScopedKeys.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/OAuthUtils.js"><code>mozilla/fxa-crypto-relier/src/relier/OAuthUtils.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/util.js"><code>mozilla/fxa-crypto-relier/src/relier/util.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">2</td>
+<td><a href="https://github.com/mozilla/fxa/tree/main/packages/fxa-auth-client"><code>mozilla/fxa/packages/fxa-auth-client</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa/tree/main/packages/fxa-auth-server"><code>mozilla/fxa/packages/fxa-auth-server</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/fxa/tree/main/packages/fxa-content-server"><code>mozilla/fxa/packages/fxa-content-server</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla-lockwise/lockwise-android/search?q=clientId&amp;type=code"><code>mozilla-lockwise/lockwise-android</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/PyFxA"><code>mozilla/PyFxA</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla/PyFxA/blob/6c3f803b3c27c665f417b0c5bd3ca79add8e2027/fxa/core.py"><code>mozilla/PyFxA/fxa/core.py</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js"><code>mozilla/send/app/fxa.js</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><a href="https://github.com/mozilla-services/syncclient"><code>mozilla-services/syncclient</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla-services/syncclient/blob/efe0d49a8bd00d341b6e926f6783325b3fe7b676/syncclient/client.py"><code>mozilla-services/syncclient/syncclient/client.py</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">3</td>
+<td><a href="https://github.com/mozilla-services/syncstorage-rs"><code>mozilla-services/syncstorage-rs</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">19</td>
+<td><a href="https://github.com/mozilla-services/tokenserver"><code>mozilla-services/tokenserver</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">1</td>
+<td><a href="https://github.com/mozilla-services/tokenserver/blob/39239dd7a8d6b8270e22c9b6fef3f6be147e0df4/tokenserver/views.py"><code>mozilla-services/tokenserver/tokenserver/views.py</code></a></td>
+</tr>
+<tr>
+<td style="text-align:right">5</td>
+<td><a href="https://github.com/zaach/node-fx-sync"><code>zaach/node-fx-sync</code></a></td>
+</tr>
+</tbody>
+</table>
+<div class="note">
+<p>Check out the other posts in this series!</p>
+<ol>
+<li><a href="scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
+<li><a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
+<li><a href="scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
+<li><a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
+<li>A journey to scripting Firefox Sync / Lockwise: complete OAuth</li>
+</ol>
+</div>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/08/scripting-firefox-sync-lockwise-complete-oauth.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

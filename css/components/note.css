@@ -5,11 +5,11 @@
     padding: 1em;
 }
 
-.note :first-child {
+.note > :first-child {
     margin-top: 0;
 }
 
-.note :last-child {
+.note > :last-child {
     margin-bottom: 0;
 }
 

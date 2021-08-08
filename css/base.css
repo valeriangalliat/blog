@@ -47,7 +47,8 @@ h1.has-subtitle small {
 }
 
 blockquote > *,
-details > * {
+details,
+dd > * {
     --vertical-margin: 1rem;
 }
 
@@ -183,4 +184,22 @@ button {
 button:hover {
     background: var(--blue-6);
     cursor: pointer;
+}
+
+.float-wrapper::after {
+    display: table;
+    clear: both;
+    content: "";
+}
+
+.float-inner {
+    overflow: hidden;
+}
+
+.float-inner > :first-child {
+    margin-top: 0;
+}
+
+.float-inner > :last-child {
+    margin-bottom: 0;
 }

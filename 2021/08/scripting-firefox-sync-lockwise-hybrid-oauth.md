@@ -1,5 +1,7 @@
 ---
 hero: https://photography.codejam.info/photos/hd/P2650056.jpg
+heroCredit: Val
+heroCreditUrl: https://photography.codejam.info/photos/P2650056.html
 ---
 
 # A journey to scripting Firefox Sync / Lockwise: hybrid OAuth

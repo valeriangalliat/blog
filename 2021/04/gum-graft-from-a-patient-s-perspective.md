@@ -1,5 +1,7 @@
 ---
 hero: https://photography.codejam.info/photos/hd/P1080312.jpg
+heroCredit: Val
+heroCreditUrl: https://photography.codejam.info/photos/P1080312.html
 ---
 
 # Gum graft from a patient's perspective

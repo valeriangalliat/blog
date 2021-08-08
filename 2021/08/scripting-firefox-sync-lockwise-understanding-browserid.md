@@ -1,5 +1,7 @@
 ---
 hero: https://photography.codejam.info/photos/hd/P2650052.jpg
+heroCredit: Val
+heroCreditUrl: https://photography.codejam.info/photos/P2650052.html
 ---
 
 # A journey to scripting Firefox Sync / Lockwise: understanding BrowserID

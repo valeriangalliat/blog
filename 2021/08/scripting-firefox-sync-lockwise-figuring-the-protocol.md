@@ -1,5 +1,7 @@
 ---
 hero: https://photography.codejam.info/photos/hd/P2650099.jpg
+heroCredit: Val
+heroCreditUrl: https://photography.codejam.info/photos/P2650099.html
 ---
 
 # A journey to scripting Firefox Sync / Lockwise: figuring the protocol

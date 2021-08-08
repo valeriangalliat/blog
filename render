@@ -93,10 +93,15 @@ metaTags += `  <meta name="twitter:card" content="${image ? 'summary_large_image
 `
 
 let hero = '<header>'
+let heroCredit = '</header>'
 
 if (meta.hero) {
   const focus = meta.focus ? `; background-position: ${meta.focus}` : ''
   hero = `<header class="hero" style="background-image: url(${meta.hero})${focus}">`
+}
+
+if (meta.heroCredit) {
+  heroCredit = `  <a class="hero-credit" href="${escape(meta.heroCreditUrl)}">Picture credit: ${meta.heroCredit}</a>\n  </header>`
 }
 
 process.stdout.write(
@@ -105,6 +110,7 @@ process.stdout.write(
     .replace('</head>', `${metaTags}</head>`)
     .replace('<body>', `<body class="${bodyClass}">`)
     .replace('<header>', hero)
+    .replace('</header>', heroCredit)
     .replace('<div class="content">', `<div class="content">\n${header}`)
 )
 

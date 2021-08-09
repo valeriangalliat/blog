@@ -65,7 +65,7 @@ where to get the OAuth token and the corresponding key.
 The BrowserID instructions weren't necessarily clearer, but at least it
 had the competitive advantage of having multiple working implementations
 in the wild that made it easier to understand how it works. OAuth was
-a different kettle of fish.
+a different kind of beast.
 
 ### Sending emails? How about no
 

@@ -21,7 +21,7 @@ can be a tad confusing. My goal with this blog post is to hopefully make
 it more clear how to brew efficiently with the BrewZilla (both for the
 beer efficiency and for your own time and energy).
 
-But first, if you speak French, you might want to checkout the video I
+But first, if you speak French, you might want to check out the video I
 made when I unboxed and first brewed with the BrewZilla!
 
 <figure class="video">

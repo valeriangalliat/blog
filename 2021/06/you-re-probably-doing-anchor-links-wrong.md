@@ -166,7 +166,8 @@ and [Thierry](https://twitter.com/7h1322yk0813n72) who both dug in depth
 on the alternative solution of turning headers themselves into links
 (the style used by [MDN] and [Web Almanac]). They also found creative
 ways of making the markup of header links behave like the original
-implementation, so be sure to checkout the [GitHub issue](https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788268457) to find out about all of this!
+implementation, so be sure to check out the [GitHub issue](https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788268457)
+to find out about all of this!
 
 ## Conclusion #0: no one solution can satisfy all users
 

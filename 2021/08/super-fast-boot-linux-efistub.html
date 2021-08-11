@@ -1,0 +1,140 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Super fast boot on Linux with EFISTUB 🚀</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:,">
+  <meta property="og:title" content="Super fast boot on Linux with EFISTUB 🚀">
+  <meta property="og:description" content="My friend Damien was recently installing Arch Linux on a new rig, and while doing so he mentioned to me that he installed it without GRUB.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Super fast boot on Linux with EFISTUB 🚀</h1>
+<p class="tagline">Boot without an intermediate bootloader, with encryption and hibernation</p><p class="date">
+August 10, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>My friend <a href="https://www.damiengonot.com/">Damien</a> was recently installing
+Arch Linux on a new rig, and while doing so he mentioned to me that he
+installed it without GRUB.</p>
+<p>So I ask him what other bootloader he used, and he’s like, no, I didn’t
+use a bootloader, just <code>efibootmgr</code>.</p>
+<p>I didn’t know this was possible, so I looked into it and quickly found
+about EFISTUB.</p>
+<h2 id="what-is-efistub" tabindex="-1"><a class="header-anchor" href="#what-is-efistub">What is EFISTUB</a></h2>
+<p><a href="https://wiki.archlinux.org/title/EFISTUB">EFISTUB</a> allows “EFI firmware
+to load the kernel as an EFI executable”. It was introduced in Linux
+3.3, released in 2012. I should have known about that before. 😅</p>
+<p>As the wiki says a bit later:</p>
+<blockquote>
+<p>UEFI is designed to remove the need for an intermediate bootloader
+such as GRUB. If your motherboard has a good UEFI implementation, it
+is possible to embed the kernel parameters within a UEFI boot entry
+and for the motherboard to boot Arch directly.</p>
+</blockquote>
+<h2 id="configuring-efistub" tabindex="-1"><a class="header-anchor" href="#configuring-efistub">Configuring EFISTUB</a></h2>
+<p>With <code>efibootmgr</code>, you can add an EFI boot entry that contains all the
+parameters you need to properly boot the kernel, including in my case,
+LUKS encryption and hibernation.</p>
+<p>Here’s the command I used:</p>
+<pre><code class="hljs language-sh">efibootmgr \
+    --disk /dev/sda \
+    --part 1 \
+    --create \
+    --label Linux \
+    --loader /vmlinuz-linux \
+    --unicode <span class="hljs-string">&#x27;cryptdevice=/dev/sda2:luks:allow-discards root=/dev/vg0/root resume=/dev/vg0/swap rw initrd=\initramfs-linux.img&#x27;</span>
+</code></pre>
+<p>Here, my EFI partition is <code>/dev/sda1</code>, and <code>/dev/sda2</code> is a LUKS
+encrypted partition that uses LVM to have a <code>root</code> and a <code>swap</code> volume.
+The swap is used to suspend to disk (hibernate). This setup is explained
+in more details <a href="2019/06/arch-linux-laptop-uefi-encrypted-disk-hibernation.html#installation">in this post</a>.</p>
+<p>If your motherboard has a compliant EFI implementation, that’s all you
+should need to remove the need for an intermediate bootloader!</p>
+<p>After rebooting, it worked flawlessly, and what stroke me was how fast
+it was to boot! Definitely worth giving it a shot. Also don’t forget to
+<code>pacman -Rns grub</code> if it works for you. 😛</p>
+<p><strong>Fun fact:</strong> this is so simple to do you can fit the previous command
+in a tweet!</p>
+<blockquote>
+<p>TIL you can use Linux EFISTUB to boot without an intermediate
+bootloader (here with encryption and hibernation).</p>
+<pre><code class="hljs language-sh">efibootmgr -d /dev/sda -p 1 -c -l /vmlinuz-linux -u <span class="hljs-string">&#x27;cryptdevice=/dev/sda2:luks:allow-discards root=/dev/vg0/root resume=/dev/vg0/swap rw initrd=\initramfs-linux.img&#x27;</span>
+</code></pre>
+<p>— <a href="https://twitter.com/valeriangalliat">@valeriangalliat</a>, <a href="https://twitter.com/valeriangalliat/status/1419304289751678980">July 25, 2021</a></p>
+</blockquote>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/08/super-fast-boot-linux-efistub.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

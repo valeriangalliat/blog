@@ -1,3 +1,7 @@
+---
+lang: fr
+---
+
 # Tacos congelé, sacrilège ou bonne idée?
 June 5, 2021
 

@@ -104,6 +104,12 @@ if (meta.heroCredit) {
   heroCredit = `  <a class="hero-credit" href="${escape(meta.heroCreditUrl)}">Picture credit: ${meta.heroCredit}</a>\n  </header>`
 }
 
+let lang = ''
+
+if (meta.lang) {
+  lang = ` lang="${meta.lang}"`
+}
+
 process.stdout.write(
   head
     .replace('<title>', `<title>${escape(env.title)}`)
@@ -112,6 +118,7 @@ process.stdout.write(
     .replace('<header>', hero)
     .replace('</header>', heroCredit)
     .replace('<div class="content">', `<div class="content">\n${header}`)
+    .replace(/<div class="content">/g, `<div class="content"${lang}>`)
 )
 
 process.stdout.write(body)

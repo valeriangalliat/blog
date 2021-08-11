@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>
 * [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
 * [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 28, 2021</small>
-* [Docker build secrets!](2021/04/docker-build-secrets.md) <small>April 27, 2021</small>
 
 [More posts](posts.md)
 

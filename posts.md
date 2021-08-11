@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>

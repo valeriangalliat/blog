@@ -178,10 +178,7 @@ code, kbd, samp {
 }
 
 .hljs {
-    display: block;
-    overflow-x: auto;
     background: var(--gray-1);
-    padding: 1em;
 }
 
 kbd {

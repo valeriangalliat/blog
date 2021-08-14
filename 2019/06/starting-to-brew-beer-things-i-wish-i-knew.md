@@ -151,7 +151,7 @@ less expensive) to put in the mash tun, so that when you're done with
 the grains, you can just remove the filter basket or bag, and the tun is
 instantly ready to use.
 
-Then, as the boil is going, you can take the time to cleanup the grain
+Then, as the boil is going, you can take the time to clean up the grain
 filter in parallel instead of it delaying the start of your boil.
 
 <figure class="center">

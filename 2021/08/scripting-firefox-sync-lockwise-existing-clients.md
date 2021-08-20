@@ -36,9 +36,9 @@ your seatbelts!
 ## Fair warning
 
 You might not be interested in the whole story, especially in two
-following posts, where I explain how I started by implemented the legacy
-BrowserID authentication mechanism (because it's what's documented and
-used nearly everywhere), before [figuring that there is also support for OAuth](scripting-firefox-sync-lockwise-hybrid-oauth.md)
+following posts, where I explain how I started by implementing the
+legacy BrowserID authentication mechanism (because it's what's
+documented and used nearly everywhere), before [figuring that there is also support for OAuth](scripting-firefox-sync-lockwise-hybrid-oauth.md)
 which seems to be the most modern, recommended way to interact with the
 API, and turned out to be much simpler to implement ([until it wasn't](scripting-firefox-sync-lockwise-complete-oauth.md)).
 

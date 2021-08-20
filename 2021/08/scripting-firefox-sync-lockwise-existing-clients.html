@@ -105,7 +105,7 @@ programmatically connect to my Firefox Account and interact with Firefox
 Sync, I’m going to share that journey in a series of blog posts. Fasten
 your seatbelts!</p>
 <h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="#fair-warning">Fair warning</a></h2>
-<p>You might not be interested in the whole story, especially in two
+<p>You might not be interested in the whole story, especially in the two
 following posts, where I explain how I started by implementing the
 legacy BrowserID authentication mechanism (because it’s what’s
 documented and used nearly everywhere), before <a href="scripting-firefox-sync-lockwise-hybrid-oauth.html">figuring that there is also support for OAuth</a>
@@ -128,7 +128,7 @@ authentication is performed remains the same and is explained
 <p>I started looking for an API, and possibly existing API clients, and I
 quickly figured Lockwise was built on top of Firefox Sync’s <code>passwords</code>
 collection.</p>
-<p>Looking up “Firefox Sync API” lead me to <a href="https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist">this post from 2016 on Stack Overflow</a>,
+<p>Looking up “Firefox Sync API” led me to <a href="https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist">this post from 2016 on Stack Overflow</a>,
 where the top answer, which is also the only answer, points to the <a href="https://mozilla-services.readthedocs.io/en/latest/sync/index.html">Sync client documentation</a>
 and mentions an existing <a href="https://github.com/mozilla-services/syncclient">Python client</a>.</p>
 <p>While there’s a lot of documentation on the first link, it seems to
@@ -142,7 +142,7 @@ since 2016 and is now archived, which means it’s probably not
 up-to-date, definitely not actively maintained, and it’s even
 <a href="https://github.com/mozilla-services/syncclient/blob/efe0d49a8bd00d341b6e926f6783325b3fe7b676/syncclient/client.py#L11">documented as a proof of concept</a>.</p>
 <p>I try to use it but <code>pip install -r requirements.txt</code> fails with some
-weird error. Since I also noticed there was a <a href="#unofficial-node-js-client">Node.js client</a>, I
+weird error. Since I also noticed there was a <a href="#unofficial-node-js-client">Node.js client</a>,
 I left it at that.</p>
 <p>I later came back to it while writing this post, and it turns out after
 fixing some <code>requirements.txt</code> versions issues, it does run

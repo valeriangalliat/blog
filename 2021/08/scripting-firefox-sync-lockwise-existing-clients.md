@@ -35,7 +35,7 @@ your seatbelts!
 
 ## Fair warning
 
-You might not be interested in the whole story, especially in two
+You might not be interested in the whole story, especially in the two
 following posts, where I explain how I started by implementing the
 legacy BrowserID authentication mechanism (because it's what's
 documented and used nearly everywhere), before [figuring that there is also support for OAuth](scripting-firefox-sync-lockwise-hybrid-oauth.md)
@@ -64,7 +64,7 @@ I started looking for an API, and possibly existing API clients, and I
 quickly figured Lockwise was built on top of Firefox Sync's `passwords`
 collection.
 
-Looking up "Firefox Sync API" lead me to [this post from 2016 on Stack Overflow](https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist),
+Looking up "Firefox Sync API" led me to [this post from 2016 on Stack Overflow](https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist),
 where the top answer, which is also the only answer, points to the [Sync client documentation](https://mozilla-services.readthedocs.io/en/latest/sync/index.html)
 and mentions an existing [Python client](https://github.com/mozilla-services/syncclient).
 
@@ -83,7 +83,7 @@ up-to-date, definitely not actively maintained, and it's even
 [documented as a proof of concept](https://github.com/mozilla-services/syncclient/blob/efe0d49a8bd00d341b6e926f6783325b3fe7b676/syncclient/client.py#L11).
 
 I try to use it but `pip install -r requirements.txt` fails with some
-weird error. Since I also noticed there was a [Node.js client](#unofficial-node-js-client), I
+weird error. Since I also noticed there was a [Node.js client](#unofficial-node-js-client),
 I left it at that.
 
 I later came back to it while writing this post, and it turns out after

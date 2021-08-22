@@ -130,7 +130,7 @@ just `id`s, you can already link to your own titles and build a table of
 contents. More technical users can still inspect the page to find
 the `id`s and use them as anchors.
 
-Sometimes, the smartest way to implement a non-standard feature, might be
+Sometimes, the smartest way to implement a nonstandard feature, might be
 to... not?
 
 ## Another take on accessible permalinks

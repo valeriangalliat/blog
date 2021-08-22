@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [dmenumoji: dmenu with built-in libxft-bgra and emoji support](2021/08/dmenu-libxft-bgra-emoji-support.md) <small>August 11, 2021</small>
 * [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
 * [Detailed recipe to make beer with the Robobrew BrewZilla](2021/06/detailed-recipe-to-make-beer-with-the-robobrew-brewzilla.md) <small>June 3, 2021</small>
 * [macOS screen recording with system audio](2021/05/macos-screen-recording-with-system-audio.md) <small>May 13, 2021</small>
-* [Gum graft from a patient's perspective](2021/04/gum-graft-from-a-patient-s-perspective.md) <small>April 28, 2021</small>
 
 [More posts](posts.md)
 

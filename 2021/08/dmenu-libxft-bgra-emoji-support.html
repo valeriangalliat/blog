@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>dmenumoji: dmenu with built-in libxft-bgra and emoji support</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:,">
+  <meta property="og:title" content="dmenumoji: dmenu with built-in libxft-bgra and emoji support">
+  <meta property="og:description" content="To get dmenu to work with emojis, you need to compile it from source against libxft-bgra (from this PR), after removing the iscol check in drw.c that prevents colored fonts to be used, and configuring a colored font in config.h or config.def.h (see patches below).">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>dmenumoji: dmenu with built-in libxft-bgra and emoji support</h1>
+<p class="date">August 22, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr">TLDR</a></h2>
+<p>To get dmenu to work with emojis, you need to compile it from source
+against <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> (from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>),
+after removing the <code>iscol</code> check in <code>drw.c</code> that prevents colored fonts
+to be used, and configuring a colored font in <code>config.h</code> or
+<code>config.def.h</code> (see patches below).</p>
+<p>Go check out <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
+that does all that work for you!</p>
+<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="#the-story">The story</a></h2>
+<p>A couple weeks ago, during my daily procrastination routine (I like to
+procrastinate in the mornings right after meditating and taking a cold
+shower), I figured it would be nice to have some kind of emoji picker on
+my Arch Linux rig.</p>
+<p>I quickly found <a href="https://askubuntu.com/questions/1045915/how-to-insert-an-emoji-into-a-text-in-ubuntu-18-04-and-later">this thread</a>,
+sadly a lot of the solutions there are specific to particular desktop
+environments, and I’m not using any. Although <a href="https://github.com/tom-james-watson/Emote">Emote</a>
+looks promising, and has an <a href="https://aur.archlinux.org/packages/emote">AUR package</a>,
+it <a href="https://github.com/tom-james-watson/Emote/issues/44">fails to paste in terminals</a>.
+Since I spend most of my time in terminals so this is not an option.</p>
+<p>That’s when I find about <a href="https://github.com/fdw/rofimoji"><code>rofimoji</code></a>
+which is even already packaged on Arch, and it’s definitely an awesome
+piece of software, but I’m a dmenu user and I would rather keep things
+consistent.</p>
+<p>Since I like the idea of a dmenu-based emoji picker, I start looking
+specifically for that and find <a href="https://github.com/porras/dmenu-emoji">dmenu-emoji</a>,
+which despite the name, is actually meant to be used with Rofi, but also
+claims to work with dmenu. But when I try it with plain dmenu, the
+emojis only show up as empty squares. Not ideal.</p>
+<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="#making-dmenu-show-emojis">Making dmenu show emojis</a></h2>
+<p>Trying to figure that issue, I stumble upon <a href="https://youtu.be/0QkByBugq_4">this video</a>
+which explains that you need to compile dmenu from source against
+<a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a>, a patched version of libXft from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>
+that adds support for colored (BGRA) glyphs, all of that after patching
+dmenu itself to remove a workaround that they added to prevent crashes
+with libXft’s lack of support for BGRA glyphs, that dropped support for
+colored fonts in the first place.</p>
+<p>Typically this is done on Arch by installing <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> from the AUR,
+and applying the following patch to the dmenu source, as explained in
+the video.</p>
+<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/drw.c b/drw.c</span>
+<span class="hljs-comment">index 4cdbcbe..c1c265c 100644</span>
+<span class="hljs-comment">--- a/drw.c</span>
+<span class="hljs-comment">+++ b/drw.c</span>
+<span class="hljs-meta">@@ -133,19 +133,6 @@</span> xfont_create(Drw *drw, const char *fontname, FcPattern *fontpattern)
+ 		die(&quot;no font specified.&quot;);
+ 	}
+ 
+<span class="hljs-deletion">-	/* Do not allow using color fonts. This is a workaround for a BadLength</span>
+<span class="hljs-deletion">-	 * error from Xft with color glyphs. Modelled on the Xterm workaround. See</span>
+<span class="hljs-deletion">-	 * https://bugzilla.redhat.com/show_bug.cgi?id=1498269</span>
+<span class="hljs-deletion">-	 * https://lists.suckless.org/dev/1701/30932.html</span>
+<span class="hljs-deletion">-	 * https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916349</span>
+<span class="hljs-deletion">-	 * and lots more all over the internet.</span>
+<span class="hljs-deletion">-	 */</span>
+<span class="hljs-deletion">-	FcBool iscol;</span>
+<span class="hljs-deletion">-	if(FcPatternGetBool(xfont-&gt;pattern, FC_COLOR, 0, &amp;iscol) == FcResultMatch &amp;&amp; iscol) {</span>
+<span class="hljs-deletion">-		XftFontClose(drw-&gt;dpy, xfont);</span>
+<span class="hljs-deletion">-		return NULL;</span>
+<span class="hljs-deletion">-	}</span>
+<span class="hljs-deletion">-</span>
+ 	font = ecalloc(1, sizeof(Fnt));
+ 	font-&gt;xfont = xfont;
+ 	font-&gt;pattern = pattern;
+</code></pre>
+<p>I tried all of that, but still had the same issue! One important detail
+that was missing from that video was that dmenu doesn’t support
+<a href="https://github.com/valeriangalliat/dotfiles/blob/47506803600b0e5b194e35c56a835b54aae72f32/x11/fonts.conf">fontconfig’s fallback fonts</a>,
+and you need to <a href="https://bbs.archlinux.org/viewtopic.php?id=255799">explicitly configure</a>
+an emoji font in dmenu’s source, as you can see in <a href="https://github.com/LukeSmithxyz/dmenu/blob/3a6bc67fbd6df190b002d33f600a6465cad9cfb8/config.h#L8">Luke’s dmenu</a>.</p>
+<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.def.h b/config.def.h</span>
+<span class="hljs-comment">index 1edb647..b55c45c 100644</span>
+<span class="hljs-comment">--- a/config.def.h</span>
+<span class="hljs-comment">+++ b/config.def.h</span>
+<span class="hljs-meta">@@ -4,7 +4,8 @@</span>
+ static int topbar = 1;                      /* -b  option; if 0, dmenu appears at bottom     */
+ /* -fn option overrides fonts[0]; default X11 font or font set */
+ static const char *fonts[] = {
+<span class="hljs-deletion">-	&quot;monospace:size=10&quot;</span>
+<span class="hljs-addition">+	&quot;monospace:size=10&quot;,</span>
+<span class="hljs-addition">+	&quot;emoji:size=10&quot;</span>
+ };
+ static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
+ static const char *colors[SchemeLast][2] = {
+</code></pre>
+<p>After doing so, the emojis did show up! 🎉</p>
+<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="#automating-the-build">Automating the build</a></h2>
+<p>This is great, but it still takes a lot of manual steps, and needs root
+access to install libxft-bgra globally. I think this is unnecessary, and
+I figured it would be cool to compile dmenu <em>statically</em> against the
+patched libXft instead, without touching to the system.</p>
+<p>This is something that can be done easily with the following patch,
+assuming that the libxft-bgra source is in <code>../libxft</code> relative do the
+dmenu source.</p>
+<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.mk b/config.mk</span>
+<span class="hljs-comment">index 05d5a3e..05300a6 100644</span>
+<span class="hljs-comment">--- a/config.mk</span>
+<span class="hljs-comment">+++ b/config.mk</span>
+<span class="hljs-meta">@@ -13,8 +13,8 @@</span> XINERAMALIBS  = -lXinerama
+ XINERAMAFLAGS = -DXINERAMA
+ 
+ # freetype
+<span class="hljs-deletion">-FREETYPELIBS = -lfontconfig -lXft</span>
+<span class="hljs-deletion">-FREETYPEINC = /usr/include/freetype2</span>
+<span class="hljs-addition">+FREETYPELIBS = -lfontconfig -lfreetype -lXrender -lX11 -L../libxft/src/.libs -l:libXft.a</span>
+<span class="hljs-addition">+FREETYPEINC = /usr/include/freetype2 -I$(PWD)/../libxft/include</span>
+ # OpenBSD (uncomment)
+ #FREETYPEINC = $(X11INC)/freetype2
+ 
+</code></pre>
+<p>Then libXft can be compiled with:</p>
+<pre><code class="hljs language-sh">./autogen.sh
+make
+</code></pre>
+<p>And dmenu with:</p>
+<pre><code class="hljs language-sh">make
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> libXft needs <code>xorg-util-macros</code> to be installed in order to
+generate the man pages. Since I don’t really need that, I added a
+further <a href="https://github.com/valeriangalliat/dmenumoji/blob/master/libxft.patch">patch</a>
+that removes the check for this library, and build with <code>make SUBDIRS=src</code>
+to ignore the <code>man</code> directory.</p>
+</div>
+<p>This leaves us with a statically linked version of dmenu against
+libxft-bgra with proper support for colored glyphs. 🥳</p>
+<figure class="center">
+  <img alt="dmenumoji in action" src="https://raw.githubusercontent.com/valeriangalliat/dmenumoji/master/preview.png">
+  <figcaption>dmenumoji in action</figcaption>
+</figure>
+<p>Now, all we need is to combine all the earlier patches to a
+<code>dmenu.patch</code>, and make a neat <a href="https://github.com/valeriangalliat/dmenumoji/blob/master/Makefile">makefile</a>
+to do all that work for us, including cloning the dmenu and libXft
+repositories, applying the BGRA patch as well as our dmenu patch, and
+compiling everything.</p>
+<pre><code class="hljs language-makefile"><span class="hljs-section">all: dmenu/dmenu</span>
+
+<span class="hljs-section">dmenu/dmenu: dmenu libxft/src/.libs/libXft.a</span>
+	make -C <span class="hljs-variable">$&lt;</span>
+
+<span class="hljs-section">dmenu:</span>
+	git clone --branch 5.0 https://git.suckless.org/dmenu
+	patch -d <span class="hljs-variable">$@</span> &lt; dmenu.patch
+
+<span class="hljs-section">libxft/src/.libs/libXft.a: libxft</span>
+	cd <span class="hljs-variable">$&lt;</span> &amp;&amp; ./autogen.sh &amp;&amp; make SUBDIRS=src
+
+<span class="hljs-section">libxft: libxft-bgra.patch</span>
+	git clone https://gitlab.freedesktop.org/xorg/lib/libxft.git
+	@<span class="hljs-comment"># Remove check for xorg-util-macros that&#x27;s only used to add `.1` at the</span>
+	@<span class="hljs-comment"># end of a man page we&#x27;re not gonna use.</span>
+	patch -d <span class="hljs-variable">$@</span> &lt; libxft.patch
+	patch -d <span class="hljs-variable">$@</span> -p1 &lt; <span class="hljs-variable">$&lt;</span>
+
+<span class="hljs-section">libxft-bgra.patch:</span>
+	curl -o <span class="hljs-variable">$@</span> https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1.patch
+</code></pre>
+<p>With that, a simple <code>make</code> command gives us a fully working dmenu with
+emoji support. You can find all of that (and more) in the <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
+repo I created to bundle everything together!</p>
+<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="#bonus-dynamically-linked-against-a-custom-location">Bonus: dynamically linked against a custom location</a></h2>
+<p>Out of curiosity, I wanted to see what it would take, to dynamically
+link to our patched version of libXft without installing it in the
+standard library path (e.g. <code>/usr/lib</code>).</p>
+<p>It turns out that you can pass linker options to the compiler through
+the <code>-Wl</code> option, which allows us to use <code>-rpath</code> to append our custom
+libXft directory (specifically the <code>src/.libs</code> path which is where
+libXft builds the shared libraries) to the runtime library search path
+of the executable.</p>
+<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.mk b/config.mk</span>
+<span class="hljs-comment">index 05d5a3e..d3b05c5 100644</span>
+<span class="hljs-comment">--- a/config.mk</span>
+<span class="hljs-comment">+++ b/config.mk</span>
+<span class="hljs-meta">@@ -13,8 +13,8 @@</span> XINERAMALIBS  = -lXinerama
+ XINERAMAFLAGS = -DXINERAMA
+ 
+ # freetype
+<span class="hljs-deletion">-FREETYPELIBS = -lfontconfig -lXft</span>
+<span class="hljs-deletion">-FREETYPEINC = /usr/include/freetype2</span>
+<span class="hljs-addition">+FREETYPELIBS = -lfontconfig -lXft -Wl,-rpath $(PWD)/../libxft/src/.libs</span>
+<span class="hljs-addition">+FREETYPEINC = /usr/include/freetype2 -I$(PWD)/../libxft/include</span>
+ # OpenBSD (uncomment)
+ #FREETYPEINC = $(X11INC)/freetype2
+ 
+</code></pre>
+<p>With that, our dmenu executable will know at runtime to dynamically load
+our locally built libXft that has BGRA support, as long as we don’t move
+it from the nonstandard path we hardcoded there.</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/08/dmenu-libxft-bgra-emoji-support.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

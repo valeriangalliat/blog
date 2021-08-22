@@ -1,4 +1,4 @@
-# dmenumoji: dmenu with built-in libxft-bgra and emoji support
+# dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪
 August 22, 2021
 
 ## TLDR

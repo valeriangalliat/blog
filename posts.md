@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Using your lock screen as login screen on Linux](2021/08/lock-screen-as-login-screen-linux.md) <small>August 22, 2021</small>
 * [dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪](2021/08/dmenu-libxft-bgra-emoji-support.md) <small>August 22, 2021</small>
 * [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>

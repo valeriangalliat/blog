@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Using your lock screen as login screen on Linux</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:,">
+  <meta property="og:title" content="Using your lock screen as login screen on Linux">
+  <meta property="og:description" content="For a very long time I wasn’t using a display manager (also known as login manager). I just had this line in my ~/.zshrc to automatically start a X session after logging in on TTY1, effectively using the TTY login prompt as my login manager:">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://soundcloud.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>SoundCloud</title>
+            <use href="/img/icons/452-soundcloud.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Using your lock screen as login screen on Linux</h1>
+<p class="date">August 22, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>For a very long time I wasn’t using a <a href="https://wiki.archlinux.org/title/Display_manager">display manager</a>
+(also known as login manager). I just had <a href="https://github.com/valeriangalliat/dotfiles/blob/master/zsh/zshrc.home#L6">this line</a>
+in my <code>~/.zshrc</code> to automatically start a X session after logging in on
+TTY1, effectively using the TTY login prompt as my login manager:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Start X on login on TTY1</span>
+<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">&quot;<span class="hljs-variable">$DISPLAY</span>&quot;</span> ] &amp;&amp; [ <span class="hljs-string">&quot;<span class="hljs-variable">$XDG_VTNR</span>&quot;</span> -eq 1 ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">exec</span> startx
+<span class="hljs-keyword">fi</span>
+</code></pre>
+<p>The only drawback to this was that I had to type my username, which is
+redundant as this is a single-user system, and more importantly, that
+the X session was considered to be a TTY session by logind, because
+there’s no way to upgrade a TTY session to a graphical session.</p>
+<p>This affects a number of semantics, especially the way logind deals with
+<a href="https://github.com/systemd/systemd/issues/14053#issuecomment-564138746">detecting idle</a>,
+which is an issue if we want to use logind’s <code>IdleAction</code> for example to
+suspend the system after a period of inactivity.</p>
+<p>Using a display manager makes sure to register the session as graphical
+and fixes that issue, but I didn’t like to introduce another graphical
+interface that’s not consistent with the rest of my system, and I’d
+rather not get into configuring it extensively and theming it.</p>
+<h2 id="logging-in-to-a-lock-screen" tabindex="-1"><a class="header-anchor" href="#logging-in-to-a-lock-screen">Logging in to a lock screen?</a></h2>
+<p>Since I’m the only user of my laptop, I don’t need a fancy interface to
+select among a list of users and such, and it felt like my lock screen
+would be a perfect fit as a login screen. I use i3lock which I configure
+to just show a background and let me type my password to unlock the
+screen.</p>
+<p>While i3lock itself is not meant to be used like this, you can achieve
+this with a combination of LightDM autologin feature, and starting
+i3lock first thing in your <code>~/.xprofile</code>:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Lock screen before actually starting, to be used with autologin</span>
+i3lock -n
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I use the <code>-n</code> (<code>--nofork</code>) option here so that i3lock blocks
+the start script until it’s unlocked.</p>
+</div>
+<p>And the following in <code>/etc/lightdm/lightdm.conf</code> (where <code>foo</code> is your
+username):</p>
+<pre><code class="hljs language-conf">[Seat:*]
+autologin-user=foo
+</code></pre>
+<p>This results in LightDM acting as a totally transparent display manager,
+allowing the logind session to be considered graphical, and i3lock being
+started first thing in the session, blocking until it’s unlocked to
+start the actual window manager.</p>
+<p>It’s so far the lightest way I’ve found to start a graphical session
+without it being considered a TTY by logind, while still being prompted
+for my password. I hope you find this useful!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/08/lock-screen-as-login-screen-linux.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

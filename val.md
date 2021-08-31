@@ -50,6 +50,7 @@ and before that, [Busbud].
 * [Instagram](https://www.instagram.com/funkyval_/) <small>| silly stories I share</small>
 * [Twitter](https://twitter.com/valeriangalliat) <small>| bullshit I say</small>
 * [GitHub](https://github.com/valeriangalliat) <small>| code I write</small>
+* [Freelance](resources/freelance.md) <small>| code I write for you</small>
 * [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| I'm well, thank you</small>
 * [SoundCloud](https://soundcloud.com/funkyval) <small>| music I produce</small>
 * [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>

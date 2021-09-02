@@ -1,9 +1,10 @@
 MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
-ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/458-linkedin.svg
+FEED = dist/feed.xml
+ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/458-linkedin.svg dist/img/icons/412-rss.svg
 ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20210808.css dist/js/main-20210719.js $(ICONS)
 
-build: dist $(HTML) $(ASSETS)
+build: dist $(HTML) $(FEED) $(ASSETS)
 
 dist:
 	git worktree add dist gh-pages
@@ -48,6 +49,9 @@ dist/index.html: index.md head.html foot.html
 dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
 	./scripts/render $< > $@
+
+dist/feed.xml: feed.xml dist/posts.html
+	./scripts/generate-feed > $@
 
 dist/css/normalize.css: node_modules/normalize.css/normalize.css
 	cp $< $@

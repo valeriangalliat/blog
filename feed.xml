@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<feed xmlns="http://www.w3.org/2005/Atom">
+  <title>CodeJam</title>
+  <subtitle>Hey, I’m Val, welcome to my blog!</subtitle>
+  <link href="https://www.codejam.info/feed.xml" rel="self" />
+  <link href="https://www.codejam.info/" />
+  <id>https://www.codejam.info/</id>
+  <updated />
+  <author>
+    <name>Val</name>
+  </author>
+</feed>

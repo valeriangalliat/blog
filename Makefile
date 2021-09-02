@@ -43,11 +43,11 @@ dev:
 
 dist/index.html: index.md head.html foot.html
 	mkdir -p $$(dirname $@)
-	./render $< | sed 's/class="page"/class="page index"/' > $@
+	./scripts/render $< | sed 's/class="page"/class="page index"/' > $@
 
 dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
-	./render $< > $@
+	./scripts/render $< > $@
 
 dist/css/normalize.css: node_modules/normalize.css/normalize.css
 	cp $< $@

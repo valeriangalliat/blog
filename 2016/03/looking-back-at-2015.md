@@ -487,7 +487,7 @@ least.
 
 That was a pretty intense year for me; finishing my studies, leaving my
 job, family and friends to start from scratch in a new country, where I
-had my first full time job and also my first flatsharing experience!
+had my first full-time job and also my first flatsharing experience!
 
 It will be hard to make 2016 even more awesome, but I'm happy I quickly
 found a stable situation that gives me peace of mind, and I think like

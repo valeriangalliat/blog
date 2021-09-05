@@ -10,7 +10,7 @@ dist:
 	git worktree add dist gh-pages
 
 pull:
-	git pull && git -C dist pull
+	git -C dist pull && git pull
 
 clean:
 	rm -f $(HTML) $(ASSETS)

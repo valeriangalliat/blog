@@ -43,6 +43,14 @@ or easily repost one of your Facebook posts to Instagram. But it also lets you
 post just to Instagram, and when you do so, you have more freedom over the crop
 and aspect ratio.
 
+<div class="note">
+
+**Note:** this does not work for private accounts, since you need to
+have a "creator" or "business" profile to use Creator Studio, and those
+require the account to be public.
+
+</div>
+
 When you first log into the tool, you will be required to connect your
 Instagram account to a Facebook page. If you don't have a Facebook page yet,
 just create one, that you can mark as unpublished if you don't want it to be

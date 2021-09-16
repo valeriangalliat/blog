@@ -18,7 +18,7 @@ sed -n 's,^<li><a href=",,p' dist/posts.html | head -20 | sed 's/".*//' | while 
     <content type=\"html\"><![CDATA["
 
     sed -n '/<\/header>/,/<footer>/p' "dist/$path" | sed '1,2d;$d' | sed '$d' | ./scripts/absolutify "$url"
-    echo "]]></content>\n  </entry>"
+    printf "]]></content>\n  </entry>\n"
 done
 
 tail -1 feed.xml

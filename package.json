@@ -5,6 +5,7 @@
   },
   "dependencies": {
     "@sindresorhus/slugify": "^1.1.0",
+    "emojicon-big": "^1.1.0",
     "escape-html": "^1.0.3",
     "highlight.js": "^11.2.0",
     "icomoon-free-npm": "0.0.0",
@@ -20,6 +21,6 @@
   },
   "devDependencies": {
     "chokidar-cli": "^2.1.0",
-    "standard": "^16.0.1"
+    "standard": "^16.0.3"
   }
 }

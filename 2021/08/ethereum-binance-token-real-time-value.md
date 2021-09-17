@@ -184,6 +184,10 @@ and [`PancakeFactory`](https://bscscan.com/address/0xca143ce32fe78f1f7019d7d551a
 contracts. Copy the ABI JSON and put them respectively in
 `checoin.json`, `wbnb.json` and `pair.json` and `factory.json`.
 
+I you need to do that programmatically, you can check out the [BscScan API](https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes)
+or [Etherscan API](https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes)
+that feature an endpoint to fetch a given contract ABI.
+
 ### Calling the smart contracts
 
 Now, we got everything we need to call the contracts with [web3.js](https://web3js.readthedocs.io/).

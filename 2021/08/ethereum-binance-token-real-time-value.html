@@ -221,6 +221,9 @@ verifiability, so we can usually grab it from there.</p>
 and <a href="https://bscscan.com/address/0xca143ce32fe78f1f7019d7d551a6402fc5350c73#code"><code>PancakeFactory</code></a>
 contracts. Copy the ABI JSON and put them respectively in
 <code>checoin.json</code>, <code>wbnb.json</code> and <code>pair.json</code> and <code>factory.json</code>.</p>
+<p>I you need to do that programmatically, you can check out the <a href="https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">BscScan API</a>
+or <a href="https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">Etherscan API</a>
+that feature an endpoint to fetch a given contract ABI.</p>
 <h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="#calling-the-smart-contracts">Calling the smart contracts</a></h3>
 <p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
 <p>If you read everything I wrote until now, the code should be

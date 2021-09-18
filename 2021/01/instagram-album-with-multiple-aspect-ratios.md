@@ -61,3 +61,17 @@ and directly create new Instagram posts from there. The UI lets you select a
 different crop / aspect ratio for each of the pictures you upload, so that when
 you post it, they will all show up in their own native aspect ratio on the app.
 Enjoy!
+
+<div class="note">
+
+**Note:** we also noticed that this doesn't work with the iPhone app
+which will show cropped pictures, so it's something to keep in mind.
+
+I've made an update video to go through the latest findings about this
+trick.
+
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/TSm5YOBxKZ0" allowfullscreen></iframe>
+</figure>
+
+</div>

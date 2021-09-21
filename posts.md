@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Keeping Vercel clean and silent](2021/09/keeping-vercel-clean-and-silent.md) <small>September 21, 2021</small>
 * [Tracking the value of an Ethereum or Binance Smart Chain token in real time](2021/08/ethereum-binance-token-real-time-value.md) <small>August 23, 2021</small>
 * [Using your lock screen as login screen on Linux](2021/08/lock-screen-as-login-screen-linux.md) <small>August 22, 2021</small>
 * [dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪](2021/08/dmenu-libxft-bgra-emoji-support.md) <small>August 22, 2021</small>

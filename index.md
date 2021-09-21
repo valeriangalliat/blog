@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [Keeping Vercel clean and silent](2021/09/keeping-vercel-clean-and-silent.md) <small>September 21, 2021</small>
 * [Tracking the value of an Ethereum or Binance Smart Chain token in real time](2021/08/ethereum-binance-token-real-time-value.md) <small>August 23, 2021</small>
 * [Using your lock screen as login screen on Linux](2021/08/lock-screen-as-login-screen-linux.md) <small>August 22, 2021</small>
 * [dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪](2021/08/dmenu-libxft-bgra-emoji-support.md) <small>August 22, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [Adding search capability to a static blog using the GitHub API](2021/07/search-static-blog-github-api.md) <small>July 20, 2021</small>
 * [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 15, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>
-* [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
 
 [More posts](posts.md)
 

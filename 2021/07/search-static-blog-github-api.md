@@ -21,7 +21,7 @@ Actually, it should even work here too.
 This blog is fully static, written in Markdown, the source is [hosted on GitHub](https://github.com/valeriangalliat/blog),
 and the live site is hosted on some static site server. Depending on my
 current mood, it can be [GitHub Pages](https://pages.github.com/),
-NGINX, [Netlify](https://www.netlify.com/),
+nginx, [Netlify](https://www.netlify.com/),
 [Vercel](https://vercel.com/), [Render](https://render.com/), or maybe
 CloudFlare or S3 in the future, who knows.
 

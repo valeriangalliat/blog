@@ -1,14 +1,14 @@
-# Keeping Vercel clean and silent
-Or using Vercel without preview deployments (kind of)  
+# Using Vercel without preview deployments
+Keeping Vercel clean and silent  
 September 21, 2021
 
 [Vercel](https://vercel.com/) is a cool hosting service and is my go-to
-to host static websites for free. Why? While I prefer the experience of
-[GitHub Pages](https://pages.github.com/) and
-[Netlify](https://www.netlify.com/), Vercel is the only one that allows
-raw access to HTTP logs for free. Github Pages doesn't have this feature
-and Netlify charges a premium fee for it that's way over my budget for
-small websites.
+for free static hosting. Why? While I prefer the experience of
+[GitHub Pages](https://pages.github.com/), [Netlify](https://www.netlify.com/)
+and [Render](https://render.com/), Vercel [is the only one](free-static-hosting-server-side-analytics.md)
+to allow raw access to HTTP logs for free. GitHub Pages and Render don't
+have this feature and Netlify charges a premium fee for it that's over
+my budget for a small website.
 
 And while I don't use client-side analytics scripts (because they
 technically cannot be reliable), I like to have a sense of my website
@@ -16,8 +16,9 @@ traffic through HTTP logs (the only proper source of truth).
 
 <div class="note">
 
-If you're interested in this topic, I specifically wrote an article on
-how to get access to raw HTTP logs on a Vercel website. Check it out!
+**Note:** if you're interested in this topic, I specifically wrote an
+article on [how to get access to raw HTTP logs on a Vercel website](vercel-custom-log-drain.md).
+Check it out!
 
 </div>
 
@@ -105,8 +106,8 @@ are not in the production branch.
 
 This uses the
 [`test(1)`](https://man7.org/linux/man-pages/man1/test.1.html) command
-to exit with an error when we're on the production branch in order to
-trigger a build.
+(commonly aliased to `[`) to exit with an error when we're on the
+production branch, in order to trigger a build.
 
 The ignored build will still show up in your deployments list as
 "cancelled" deployments, and there's no way around that, but I show you
@@ -128,11 +129,18 @@ want to turn this off, with the following content:
 }
 ```
 
+<div class="note">
+
+**Note:** if you used the previous trick to only run builds in the
+production branch, you only need to add this configuration there.
+
+</div>
+
 ## Garbage collecting dangling deployments
 
 Vercel knows to create preview deployments, but doesn't know when to
 delete them. This means that you need to more or less manually delete
-the old preview deployments that are not needed at all.
+the old preview deployments that are not needed anymore.
 
 It usually doesn't cause any harm to have hundreds of older versions of
 your website available on random public URLs that most likely only your
@@ -162,8 +170,8 @@ vercel remove <project> --safe
 ## Final thoughts
 
 I'm not blaming Vercel for all of this, I'm happy they provide this
-service for free and they're the only ones to include HTTP logs access
-in the free offer.
+service for free and [they're the only ones](free-static-hosting-server-side-analytics.md)
+to include HTTP logs access in the free offer.
 
 Sadly their approach to deploying websites if very far from mine, and
 this requires me to work around those default behaviours to have

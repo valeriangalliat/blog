@@ -35,7 +35,7 @@ how-tos, and collections of interesting links.
 
 There's also a bunch of ideas I don't think worth a blog article, or are
 not relevant anymore. **IT is moving fast, and things can become
-obsolete in less than a year (well, especially on the Web).**
+obsolete in less than a year (well, especially on the web).**
 
 Anyway, in the following days (or months, [if you begin to know me][sp]),
 I'll try to publish most of these resources on this blog.  Since I have

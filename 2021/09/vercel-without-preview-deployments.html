@@ -2,15 +2,15 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Keeping Vercel clean and silent</title>
+  <title>Using Vercel without preview deployments</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="stylesheet" href="/css/normalize.css">
   <link rel="stylesheet" href="/css/github.css">
   <link rel="stylesheet" href="/css/main-20210808.css">
   <link rel="icon" href="data:," data-emoji="🍺">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
-  <meta property="og:title" content="Keeping Vercel clean and silent">
-  <meta property="og:description" content="Vercel is a cool hosting service and is my go-to to host static websites for free. Why? While I prefer the experience of GitHub Pages and Netlify, Vercel is the only one that allows raw access to HTTP logs for free. Github Pages doesn’t have this feature and Netlify charges a premium fee for it that’s way over my budget for small websites.">
+  <meta property="og:title" content="Using Vercel without preview deployments">
+  <meta property="og:description" content="Vercel is a cool hosting service and is my go-to for free static hosting. Why? While I prefer the experience of GitHub Pages, Netlify and Render, Vercel is the only one to allow raw access to HTTP logs for free. GitHub Pages and Render don’t have this feature and Netlify charges a premium fee for it that’s over my budget for a small website.">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
   <meta name="twitter:creator" content="@valeriangalliat">
@@ -76,26 +76,27 @@
   <header>
     <div class="header-inner">
       <div class="content">
-<h1>Keeping Vercel clean and silent</h1>
-<p class="tagline">Or using Vercel without preview deployments (kind of)</p>
+<h1>Using Vercel without preview deployments</h1>
+<p class="tagline">Keeping Vercel clean and silent</p>
 <p class="date">September 21, 2021</p>
       </div>
     </div>
   </header>
   <div class="content">
 <p><a href="https://vercel.com/">Vercel</a> is a cool hosting service and is my go-to
-to host static websites for free. Why? While I prefer the experience of
-<a href="https://pages.github.com/">GitHub Pages</a> and
-<a href="https://www.netlify.com/">Netlify</a>, Vercel is the only one that allows
-raw access to HTTP logs for free. Github Pages doesn’t have this feature
-and Netlify charges a premium fee for it that’s way over my budget for
-small websites.</p>
+for free static hosting. Why? While I prefer the experience of
+<a href="https://pages.github.com/">GitHub Pages</a>, <a href="https://www.netlify.com/">Netlify</a>
+and <a href="https://render.com/">Render</a>, Vercel <a href="free-static-hosting-server-side-analytics.html">is the only one</a>
+to allow raw access to HTTP logs for free. GitHub Pages and Render don’t
+have this feature and Netlify charges a premium fee for it that’s over
+my budget for a small website.</p>
 <p>And while I don’t use client-side analytics scripts (because they
 technically cannot be reliable), I like to have a sense of my website
 traffic through HTTP logs (the only proper source of truth).</p>
 <div class="note">
-<p>If you’re interested in this topic, I specifically wrote an article on
-how to get access to raw HTTP logs on a Vercel website. Check it out!</p>
+<p><strong>Note:</strong> if you’re interested in this topic, I specifically wrote an
+article on <a href="vercel-custom-log-drain.html">how to get access to raw HTTP logs on a Vercel website</a>.
+Check it out!</p>
 </div>
 <h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="#the-problem-with-vercel">The problem with Vercel</a></h2>
 <p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
@@ -158,8 +159,8 @@ are not in the production branch.</p>
 </code></pre>
 <p>This uses the
 <a href="https://man7.org/linux/man-pages/man1/test.1.html"><code>test(1)</code></a> command
-to exit with an error when we’re on the production branch in order to
-trigger a build.</p>
+(commonly aliased to <code>[</code>) to exit with an error when we’re on the
+production branch, in order to trigger a build.</p>
 <p>The ignored build will still show up in your deployments list as
 “cancelled” deployments, and there’s no way around that, but I show you
 below <a href="#garbage-collecting-dangling-deployments">how to garbage collect them</a>.</p>
@@ -174,10 +175,14 @@ want to turn this off, with the following content:</p>
   }
 }
 </code></pre>
+<div class="note">
+<p><strong>Note:</strong> if you used the previous trick to only run builds in the
+production branch, you only need to add this configuration there.</p>
+</div>
 <h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="#garbage-collecting-dangling-deployments">Garbage collecting dangling deployments</a></h2>
 <p>Vercel knows to create preview deployments, but doesn’t know when to
 delete them. This means that you need to more or less manually delete
-the old preview deployments that are not needed at all.</p>
+the old preview deployments that are not needed anymore.</p>
 <p>It usually doesn’t cause any harm to have hundreds of older versions of
 your website available on random public URLs that most likely only your
 team knows about. I just don’t like them being <em>there</em> in the first
@@ -198,15 +203,15 @@ command to remove deployments.</p>
 </figure>
 <h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="#final-thoughts">Final thoughts</a></h2>
 <p>I’m not blaming Vercel for all of this, I’m happy they provide this
-service for free and they’re the only ones to include HTTP logs access
-in the free offer.</p>
+service for free and <a href="free-static-hosting-server-side-analytics.html">they’re the only ones</a>
+to include HTTP logs access in the free offer.</p>
 <p>Sadly their approach to deploying websites if very far from mine, and
 this requires me to work around those default behaviours to have
 something that fits me better.</p>
 <p>If you’re in a similar situation, I hope you found this post useful!</p>
   </div>
   <footer>
-    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/keeping-vercel-clean-and-silent.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/vercel-without-preview-deployments.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
   </footer>
   <script src="/js/emojicon.js"></script>
   <script src="/js/main-20210719.js"></script>

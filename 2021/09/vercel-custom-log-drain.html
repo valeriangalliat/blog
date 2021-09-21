@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vercel custom log drain (dump HTTP traffic for free on a Vercel app)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:," data-emoji="🍺">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Vercel custom log drain (dump HTTP traffic for free on a Vercel app)">
+  <meta property="og:description" content="In the previous post, we compared the different services providing free static website hosting, and their options to access server-side web analytics or raw HTTP logs.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Vercel custom log drain (dump HTTP traffic for free on a Vercel app)</h1>
+<p class="tagline">With Google Cloud free tier and nginx shenanigans</p>
+<p class="date">September 21, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>In the <a href="free-static-hosting-server-side-analytics.html">previous post</a>, we
+compared the different services providing free static website hosting,
+and their options to access server-side web analytics or raw HTTP logs.</p>
+<p><a href="https://vercel.com/">Vercel</a> was the only one to allow accessing
+traffic data for free, but it’s not the easiest thing to do. In this
+article, I’ll show you how.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re in a rush, go straight to the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain">GitHub repo</a>
+which contains the full code for a working integration that allows you
+to manage arbitrary log drains!</p>
+<p>I also give you the link to the <a href="https://vercel.com/integrations/custom-log-drain">live integration that I use for myself</a>,
+and you can use it too!</p>
+<p>Otherwise, if you’re interested in the underlying implementation, read
+on.</p>
+</div>
+<p>I’ll assume that you already have an account with Vercel and deployed
+your app there. This shouldn’t be too bad, but if you like to keep
+things simple, you might want to read a few tips of mine about <a href="vercel-without-preview-deployments.html">keeping Vercel clean and silent</a>.</p>
+<p>Neither of Vercel’s UI, CLI and API directly allow to manage log drains.
+While <a href="https://vercel.com/docs/rest-api#integrations/log-drains">the API has endpoints to manage log drains</a>,
+those are only available to Vercel integrations, and are denied when
+called with a <a href="https://vercel.com/account/tokens">regular user token</a>
+like the ones the CLI and web app use.</p>
+<p>This means that we’ll need to create our own Vercel integration in order
+to have an integration token that will let us call the log drains API.</p>
+<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="#how-does-a-vercel-integration-work">How does a Vercel integration work</a></h2>
+<ul>
+<li>A Vercel integration is a web app hosted on your own domain, which
+needs to respond to a “Vercel callback” page.</li>
+<li>Vercel will redirect the user to that page when they try to install
+your integration, providing a <code>code</code> and <code>next</code> query parameters.</li>
+<li>You can exchange the <code>code</code> parameter for a Vercel API OAuth access token.</li>
+<li>You’re expected to redirect to the URL provided in the <code>next</code>
+parameter once the installation is complete.</li>
+</ul>
+<p>Most integrations will store the OAuth access token and refresh token
+that are exchanged during that process to be able to query the API on
+behalf of the user later on, but for cost and time reasons, <strong>I want to
+keep my integration stateless</strong>. This means that I’ll perform the log
+drain operations only during the installation process, and <strong>will
+instantly forget the token</strong>.</p>
+<p>Because of that, we’ll have to remove the integration and add it again
+if we want to configure a new log drain. Log drains are specific to an
+integration, meaning that when you remove the integration, the log
+drains are removed with it too.</p>
+<p>I could have built a stateful application where I allow to fully manage
+log drains, but then I would need to charge for it to pay for the
+hosting and development costs, and at that point I believe that most
+users who are willing to pay will be happy to pay for Logtrail,
+Sematext, Datadog, LogDNA and others that already have an official
+Vercel integration.</p>
+<div class="note">
+<p><strong>Note:</strong> if I’m wrong with that assumption, and you would pay a monthly
+fee for a service that allows you to fully manage your Vercel log drains
+with arbitrary URLs, <a href="/val.html#links">let me know</a>. If there’s enough
+demand I’ll consider building something!</p>
+</div>
+<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="#creating-our-own-vercel-integration">Creating our own Vercel integration</a></h2>
+<p>For this, head to the <a href="https://vercel.com/dashboard/integrations/console">Vercel integrations console</a>,
+which lists you all the integrations that you have created, and allows
+you to create new ones.</p>
+<p>Click the “create” button. In that form, you need to fill a bunch of
+details about your integration that should be pretty obvious.</p>
+<p>You’ll need to include the redirect URL. If you want to use <a href="https://github.com/valeriangalliat/vercel-custom-log-drain">the repo I mentioned earlier</a>,
+it’s going to be on the <code>/vercel/callback</code> path, on the domain you’re
+going to host it on.</p>
+<p>You can ignore the webhook and configuration URLs unless you want to
+build a stateful version that allows editing the log drains after
+installation (then you’d need the configuration URL specifically).</p>
+<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="#making-the-form">Making the form</a></h3>
+<p>We’ll go for a very basic HTML form that allows selecting between
+<code>json</code>, <code>ndjson</code> and <code>syslog</code> as the log drain type, which are the only
+formats supported by Vercel as of writing, as well as the URL to the log
+drain we want to add.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">method</span>=<span class="hljs-string">&quot;post&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;type&quot;</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;json&quot;</span>&gt;</span>json<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;ndjson&quot;</span>&gt;</span>ndjson<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;syslog&quot;</span>&gt;</span>syslog<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;url&quot;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&quot;URL&quot;</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;submit&quot;</span>&gt;</span>Submit<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+</code></pre>
+<p>See the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/form.html">full HTML</a>
+with a tiny layer of CSS.</p>
+<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="#serving-the-form">Serving the form</a></h3>
+<p>I’ll use <a href="https://www.fastify.io/">Fastify</a> to handle the HTTP requests,
+but <a href="https://expressjs.com/">Express</a> would have worked just fine for
+this too.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>)
+<span class="hljs-keyword">const</span> fastify = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify&#x27;</span>)
+
+<span class="hljs-keyword">const</span> form = fs.readFileSync(<span class="hljs-string">&#x27;form.html&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>)
+
+<span class="hljs-keyword">const</span> app = fastify({ <span class="hljs-attr">logger</span>: <span class="hljs-literal">true</span> })
+
+app.get(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next) {
+    <span class="hljs-keyword">return</span> res.type(<span class="hljs-string">&#x27;text/plain&#x27;</span>).send(<span class="hljs-string">&#x27;Hello!&#x27;</span>)
+  }
+
+  res.type(<span class="hljs-string">&#x27;text/html&#x27;</span>).send(form)
+})
+
+
+app.listen(process.env.PORT || <span class="hljs-number">8080</span>, <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+  <span class="hljs-keyword">if</span> (err) {
+    app.log.error(err)
+    process.exit(<span class="hljs-number">1</span>)
+  }
+})
+</code></pre>
+<p>This gets us running with a simple app that serves the form we just
+built on <code>/vercel/callback</code>.</p>
+<p>If called without <code>code</code> and <code>next</code> parameters, it means we’re not being
+redirected from Vercel integration installation, and we just show a
+simple message to say hello, because the form wouldn’t be useful when
+it’s not called from Vercel.</p>
+<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="#handling-the-form">Handling the form</a></h3>
+<p>First, we’ll need to trade the <code>code</code> parameter for a Vercel OAuth
+access token. We can do that by calling the <code>https://api.vercel.com/v2/oauth/access_token</code>.</p>
+<p>This requires us to configure the OAuth client ID and client secret that
+were provided to you at the end of the <a href="#creating-our-own-vercel-integration">integration creation</a>,
+as well as the redirect URL that we defined during creation.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> qs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;querystring&#x27;</span>)
+<span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
+<span class="hljs-keyword">const</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./config&#x27;</span>)
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getToken</span> (<span class="hljs-params">code</span>) </span>{
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v2/oauth/access_token&#x27;</span>
+
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
+    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/x-www-form-urlencoded&#x27;</span>
+    },
+    <span class="hljs-attr">body</span>: qs.stringify({
+      <span class="hljs-attr">client_id</span>: config.clientId,
+      <span class="hljs-attr">client_secret</span>: config.clientSecret,
+      code,
+      <span class="hljs-attr">redirect_uri</span>: config.redirectUri
+    })
+  })
+
+  <span class="hljs-keyword">if</span> (!res.ok) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
+  }
+
+  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> res.json()
+
+  <span class="hljs-keyword">return</span> json.access_token
+}
+</code></pre>
+<p>With that token, we can call the log drains endpoint to create a new log
+drain.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createLogDrain</span> (<span class="hljs-params">token, body</span>) </span>{
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v1/integrations/log-drains&#x27;</span>
+
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
+    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
+      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
+    },
+    <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify(body)
+  })
+
+  <span class="hljs-keyword">if</span> (!res.ok) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
+  }
+}
+</code></pre>
+<p>Now, we can put those together when handling the <code>POST</code> form submission,
+as well as redirecting to the <code>next</code> URL at the end.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> formBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify-formbody&#x27;</span>)
+
+app.register(formBody)
+
+app.post(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-keyword">async</span> (req, res) =&gt; {
+  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next || !req.body.type || !req.body.url) {
+    <span class="hljs-keyword">return</span> res.code(<span class="hljs-number">400</span>)
+  }
+
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> getToken(req.query.code)
+
+  <span class="hljs-keyword">await</span> createLogDrain(token, {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;custom-log-drain&#x27;</span>,
+    <span class="hljs-attr">type</span>: req.body.type,
+    <span class="hljs-attr">url</span>: req.body.url
+  })
+
+  res.redirect(req.query.next)
+})
+</code></pre>
+<p>You can see <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/index.js">the full code on GitHub</a>.</p>
+<p>After deploying that code, you should be able to use your custom
+integration from the integration marketplace to configure any log drain
+you want for your Vercel apps.</p>
+<p>You can hack on this code if you want to allow setting up the log drain
+only on certain apps and not globally (see other <a href="https://vercel.com/docs/rest-api#integrations/log-drains/create-a-log-drain/request-parameters">request parameters</a>),
+or make it stateful with the option to edit and remove existing log
+drains without having to reinstall the integration.</p>
+<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="#making-a-simple-log-drain-with-nginx">Making a simple log drain with nginx</a></h2>
+<p>Now, we only solved half of the problem. We can configure any URL as a
+log drain on our Vercel apps, but we don’t have a URL to put there yet!
+Most of the logging software as a service apps already have
+<a href="https://vercel.com/integrations#logging">an integration on the marketplace</a>.</p>
+<p>Instead, we want to provide our own URL to handle the logs, in a way
+that’s the cheapest as possible, or ideally free.</p>
+<p>For that, we’re going to leverage the Google Cloud free tier, which
+includes one <code>e2-micro</code> instance for free per billing account.</p>
+<p>It should be easy to get one running and to install nginx on it.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re interested in how I do the initial configuration of
+a Debian Google Cloud VM, I’ll have an article about that very soon.
+Stay tuned!</p>
+</div>
+<p>Then, we’re going to use a cool “hack” that allows us to configure nginx
+to append the <code>POST</code> body of an endpoint directly to the file of our
+choice. This is essentially the definition of a simple HTTP log
+drain.</p>
+<p>First, we’ll define a <code>postdata</code> log format that logs the plain
+unescaped request body to the log file:</p>
+<pre><code class="hljs language-nginx"><span class="hljs-section">http</span> {
+    <span class="hljs-attribute">log_format</span> postdata escape=<span class="hljs-literal">none</span> $request_body;
+}
+</code></pre>
+<p>But we can’t just us it like this. By default, nginx won’t bother
+reading the request body if it’s not doing anything with it, which means
+it won’t be included in the log variables.</p>
+<p>There’s two ways to force nginx to read the request body. One is with the
+<a href="https://github.com/openresty/echo-nginx-module">nginx <code>echo</code> module</a>,
+and the other one (fully native) leverages a hack with the <code>proxy_pass</code>
+directive.</p>
+<p>In both cases, you’ll be able to configure <code>https://your.domain/vercel/drain</code>
+as a Vercel log drain. I find that NDJSON works best with this format.</p>
+<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="#with-echo-read-request-body">With <code>echo_read_request_body</code></a></h3>
+<pre><code class="hljs language-nginx"><span class="hljs-comment"># Make sure this is loaded, method may vary depending on your setup.</span>
+<span class="hljs-attribute">load_module</span> modules/ngx_http_echo_module.so;
+
+<span class="hljs-section">server</span> {
+    <span class="hljs-attribute">location</span> /vercel/drain {
+        <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
+
+        <span class="hljs-attribute">if</span> ($request_method = POST) {
+            <span class="hljs-comment"># Wherever you want to store your logs.</span>
+            <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
+
+            <span class="hljs-comment"># Required to force nginx to read the request body,</span>
+            <span class="hljs-comment"># otherwise it won&#x27;t log anything.</span>
+            echo_read_request_body;
+        }
+    }
+}
+</code></pre>
+<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="#with-proxy-pass-hack">With <code>proxy_pass</code> hack</a></h3>
+<p>If you don’t want to load <code>ngx_http_echo_module</code>, you can instead use
+the native <code>proxy_pass</code> directive to force nginx to read the request
+body.</p>
+<p>Since <code>proxy_pass</code> needs to proxy to <em>something</em>, the trick consists
+into defining a “black hole” endpoint to proxy to. Because <code>proxy_pass</code>
+will need to read the whole HTTP body in order to forward it, it will
+become accessible to our log format.</p>
+<pre><code class="hljs language-nginx"><span class="hljs-section">server</span> {
+    <span class="hljs-attribute">location</span> /vercel/empty {
+      <span class="hljs-attribute">return</span> <span class="hljs-number">204</span>;
+    }
+
+    <span class="hljs-attribute">location</span> /vercel/drain {
+        <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
+
+        <span class="hljs-attribute">if</span> ($request_method = POST) {
+            <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
+
+            <span class="hljs-comment"># Adapt this to whatever your server responds to, or</span>
+            <span class="hljs-comment"># feel free to use `$scheme`, `$server_name`, `$host`,</span>
+            <span class="hljs-comment"># `$server_port` and so on.</span>
+            <span class="hljs-attribute">proxy_pass</span> http://localhost/vercel/empty;
+        }
+    }
+}
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<p>You should now have everything you need to store your Vercel logs in
+plain text files on a Google Cloud free tier VM (or wherever else you
+wanted to)!</p>
+<p>You’re now free to <code>grep</code> through them or do whatever magic you want
+with the data to get all the stats and insights that you want. And all
+of that for free (or nearly).</p>
+<div class="note">
+<p><strong>Note:</strong> if you need to forward your Vercel logs to a custom endpoint
+but this article was too technical for you, feel free to <a href="/val.html#links">contact me</a>,
+I’m available for <a href="/resources/freelance.html">freelance work</a> and I’ll be
+happy to help you with that.</p>
+</div>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/vercel-custom-log-drain.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

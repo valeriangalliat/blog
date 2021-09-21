@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Free static hosting with server-side analytics</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:," data-emoji="🍺">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Free static hosting with server-side analytics">
+  <meta property="og:description" content="This blog has been hosted on GitHub Pages for a while, but I was getting frustrated of not having any idea of the traffic it was getting, and I was really curious to find out.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Free static hosting with server-side analytics</h1>
+<p class="tagline">Comparing GitHub Pages, Netlify, Cloudflare, Google Cloud and Vercel</p>
+<p class="date">September 21, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This blog has been hosted on <a href="https://pages.github.com/">GitHub Pages</a>
+for a while, but I was getting frustrated of not having any idea of the
+traffic it was getting, and I was really curious to find out.</p>
+<p>The only way to get traffic insights on GitHub pages is through
+client-side analytics scripts, which is technically very unreliable, and
+I’d rather not get any data than getting data that I cannot trust, and
+which on top of that negatively impacts the performance of my site.</p>
+<p>What I want is raw access to HTTP logs, which is the only proper source
+of truth for this.</p>
+<p>In the first part of this series, I’ll compare different free static
+hosting services and their options to get access to server-side
+analytics or logs. Then, I’ll show you <a href="vercel-custom-log-drain.html">in the second part</a>
+how to retrieve logs on a Vercel app, which is the only service I found
+to provide HTTP logs as part of their free offer!</p>
+<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="#github-pages">GitHub Pages</a></h2>
+<p><a href="https://pages.github.com/">GitHub Pages</a> is the easiest option to host
+a static website for free, especially if you’re already working with
+GitHub, but it doesn’t have an option to access HTTP logs.</p>
+<p>The only method they document is using Google Analytics or a similar
+script, but that’s not an acceptable solution to me. Let’s move on.</p>
+<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="#netlify">Netlify</a></h2>
+<p><a href="https://www.netlify.com/">Netlify</a> is my next favorite way to deploy a
+static website. They also have a <a href="https://www.netlify.com/products/analytics/">Netlify Analytics</a>,
+product, an analytics platform based on server logs, which is exactly
+what I want!</p>
+<p>As they point out in their marketing page, it’s “data right from the
+source of truth”, it’s got “better performance”, “more accurate
+numbers”, “better privacy” and gives you access to extra metrics you can
+only get on the server side.</p>
+<p>To me this the only proper way to get traffic analytics on the web.</p>
+<p>But they price that feature at $9 per month per site, which to be honest
+is pretty decent if you have a website that’s generating some cash, but
+my blog is not and my current budget is closer to $0.</p>
+<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="#cloudflare">Cloudflare</a></h2>
+<p><a href="https://www.cloudflare.com/">Cloudflare</a> also has a free static hosting
+offer. They’ve got a <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Analytics</a>
+product, but the free version is only powered by a client-side script,
+which as we saw earlier, is useless.</p>
+<p>Otherwise, the option to have analytics based on server logs starts with
+the “pro” plan that’s $20 per month. Too much for me.</p>
+<p>They also offer <a href="https://www.cloudflare.com/products/cloudflare-logs/">Cloudflare Logs</a>
+which seems like it would at least give access to raw HTTP logs, but the
+pricing is not mentioned and you need to contact their sales department
+to maybe get access to it. Doesn’t look good.</p>
+<h2 id="render" tabindex="-1"><a class="header-anchor" href="#render">Render</a></h2>
+<p><a href="https://render.com/">Render</a> is another service with free static
+hosting, and a it’s a very well built product. Simple and efficient. Out
+of all the websites in this list, it’s the one with my favorite UI so
+far. Gets shit done, no bullshit. 😍</p>
+<p>I especially love the fact that they allow to configure any public Git
+URL to pull from, without forcing you to connect with GitHub or another
+hosted Git provider through OAuth like it’s the case with <a href="#vercel">Vercel</a>.</p>
+<p>Sadly, while you can <a href="https://render.com/docs/log-streams">configure a syslog drain</a>,
+it only forward application logs and doesn’t include edge load balancer
+HTTP logs, which is the only thing I care about.</p>
+<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="#google-cloud-free-tier-vm">Google Cloud free tier VM</a></h2>
+<p>While it’s very different from the other managed services I mention in
+this list, <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">Google Cloud</a>
+allows you to run a <code>e2-micro</code> instance constantly for free.</p>
+<p>The <code>e2-micro</code> instance has access to 0.25 vCPU and can burst up to 2
+vCPUs. It’s got 1 GB of RAM, and you’re allowed up to 30 GB of storage
+for free. You can even assign it a static IP that will stay free as long
+as it’s in use.</p>
+<p>It’s a pretty underpowered machine but will be way fine for serving
+static websites, for example with nginx, as long as it doesn’t have a
+ridiculous amount of traffic.</p>
+<p>The only caveat is that you still have to <a href="https://cloud.google.com/vpc/network-pricing">pay for traffic</a>.</p>
+<p>Ingress traffic is free (data going in the VM), but you’ll have to pay
+for egress traffic (data going out of the VM). In other words, this
+means that someone uploading a large file to your VM will be nearly
+free, but serving a large file to someone will impact your billing.</p>
+<p>Typically this is low enough to be negligible, but Google will be happy
+to charge your credit card for $0.03 every month.</p>
+<p>And because <em>you’re the server</em>, you can do whatever the fuck you want,
+like logging HTTP traffic to <code>/var/log</code>.</p>
+<p>This solution requires a bit of system administration knowledge, but if
+like me, you find it to be exciting and a lot of fun, it’s definitely a
+good solution. That being said you’ll also be responsible of managing
+the VM, keeping it up-to-date, and fixing any issue that might happen
+with it, otherwise you website might get some downtime.</p>
+<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="#vercel">Vercel</a></h2>
+<p>Finally, <a href="https://vercel.com/">Vercel</a> also has free static hosting. Yay!</p>
+<p>They even have a <a href="https://vercel.com/analytics">Vercel Analytics</a>
+product, but it’s mostly focused on performance, and the data is
+captured on the client side. Makes sense for performance data, but not
+what I want.</p>
+<p>They also have <a href="https://vercel.com/docs/deployments/logs">logs</a>, which
+can even be <a href="https://vercel.com/docs/deployments/logs#persistence">persisted</a>,
+through <a href="https://vercel.com/integrations#logging">logging integrations</a>.</p>
+<p>This is great, but the whole point I’m doing this comparison is because
+I want a <em>free</em> hosting with logs. If I’m not willing to pay for
+hosting, I’m not going to pay for Logtrail, Sematext, Datadog or LogDNA. 😆</p>
+<p>The good news is that the logging integrations are built on top of <a href="https://vercel.com/docs/rest-api#integrations/log-drains">log
+drains</a>, and
+Vercel allows to <a href="https://vercel.com/docs/integrations">create custom integrations</a>.
+This means that we can create our own custom integration, and for
+example, configure a log drain that forwards the logs to… a <a href="#google-cloud-free-tier-vm">Google Cloud free tier VM</a>!</p>
+<p>This is the best of both words, because Google Cloud won’t charge for
+ingress (and sending data to it is indeed ingress), so we’ll only pay
+for the egress of our SSH session where we query the log files, but
+that’s going to be negligible.</p>
+<p>In <a href="vercel-custom-log-drain.html">the next post</a>, I’ll show you how to set
+up Vercel with a custom integration to forward logs to a Google Cloud VM
+(or the log drain of your choice). See you there!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/free-static-hosting-server-side-analytics.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

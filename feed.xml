@@ -5,10 +5,46 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-09-02T20:53:22Z</updated>
+  <updated>2021-09-21T14:03:06Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Keeping Vercel clean and silent</title>
+    <link href="https://www.codejam.info/2021/09/keeping-vercel-clean-and-silent.html" />
+    <id>https://www.codejam.info/2021/09/keeping-vercel-clean-and-silent.html</id>
+    <updated>2021-09-21T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p><a href="https://vercel.com/">Vercel</a> is a cool hosting service and is my go-to
+to host static websites for free. Why? While I prefer the experience of
+<a href="https://pages.github.com/">GitHub Pages</a> and
+<a href="https://www.netlify.com/">Netlify</a>, Vercel is the only one that allows
+raw access to HTTP logs for free. Github Pages doesn’t have this feature
+and Netlify charges a premium fee for it that’s way over my budget for
+some small websites.</p>
+<p>And while I don’t use client-side analytics scripts (because they
+technically cannot be reliable), I like to have a sense of my website
+traffic through HTTP logs (the only proper source of truth).</p>
+<div class="note">
+<p>If you’re interested in this topic, I specifically wrote an article on
+how to get access to raw HTTP logs on a Vercel website. Check it out!</p>
+</div>
+<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/keeping-vercel-clean-and-silent.html#the-problem-with-vercel">The problem with Vercel</a></h2>
+<p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
+<p>I like to keep things simple and minimal, and have the least amount of
+noise possible. Vercel likes to make things complicated, over-engineered
+(relative to what I’m doing with it), and noisy.</p>
+<p>Let’s take the example of this very blog, if I wanted to host it on
+Vercel. The <a href="https://github.com/valeriangalliat/blog">source</a> is on
+GitHub, I keep my Markdown files neatly in the <code>master</code> branch, I
+render them to HTML using a <a href="https://github.com/valeriangalliat/blog/blob/03a140f7c02e540b4bf97c470261d23e3a156fad/Makefile#L49">dependency-based incremental build system</a>
+(also known as makefile) in the <code>gh-pages</code> branch (could be called
+anything else but hey, it was once hosted on GitHub Pages after all).</p>
+<p>I don’t <em>need</em> to re-render the whole site every time I deploy, which is
+why I commit the HTML files on a separate branch, instead of asking
+Vercel or any other hosting platform to compile everything from scratch
+on every deploy. This keeps things <em>fast as fuck</em> and low energy.</p>
+]]></content>
+  </entry>
   <entry>
     <title>Tracking the value of an Ethereum or Binance Smart Chain token in real time</title>
     <link href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html" />
@@ -153,6 +189,9 @@ verifiability, so we can usually grab it from there.</p>
 and <a href="https://bscscan.com/address/0xca143ce32fe78f1f7019d7d551a6402fc5350c73#code"><code>PancakeFactory</code></a>
 contracts. Copy the ABI JSON and put them respectively in
 <code>checoin.json</code>, <code>wbnb.json</code> and <code>pair.json</code> and <code>factory.json</code>.</p>
+<p>I you need to do that programmatically, you can check out the <a href="https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">BscScan API</a>
+or <a href="https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">Etherscan API</a>
+that feature an endpoint to fetch a given contract ABI.</p>
 <h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#calling-the-smart-contracts">Calling the smart contracts</a></h3>
 <p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
 <p>If you read everything I wrote until now, the code should be
@@ -5740,128 +5779,6 @@ ssh-add
 
 DOCKER_BUILDKIT=1 docker build --ssh default .
 </code></pre>
-]]></content>
-  </entry>
-  <entry>
-    <title>Bundle Lambda function with private dependencies using CDK</title>
-    <link href="https://www.codejam.info/2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.html" />
-    <id>https://www.codejam.info/2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.html</id>
-    <updated>2021-04-12T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I use <a href="https://aws.amazon.com/cdk/">CDK</a> to deploy AWS resources, and one of the challenges I’ve had
-recently was to deploy Lambda functions that have external dependencies.</p>
-<p>The functions I want to deploy are written in Python, and CDK
-conveniently provides the <a href="https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-python-readme.html"><code>aws-lambda-python</code></a> module and its
-<code>PythonFunction</code> construct which knows how to install dependencies from
-<code>requirements.txt</code> out of the box, but this doesn’t work for my case as
-it doesn’t support customizing the Docker command used to bundle the
-Lambda function.</p>
-<p>In particular, I need to install dependencies from private repositories
-which requires some credentials to be present in the container.</p>
-<h2 id="cdk-lambda-asset-bundling" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.html#cdk-lambda-asset-bundling">CDK Lambda asset bundling</a></h2>
-<p>Instead, CDK offers a way to write custom bundling logic for Lambda
-functions (which is what <code>PythonFunction</code> uses internally); from their <a href="https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-readme.html#bundling-asset-code">documentation</a>:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
-    <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
-      <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&#x27;pip install -r requirements.txt -t /asset-output &amp;&amp; cp -a . /asset-output&#x27;</span>]
-    }
-  }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
-  <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
-})
-</code></pre>
-<p>The <code>bundling</code> options give us a <a href="https://docs.aws.amazon.com/cdk/api/latest/docs/@aws-cdk_core.BundlingOptions.html">number of parameters</a> to customize the
-Docker container that bundles the Lambda asset, like <code>environment</code> to
-pass credentials in environment variables, or <code>volumes</code> which can be
-used to mount directories or even single files that contains credentials
-or other data you would want inside the bundling container, e.g.:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
-    <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
-      <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&#x27;pip install -r requirements.txt -t /asset-output &amp;&amp; cp -a . /asset-output&#x27;</span>],
-      <span class="hljs-attr">environment</span>: {
-        <span class="hljs-attr">SECRET</span>: <span class="hljs-string">&#x27;token&#x27;</span>
-      },
-      <span class="hljs-attr">volumes</span>: [
-        {
-          <span class="hljs-attr">containerPath</span>: <span class="hljs-string">&#x27;/.secret&#x27;</span>,
-          <span class="hljs-attr">hostPath</span>: <span class="hljs-string">`<span class="hljs-subst">${process.env.HOME}</span>/.secret`</span>
-        }
-      ]
-    }
-  }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
-  <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
-})
-</code></pre>
-<p>This works, at least on my Linux machine, but the <code>pip install</code> command
-failed on macOS with the following error:</p>
-<pre><code class="hljs">ERROR: Exception:
-Traceback (most recent call last):
- File &quot;/var/lang/lib/python3.8/shutil.py&quot;, line 791, in move
-  os.rename(src, real_dst)
-OSError: [Errno 18] Invalid cross-device link: &#x27;/tmp/.../dulwich&#x27; -&gt; &#x27;/asset-output/dulwich&#x27;
-
-During handling of the above exception, another exception occurred:
-
-Traceback (most recent call last):
- File &quot;/var/lang/lib/python3.8/site-packages/pip/_internal/cli/base_command.py&quot;, line 228, in _main
-  status = self.run(options, args)
- File &quot;/var/lang/lib/python3.8/site-packages/pip/_internal/cli/req_command.py&quot;, line 182, in wrapper
-  return func(self, options, args)
- File &quot;/var/lang/lib/python3.8/site-packages/pip/_internal/commands/install.py&quot;, line 455, in run
-  self._handle_target_dir(
- File &quot;/var/lang/lib/python3.8/site-packages/pip/_internal/commands/install.py&quot;, line 512, in _handle_target_dir
-  shutil.move(
- File &quot;/var/lang/lib/python3.8/shutil.py&quot;, line 801, in move
-  copytree(src, real_dst, copy_function=copy_function,
- File &quot;/var/lang/lib/python3.8/shutil.py&quot;, line 557, in copytree
-  return _copytree(entries=entries, src=src, dst=dst, symlinks=symlinks,
- File &quot;/var/lang/lib/python3.8/shutil.py&quot;, line 513, in _copytree
-  raise Error(errors)
-shutil.Error: [(&#x27;/tmp/.../test_porcelain.py&#x27;, &#x27;/asset-output/.../test_porcelain.py&#x27;, &#x27;[Errno 5] Input/output error&#x27;)]
-</code></pre>
-<p>This is especially confusing as searching for <code>OSError: [Errno 18] Invalid cross-device link</code>
-often results in answers recommending to use <code>shutil.move</code> instead of
-<code>os.rename</code>, but we can see in the stack trace that <code>os.rename</code> was
-invoked <em>by</em> <code>shutil.move</code>!</p>
-<p>But if we look at the implementation of <code>shutil.move</code>, we can see that
-the way they support cross fileystem copy is by letting the <code>OSError</code>
-exception happen and handling it. This makes it more obvious that our
-actual issue is the exception that happened during the exception
-handling (<code>[Errno 5] Input/output error</code>)</p>
-<p>It seems that even with their filesystem resilient implementation, we
-still get some IO error when using Docker on macOS.</p>
-<h2 id="the-fix" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/04/bundle-lambda-function-with-private-dependencies-using-cdk.html#the-fix">The fix</a></h2>
-<p>To mitigate that, I modified the suggested command slightly so that we
-install the dependencies in <code>/tmp</code> which is won’t require pip to do any
-cross filesystem operations, and then add that to the <code>cp</code> command we
-already have.</p>
-<p>I also like to replace the hardcoded <code>/asset-output</code> by the constant
-<code>cdk.AssetStaging.BUNDLING_OUTPUT_DIR</code>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
-    <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
-      <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">`pip install -r requirements.txt -t /tmp/deps &amp;&amp; cp -a . /tmp/deps/* <span class="hljs-subst">${cdk.AssetStaging.BUNDLING_OUTPUT_DIR}</span>`</span>],
-      <span class="hljs-attr">environment</span>: {
-        <span class="hljs-attr">SECRET</span>: <span class="hljs-string">&#x27;token&#x27;</span>
-      },
-      <span class="hljs-attr">volumes</span>: [
-        {
-          <span class="hljs-attr">containerPath</span>: <span class="hljs-string">&#x27;/.secret&#x27;</span>,
-          <span class="hljs-attr">hostPath</span>: <span class="hljs-string">`<span class="hljs-subst">${process.env.HOME}</span>/.secret`</span>
-        }
-      ]
-    }
-  }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
-  <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
-})
-</code></pre>
-<p>Hope this helps!</p>
 ]]></content>
   </entry>
 </feed>

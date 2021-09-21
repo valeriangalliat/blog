@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Keeping Vercel clean and silent</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210808.css">
+  <link rel="icon" href="data:," data-emoji="🍺">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Keeping Vercel clean and silent">
+  <meta property="og:description" content="Vercel is a cool hosting service and is my go-to to host static websites for free. Why? While I prefer the experience of GitHub Pages and Netlify, Vercel is the only one that allows raw access to HTTP logs for free. Github Pages doesn’t have this feature and Netlify charges a premium fee for it that’s way over my budget for small websites.">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Keeping Vercel clean and silent</h1>
+<p class="tagline">Or using Vercel without preview deployments (kind of)</p>
+<p class="date">September 21, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p><a href="https://vercel.com/">Vercel</a> is a cool hosting service and is my go-to
+to host static websites for free. Why? While I prefer the experience of
+<a href="https://pages.github.com/">GitHub Pages</a> and
+<a href="https://www.netlify.com/">Netlify</a>, Vercel is the only one that allows
+raw access to HTTP logs for free. Github Pages doesn’t have this feature
+and Netlify charges a premium fee for it that’s way over my budget for
+small websites.</p>
+<p>And while I don’t use client-side analytics scripts (because they
+technically cannot be reliable), I like to have a sense of my website
+traffic through HTTP logs (the only proper source of truth).</p>
+<div class="note">
+<p>If you’re interested in this topic, I specifically wrote an article on
+how to get access to raw HTTP logs on a Vercel website. Check it out!</p>
+</div>
+<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="#the-problem-with-vercel">The problem with Vercel</a></h2>
+<p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
+<p>I like to keep things simple and minimal, and have the least amount of
+noise possible. Vercel likes to make things complicated, over-engineered
+(relative to what I’m doing with it), and noisy.</p>
+<p>Let’s take the example of this very blog, if I wanted to host it on
+Vercel. The <a href="https://github.com/valeriangalliat/blog">source</a> is on
+GitHub, I keep my Markdown files neatly in the <code>master</code> branch, I
+render them to HTML using a <a href="https://github.com/valeriangalliat/blog/blob/03a140f7c02e540b4bf97c470261d23e3a156fad/Makefile#L49">dependency-based incremental build system</a>
+(also known as makefile) in the <code>gh-pages</code> branch (could be called
+anything else but hey, it was once hosted on GitHub Pages after all).</p>
+<p>I don’t <em>need</em> to re-render the whole site every time I deploy, which is
+why I commit the HTML files on a separate branch, instead of asking
+Vercel or any other hosting platform to compile everything from <code>master</code>
+on every deploy. This keeps things <em>fast as fuck</em> and low energy.</p>
+<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="#preview-deployments">Preview deployments</a></h3>
+<p>By default, Vercel expects every branch to be deployable, and they have
+that cool feature of automatically deploying every single commit to a
+random URL (preview deployments). I don’t need preview deployments for
+my blog, but there’s no way to turn them off.</p>
+<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="#very-verbose-vercel">Very verbose Vercel</a></h3>
+<p>They also have the annoying habit of posting a comment on every GitHub
+PR and commit with the deployment URL by default. I hate noise and this
+is pure noise for me. Luckily there’s a non-intuitive way of turning it
+off and I’ll show you how.</p>
+<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="#managing-garbage">Managing garbage</a></h3>
+<p>Finally, because each PR and commit is going to trigger a deployment
+with a not-so-temporary URL. This creates a lot of old, unused, garbage
+deployments, and Vercel doesn’t know when you don’t need them anymore
+and consider them garbage (for me, like, instantly, for anything that’s
+not the latest production build).</p>
+<p>You can either remove them manually (sad), or you can periodically run a
+command that does just that for you (also sad, but less sad), and I’ll
+show you how.</p>
+<p>Let’s get into it.</p>
+<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="#turning-off-preview-deployments-kinda">Turning off preview deployments (kinda)</a></h2>
+<p>I guess that the whole point of Vercel is to offer preview deployments,
+so they didn’t really consider the use case where you would want to
+remove them.</p>
+<p>But if you go in your project settings, under the Git section, you can
+configure a “ignored build step” command.</p>
+<figure class="center">
+  <img alt="Ignored build step" src="../../img/2021/09/vercel-ignored-build-step.png">
+</figure>
+<p>It’s a command whose exit code will determine whether Vercel will
+actually deploy the branch. When the command errors out (exits with a
+nonzero code), a new build will be triggered, but if the commands
+succeeds (exits with 0), this build will be ignored.</p>
+<p>You can <a href="https://vercel.com/docs/projects/overview#ignored-build-step">run Git commands there</a>,
+but I like to keep it simple and just rely on the <code>VERCEL_ENV</code>
+environment variable to only allow builds on the production branch
+(<code>gh-pages</code> in my case) as defined in “production branch”.</p>
+<figure class="center">
+  <img alt="Production branch" src="../../img/2021/09/vercel-production-branch.png">
+</figure>
+<p>By using the following command, I can effectively ignore all builds that
+are not in the production branch.</p>
+<pre><code class="hljs language-sh">[ <span class="hljs-string">&quot;<span class="hljs-variable">$VERCEL_ENV</span>&quot;</span> != production ]
+</code></pre>
+<p>This uses the
+<a href="https://man7.org/linux/man-pages/man1/test.1.html"><code>test(1)</code></a> command
+to exit with an error when we’re on the production branch in order to
+trigger a build.</p>
+<p>The ignored build will still show up in your deployments list as
+“cancelled” deployments, and there’s no way around that, but I show you
+below <a href="#garbage-collecting-dangling-deployments">how to garbage collect them</a>.</p>
+<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="#getting-rid-of-bot-comments">Getting rid of bot comments</a></h2>
+<p>By default Vercel will comment on every PR and commit with the link to
+the deployment.</p>
+<p>To avoid that, create a <code>vercel.json</code> file in every branch where you
+want to turn this off, with the following content:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;github&quot;</span>: {
+    <span class="hljs-attr">&quot;silent&quot;</span>: <span class="hljs-literal">true</span>
+  }
+}
+</code></pre>
+<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="#garbage-collecting-dangling-deployments">Garbage collecting dangling deployments</a></h2>
+<p>Vercel knows to create preview deployments, but doesn’t know when to
+delete them. This means that you need to more or less manually delete
+the old preview deployments that are not needed at all.</p>
+<p>It usually doesn’t cause any harm to have hundreds of older versions of
+your website available on random public URLs that most likely only your
+team knows about. I just don’t like them being <em>there</em> in the first
+place.</p>
+<figure class="center">
+  <img alt="Dangling deployments" src="../../img/2021/09/vercel-dangling-deployments.png">
+  <figcaption>I don't know about you, but that makes me anxious.</figcaption>
+</figure>
+<p>With the <a href="https://vercel.com/docs/cli">Vercel CLI</a>, which you can
+install with <code>npm install -g vercel</code>, you can use the <a href="https://vercel.com/docs/cli#commands/remove"><code>vercel remove</code></a>
+command to remove deployments.</p>
+<p>Specifically, to remove everything but deployments with an active production or preview URL, run:</p>
+<pre><code class="hljs language-sh">vercel remove &lt;project&gt; --safe
+</code></pre>
+<figure class="center">
+  <img alt="Clean deployments" src="../../img/2021/09/vercel-clean-deployments.png">
+  <figcaption>Now this is better!</figcaption>
+</figure>
+<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="#final-thoughts">Final thoughts</a></h2>
+<p>I’m not blaming Vercel for all of this, I’m happy they provide this
+service for free and they’re the only ones to include HTTP logs access
+in the free offer.</p>
+<p>Sadly their approach to deploying websites if very far from mine, and
+this requires me to work around those default behaviours to have
+something that fits me better.</p>
+<p>If you’re in a similar situation, I hope you found this post useful!</p>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/keeping-vercel-clean-and-silent.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

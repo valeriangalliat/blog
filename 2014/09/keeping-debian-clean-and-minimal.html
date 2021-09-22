@@ -88,12 +88,12 @@ at work and school, as well as on some servers.</p>
 from the “What to install?” list, so I just have the bare minimum
 packages, and I have a full control over what I install next. But the
 fact is <strong>this is not enough</strong>.</p>
-<p>Apt packages, along with dependencies, have two other “related packages”
+<p>APT packages, along with dependencies, have two other “related packages”
 lists. <strong>Recommendations</strong> and <strong>suggestions</strong>. Unlike hard
 dependencies, these packages are optional – the software can work
 without them – but you can have additional functionality with them,
 that you may or may not need (protip: most of the time, you don’t).</p>
-<p>By default, Apt installs <em>everything</em>, including recommendations
+<p>By default, APT installs <em>everything</em>, including recommendations
 and suggestions. This is how, <em>by default</em>, <code>imagemagick</code> will come as
 an <code>nmap</code> suggestion/recommendation (with several layers of
 indirection). Do you really expect an image manipulation tool (and all
@@ -101,29 +101,27 @@ its related image and fonts libraries) to come with a network scanner?
 <strong>I do not.</strong></p>
 <h2 id="kill-it-with-fire" tabindex="-1"><a class="header-anchor" href="#kill-it-with-fire">Kill it with fire!</a></h2>
 <figure class="left">
-  <object data="http://i1.kym-cdn.com/photos/images/newsfeed/000/337/603/43f.gif" type="image/gif">
-    <object data="http://img.pandawhale.com/91787-kill-it-with-fire-gif-2mNC.gif" type="image/gif">
-      <object data="http://gifsec.com/wp-content/uploads/GIF/2014/03/GIF-Kill-it-with-fire.gif" type="image/gif">
-        <img alt="Kill it with fire!" src="https://val.codejam.info/public/gif/kill-it-with-fire.gif">
-      </object>
+  <object data="https://i1.kym-cdn.com/photos/images/newsfeed/000/337/603/43f.gif" type="image/gif">
+    <object data="https://gifsec.com/wp-content/uploads/GIF/2014/03/GIF-Kill-it-with-fire.gif" type="image/gif">
+      <img alt="Kill it with fire!" src="https://val.codejam.info/public/gif/kill-it-with-fire.gif">
     </object>
   </object>
 </figure>
 <p><small><em>Not Debian. Not yet. But let’s begin with all these useless
 packages.</em></small></p>
-<p>We’re gonna configure Apt to automatically consider those
+<p>We’re gonna configure APT to automatically consider those
 non-explicitly installed suggestions/recommendations as orphans, so we
 can easily purge them. We will also configure it so these packages
 <em>will no longer be installed in the first place</em>. All you need is
 <del>love</del>:</p>
 <pre><code class="hljs"># /etc/apt/apt.conf
-Apt::Install-Recommends false;
-Apt::Install-Suggests false;
-Apt::AutoRemove::RecommendsImportant false;
-Apt::AutoRemove::SuggestsImportant false;
+APT::Install-Recommends false;
+APT::Install-Suggests false;
+APT::AutoRemove::RecommendsImportant false;
+APT::AutoRemove::SuggestsImportant false;
 </code></pre>
-<p>The first two lines tell Apt not to install recommendations and
-suggestions anymore. The next lines tell Apt that existing
+<p>The first two lines tell APT not to install recommendations and
+suggestions anymore. The next lines tell APT that existing
 recommendations/suggestions are not important, thus they can be purged.</p>
 <p>Then, running an <code>aptitude install</code> will prompt you to remove all the
 packages that are not needed anymore (and there will probably be a whole

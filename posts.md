@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [How I set up a minimalist Debian host with nginx and Let's Encrypt](2021/09/minimalist-debian-nginx-let-s-encrypt.md) <small>September 22, 2021</small>
 * [Vercel custom log drain (dump HTTP traffic for free on a Vercel app)](2021/09/vercel-custom-log-drain.md) <small>September 21, 2021</small>
 * [Free static hosting with server-side analytics](2021/09/free-static-hosting-server-side-analytics.md) <small>September 21, 2021</small>
 * [Using Vercel without preview deployments](2021/09/vercel-without-preview-deployments.md) <small>September 21, 2021</small>

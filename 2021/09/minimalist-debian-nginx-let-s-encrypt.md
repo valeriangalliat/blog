@@ -187,8 +187,6 @@ events {
 http {
     sendfile on;
     tcp_nopush on;
-    tcp_nodelay on;
-    keepalive_timeout 65;
     types_hash_max_size 2048;
     # server_tokens off;
 
@@ -207,8 +205,8 @@ http {
 From there, I tweak a few things.
 
 ```diff
-     tcp_nodelay on;
-     keepalive_timeout 65;
+     sendfile on;
+     tcp_nopush on;
      types_hash_max_size 2048;
 -    # server_tokens off;
 +    server_tokens off;
@@ -224,7 +222,7 @@ From there, I tweak a few things.
 +    gzip_vary on;
 +
 +    # Custom list based on Debian's `/etc/nginx/mime.types`.
-+    gzip_types text/html text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;
++    gzip_types text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;
 +
 +    charset utf-8;
  }
@@ -402,6 +400,30 @@ The first block with `default_server` makes sure that nginx returns a
 
 The rest should be self-explanatory.
 
+<div class="note">
+
+**Note:** this will be good for production but because we don't have the
+certificate files yet, nginx will not accept our SSL servers. So comment
+those out in the meantime, and just add the following server that will
+let us generate our initial certificates:
+
+```conf
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    location / {
+        return 404;
+    }
+
+    location /.well-known/acme-challenge {
+        root /var/www/challenges;
+    }
+}
+```
+
+</div>
+
 ### Enabling, starting or reloading nginx
 
 First, let's test the configuration:
@@ -428,8 +450,19 @@ Or reload its configuration if it was already running
 systemctl reload nginx
 ```
 
+<div class="note">
+
+**Note:** by default when installing a package that comes with a service
+like nginx, Debian automatically enables it and starts it, so you
+probably only need the reload command above at that point.
+
+Use `systemctl status nginx` to see if if it's currently enabled and
+running.
+
+</div>
+
 While in this state we don't have proper TLS certificates to handle
-HTTPS yet, we have everything we need to automatically generate and
+HTTPS just yet, we have everything we need to automatically generate and
 renew TLS certificates with the ACME protocol.
 
 ## Managing TLS certificates with acme.sh

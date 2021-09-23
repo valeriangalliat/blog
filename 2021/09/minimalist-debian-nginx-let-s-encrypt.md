@@ -456,7 +456,7 @@ systemctl reload nginx
 like nginx, Debian automatically enables it and starts it, so you
 probably only need the reload command above at that point.
 
-Use `systemctl status nginx` to see if if it's currently enabled and
+Use `systemctl status nginx` to see if it's currently enabled and
 running.
 
 </div>

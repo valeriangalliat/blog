@@ -215,8 +215,6 @@ I’ll post my custom additions after.</p>
 <span class="hljs-section">http</span> {
     <span class="hljs-attribute">sendfile</span> <span class="hljs-literal">on</span>;
     <span class="hljs-attribute">tcp_nopush</span> <span class="hljs-literal">on</span>;
-    <span class="hljs-attribute">tcp_nodelay</span> <span class="hljs-literal">on</span>;
-    <span class="hljs-attribute">keepalive_timeout</span> <span class="hljs-number">65</span>;
     <span class="hljs-attribute">types_hash_max_size</span> <span class="hljs-number">2048</span>;
     <span class="hljs-comment"># server_tokens off;</span>
 
@@ -231,8 +229,8 @@ I’ll post my custom additions after.</p>
 </code></pre>
 <h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="#val-s-essential-tweaks">Val’s essential tweaks</a></h3>
 <p>From there, I tweak a few things.</p>
-<pre><code class="hljs language-diff">     tcp_nodelay on;
-     keepalive_timeout 65;
+<pre><code class="hljs language-diff">     sendfile on;
+     tcp_nopush on;
      types_hash_max_size 2048;
 <span class="hljs-deletion">-    # server_tokens off;</span>
 <span class="hljs-addition">+    server_tokens off;</span>
@@ -248,7 +246,7 @@ I’ll post my custom additions after.</p>
 <span class="hljs-addition">+    gzip_vary on;</span>
 <span class="hljs-addition">+</span>
 <span class="hljs-addition">+    # Custom list based on Debian&#x27;s `/etc/nginx/mime.types`.</span>
-<span class="hljs-addition">+    gzip_types text/html text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;</span>
+<span class="hljs-addition">+    gzip_types text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;</span>
 <span class="hljs-addition">+</span>
 <span class="hljs-addition">+    charset utf-8;</span>
  }
@@ -404,6 +402,25 @@ main <code>http</code> block which I won’t include again here.</p>
 <p>The first block with <code>default_server</code> makes sure that nginx returns a
 404 for every requests it sees for a domain that it doesn’t know about.</p>
 <p>The rest should be self-explanatory.</p>
+<div class="note">
+<p><strong>Note:</strong> this will be good for production but because we don’t have the
+certificate files yet, nginx will not accept our SSL servers. So comment
+those out in the meantime, and just add the following server that will
+let us generate our initial certificates:</p>
+<pre><code class="hljs language-conf">server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    location / {
+        return 404;
+    }
+
+    location /.well-known/acme-challenge {
+        root /var/www/challenges;
+    }
+}
+</code></pre>
+</div>
 <h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="#enabling-starting-or-reloading-nginx">Enabling, starting or reloading nginx</a></h3>
 <p>First, let’s test the configuration:</p>
 <pre><code class="hljs language-sh">nginx -t
@@ -417,8 +434,15 @@ main <code>http</code> block which I won’t include again here.</p>
 <p>Or reload its configuration if it was already running</p>
 <pre><code class="hljs language-sh">systemctl reload nginx
 </code></pre>
+<div class="note">
+<p><strong>Note:</strong> by default when installing a package that comes with a service
+like nginx, Debian automatically enables it and starts it, so you
+probably only need the reload command above at that point.</p>
+<p>Use <code>systemctl status nginx</code> to see if if it’s currently enabled and
+running.</p>
+</div>
 <p>While in this state we don’t have proper TLS certificates to handle
-HTTPS yet, we have everything we need to automatically generate and
+HTTPS just yet, we have everything we need to automatically generate and
 renew TLS certificates with the ACME protocol.</p>
 <h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="#managing-tls-certificates-with-acme-sh">Managing TLS certificates with acme.sh</a></h2>
 <p><abbr title="Automatic certificate management environment">ACME</abbr>

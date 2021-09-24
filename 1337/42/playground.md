@@ -153,6 +153,13 @@ case you didn't notice.
   </figure>
 </div>
 
+### Centered grid
+
+<figure class="grid">
+  <img alt="H4n Fur" src="../../img/2021/09/h4n-fur.png">
+  <img alt="H4n Pro Fur" src="../../img/2021/09/h4n-pro-fur.png">
+</figure>
+
 ### Uneven grid
 
 If I resize that grid, the third picture is alone on the last line.

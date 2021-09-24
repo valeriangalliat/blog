@@ -384,10 +384,6 @@ figure.center, figure.grid {
         margin-top: 0;
     }
 
-    figure.grid > :not(figcaption) {
-        width: 100%;
-    }
-
     figure.grid-grow > :not(figcaption) {
         flex-grow: 1;
     }

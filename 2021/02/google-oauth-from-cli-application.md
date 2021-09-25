@@ -32,9 +32,9 @@ open in their browser, so that's what we're going to look at today.
 
 ## Application authentication flow
 
-Everything is documented [here][native-app] (lookup "manual copy/paste") but I'll
-quickly go over the basics in this article, with some JavaScript
-examples on Node.js.
+Everything is documented [here][native-app] (look up "manual
+copy/paste") but I'll quickly go over the basics in this article, with
+some JavaScript examples on Node.js.
 
 [native-app]: https://developers.google.com/identity/protocols/oauth2/native-app
 

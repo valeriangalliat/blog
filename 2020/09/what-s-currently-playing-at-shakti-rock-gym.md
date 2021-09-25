@@ -50,9 +50,9 @@ So why am I writing about that today?
 ## The problem with Shakti music
 
 When I'm at the gym, a lot of times I'm too lazy to go grab my phone and
-Shazam a song, and I always wished I could just lookup later "what
-song was playing at Shakti at 17:28" and find it again (something that
-you can otherwise do on popular radio channels).
+Shazam a song, and I always wished I could just look up later "what song
+was playing at Shakti at 17:28" and find it again (something that you
+can otherwise do on popular radio channels).
 
 Other times, I was at home and I didn't really have any inspiration on
 what to listen to, and I wished I could just tune to whatever was

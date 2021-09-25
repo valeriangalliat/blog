@@ -11,6 +11,7 @@ where I create content.
 
 <div class="links posts">
 
+* [Elixir, Ecto and Heroku Postgres: unverified SSL certificates](2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.md) <small>September 24, 2021</small>
 * [Zoom H2n: pro tips and tricks](2021/09/zoom-h2n-pro-tips-and-tricks.md) <small>September 24, 2021</small>
 * [How I set up a minimalist Debian host with nginx and Let's Encrypt](2021/09/minimalist-debian-nginx-let-s-encrypt.md) <small>September 22, 2021</small>
 * [Vercel custom log drain (dump HTTP traffic for free on a Vercel app)](2021/09/vercel-custom-log-drain.md) <small>September 21, 2021</small>
@@ -25,7 +26,6 @@ where I create content.
 * [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: figuring the protocol](2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: existing clients](2021/08/scripting-firefox-sync-lockwise-existing-clients.md) <small>August 8, 2021</small>
-* [Why I switched to Firefox Lockwise as my password manager](2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.md) <small>August 8, 2021</small>
 
 [More posts](posts.md)
 

@@ -28,7 +28,7 @@ This will add a stack trace to all warnings, making it very easy to
 track where they're from and address them.
 
 Sadly, I couldn't find anything similar with Elixir and Erlang. I
-resorted to [asking on Elixir Forum](https://nodejs.org/api/cli.html#cli_trace_warnings),
+resorted to [asking on Elixir Forum](https://elixirforum.com/t/tracing-runtime-warnings/42576),
 only to get confirmation that this wasn't possible.
 
 ## Compiling Erlang?

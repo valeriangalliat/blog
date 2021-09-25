@@ -85,6 +85,8 @@ if (image) {
   }
 
   metaTags += `  <meta property="og:image" content="${absoluteImage}">\n`
+} else {
+  metaTags += `  <meta property="og:image" content="${baseUrl}img/profile.jpg">\n`
 }
 
 metaTags += `  <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">

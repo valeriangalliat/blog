@@ -325,7 +325,7 @@ the webmaster class.
 
 Those 3 years at Aries were really enjoyable. We had such great vibes
 and complicity within the class that the 2 days of school per week felt
-like a week-end before the week-end. These memories will remain etched
+like a weekend before the weekend. These memories will remain etched
 in my mind.
 
 ### September 22

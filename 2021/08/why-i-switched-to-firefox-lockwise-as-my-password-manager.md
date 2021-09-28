@@ -241,10 +241,10 @@ to move to Bitwarden.
 
 It's especially not a big deal for me because I already have my own
 "authenticator app" based on [totp-generator](https://www.npmjs.com/package/totp-generator),
-and I can hack my way around storing the TOTP secrets in Lockwise (maybe
-I'll write a post on that at some point). While it's far from a
-world-class integration like the one Bitwarden offers, it's good enough
-for me for the time being.
+and I can [hack my way around](../09/totp-2fa-support-any-password-manager.md)
+storing the TOTP secrets in Lockwise. While it's far from a world-class
+integration like the one Bitwarden offers, it's good enough for me for
+the time being.
 
 ### No CLI
 

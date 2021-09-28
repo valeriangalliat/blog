@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
+* [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>
 * [Elixir, Ecto and Heroku Postgres: unverified SSL certificates](2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.md) <small>September 24, 2021</small>
 * [Zoom H2n: pro tips and tricks](2021/09/zoom-h2n-pro-tips-and-tricks.md) <small>September 24, 2021</small>
 * [How I set up a minimalist Debian host with nginx and Let's Encrypt](2021/09/minimalist-debian-nginx-let-s-encrypt.md) <small>September 22, 2021</small>

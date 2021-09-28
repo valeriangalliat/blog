@@ -1,6 +1,6 @@
 {
   "scripts": {
-    "lint": "standard --fix . scripts/render scripts/absolutify",
+    "lint": "standard --fix . scripts/render scripts/generate-feed",
     "watch": "chokidar '**/*.md' -c make -j16"
   },
   "dependencies": {

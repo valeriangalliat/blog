@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Authy: reversed 🔐</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20210924.css">
+  <link rel="icon" href="data:," data-emoji="🍺">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Authy: reversed 🔐">
+  <meta property="og:description" content="I recently signed up for SendGrid for a new business. It seems like a nice tool to send my transactional emails.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Authy: reversed 🔐</h1>
+<p class="date">September 28, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I recently signed up for SendGrid for a new business. It seems like a
+nice tool to send my transactional emails.</p>
+<p>One thing with SendGrid though is that they enforce 2FA. You can’t
+access your account without enabling 2FA first. That’s great, except one
+thing:</p>
+<p><strong>They only offer two options for 2FA: Authy and SMS.</strong></p>
+<p>That’s somewhat understandable, because SendGrid belongs to Twilio, who
+also owns Authy. By forcing SendGrid users on Authy, and making sure
+that they can’t easily use any of the competitor 2FA apps, they boost
+their Authy adoption metrics, and that will certainly make investors
+happy. Users? Not so much.</p>
+<p>But I’m not a Authy user, and I don’t plan to be. I definitely will not
+install the Authy app just for this. “Use the alternative SMS 2FA
+method” you’ll say? But that’s less secure on top of having a poor user
+experience. I’d rather <a href="totp-2fa-support-any-password-manager.html">use my existing password manager for this</a>
+which is much faster and more convenient.</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t care about the technical details and just want to
+transfer your Authy secrets to another authenticator, check out
+<a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
+<p>Otherwise, keep reading, I’ll give you all the details about it! ✌️</p>
+</div>
+<h2 id="here-we-go-again" tabindex="-1"><a class="header-anchor" href="#here-we-go-again">Here we go again</a></h2>
+<p>Every time I face a situation like this, I reverse.
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">I love</a>
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">reversing</a>
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">things</a>,
+especially when it helps me make my life better. I’ll spend
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">days</a>,
+even
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">weeks</a>
+doing what’s necessary to achieve what I want.</p>
+<p>Maybe that means decompiling apps and running them through a debugger,
+or patching APKs to wipe certificate pinning mechanism in order to
+<a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html">intercept the TLS traffic through a logging proxy</a>.</p>
+<p>Often though, things are even easier. In the case of Authy, they have a
+<a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>
+that we can easily debug to understand how the protocol work. The best
+thing about it? Someone already did a lot of the work and <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">documented it</a>.
+Sweet.</p>
+<div class="note">
+<p><strong>Note:</strong> I noticed later that <a href="https://github.com/alexzorin/authy">someone wrote a similar program in Go</a>.</p>
+<p>The main difference is that it’s intended to be used alongside an
+existing Authy app and account, instead of replacing it completely, but
+a lot of the code is the same. If Go is more your jam, check it out!</p>
+</div>
+<h2 id="understanding-the-implementation" tabindex="-1"><a class="header-anchor" href="#understanding-the-implementation">Understanding the implementation</a></h2>
+<p>That article <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">I linked earlier</a>
+gives us a good starting point:</p>
+<ol>
+<li>Authy uses TOTP in the background.</li>
+<li>They generate TOTP using SHA-1, 7 digits, and a period of 10 seconds
+(whereas most implementations are SHA-1, 6 digits and 30 seconds).</li>
+<li>They check the codes against the neighbouring periods, not only the
+current one, which is how they allow codes to be valid for 20 seconds
+even if the underlying implementation uses 10 seconds periods.</li>
+<li>By debugging the <a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>,
+you can easily extract your Authy secrets and import them in your
+favorite authenticator app or password manager.</li>
+</ol>
+<p>That’s awesome, but we’re not there yet. I don’t want to <em>have to use
+Authy</em> (even once) in order to <em>not use Authy later</em>.</p>
+<p>A mystery still remains. Since during 2FA setup they don’t ever show a
+QR code or give access to a TOTP URI or plaintext secret, how do this
+secret ever reach the Authy app? Is it cryptographically derived from
+the phone number, the service name, and other parameters? How does the
+Authy app automagically knows what secret to generate the codes with?</p>
+<p>Well, as it often turns out, the easiest answer is often the right one.
+By inspecting the network traffic of the Chrome app, we clearly see
+that… the secrets are directly retrieved from the Authy servers.</p>
+<p>Now, how do we write our own code that fetches the secrets from the
+Authy servers, without installing the Authy app? Let me tell you.</p>
+<h2 id="documenting-the-protocol" tabindex="-1"><a class="header-anchor" href="#documenting-the-protocol">Documenting the protocol</a></h2>
+<p>If we install the Chrome app, use our phone number to sign up or log in,
+and generate a one-time code, the following happens:</p>
+<ol>
+<li>The app checks the status of the given number on the Authy servers.</li>
+<li>If the user doesn’t exist, it creates it.</li>
+<li>Then it starts a device registration flow, which consists in sending
+a code to the user’s device via a call, SMS, or a push notification
+to an existing Authy app if any.</li>
+<li>By inputting that code in the Chrome app, it can finalize the
+registration flow and gets its own ID and “secret seed”.</li>
+<li>It uses that seed as TOTP secret to generate a code for the next 3
+periods, and sends those 3 codes along with its device ID to sync the
+Authy state. This is how we retrieve the plaintext secrets for all
+the services associated with that account.</li>
+</ol>
+<p>Additionally, all the requests contain an API key that’s public and
+hardcoded in the Chrome app.</p>
+<div class="note">
+<p><strong>Note:</strong> the secrets for each 2FA entry are unique to each Authy
+installation. This means that the secrets in the app on one device
+will be different from the secrets on another device (including our own
+client).</p>
+<p>I expect they use that to make the secrets revocable. If you remove one
+of your Authy devices, the secret seeds associated with it are going to
+be invalidated and the codes generated by this device are no longer
+valid.</p>
+</div>
+<p>With that in mind, we can write an API client.</p>
+<h2 id="making-a-client" tabindex="-1"><a class="header-anchor" href="#making-a-client">Making a client</a></h2>
+<p>At that point you’ll be interested to look at the code of <a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
+<p>I won’t copy everything here, but I essentially made a quick
+<a href="https://github.com/valeriangalliat/authy-user-client/blob/c77d5c6e56619b012079482da4d7b9d269bab485/index.js#L38">API wrapper</a>
+that allows me to define every method very concisely:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> checkUserStatus = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.country_code}</span>-<span class="hljs-subst">${p.cellphone}</span>/status`</span>,
+  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> createUser = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;/users/new&#x27;</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>, <span class="hljs-string">&#x27;cellphone&#x27;</span>, <span class="hljs-string">&#x27;country_code&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> startRegistration = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/start`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;via&#x27;</span>, <span class="hljs-string">&#x27;signature&#x27;</span>, <span class="hljs-string">&#x27;device_app&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> completeRegistration = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/complete`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;pin&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> listDevices = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices`</span>,
+  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> deleteDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.delete_device_id}</span>/delete`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> enableMultiDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/enable`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> disableMultiDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/disable`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> sync = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.device_id}</span>/apps/sync`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+</code></pre>
+<p>We’ll also need a method to generate a TOTP codes using Authy settings:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> base32 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;rfc-3548-b32&#x27;</span>)
+<span class="hljs-keyword">const</span> totpGenerator = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtp</span> (<span class="hljs-params">secret</span>) </span>{
+  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
+  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+  <span class="hljs-keyword">return</span> totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
+}
+</code></pre>
+<p>The main difference here is that Authy stores the TOTP secrets in
+hexadecimal while most TOTP libraries and services expect Base32 as
+defined in <a href="https://datatracker.ietf.org/doc/html/rfc3548#section-5">RFC 3548</a>,
+so we need to do a quick conversion.</p>
+<p>It’s a bit stupid because the first thing totp-generator does is
+<a href="https://github.com/bellstrand/totp-generator/blob/af64a977b2aee17d0f0d3e607afa0af2a9a4814b/index.js#L11">converting the secret back to hex</a>
+but there’s no way to avoid that by specifying a custom encoding, so be
+it.</p>
+<p>Then we also need an helper method to generate the 3 next codes in the
+time period sequence:</p>
+<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtps</span> (<span class="hljs-params">secret</span>) </span>{
+  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
+  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+
+  <span class="hljs-keyword">const</span> now = <span class="hljs-built_in">Date</span>.now()
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">otp1</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, now }),
+    <span class="hljs-attr">otp2</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">10_000</span> }),
+    <span class="hljs-attr">otp3</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">20_000</span> })
+  }
+}
+</code></pre>
+<p>This depends on <a href="https://github.com/bellstrand/totp-generator/pull/37">this PR on totp-generator</a>
+which might or might not be merged when you read this.</p>
+<p>From there I export those methods to be used in the CLI, or by other
+Node.js programs.</p>
+<h2 id="making-a-cli" tabindex="-1"><a class="header-anchor" href="#making-a-cli">Making a CLI</a></h2>
+<p>From there, we can use the awesome <a href="https://www.npmjs.com/package/prompts">prompts</a>
+package to build an interactive CLI that dumps the TOTP secrets from
+your Authy account.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> prompts = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;prompts&#x27;</span>)
+<span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).default
+<span class="hljs-keyword">const</span> authy = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;authy-user-client&#x27;</span>)
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">prompt</span> (<span class="hljs-params">params</span>) </span>{
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> prompts({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
+
+  <span class="hljs-keyword">if</span> (!res.value) {
+    process.exit()
+  }
+
+  <span class="hljs-keyword">return</span> res.value
+}
+
+<span class="hljs-keyword">const</span> countryCode = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Country code:&#x27;</span>, <span class="hljs-attr">initial</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span> })
+<span class="hljs-keyword">const</span> phoneNumber = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;phoneNumber&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Phone number:&#x27;</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+
+<span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> authy.checkUserStatus({ <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+<span class="hljs-keyword">let</span> authyId = status.authy_id
+
+<span class="hljs-keyword">if</span> (!authyId) {
+  <span class="hljs-keyword">const</span> email = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Email:&#x27;</span> })
+  <span class="hljs-keyword">const</span> registration = <span class="hljs-keyword">await</span> authy.createUser({ email, <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+  authyId = registration.authy_id
+}
+
+<span class="hljs-keyword">const</span> via = <span class="hljs-keyword">await</span> prompt({
+  <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;select&#x27;</span>,
+  <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Authentication method:&#x27;</span>,
+  <span class="hljs-attr">choices</span>: [
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Push&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;push&#x27;</span> },
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Call&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;call&#x27;</span> },
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;SMS&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;sms&#x27;</span> }
+  ]
+})
+
+<span class="hljs-keyword">await</span> authy.startRegistration({
+  <span class="hljs-attr">authy_id</span>: authyId,
+  via,
+
+  <span class="hljs-comment">// Not sure why, but works better with this. 🤷</span>
+  <span class="hljs-attr">signature</span>: crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
+})
+
+<span class="hljs-keyword">const</span> pin = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;PIN:&#x27;</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+<span class="hljs-keyword">const</span> registrationResponse = <span class="hljs-keyword">await</span> authy.completeRegistration({ <span class="hljs-attr">authy_id</span>: authyId, pin })
+
+<span class="hljs-keyword">const</span> deviceId = registrationResponse.device.id
+<span class="hljs-keyword">const</span> secretSeed = registrationResponse.device.secret_seed
+
+<span class="hljs-keyword">const</span> syncResponse = <span class="hljs-keyword">await</span> authy.sync({
+  <span class="hljs-attr">authy_id</span>: authyId,
+  <span class="hljs-attr">device_id</span>: deviceId,
+  ...authy.getOtps(secretSeed)
+})
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> app <span class="hljs-keyword">of</span> syncResponse.apps) {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> URL(uri<span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${app.name}</span>`</span>)
+
+  url.search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-built_in">Object</span>.entries({
+    <span class="hljs-comment">// Authy uses hex, everything else uses Base32.</span>
+    <span class="hljs-attr">secret</span>: authy.hexToBase32(app.secret_seed),
+    <span class="hljs-attr">digits</span>: app.digits,
+    <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>
+  }))
+
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${app.name}</span>: <span class="hljs-subst">${url}</span>`</span>)
+}
+</code></pre>
+<p>This will list all the associated apps with a <a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format">standard TOTP URI</a>
+to be used in any compliant authenticator or password manager.</p>
+<p>You can look at <a href="https://github.com/valeriangalliat/authy-user-client/blob/master/cli.js">the full source</a>
+for the implementation of individual calls for more fine-grained
+control!</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<p>Thanks to this, we can work around services that force the Authy app for
+2FA and extract the secret and settings to use them with our favorite
+authenticator app.</p>
+<p>Was this overkill? Hell yeah. But was it fun? Of course!</p>
+<p>Still, I hope this can be useful to you if you run into the same issue.
+You can just use the CLI and happily move on with your life and your
+favorite TOTP provider! 🎉</p>
+<div class="note">
+<p><strong>Note:</strong> if you need help understanding and documenting other
+undocumented APIs and protocols, <a href="/val.html#links">let me know</a>, I’m
+currently available for <a href="/resources/freelance.html">contracting</a> projects
+and I’ll be happy to help you with that. ✌️</p>
+</div>
+  </div>
+  <footer>
+    <p>Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/09/authy-reversed.md">public repository</a>. Feel free to <a href="/val.html#links">contact me</a>, I'd love to hear your thoughts!</p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

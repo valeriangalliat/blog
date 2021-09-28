@@ -5,10 +5,515 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-09-25T01:00:22Z</updated>
+  <updated>2021-09-28T19:27:54.638Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Authy: reversed 🔐</title>
+    <link href="https://www.codejam.info/2021/09/authy-reversed.html" />
+    <id>https://www.codejam.info/2021/09/authy-reversed.html</id>
+    <updated>2021-09-28T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I recently signed up for SendGrid for a new business. It seems like a
+nice tool to send my transactional emails.</p>
+<p>One thing with SendGrid though is that they enforce 2FA. You can’t
+access your account without enabling 2FA first. That’s great, except one
+thing:</p>
+<p><strong>They only offer two options for 2FA: Authy and SMS.</strong></p>
+<p>That’s somewhat understandable, because SendGrid belongs to Twilio, who
+also owns Authy. By forcing SendGrid users on Authy, and making sure
+that they can’t easily use any of the competitor 2FA apps, they boost
+their Authy adoption metrics, and that will certainly make investors
+happy. Users? Not so much.</p>
+<p>But I’m not a Authy user, and I don’t plan to be. I definitely will not
+install the Authy app just for this. “Use the alternative SMS 2FA
+method” you’ll say? But that’s less secure on top of having a poor user
+experience. I’d rather <a href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html">use my existing password manager for this</a>
+which is much faster and more convenient.</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t care about the technical details and just want to
+transfer your Authy secrets to another authenticator, check out
+<a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
+<p>Otherwise, keep reading, I’ll give you all the details about it! ✌️</p>
+</div>
+<h2 id="here-we-go-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#here-we-go-again">Here we go again</a></h2>
+<p>Every time I face a situation like this, I reverse.
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">I love</a>
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">reversing</a>
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">things</a>,
+especially when it helps me make my life better. I’ll spend
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">days</a>,
+even
+<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">weeks</a>
+doing what’s necessary to achieve what I want.</p>
+<p>Maybe that means decompiling apps and running them through a debugger,
+or patching APKs to wipe certificate pinning mechanism in order to
+<a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html">intercept the TLS traffic through a logging proxy</a>.</p>
+<p>Often though, things are even easier. In the case of Authy, they have a
+<a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>
+that we can easily debug to understand how the protocol work. The best
+thing about it? Someone already did a lot of the work and <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">documented it</a>.
+Sweet.</p>
+<div class="note">
+<p><strong>Note:</strong> I noticed later that <a href="https://github.com/alexzorin/authy">someone wrote a similar program in Go</a>.</p>
+<p>The main difference is that it’s intended to be used alongside an
+existing Authy app and account, instead of replacing it completely, but
+a lot of the code is the same. If Go is more your jam, check it out!</p>
+</div>
+<h2 id="understanding-the-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#understanding-the-implementation">Understanding the implementation</a></h2>
+<p>That article <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">I linked earlier</a>
+gives us a good starting point:</p>
+<ol>
+<li>Authy uses TOTP in the background.</li>
+<li>They generate TOTP using SHA-1, 7 digits, and a period of 10 seconds
+(whereas most implementations are SHA-1, 6 digits and 30 seconds).</li>
+<li>They check the codes against the neighbouring periods, not only the
+current one, which is how they allow codes to be valid for 20 seconds
+even if the underlying implementation uses 10 seconds periods.</li>
+<li>By debugging the <a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>,
+you can easily extract your Authy secrets and import them in your
+favorite authenticator app or password manager.</li>
+</ol>
+<p>That’s awesome, but we’re not there yet. I don’t want to <em>have to use
+Authy</em> (even once) in order to <em>not use Authy later</em>.</p>
+<p>A mystery still remains. Since during 2FA setup they don’t ever show a
+QR code or give access to a TOTP URI or plaintext secret, how do this
+secret ever reach the Authy app? Is it cryptographically derived from
+the phone number, the service name, and other parameters? How does the
+Authy app automagically knows what secret to generate the codes with?</p>
+<p>Well, as it often turns out, the easiest answer is often the right one.
+By inspecting the network traffic of the Chrome app, we clearly see
+that… the secrets are directly retrieved from the Authy servers.</p>
+<p>Now, how do we write our own code that fetches the secrets from the
+Authy servers, without installing the Authy app? Let me tell you.</p>
+<h2 id="documenting-the-protocol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#documenting-the-protocol">Documenting the protocol</a></h2>
+<p>If we install the Chrome app, use our phone number to sign up or log in,
+and generate a one-time code, the following happens:</p>
+<ol>
+<li>The app checks the status of the given number on the Authy servers.</li>
+<li>If the user doesn’t exist, it creates it.</li>
+<li>Then it starts a device registration flow, which consists in sending
+a code to the user’s device via a call, SMS, or a push notification
+to an existing Authy app if any.</li>
+<li>By inputting that code in the Chrome app, it can finalize the
+registration flow and gets its own ID and “secret seed”.</li>
+<li>It uses that seed as TOTP secret to generate a code for the next 3
+periods, and sends those 3 codes along with its device ID to sync the
+Authy state. This is how we retrieve the plaintext secrets for all
+the services associated with that account.</li>
+</ol>
+<p>Additionally, all the requests contain an API key that’s public and
+hardcoded in the Chrome app.</p>
+<div class="note">
+<p><strong>Note:</strong> the secrets for each 2FA entry are unique to each Authy
+installation. This means that the secrets in the app on one device
+will be different from the secrets on another device (including our own
+client).</p>
+<p>I expect they use that to make the secrets revocable. If you remove one
+of your Authy devices, the secret seeds associated with it are going to
+be invalidated and the codes generated by this device are no longer
+valid.</p>
+</div>
+<p>With that in mind, we can write an API client.</p>
+<h2 id="making-a-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-client">Making a client</a></h2>
+<p>At that point you’ll be interested to look at the code of <a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
+<p>I won’t copy everything here, but I essentially made a quick
+<a href="https://github.com/valeriangalliat/authy-user-client/blob/c77d5c6e56619b012079482da4d7b9d269bab485/index.js#L38">API wrapper</a>
+that allows me to define every method very concisely:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> checkUserStatus = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.country_code}</span>-<span class="hljs-subst">${p.cellphone}</span>/status`</span>,
+  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> createUser = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;/users/new&#x27;</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>, <span class="hljs-string">&#x27;cellphone&#x27;</span>, <span class="hljs-string">&#x27;country_code&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> startRegistration = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/start`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;via&#x27;</span>, <span class="hljs-string">&#x27;signature&#x27;</span>, <span class="hljs-string">&#x27;device_app&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> completeRegistration = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/complete`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;pin&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> listDevices = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices`</span>,
+  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> deleteDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.delete_device_id}</span>/delete`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> enableMultiDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/enable`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> disableMultiDevice = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/disable`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+
+<span class="hljs-keyword">const</span> sync = api({
+  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.device_id}</span>/apps/sync`</span>,
+  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
+})
+</code></pre>
+<p>We’ll also need a method to generate a TOTP codes using Authy settings:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> base32 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;rfc-3548-b32&#x27;</span>)
+<span class="hljs-keyword">const</span> totpGenerator = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtp</span> (<span class="hljs-params">secret</span>) </span>{
+  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
+  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+  <span class="hljs-keyword">return</span> totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
+}
+</code></pre>
+<p>The main difference here is that Authy stores the TOTP secrets in
+hexadecimal while most TOTP libraries and services expect Base32 as
+defined in <a href="https://datatracker.ietf.org/doc/html/rfc3548#section-5">RFC 3548</a>,
+so we need to do a quick conversion.</p>
+<p>It’s a bit stupid because the first thing totp-generator does is
+<a href="https://github.com/bellstrand/totp-generator/blob/af64a977b2aee17d0f0d3e607afa0af2a9a4814b/index.js#L11">converting the secret back to hex</a>
+but there’s no way to avoid that by specifying a custom encoding, so be
+it.</p>
+<p>Then we also need an helper method to generate the 3 next codes in the
+time period sequence:</p>
+<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtps</span> (<span class="hljs-params">secret</span>) </span>{
+  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
+  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+
+  <span class="hljs-keyword">const</span> now = <span class="hljs-built_in">Date</span>.now()
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">otp1</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, now }),
+    <span class="hljs-attr">otp2</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">10_000</span> }),
+    <span class="hljs-attr">otp3</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">20_000</span> })
+  }
+}
+</code></pre>
+<p>This depends on <a href="https://github.com/bellstrand/totp-generator/pull/37">this PR on totp-generator</a>
+which might or might not be merged when you read this.</p>
+<p>From there I export those methods to be used in the CLI, or by other
+Node.js programs.</p>
+<h2 id="making-a-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-cli">Making a CLI</a></h2>
+<p>From there, we can use the awesome <a href="https://www.npmjs.com/package/prompts">prompts</a>
+package to build an interactive CLI that dumps the TOTP secrets from
+your Authy account.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> prompts = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;prompts&#x27;</span>)
+<span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).default
+<span class="hljs-keyword">const</span> authy = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;authy-user-client&#x27;</span>)
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">prompt</span> (<span class="hljs-params">params</span>) </span>{
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> prompts({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
+
+  <span class="hljs-keyword">if</span> (!res.value) {
+    process.exit()
+  }
+
+  <span class="hljs-keyword">return</span> res.value
+}
+
+<span class="hljs-keyword">const</span> countryCode = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Country code:&#x27;</span>, <span class="hljs-attr">initial</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span> })
+<span class="hljs-keyword">const</span> phoneNumber = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;phoneNumber&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Phone number:&#x27;</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+
+<span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> authy.checkUserStatus({ <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+<span class="hljs-keyword">let</span> authyId = status.authy_id
+
+<span class="hljs-keyword">if</span> (!authyId) {
+  <span class="hljs-keyword">const</span> email = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Email:&#x27;</span> })
+  <span class="hljs-keyword">const</span> registration = <span class="hljs-keyword">await</span> authy.createUser({ email, <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+  authyId = registration.authy_id
+}
+
+<span class="hljs-keyword">const</span> via = <span class="hljs-keyword">await</span> prompt({
+  <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;select&#x27;</span>,
+  <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Authentication method:&#x27;</span>,
+  <span class="hljs-attr">choices</span>: [
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Push&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;push&#x27;</span> },
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Call&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;call&#x27;</span> },
+    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;SMS&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;sms&#x27;</span> }
+  ]
+})
+
+<span class="hljs-keyword">await</span> authy.startRegistration({
+  <span class="hljs-attr">authy_id</span>: authyId,
+  via,
+
+  <span class="hljs-comment">// Not sure why, but works better with this. 🤷</span>
+  <span class="hljs-attr">signature</span>: crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
+})
+
+<span class="hljs-keyword">const</span> pin = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;PIN:&#x27;</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+<span class="hljs-keyword">const</span> registrationResponse = <span class="hljs-keyword">await</span> authy.completeRegistration({ <span class="hljs-attr">authy_id</span>: authyId, pin })
+
+<span class="hljs-keyword">const</span> deviceId = registrationResponse.device.id
+<span class="hljs-keyword">const</span> secretSeed = registrationResponse.device.secret_seed
+
+<span class="hljs-keyword">const</span> syncResponse = <span class="hljs-keyword">await</span> authy.sync({
+  <span class="hljs-attr">authy_id</span>: authyId,
+  <span class="hljs-attr">device_id</span>: deviceId,
+  ...authy.getOtps(secretSeed)
+})
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> app <span class="hljs-keyword">of</span> syncResponse.apps) {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> URL(uri<span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${app.name}</span>`</span>)
+
+  url.search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-built_in">Object</span>.entries({
+    <span class="hljs-comment">// Authy uses hex, everything else uses Base32.</span>
+    <span class="hljs-attr">secret</span>: authy.hexToBase32(app.secret_seed),
+    <span class="hljs-attr">digits</span>: app.digits,
+    <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>
+  }))
+
+  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${app.name}</span>: <span class="hljs-subst">${url}</span>`</span>)
+}
+</code></pre>
+<p>This will list all the associated apps with a <a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format">standard TOTP URI</a>
+to be used in any compliant authenticator or password manager.</p>
+<p>You can look at <a href="https://github.com/valeriangalliat/authy-user-client/blob/master/cli.js">the full source</a>
+for the implementation of individual calls for more fine-grained
+control!</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#wrapping-up">Wrapping up</a></h2>
+<p>Thanks to this, we can work around services that force the Authy app for
+2FA and extract the secret and settings to use them with our favorite
+authenticator app.</p>
+<p>Was this overkill? Hell yeah. But was it fun? Of course!</p>
+<p>Still, I hope this can be useful to you if you run into the same issue.
+You can just use the CLI and happily move on with your life and your
+favorite TOTP provider! 🎉</p>
+<div class="note">
+<p><strong>Note:</strong> if you need help understanding and documenting other
+undocumented APIs and protocols, <a href="https://www.codejam.info/val.html#links">let me know</a>, I’m
+currently available for <a href="https://www.codejam.info/resources/freelance.html">contracting</a> projects
+and I’ll be happy to help you with that. ✌️</p>
+</div>
+]]></content>
+  </entry>
+  <entry>
+    <title>TOTP/2FA support with ANY password manager (you read that right)</title>
+    <link href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html" />
+    <id>https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html</id>
+    <updated>2021-09-28T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>As I’m writing an article on <a href="https://www.codejam.info/2021/09/authy-reversed.html">how I reversed the Authy proprietary 2FA protocol</a>
+to generate their codes from my own password manager and authenticator,
+I realized that I didn’t write about the hack I use to <strong>support
+<abbr title="Time-based one-time password">TOTP</abbr> in any password
+manager</strong> (especially the ones that don’t support it out of the box).</p>
+<p>So I’ll start with that.</p>
+<p>See, I explained some time ago <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html">why I switched to Firefox Lockwise as my password manager</a>.
+In this post, I compare it to Bitwarden, and I go through some of the
+<a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#cons">Lockwise cons</a>,
+one of them being <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-totp-support">the lack of TOTP support</a>.</p>
+<p>I said that while it would be nice to have native support for TOTP, I
+already had my own authenticator app based on the <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>
+package. I since made that app a lot nicer and shared it on
+<a href="https://totp.vercel.app/">totp.vercel.app</a>! 🦄</p>
+<p>It’s called <a href="https://totp.vercel.app/">TOTP with a password manager that doesn’t support TOTP 😅</a>
+(yes, the emoji is part of the name) because I suck at naming things and
+that’s the most explicit name that I came up with.</p>
+<div class="note">
+<p><strong>Note:</strong> everything you need to know in order to use it is on the link
+above, but if you want to learn how it works in more technical details,
+keep reading!</p>
+</div>
+<h2 id="why-would-you-do-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#why-would-you-do-that">Why would you do that?</a></h2>
+<p>Maybe like me you really like Lockwise or another password manager
+that doesn’t support TOTP, and that’s not enough of a reason to migrate
+to another app like Bitwarden, especially where TOTP support only comes
+in the paid version.</p>
+<p>And you don’t want to install Yet Another App™ to do this.</p>
+<p>Maybe a bit of a niche, I’ll admit.</p>
+<h2 id="how-does-it-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#how-does-it-work">How does it work?</a></h2>
+<p>First things first, you probably want to <a href="https://github.com/valeriangalliat/totp">check out the repo on GitHub</a>.</p>
+<p>The principle is pretty simple. Most password managers will recognize
+login forms on websites (e.g. username and password fields). Upon
+submission, they’ll prompt you to save the credentials you just entered,
+so that the next time you encounter this form, it’ll be able to autofill
+the boxes and you just have to click “log in”.</p>
+<p>Additionally, if you log in later with a different username on the same
+site, it’ll also ask you to save it, and now every time you come back to
+that form, you’ll be able to chose amongst all the credentials that you
+saved.</p>
+<p><a href="https://totp.vercel.app/">TOTP with a password manager that doesn’t support TOTP 😅</a>
+looks like a login form, walks like a login form, and quacks like a
+login form:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;username&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;password&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;password&quot;</span>&gt;</span>
+</code></pre>
+<p>(Yes, it’s that easy.)</p>
+<p>This means that whatever you put in there, your password manager will
+prompt you to store upon submission of the form. With that trick, <strong>we
+can store arbitrary data in any password manager</strong>.</p>
+<p>To retrieve that data, the user simply clicks on the username or
+password field and chose from the list of all the saved items. We can
+then read the values directly from the form fields. For example if the
+above HTML was in a <code>&lt;form id=&quot;form&quot;&gt;</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { username, password } = form.elements
+<span class="hljs-built_in">console</span>.log(username.value, password.value)
+</code></pre>
+<p>Since <a href="https://stackoverflow.com/questions/11708092/detecting-browser-autofill">it’s a bit tricky</a>
+to reliably detect when inputs are autofilled (the <code>change</code> event is not
+usually triggered), we’ll use a Big Blue Button™ that reads “Get
+TOTP 🚀” instead. Good enough.</p>
+<figure class="center">
+  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-1.png">
+</figure>
+<p>When that button is clicked, we use <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>
+to generate a code for the secret that’s in the password field.</p>
+<p>If the TOTP settings differ from the standard SHA-1 algorithm, 6 digits
+and 30 seconds period, you can also paste a somewhat standard
+<a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format"><code>otpauth://</code> URI</a>
+thanks to the following code:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> totp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">totpFromUriOrSecret</span> (<span class="hljs-params">value</span>) </span>{
+  <span class="hljs-keyword">if</span> (!value.startsWith(<span class="hljs-string">&#x27;otpauth://&#x27;</span>)) {
+    <span class="hljs-comment">// Directly the secret, use default options.</span>
+    <span class="hljs-keyword">return</span> totp(value)
+  }
+
+  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-keyword">new</span> URL(value).search)
+  <span class="hljs-keyword">const</span> { secret, algorithm, digits, period } = <span class="hljs-built_in">Object</span>.fromEntries(search)
+
+  <span class="hljs-keyword">return</span> totp(secret, { algorithm, digits, period })
+}
+</code></pre>
+<p>For convenience, we can automatically copy the code to the user’s clipboard:</p>
+<pre><code class="hljs language-js">navigator.clipboard.writeText(code)
+</code></pre>
+<h2 id="scanning-qr-codes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#scanning-qr-codes">Scanning QR codes</a></h2>
+<p>But that’s not enough. While some services will give us an option to
+retrieve the plaintext secret or a <code>otpauth://</code> URI, a lot will only
+give a QR code to scan, and some will even give <em>nothing</em> and force you
+to use Authy’s proprietary TOTP implementation (luckily, I already
+<a href="https://www.codejam.info/2021/09/authy-reversed.html">reversed that</a> so that you don’t have to).</p>
+<p>For that, I’ll add two options: scan a QR code using the device camera,
+or import a QR code from an existing image (like a screenshot).</p>
+<figure class="center">
+  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-2.png">
+</figure>
+<p>Luckily, there’s a <a href="https://www.npmjs.com/package/qr-scanner">QR scanner</a>
+package that makes that really easy.</p>
+<h3 id="using-the-camera" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#using-the-camera">Using the camera</a></h3>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> QrScanner = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;qr-scanner&#x27;</span>)
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleTotpUri</span> (<span class="hljs-params">uri</span>) </span>{
+  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-keyword">new</span> URL(uri).search)
+
+  form.username.value = search.get(<span class="hljs-string">&#x27;issuer&#x27;</span>)
+  form.password.value = uri
+}
+
+<span class="hljs-keyword">const</span> video = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&#x27;video&#x27;</span>)
+
+<span class="hljs-keyword">const</span> qrScanner = <span class="hljs-keyword">new</span> QrScanner(video, <span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
+  qrScanner.stop()
+  handleTotpUri(result)
+})
+
+qrScanner.start()
+</code></pre>
+<p>During the scan, the QR scanner will show the camera feed in the given
+video element.</p>
+<p>On successful scan, we parse the URI to get the <code>issuer</code> value (the
+service that issued that secret) and fill the username field with it to
+give a meaningful name to our secret. Then we can store the full URI in
+the password field.</p>
+<h3 id="from-file-upload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#from-file-upload">From file upload</a></h3>
+<p>We’ll support two ways to upload files. With a regular file input, and
+with drag and drop.</p>
+<p>For the file input, the following will do:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;file&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;file&quot;</span>&gt;</span>
+</code></pre>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { file } = form.elements
+
+file.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  handleFile(file.files[<span class="hljs-number">0</span>])
+})
+</code></pre>
+<p>And for the drag and drop, the
+<a href="https://www.npmjs.com/package/drag-drop">drag-drop</a> package makes it
+trivial for us:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> dragDrop = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
+
+dragDrop(<span class="hljs-string">&#x27;body&#x27;</span>, {
+  onDrop (files) {
+    handleFile(files[<span class="hljs-number">0</span>])
+  },
+  onDragEnter (event) {
+    <span class="hljs-built_in">document</span>.body.classList.add(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
+  },
+  onDragLeave (event) {
+    <span class="hljs-built_in">document</span>.body.classList.remove(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
+  }
+})
+</code></pre>
+<p>Here we toggle a class on the <code>&lt;body&gt;</code> element during drag and drop to
+make it obvious that we’re accepting files to be dropped here.</p>
+<p>Now, all we need is to write the <code>handleFile</code> function that’s used by
+both of those, where we scan the uploaded file and parse the TOTP URI in it.</p>
+<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleFile</span> (<span class="hljs-params">file</span>) </span>{
+  QrScanner.scanImage(file)
+    .then(<span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
+      handleTotpUri(result)
+    })
+}
+</code></pre>
+<h2 id="manually-editing-totp-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#manually-editing-totp-settings">Manually editing TOTP settings</a></h2>
+<p>Lastly, we might encounter situations where we only have the secret and
+specific TOTP settings (algorithm, digits and period), but no TOTP URI.</p>
+<p>To support that, we need to add an “advanced” mode allowing to edit the
+individual settings, and automatically generating the proper URI in the
+password field to be stored.</p>
+<p>We’ll start by adding a hamburger menu that will open the detailed
+settings.</p>
+<figure class="center">
+  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-3.png">
+</figure>
+<p>This will toggle the following form:</p>
+<figure class="center">
+  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-details-form.png">
+</figure>
+<p>Here, I added for convenience a “Authy” button that will automatically
+set the settings to 7 digits and a 10 seconds period, because that’s the
+main use case I have for this.</p>
+<p>When any of those settings change, I generate a new URI to put in the
+password field:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { username, password, secret, algorithm, digits, period } = form.elements
+
+<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updatePasswordFromDetails</span> (<span class="hljs-params"></span>) </span>{
+  <span class="hljs-keyword">const</span> uri = <span class="hljs-keyword">new</span> URL(password.value.startsWith(<span class="hljs-string">&#x27;otpauth://&#x27;</span>) ? password.value : <span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(username.value)}</span>`</span>)
+  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(uri.search)
+
+  search.set(<span class="hljs-string">&#x27;secret&#x27;</span>, secret.value)
+  search.set(<span class="hljs-string">&#x27;algorithm&#x27;</span>, algorithm.value)
+  search.set(<span class="hljs-string">&#x27;digits&#x27;</span>, digits.value)
+  search.set(<span class="hljs-string">&#x27;period&#x27;</span>, period.value)
+
+  uri.search = search
+  password.value = uri.toString()
+}
+
+secret.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
+algorithm.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
+digits.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
+period.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
+</code></pre>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#conclusion">Conclusion</a></h2>
+<p>And this is it! You know everything that’s behind <a href="https://totp.vercel.app/">totp.vercel.app</a>.</p>
+<p>Did you find this useful? Did you like that I explained some of the code
+behind it in this blog post? Don’t hesitate to let me know and <a href="https://twitter.com/valeriangalliat">ping me on Twitter</a>!</p>
+<p>Until next time, keep hacking! 🐿</p>
+]]></content>
+  </entry>
   <entry>
     <title>Elixir, Ecto and Heroku Postgres: unverified SSL certificates</title>
     <link href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html" />
@@ -1281,7 +1786,7 @@ of that for free (or nearly).</p>
 <p><strong>Note:</strong> if you need to forward your Vercel logs to a custom endpoint
 but this article was too technical for you, feel free to <a href="https://www.codejam.info/val.html#links">contact me</a>,
 I’m available for <a href="https://www.codejam.info/resources/freelance.html">freelance work</a> and I’ll be
-happy to help you with that.</p>
+happy to help you with that. ✌️</p>
 </div>
 ]]></content>
   </entry>
@@ -5305,10 +5810,10 @@ me to trade off the quality of experience I otherwise have with Lockwise
 to move to Bitwarden.</p>
 <p>It’s especially not a big deal for me because I already have my own
 “authenticator app” based on <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>,
-and I can hack my way around storing the TOTP secrets in Lockwise (maybe
-I’ll write a post on that at some point). While it’s far from a
-world-class integration like the one Bitwarden offers, it’s good enough
-for me for the time being.</p>
+and I can <a href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html">hack my way around</a>
+storing the TOTP secrets in Lockwise. While it’s far from a world-class
+integration like the one Bitwarden offers, it’s good enough for me for
+the time being.</p>
 <h3 id="no-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-cli">No CLI</a></h3>
 <p>A CLI would have been a nice to have, but I rarely need to input
 passwords on the command line these days anyways, since most tools now
@@ -5755,588 +6260,6 @@ it, and incidentally started writing <a href="https://www.codejam.info/resources
 <p>They’re all tools after all, and I won’t use them unless I have a good
 reason to.</p>
 <p>Have a great day, and keep things simple! 🙏</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>You’re (probably) doing anchor links wrong</title>
-    <link href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html" />
-    <id>https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html</id>
-    <updated>2021-06-15T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I’m the original author of <a href="https://github.com/valeriangalliat/markdown-it-anchor">markdown-it-anchor</a>,
-a <a href="https://github.com/markdown-it/markdown-it">markdown-it</a> plugin to
-automatically add an <code>id</code> attribute to headings, and optionally add
-anchor links (permalinks).</p>
-<p>There’s been <a href="https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/">some</a>
-<a href="https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/">activity</a>
-<a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">lately</a> <a href="https://twitter.com/nhoizey/status/1365064686094471173">about</a>
-<a href="https://twitter.com/nhoizey/status/1366479047065239562">proper</a>
-<a href="https://twitter.com/KittyGiraudel/status/1376789257176690688">accessibility</a>
-of heading permalinks, and this was <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">brought to my attention</a>
-to improve markdown-it-anchor’s way of rendering permalinks out of the box.</p>
-<p>If you want to get directly to the heart of the subject, you can jump
-to <a href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#another-take-on-accessible-permalinks">another take on accessible permalinks</a>.
-Otherwise, I’ll start by giving a bit of backstory on the way
-markdown-it-anchor handles permalinks.</p>
-<h2 id="history-of-markdown-it-anchor-s-permalinks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#history-of-markdown-it-anchor-s-permalinks">History of markdown-it-anchor’s permalinks</a></h2>
-<p>When I originally built this plugin back in 2015, I gave a boolean
-option to enable permalink generation, which would then default to a
-GitHub-style permalink. The markup was the following.</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;header-anchor&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#title&quot;</span>&gt;</span>¶<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
-  Title
-<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
-</code></pre>
-<p>You could configure the permalink class (defaulting to <code>header-anchor</code>),
-permalink symbol (defaulting for some reason to <code>¶</code> which is actually a
-paragraph symbol) or provide your own renderer function where you could
-directly manipulate the markdown-it token stream.</p>
-<p>I decided closely after the first release to
-<a href="https://github.com/valeriangalliat/markdown-it-anchor/commit/bd2c324da38b0cfbb32f7ba0871b14877e273f41">add <code>aria-hidden=&quot;true&quot;</code> to the permalink</a>
-to fully mimic GitHub’s behaviour, under the premise that the permalinks
-weren’t relevant to screen reader users, and that GitHub was probably a
-good example to follow about doing the Right Thing™.</p>
-<p>This was fine for the next couple of years, until…</p>
-<h2 id="first-accessibility-request" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#first-accessibility-request">First accessibility request</a></h2>
-<p>In 2019, we get our <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58">first accessibility issue</a>,
-pointing out that using <code>aria-hidden</code> was incorrect here because those
-links would be useful to screen reader users too, and especially,
-accessibility linting tools were flagging them because having
-<code>aria-hidden</code> focusable elements is considered a bad practice.</p>
-<p>This issue was opened by Zach, the author of
-<a href="https://www.11ty.dev/">Eleventy</a>, a static site generator, and he
-<a href="https://github.com/11ty/11ty-website/commit/28ba29e9d61d5d1ce74e9f56c47eb6d42ad9273a">patched the output</a>
-of markdown-it-anchor in Eleventy to remove the <code>aria-hidden</code> attribute
-<a href="https://github.com/11ty/11ty-website/pull/448">until it was fixed upstream</a>.</p>
-<p>Fabio, a core contributor of markdown-it-anchor, tackled that issue and
-<a href="https://github.com/valeriangalliat/markdown-it-anchor/commit/e276fe53e259bcd2bf6045b6093f82d3cd606f8c">removed <code>aria-hidden</code> from permalinks</a>
-after <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-542385189">doing some research</a>
-to confirm this was the right thing to do.</p>
-<h2 id="first-issue-with-the-fix" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#first-issue-with-the-fix">First issue with the fix</a></h2>
-<p>Do you know that feeling when you fix a bug, only to discover it
-introduced at least another bug?</p>
-<p>This is basically what happened by removing the <code>aria-hidden</code> attribute.</p>
-<p>Just a few months after the fix, and this time on the Eleventy repo,
-<a href="https://github.com/11ty/11ty-website/issues/222">an issue is opened by Oliver</a>
-to point out that the permalinks are still not accessible, because
-they’re not keyboard focusable and don’t have an accessible name (issue
-which gets a PR more than a year later <a href="https://github.com/11ty/11ty-website/pull/970">suggesting to add <code>aria-labelledby</code></a>).</p>
-<p>He then <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/62">suggests</a>
-that markdown-it-anchor include an option to add custom attributes to
-the permalink, without having to write a custom renderer, and then
-went on and <a href="https://github.com/valeriangalliat/markdown-it-anchor/pull/63">implemented the <code>permalinkAttrs</code> option</a>.
-This allowed, for example, to configure a generic <code>aria-label</code> on the
-permalink (e.g. “heading permalink”), but we’ll see later that this is
-not an ideal solution either.</p>
-<h2 id="the-hard-truth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#the-hard-truth">The hard truth</a></h2>
-<p>Exactly a year later, Binyamin brings back the <code>aria-hidden</code> topic,
-explaining that <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-716849952">the default behaviour is still not accessible</a>,
-because screen readers read out the permalink symbol instead of a
-meaningful label.</p>
-<p>He notes that GitHub (still) sets <code>aria-hidden=&quot;true&quot;</code> on the
-permalinks, likely to suggest that we could do the same — which would
-bring us back to the original behaviour. 😜</p>
-<p><em>Even though I didn’t answer then, it is while reading this notification
-that I realized that the accessibility of permalinks was a complex
-topic, and that it was going to be hard, if not impossible, to satisfy
-everybody.</em></p>
-<p>The question of accessible permalinks stayed in my mind, until…</p>
-<h2 id="the-very-simple-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#the-very-simple-solution">The <em>very</em> simple solution</a></h2>
-<p>About at the same time, my friend <a href="https://twitter.com/KittyGiraudel/">Kitty</a>,
-is <a href="https://kittygiraudel.com/2020/11/30/from-jekyll-to-11ty/">switching from Jekyll to Eleventy</a>,
-and finds my plugin while looking for a way to add <code>id</code>s to headings. 😎</p>
-<p>Since one of Kitty’s area of expertise is accessibility, I was secretly
-hoping that they enabled markdown-it-anchor permalinks, so that I could
-learn from their implementation to make markdown-it-anchor’s default
-permalinks more accessible.</p>
-<p>But it turns out that Kitty <em>doesn’t use permalinks</em>, only header <code>id</code>s.</p>
-<p>After trying to make permalinks accessible without luck, I started to
-think that the best solution might be to <em>not</em> use them at all. With
-just <code>id</code>s, you can already link to your own titles and build a table of
-contents. More technical users can still inspect the page to find
-the <code>id</code>s and use them as anchors.</p>
-<p>Sometimes, the smartest way to implement a nonstandard feature, might be
-to… not?</p>
-<h2 id="another-take-on-accessible-permalinks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#another-take-on-accessible-permalinks">Another take on accessible permalinks</a></h2>
-<p>Just two weeks later, <a href="https://twitter.com/ambrwlsn90">Amber</a> publishes
-a post about <a href="https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/">designing truly accessible anchor links</a>.</p>
-<p>This is an awesome article that I highly recommend reading. Amber
-explains the 5 iterations she went through to make accessible anchor
-links on her own blog, including the details of her research.</p>
-<p>But it’s 3 months later that I hear about it, when <a href="https://twitter.com/nhoizey">Nicolas</a>
-opens an issue on the markdown-it-anchor repo, after also writing
-<a href="https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/">a blog post on the subject</a>.</p>
-<p>That was a lot of new information for me to unpack, but I was really
-happy to see some updates on this topic which had long been an
-unanswered question in my mind.</p>
-<p>Sadly that solution was a bit more complex than what I hoped, in a way
-that would <em>require</em> configuration from markdown-it-anchor’s
-perspective, making it unsuitable as a default. While it’s one of the
-best solutions from an accessibility point of view, the implementation
-affects other aspects of the permalink and headings, including browsers
-“reader mode”, RSS readers, <abbr title="Search engine result pages">SERP</abbr>,
-and adds extra challenges about <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-787204964">internationalization</a>.</p>
-<p>Nicolas <a href="https://twitter.com/nhoizey/status/1366476887992729601">tweeted about this</a>
-to gather more insights on the subject, which brought quite some
-activity on the tweet as well as the GitHub issue, with high quality
-suggestions from Kitty, Amber, as well as <a href="https://twitter.com/tunetheweb">Barry</a>
-and <a href="https://twitter.com/7h1322yk0813n72">Thierry</a> who both dug in depth
-on the alternative solution of turning headers themselves into links
-(the style used by <a href="https://developer.mozilla.org/en-US/docs/Web">MDN</a> and <a href="https://almanac.httparchive.org/en/2020/table-of-contents">Web Almanac</a>). They also found creative
-ways of making the markup of header links behave like the original
-implementation, so be sure to check out the <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788268457">GitHub issue</a>
-to find out about all of this!</p>
-<h2 id="conclusion-0-no-one-solution-can-satisfy-all-users" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#conclusion-0-no-one-solution-can-satisfy-all-users">Conclusion #0: no one solution can satisfy all users</a></h2>
-<p>This discussion made me realize that until there is a standard and
-native way of implementing anchor links, no solution is going to satisfy
-all users.</p>
-<p>As we saw with the various accessibility issues opened on
-markdown-it-anchor and Eleventy as we tweaked the markup in the past,
-what one user will consider a fix will be a bug for another one. A
-solution might meet one user needs, but at the cost of other aspects
-that a different person will find important.</p>
-<blockquote>
-<p>There is no silver bullet, and you probably won’t even have a
-consensus from screen reader users, especially when their experience
-and habits vary based on their browser and assistive technology of
-choice. What’s important is to come to a solution that makes it
-possible for people to link to a specific title of an article, without
-it being a chore.</p>
-<p>— <a href="https://github.com/KittyGiraudel">Kitty Giraudel</a>, <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788234788">March 1, 2021</a></p>
-</blockquote>
-<p>Because of this, I switched my goal from finding a single bulletproof
-solution, to <strong>giving more visibility to all the available solutions</strong>
-that were identified and carefully analyzed, explaining their pros and
-cons, <strong>so that markdown-it-anchor users can make an educated choice on
-what suits their website and audience best</strong>.</p>
-<h2 id="conclusion-1-no-default-is-better-than-a-bad-default" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#conclusion-1-no-default-is-better-than-a-bad-default">Conclusion #1: no default is better than a bad default</a></h2>
-<p>The absolute default (and main purpose) of markdown-it-anchor is to
-automatically add an <code>id</code> attribute on headings. Adding permalinks is an
-<em>option</em>, and doesn’t <em>need</em> a default.</p>
-<p>Since I realized that no single default would make everybody happy, and
-it’s not essential to have one for this option anyway, I decided to
-modify the API to require explicit configuration of the permalink
-<em>behaviour</em> if it is going to be enabled.</p>
-<p>This makes sure that the user reads about the existing options and their
-tradeoffs, so they explicitly chose the one that makes the most sense to
-them.</p>
-<p>While utopically it would have been nice to make every
-markdown-it-anchor user’s permalinks accessible with a <code>npm update</code>, we
-don’t have a single solution that suits every use case and wouldn’t
-break existing markup and styling, so this is not a realistic option.</p>
-<h2 id="final-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#final-implementation">Final implementation</a></h2>
-<p>I made a <a href="https://github.com/valeriangalliat/markdown-it-anchor/pull/89">pull request</a>
-that deprecates the <code>permalink: true</code> way of using a default (poorly
-accessible) renderer, and instead made the <code>permalink</code> option accept a
-function to render the permalink (previously called <code>renderPermalink</code>).</p>
-<p>Additionally, I provided a number of built-in renderers, documenting
-their upsides and caveats. All of this can be found on the
-<a href="https://github.com/valeriangalliat/markdown-it-anchor">project’s repo</a>,
-and it’s part of the 8.0.0 release. Here’s an overview of what was
-added.</p>
-<h3 id="header-link" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#header-link">Header link</a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.headerLink()
-})
-</code></pre>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;header-anchor&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#title&quot;</span>&gt;</span>Title<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
-</code></pre>
-<p>This was one of my favorite solutions that came out of the discussion,
-because it’s the simplest one. You can see it used on the <a href="https://developer.mozilla.org/en-US/docs/Web">MDN</a> as well
-as <a href="https://httparchive.org/reports/state-of-the-web">HTTP Archive</a> and their <a href="https://almanac.httparchive.org/en/2020/table-of-contents">Web Almanac</a>, and is the one I chose to use
-on this blog as well.</p>
-<p>The main problem with this kind of permalink is that you cannot include
-links inside headers, since they’re already a link.</p>
-<p>It’s also not as widespread as other patterns, which might confuse some
-users, and it makes it harder to select parts of the header text (I only
-learnt during that discussion that you can use <kbd>Option</kbd> (macOS)
-or <kbd>Alt</kbd> to partially select any link text, so this is probably
-not common knowledge) but you can use some
-<a href="https://codepen.io/thierry/pen/qBqYmgw">tricks</a> to make that markup
-look and feel like other more recognized implementations.</p>
-<p>Keep in mind that this pattern currently
-<a href="https://www.leereamsnyder.com/blog/making-headings-with-links-show-up-in-safari-reader">breaks reader mode in Safari</a>,
-an issue you can also notice on the referenced websites above. This was
-already <a href="https://bugs.webkit.org/show_bug.cgi?id=225609#c2">reported to Apple</a>
-but their bug tracker is not public.</p>
-<h3 id="link-after-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#link-after-header">Link after header</a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.linkAfterHeader({
-    <span class="hljs-attr">style</span>: <span class="hljs-string">&#x27;visually-hidden&#x27;</span>,
-    <span class="hljs-attr">assistiveText</span>: <span class="hljs-function"><span class="hljs-params">title</span> =&gt;</span> <span class="hljs-string">`Permalink to “<span class="hljs-subst">${title}</span>”`</span>,
-    <span class="hljs-attr">visuallyHiddenClass</span>: <span class="hljs-string">&#x27;visually-hidden&#x27;</span>
-  })
-})
-</code></pre>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>Title<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;header-anchor&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#title&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;visually-hidden&quot;</span>&gt;</span>Permalink to “Title”<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">aria-hidden</span>=<span class="hljs-string">&quot;true&quot;</span>&gt;</span>#<span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
-</code></pre>
-<p>This is the solution proposed by Amber and Nicolas, and backed by Kitty.
-It’s the one that arguably provides the clearest experience in screen
-readers.</p>
-<p>Note that making sure that the assistive text contains the title is
-important here:</p>
-<blockquote>
-<p>Regarding anchor link text, you can’t use just “Link to this section”
-because screen reader users often ask for the list of links in the
-page (they also ask for the list of headings), and they would get
-multiple times the same “Link to this section”.</p>
-<p>— <a href="https://github.com/nhoizey">Nicolas Hoizey</a>, <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788222895">March 1, 2021</a></p>
-</blockquote>
-<p>The downsides are that it requires a bit more effort to style and
-localize, causes the visually hidden text to show in SERP and RSS
-readers, and adds extra padding below headers in reader mode. Not bad,
-considering.</p>
-<h3 id="aria-hidden" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#aria-hidden">ARIA hidden</a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.ariaHidden({
-    <span class="hljs-attr">placement</span>: <span class="hljs-string">&#x27;before&#x27;</span>
-  })
-})
-</code></pre>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">a</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;header-anchor&quot;</span> <span class="hljs-attr">href</span>=<span class="hljs-string">&quot;#title&quot;</span> <span class="hljs-attr">aria-hidden</span>=<span class="hljs-string">&quot;true&quot;</span>&gt;</span>#<span class="hljs-tag">&lt;/<span class="hljs-name">a</span>&gt;</span>
-  Title
-<span class="hljs-tag">&lt;/<span class="hljs-name">h2</span>&gt;</span>
-</code></pre>
-<p>Finally, this is the GitHub inspired way of implementing permalinks, and
-legacy default of markdown-it-anchor. It needs little to no extra
-styling and behaves in the way most users will expect out of the box,
-but it’s explicitly made <em>inaccessible</em>.</p>
-<p>This might or might not be an issue for you, but it’s definitely worth
-thinking about, and considering the options above instead.</p>
-<h2 id="try-it-with-a-screen-reader-yourself" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#try-it-with-a-screen-reader-yourself">Try it with a screen reader yourself!</a></h2>
-<p>Are you wondering if the experience on your website is accessible to
-screen reader users? Reading about accessibility is great, but nothing
-can teach you as much as actually using a screen reader.</p>
-<p>This was much easier than I expected, at least on macOS. The system
-ships with VoiceOver, which you can turn on by pressing
-<kbd>Command</kbd> + <kbd>F5</kbd>. I recommend using it in
-Safari as I’ve found the behaviour to be more quirky in other browsers.</p>
-<p>We saw earlier that “screen reader users often ask for the list of
-links in the page”, as well as the list of headings.</p>
-<blockquote>
-<p>According to <a href="https://webaim.org/projects/screenreadersurvey5/#finding">a WebAim survey from 2014</a>,
-two-thirds of screen reader users scan headings as the first step of
-trying to find information on a long web page, so this should stay
-clean and intact above all.</p>
-<p>— <a href="https://github.com/KittyGiraudel">Kitty Giraudel</a>, <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788234788">March 1, 2021</a></p>
-</blockquote>
-<p>In VoiceOver, you can open the “rotor” by pressing
-<a href="https://support.apple.com/en-ca/guide/voiceover/unac048/mac"><kbd>Caps Lock</kbd></a> + <kbd>U</kbd>,
-which allows you to list all the links and headings of the page. You
-can browse through the lists by using the arrow keys. Make sure that
-those are usable on your website!</p>
-<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/you-re-probably-doing-anchor-links-wrong.html#final-word">Final word</a></h2>
-<p>As a newbie to the topic of accessibility, it was wonderful getting to
-learn from many knowledgeable peers who documented that aspect of anchor
-links, and contributed to the discussion in <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">markdown-it-anchor’s
-related issue</a> and on Twitter.</p>
-<p>Shoutout to <a href="https://twitter.com/ambrwlsn90">Amber</a>,
-<a href="https://twitter.com/nhoizey">Nicolas</a>,
-<a href="https://twitter.com/KittyGiraudel/">Kitty</a>,
-<a href="https://twitter.com/tunetheweb">Barry</a> and
-<a href="https://twitter.com/7h1322yk0813n72">Thierry</a> for taking the time to
-research this issue and sharing their findings!</p>
-<p>Finally, if I said anything wrong or inaccurate in this post, please
-<a href="https://www.codejam.info/val.html#links">let me know</a>, I’ll be more than happy to fix mistakes
-and integrate improvements!</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>My custom Premiere Pro export presets</title>
-    <link href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html" />
-    <id>https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html</id>
-    <updated>2021-06-14T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I’m publishing videos mainly to YouTube and Instagram. While Premiere
-comes with exports presets for YouTube out of the box, they don’t have
-any for Instagram. Also it turns out that even for YouTube, my main
-publishing format is not part of the default YouTube presets. Let’s dig
-into it!</p>
-<h2 id="youtube-1440p-2k-quad-hd" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#youtube-1440p-2k-quad-hd">YouTube 1440p 2K Quad HD</a></h2>
-<p>Based on the “YouTube 2160p 4K Ultra HD” preset, this presets fills the
-gap between 1080p and 4K by allowing you to export a 1440p 2K video for
-YouTube.</p>
-<p>I like to export in 2K because it allows me to
-<a href="https://www.codejam.info/2021/03/getting-the-highest-video-quality-on-youtube.html">get a higher video quality on YouTube</a>
-by forcing the VP9 codec instead of AVC, even when viewed in 1080p.</p>
-<p>Also, with my source footage being 4K, 1440p still allows me a decent
-cropping margin without loosing quality, and otherwise gets me that
-extra crispness you get when downscaling 4K footage.</p>
-<p>To make that preset:</p>
-<table>
-<thead>
-<tr>
-<th>Section</th>
-<th>Setting</th>
-<th>Value</th>
-<th>Comment</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Export Settings</td>
-<td>Preset</td>
-<td>YouTube 2160p 4K Ultra HD</td>
-<td>Base preset</td>
-</tr>
-<tr>
-<td>Basic Video Settings</td>
-<td>Width</td>
-<td>2560</td>
-<td></td>
-</tr>
-<tr>
-<td>Basic Video Settings</td>
-<td>Height</td>
-<td>1440</td>
-<td></td>
-</tr>
-<tr>
-<td>Encoding Settings</td>
-<td>Level</td>
-<td>5.1</td>
-<td>Instead of 5.2</td>
-</tr>
-<tr>
-<td>Bitrate Settings</td>
-<td>Target Bitrate</td>
-<td>20</td>
-<td>Instead of 40</td>
-</tr>
-<tr>
-<td>Bitrate Settings</td>
-<td>Maximum Bitrate</td>
-<td>20</td>
-<td>Instead of 40</td>
-</tr>
-</tbody>
-</table>
-<h3 id="why-set-the-level-to-5-1" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#why-set-the-level-to-5-1">Why set the level to 5.1?</a></h3>
-<p>The main reason is that when I first created this preset, Premiere
-actually defaulted the 4K preset to 5.1 as well, so I kept it the same.</p>
-<p>When a Premiere upgrade changed the 4K preset to 5.2, I then asked
-myself whether I should mirror the Premiere update or keep 5.1 for my
-2K preset.</p>
-<p>This forced me to learn a bit about H.264 levels first. Basically,
-a level define the maximum values for a number of encoding properties
-like bitrate, buffer size, macroblocks, luma settings and more. You can
-read more about that on <a href="https://en.wikipedia.org/wiki/High_Efficiency_Video_Coding_tiers_and_levels">Wikipedia</a>,
-<a href="http://help.encoding.com/knowledge-base/article/do-you-have-any-information-on-h-264-levels/">Encoding.com</a>
-and <a href="http://blog.mediacoderhq.com/h264-profiles-and-levels/">MediaCoder</a>.</p>
-<p>For 2K and even 4K (unless it’s 60 FPS or more), a level of 5.1 is way
-enough. While YouTube doesn’t give profile recommendations on their
-<a href="https://support.google.com/youtube/answer/1722171">recommended upload settings</a>,
-they do so on their <a href="https://support.google.com/youtube/answer/2853702">live encoder settings</a>:</p>
-<ul>
-<li>H.264, 4.1 for up to 1080p 30 FPS,</li>
-<li>H.264, 4.2 for 1080p 60 FPS,</li>
-<li>H.264, 5.0 for 1440p 30 FPS,</li>
-<li>H.264, 5.1 for 1440p 60 FPS,</li>
-<li>H.264, 5.1 for 2160p 30 FPS,</li>
-<li>H.264, 5.2 for 2160p 60 FPS.</li>
-</ul>
-<p>I usually export 24 FPS video, so I could even safely go down to 5.0,
-but I don’t want my preset to be limited to 30 FPS or lower.</p>
-<p>The reason Premiere bumped the 4K preset from 5.1 to 5.2 is likely to
-support 4K 60 FPS exports out of the box, because there’s only one
-preset regardless of the frame rate.</p>
-<p>For the same reason, I’ll leave 5.1 for my 2K preset; it’s just high
-enough to support 2K 60 FPS.</p>
-<h3 id="why-a-bitrate-of-20-specifically" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#why-a-bitrate-of-20-specifically">Why a bitrate of 20 specifically?</a></h3>
-<p>Premiere defaults to a bitrate of 16 Mbps for 1080p and 40 Mbps for 4K.
-I’m looking for something in between.</p>
-<p>Technically, 1440p is 1.33 times 1080p and 2160p is 1.5 times 1440p (and
-2 times 1080p).</p>
-<p>Based on that, I could define a bitrate of 1.33 × 16 = 21.28 Mbps, or 1
-÷ 1.5 × 40 = 26.66 Mbps.</p>
-<p>Since I expect those videos to be watched mostly in 1080p, I round
-down the bitrate to 20 and call it a day. This allows me to force the
-1440p VP9 encoder on YouTube while keeping a file size that’s nearly as
-small as a 1080p export would be.</p>
-<p>To put this in context, we can also look at <a href="https://support.google.com/youtube/answer/1722171">YouTube’s recommended upload settings</a>:</p>
-<table>
-<thead>
-<tr>
-<th>Type</th>
-<th>Video bitrate (24, 25, 30 FPS)</th>
-<th>Video bitrate (48, 50, 60 FPS)</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>2160p (4K)</td>
-<td>35–45 Mbps</td>
-<td>53–68 Mbps</td>
-</tr>
-<tr>
-<td>1440p (2K)</td>
-<td>16 Mbps</td>
-<td>24 Mbps</td>
-</tr>
-<tr>
-<td>1080p</td>
-<td>8 Mbps</td>
-<td>12 Mbps</td>
-</tr>
-</tbody>
-</table>
-<p>We can see that Premiere’s default 4K bitrate of 40 Mbps is just in the
-middle of the recommended range by YouTube for standard frame rates, but
-is probably too low if you were to export a high frame rate video.</p>
-<p>Contrarily, Premiere’s default 1080p bitrate of 16 Mbps is double what
-YouTube themselves recommend for standard frame rates, and even higher
-than the high frame rate recommendation.</p>
-<p>Finally, my 2K preset bitrate of 20 Mbps is right in the middle of what
-YouTube recommends between standard and high frame rates, making this a
-somewhat versatile preset.</p>
-<h3 id="a-note-about-1-vs-2-pass-vbr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#a-note-about-1-vs-2-pass-vbr">A note about 1 vs. 2 pass <abbr title="Variable bitrate">VBR</abbr></a></h3>
-<p>In “Bitrate Settings”, we also have an encoding option letting us choose
-from CBR, 1 pass VBR and 2 pass VBR. CBR stands for constant bitrate,
-and VBR for variable bitrate.</p>
-<p>Premiere defaults its YouTube presets to 1 pass VBR.</p>
-<p>When rendering the video, the VBR encoder supports a 2 pass process
-where it first analyses the whole video so that
-<a href="https://www.quora.com/How-big-is-the-difference-between-VBR-1-pass-and-VBR-2-pass-in-terms-of-quality-when-encoding-a-video">it can be more efficient</a>
-at actually encoding it in the second pass, resulting in a smaller file
-size for a similar quality, or a higher quality for a similar file size
-(in case of Premiere where we fix a target and maximum bitrate). The
-downside is that rendering takes nearly twice as long.</p>
-<p>Spending double the time for roughly a 30% increase in quality is a
-tradeoff you’ll have to do for yourself, but as far as I’m concerned,
-Premiere takes already long enough to encode that I’m not willing to
-make it even worse.</p>
-<h2 id="instagram" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#instagram">Instagram</a></h2>
-<p>On to the Instagram presets!</p>
-<p>I based all of my Instagram presets off Premiere’s YouTube 1080p preset,
-meaning we’re rendering with H.264 level 4.2, and a bitrate (both target
-and maximum) of 16 Mbps. To reuse the previous preset table:</p>
-<table>
-<thead>
-<tr>
-<th>Section</th>
-<th>Setting</th>
-<th>Value</th>
-<th>Comment</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Export Settings</td>
-<td>Preset</td>
-<td>YouTube 1080p Full HD</td>
-<td>Base preset</td>
-</tr>
-<tr>
-<td>Encoding Settings</td>
-<td>Level</td>
-<td>4.2</td>
-<td>Default for preset</td>
-</tr>
-<tr>
-<td>Bitrate Settings</td>
-<td>Target Bitrate</td>
-<td>16</td>
-<td>Default for preset</td>
-</tr>
-<tr>
-<td>Bitrate Settings</td>
-<td>Maximum Bitrate</td>
-<td>16</td>
-<td>Default for preset</td>
-</tr>
-</tbody>
-</table>
-<p>Aside from that, my 4 Instagram presets only differ in the resolution.</p>
-<h3 id="resolution-and-aspect-ratio" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#resolution-and-aspect-ratio">Resolution and aspect ratio</a></h3>
-<p>While there’s many websites giving settings when searching “Instagram
-video resolution” or “Instagram video specification”, the only resource
-I’ve found from Instagram themselves is on
-<a href="https://help.instagram.com/1631821640426723">their help center</a>.</p>
-<p>They recommend an aspect ratio between 1.91:1 and 4:5, with a width of
-1080 pixels, meaning that the height will vary between 566 and 1350
-pixels.</p>
-<p>I derived 4 presets out of that:</p>
-<table>
-<thead>
-<tr>
-<th>Preset</th>
-<th>Resolution</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Square</td>
-<td>1080x1080</td>
-</tr>
-<tr>
-<td>Portrait</td>
-<td>1080x1350</td>
-</tr>
-<tr>
-<td>Landscape</td>
-<td>1080x608</td>
-</tr>
-<tr>
-<td>Story</td>
-<td>1080x1920</td>
-</tr>
-</tbody>
-</table>
-<p>Here, the landscape one could be even wider if I wanted to, but most of
-my content is shot in 16:9 so I’ll keep it that way.</p>
-<h3 id="a-note-about-bitrate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#a-note-about-bitrate">A note about bitrate</a></h3>
-<p>For the bitrate, I didn’t find any official Instagram recommendation,
-but various websites recommend 3.5 Kbps, and this matches what the app
-does when recoding the video before upload (you can see that by saving
-the post or story to camera roll and inspecting the file).</p>
-<p>This makes the 16 Mbps of my presets sound a bit overkill, but I’d
-rather provide a top quality video to the app and let it recode it.</p>
-<p>There is no evidence that Instagram would skip the recoding process if
-we provide a compressed-enough video, so if recoding is going to happen
-either way, I’d rather provide a top quality input to get the best
-result.</p>
-<div class="note">
-<p><strong>Sidenote:</strong> inspecting the Instagram recoded video also shows that
-they resize the video to a width of 720 pixels, preserving the aspect
-ratio and frame rate. So even though they allow a maximum width of 1080
-pixels, they seem to conform videos to a width of 720 pixels on their
-side.</p>
-</div>
-<h3 id="a-note-about-distribution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#a-note-about-distribution">A note about distribution</a></h3>
-<p>As far as distribution is concerned, at least from desktop, they serve
-videos with a width of 640 pixels, a bitrate of 1 Mbps, and conform the
-frame rate to 30 FPS (which matches their
-<a href="https://help.instagram.com/1038071743007909">requirement for IGTV of minimum 30 FPS</a>, even
-though they don’t give any information about timeline videos otherwise).</p>
-<h3 id="a-note-about-frame-rate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#a-note-about-frame-rate">A note about frame rate</a></h3>
-<p>Even though Instagram appears to conform videos to 30 FPS upon serving,
-I still keep my timeline FPS settings in my export file, and let the
-conversion up to Instagram.</p>
-<p>Most of the time for me, it means I stick to 24 FPS.</p>
-<p>As noted above, the version Instagram processes on the device prior to
-uploading preserves the original frame rate, so this might be a sign
-that they conserve the video with the original frame rate on their
-servers, potentially allowing 24 FPS distribution at some point in the
-future.</p>
-<h3 id="a-note-about-video-length" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#a-note-about-video-length">A note about video length</a></h3>
-<p>Videos in Instagram posts are limited to one minute, but to be very
-precise, on a 24 FPS timeline, it turned out to be 59 seconds and 21
-frames. A single more frame and Instagram will prompt you to publish the
-video on IGTV instead.</p>
-<p>Also stories are limited to 15 seconds, and on a 24 FPS timeline, they
-allow up to a length of 15 seconds and 10 frames, otherwise they will
-start splitting the story.</p>
-<h3 id="final-word" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/06/my-custom-premiere-pro-export-presets.html#final-word">Final word</a></h3>
-<p>At that point, you have all the information you need to recreate those
-presets on your side, and you know precisely why each setting was
-chosen.</p>
-<p>Don’t forget in Premiere once you customize your export settings, you
-can save the preset to easily use it in other projects!</p>
 ]]></content>
   </entry>
 </feed>

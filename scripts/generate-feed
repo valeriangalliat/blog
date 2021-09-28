@@ -1,24 +1,108 @@
-#!/bin/sh -e
+#!/usr/bin/env node
 
-date=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+const fs = require('fs')
+const readline = require('readline')
+const escape = require('escape-html')
 
-cat feed.xml | sed "s,<updated />,<updated>$date</updated>,;\$d"
+function absolufy (base, html) {
+  return html.replace(/(href|src)="([^"]*)"/g, (match, attr, path) => {
+    if (path.startsWith('https://') || path.startsWith('http://')) {
+      return match
+    }
 
-sed -n 's,^<li><a href=",,p' dist/posts.html | head -20 | sed 's/".*//' | while read path; do
-    title=$(sed -n '/^ *<title>/{p;q;}' "dist/$path" | sed 's/^ *//')
-    date=$(sed -n '/^ *<p class="date">/{s/[^>]*>//;s/<.*//;p;q;}' "dist/$path")
-    iso=$(node -p 'new Date(process.argv[1]).toISOString()' "$date")
-    url=https://www.codejam.info/$path
+    return `${attr}="${escape(new URL(path, base))}"`
+  })
+}
 
-    printf "  <entry>
-    $title
-    <link href=\"$url\" />
-    <id>$url</id>
-    <updated>$iso</updated>
-    <content type=\"html\"><![CDATA["
+async function * parsePostImpl (line) {
+  const path = line.split('"')[1]
+  const url = `https://www.codejam.info/${path}`
+  const rl = readline.createInterface({ input: fs.createReadStream(`dist/${path}`) })
+  let step = 'title'
+  let previousLine
 
-    sed -n '/<\/header>/,/<footer>/p' "dist/$path" | sed '1,2d;$d' | sed '$d' | ./scripts/absolutify "$url"
-    printf "]]></content>\n  </entry>\n"
-done
+  yield '  <entry>\n'
 
-tail -1 feed.xml
+  for await (const line of rl) {
+    if (step === 'title' && line.includes('<title>')) {
+      yield `    ${line.trim()}\n`
+      yield `    <link href="${url}" />\n`
+      yield `    <id>${url}</id>\n`
+      step = 'date'
+      continue
+    }
+
+    if (step === 'date' && line.includes('<p class="date">')) {
+      const date = new Date(line.split('>')[1].split('<')[0]).toISOString()
+      yield `    <updated>${date}</updated>\n`
+      yield '    <content type="html"><![CDATA['
+      step = 'body'
+      continue
+    }
+
+    if (step === 'body' && line.includes('</header>')) {
+      step = 'skip'
+      continue
+    }
+
+    if (step === 'skip') {
+      step = 'read'
+      continue
+    }
+
+    if (step === 'read') {
+      if (line.includes('<footer>')) {
+        break
+      }
+
+      if (previousLine !== undefined) {
+        yield absolufy(url, previousLine)
+        yield '\n'
+      }
+
+      previousLine = line
+    }
+  }
+
+  yield ']]></content>\n'
+  yield '  </entry>\n'
+}
+
+async function parsePost (input) {
+  const lines = []
+
+  for await (const line of parsePostImpl(input)) {
+    lines.push(line)
+  }
+
+  return lines.join('')
+}
+
+async function main () {
+  const date = new Date().toISOString()
+  const feed = await fs.promises.readFile('feed.xml', 'utf8')
+  const rl = readline.createInterface({ input: fs.createReadStream('dist/posts.html') })
+  const latestPostsPromises = []
+
+  for await (const line of rl) {
+    if (line.startsWith('<li><a href=')) {
+      latestPostsPromises.push(parsePost(line))
+    }
+
+    if (latestPostsPromises.length >= 20) {
+      break
+    }
+  }
+
+  const latestPosts = await Promise.all(latestPostsPromises)
+  const entries = latestPosts.join('')
+
+  process.stdout.write(
+    feed
+      .replace('<updated />', `<updated>${date}</updated>`)
+      // Use callback to avoid `$&` and such to be interpreted.
+      .replace('</feed>', match => `${entries}${match}`)
+  )
+}
+
+main()

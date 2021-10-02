@@ -1,7 +1,7 @@
 {
   "scripts": {
     "lint": "standard --fix . scripts/render scripts/generate-feed",
-    "watch": "chokidar '**/*.md' -c make -j16"
+    "watch": "chokidar css js '**/*.md' -c make -j16"
   },
   "dependencies": {
     "@sindresorhus/slugify": "^1.1.0",

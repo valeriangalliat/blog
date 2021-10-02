@@ -4,6 +4,7 @@ footer {
     padding: 0 .5em;
     display: flex;
     justify-content: center;
+    text-align: center;
     border-top: 1px solid var(--gray-2);
 }
 

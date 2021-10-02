@@ -1,6 +1,6 @@
 # Hey, I'm Val<small>,</small> <small>welcome to my blog!</small>
 
-I'm passionate software developer, and as importantly, an amateur
+I'm a passionate software developer, and as importantly, an amateur
 musician, photograph, videographer, brewer and climber.
 
 You'll find on this blog writings about the things that I care about and

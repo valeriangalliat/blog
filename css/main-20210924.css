@@ -597,8 +597,29 @@ nav .social a:hover svg {
         margin-right: -7.5rem;
     }
 }
+.index .header-inner {
+    display: flex;
+}
+
 .index h1 {
-    text-align: center;
+    line-height: 1;
+    margin: 0;
+}
+
+.index h1.has-subtitle {
+    font-size: 1em;
+}
+
+.index h1 span {
+    font-size: 4rem;
+}
+
+.index .tagline {
+    margin: 0;
+    font-size: .8em;
+
+    /* Make up alignment for the fact title is much bigger. */
+    padding-left: .5em;
 }
 
 .links ul {

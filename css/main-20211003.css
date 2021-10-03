@@ -403,29 +403,20 @@ figure.center, figure.grid {
     }
 }
 footer {
+    /* Match content container width. */
     max-width: 45rem;
     margin: 10em auto 3em auto;
     padding: 0 .5em;
-    display: flex;
-    justify-content: center;
     text-align: center;
-    border-top: 1px solid var(--gray-2);
 }
 
 footer p {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     color: var(--gray-4);
-    margin: 2em 0;
-}
-
-@media (max-width: 69em) {
-    footer {
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 45rem;
-        padding: 0 .5em;
-    }
+    padding: 2em 0;
+    margin: 0;
+    border-top: 1px solid var(--gray-2);
 }
 
 footer a, footer a:visited {
@@ -443,8 +434,10 @@ footer a:hover {
 .footnotes p {
     margin: 0;
 }
-header .content {
-    margin-top: 5em;
+@media (min-width: 69em) {
+    header .content {
+        margin-top: 5em;
+    }
 }
 .hero {
     position: relative;
@@ -504,13 +497,19 @@ header .content {
 }
 nav {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     flex-wrap: wrap;
-    padding: 1em 2em;
 
     /* Dirty fix to prevent horizontal scroll in some cased because of negative
      * margin below. */
     overflow: hidden;
+
+    padding: 1em .5em;
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Match content container width. */
+    max-width: 45rem;
 }
 
 nav ul {
@@ -519,25 +518,21 @@ nav ul {
     list-style-type: none;
     padding-left: 0;
     display: flex;
+    justify-content: center;
     margin: 1em -1em;
 }
 
-@media (max-width: 69em) {
+@media (min-width: 69em) {
     nav {
-        margin-left: auto;
-        margin-right: auto;
-        max-width: 45rem;
-        padding: 1em .5em;
+        padding: 1em 2em;
+        max-width: none;
     }
 }
 
-@media (max-width: 42em) {
+@media (min-width: 42em) {
     nav {
-        flex-direction: column;
-    }
-
-    nav ul {
-        justify-content: center;
+        flex-direction: row;
+        justify-content: space-between;
     }
 }
 
@@ -599,6 +594,7 @@ nav .social a:hover svg {
 }
 .index .header-inner {
     display: flex;
+    text-align: center;
 }
 
 .index h1 {
@@ -606,20 +602,28 @@ nav .social a:hover svg {
     margin: 0;
 }
 
-.index h1.has-subtitle {
-    font-size: 1em;
-}
-
-.index h1 span {
-    font-size: 4rem;
-}
-
 .index .tagline {
     margin: 0;
     font-size: .8em;
+}
 
-    /* Make up alignment for the fact title is much bigger. */
-    padding-left: .5em;
+@media (min-width: 42em) {
+    .index .header-inner {
+        text-align: left;
+    }
+
+    .index h1.has-subtitle {
+        font-size: 1em;
+    }
+
+    .index h1 span {
+        font-size: 4rem;
+    }
+
+    .index .tagline {
+        /* Make up alignment for the fact title is much bigger. */
+        padding-left: .5em;
+    }
 }
 
 .links ul {
@@ -635,13 +639,8 @@ nav .social a:hover svg {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-}
-
-@media (max-width: 38em) {
-    .posts li {
-        margin-bottom: .5em;
-        flex-direction: column-reverse;
-    }
+    margin-bottom: .5em;
+    flex-direction: column-reverse;
 }
 
 .posts li:not(:last-child) {
@@ -655,8 +654,13 @@ nav .social a:hover svg {
     white-space: nowrap;
 }
 
-@media (min-width: 38em) {
-    .posts small {
+@media (min-width: 42em) {
+    .posts li {
+        margin-bottom: 0;
+        flex-direction: row;
+    }
+
+    .posts li > small {
         text-align: right;
     }
 }

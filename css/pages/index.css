@@ -1,5 +1,6 @@
 .index .header-inner {
     display: flex;
+    text-align: center;
 }
 
 .index h1 {
@@ -7,20 +8,28 @@
     margin: 0;
 }
 
-.index h1.has-subtitle {
-    font-size: 1em;
-}
-
-.index h1 span {
-    font-size: 4rem;
-}
-
 .index .tagline {
     margin: 0;
     font-size: .8em;
+}
 
-    /* Make up alignment for the fact title is much bigger. */
-    padding-left: .5em;
+@media (min-width: 42em) {
+    .index .header-inner {
+        text-align: left;
+    }
+
+    .index h1.has-subtitle {
+        font-size: 1em;
+    }
+
+    .index h1 span {
+        font-size: 4rem;
+    }
+
+    .index .tagline {
+        /* Make up alignment for the fact title is much bigger. */
+        padding-left: .5em;
+    }
 }
 
 .links ul {
@@ -36,13 +45,8 @@
     display: flex;
     align-items: baseline;
     justify-content: space-between;
-}
-
-@media (max-width: 38em) {
-    .posts li {
-        margin-bottom: .5em;
-        flex-direction: column-reverse;
-    }
+    margin-bottom: .5em;
+    flex-direction: column-reverse;
 }
 
 .posts li:not(:last-child) {
@@ -56,8 +60,13 @@
     white-space: nowrap;
 }
 
-@media (min-width: 38em) {
-    .posts small {
+@media (min-width: 42em) {
+    .posts li {
+        margin-bottom: 0;
+        flex-direction: row;
+    }
+
+    .posts li > small {
         text-align: right;
     }
 }

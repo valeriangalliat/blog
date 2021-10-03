@@ -1,3 +1,5 @@
-header .content {
-    margin-top: 5em;
+@media (min-width: 69em) {
+    header .content {
+        margin-top: 5em;
+    }
 }

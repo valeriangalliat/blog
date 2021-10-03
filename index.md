@@ -1,11 +1,9 @@
-# Hey, I'm Val<small>,</small> <small>welcome to my blog!</small>
+---
+excerpt: A blog by a programmer who loves many other things.
+---
 
-I'm a passionate software developer, and as importantly, an amateur
-musician, photograph, videographer, brewer and climber.
-
-You'll find on this blog writings about the things that I care about and
-feel like are worth sharing, as well as links to the different platforms
-where I create content.
+# CodeJam <small>by Val</small>
+A blog by a programmer who loves many other things.
 
 ## Posts
 
@@ -27,7 +25,7 @@ where I create content.
 * [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>
 
-[More posts](posts.md)
+[All the posts](posts.md)
 
 </div>
 
@@ -48,10 +46,9 @@ where I create content.
 
 * [About](val.md) <small>| who I am</small>
 * [About the name](about-the-name.md) <small>| why that stupid domain name</small>
-* [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [YouTube](https://www.youtube.com/FunkyVal) <small>| videos I make</small>
-
-[More links](val.md#links)
+* [Photography](https://photography.codejam.info/) <small>| my photos</small>
+* [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
+* [More links](val.md#links) <small>| social media, contact, ...</small>
 
 </div>
 

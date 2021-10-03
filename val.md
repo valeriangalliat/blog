@@ -4,22 +4,26 @@ image: img/val.jpg
 
 # Val <small>(Valérian Galliat)</small>
 
-<figure class="oversized">
+<figure class="center">
   <img alt="Val" src="img/val.jpg">
 </figure>
 
 ## About
 
-I'm from Grenoble, in the beautiful French Alps, and currently living in
-Montreal, Canada.
+I'm from **Grenoble**, in the beautiful French Alps, and currently
+living in **Montreal, Canada**.
+
+I write on this blog about **computers and programming**, but also about
+**music**, **photography**, **video**, **brewing**, and anything else I
+find useful and worth sharing.
+
+---
 
 One of my favorite things in life is summiting mountains, whether it's
-hiking, rock climbing or skiing. I usually bring a beer at the summit
-(possibly [homebrewed](https://github.com/valeriangalliat/sans-pression)),
-which I not only love drinking, but also [taking pictures of][beer]. But
-it's [not just about beer][photography], I like taking pictures in
-general.
+hiking, rock climbing or skiing. I usually bring a [beer][brewing] at
+the top and I often [take a picture of it][beer]. I love [taking pictures][photography].
 
+[brewing]: https://github.com/valeriangalliat/sans-pression
 [beer]: https://photography.codejam.info/beer.html
 [photography]: https://photography.codejam.info/
 
@@ -39,24 +43,34 @@ and before that, [Busbud].
 [Sportlogiq]: https://sportlogiq.com/en/about-us
 [Busbud]: https://www.busbud.com/en/about
 
+## Contact
+
+<table>
+  <tr>
+    <th><a href="mailto:val@codejam.info"><sub><img src="/img/icons/gmail.png" width="16"></sub> Email</a></th>
+    <th><a href="https://twitter.com/valeriangalliat"><sub><img src="/img/icons/twitter.png" width="16"></sub> Twitter</a></th>
+    <th><a href="https://www.instagram.com/funkyval_/"><sub><img src="/img/icons/instagram.png" width="16"></sub> Instagram</a></th>
+    <th><a href="https://www.linkedin.com/in/valeriangalliat/"><sub><img src="/img/icons/linkedin.png" width="16"></sub> LinkedIn</a></th>
+  </tr>
+</table>
+
+Don't hesitate to contact me if you have any question or want to get in
+touch!
+
 ## Links
 
 <div class="links">
 
-* [Blog](https://www.codejam.info/) <small>| random stuff I write about my interests</small>
-* [Photography](https://photography.codejam.info/) <small>| pictures I take</small>
-* [Brewing](https://github.com/valeriangalliat/sans-pression) <small>| beer I brew</small>
-* [YouTube](https://www.youtube.com/FunkyVal) <small>| videos I make</small>
-* [Instagram](https://www.instagram.com/funkyval_/) <small>| silly stories I share</small>
-* [Twitter](https://twitter.com/valeriangalliat) <small>| bullshit I say</small>
-* [GitHub](https://github.com/valeriangalliat) <small>| code I write</small>
-* [Freelance](resources/freelance.md) <small>| code I write for you</small>
-* [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| I'm well, thank you</small>
-* [SoundCloud](https://soundcloud.com/funkyval) <small>| music I produce</small>
+* [Blog](https://www.codejam.info/) <small>| 90% programming, 10% content creation</small>
+* [Photography](https://photography.codejam.info/) <small>| my photos</small>
+* [Instagram](https://www.instagram.com/funkyval_/) <small>| my square photos</small>
+* [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
+* [Twitter](https://twitter.com/valeriangalliat) <small>| 50% jokes, 50% tips, 100% tech</small>
+* [GitHub](https://github.com/valeriangalliat) <small>| my projects</small>
+* [Freelance](resources/freelance.md) <small>| your projects</small>
+* [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| connect with me</small>
+* [SoundCloud](https://soundcloud.com/funkyval) <small>| my music</small>
 * [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>
 * [Email](mailto:val@codejam.info) <small>| `val@codejam.info`</small>
 
 </div>
-
-Don't hesitate to contact me on any of the relevant platforms above if
-you have any question or want to get in touch!

@@ -6,13 +6,20 @@ const mdit = require('markdown-it')
 const escape = require('escape-html')
 const slugify = require('@sindresorhus/slugify')
 
+const baseUrl = 'https://www.codejam.info/'
+const meta = {}
+
+const file = process.argv[2]
+const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
+const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
+const markdown = fs.readFileSync(file, 'utf8')
+const env = {}
+const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
+
 const md = mdit({
   html: true,
   typographer: true
 })
-
-const baseUrl = 'https://www.codejam.info/'
-const meta = {}
 
 md.use(require('markdown-it-front-matter'), metaString => {
   for (const line of metaString.split('\n')) {
@@ -30,7 +37,7 @@ md.use(require('markdown-it-anchor'), {
 md.use(require('markdown-it-deflist'))
 md.use(require('markdown-it-footnote'))
 md.use(require('markdown-it-highlightjs'), { auto: false })
-md.use(require('markdown-it-title'), { excerpt: 2 })
+md.use(require('markdown-it-title'), { excerpt: 3 })
 md.use(require('markdown-it-attr-typographer'), { html: true })
 
 // Rewrite local Markdown links to HTML.
@@ -56,23 +63,81 @@ md.core.ruler.push('markdownLinkRewrite', state => {
   }
 })
 
-const file = process.argv[2]
-const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
-const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
-const markdown = fs.readFileSync(file, 'utf8')
-const env = {}
-const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
-const lines = md.render(markdown, env).trim().split('\n')
-const slice = bodyClass === 'post' ? lines.indexOf(lines.find(line => line.includes('</p>'))) + 1 : 1
-const header = lines.slice(0, slice).join('\n').replace(/<h1>([^<]*)<small>/, '<h1 class="has-subtitle"><span>$1</span><small>').replace('<p>', `<p class="${slice > 2 ? 'tagline' : 'date'}">`).replace('<br>\n', '</p>\n<p class="date">')
-const body = lines.slice(slice).join('\n')
+md.core.ruler.push('paragraphsAfterTitle', state => {
+  let h1
+  let index
+
+  for (const [i, token] of state.tokens.entries()) {
+    if (!token.map) { continue }
+    if (token.tag === 'h1') { h1 = token; continue }
+    if (!h1) { continue }
+    if (token.map[0] > h1.map[1]) { break }
+    if (token.tag === 'p') { index = i; break }
+  }
+
+  if (!index) {
+    state.tokens.splice(state.tokens.indexOf(h1) + 3, 0, new state.Token('hr', 'hr', 0))
+    state.env.paragraphsAfterTitle = 0
+    return
+  }
+
+  const pOpen = state.tokens[index]
+  const inline = state.tokens[index + 1]
+  const paragraphs = [[]]
+
+  for (const child of inline.children) {
+    if (child.tag === 'br') {
+      paragraphs.unshift([])
+      continue
+    }
+
+    paragraphs[0].push(child)
+  }
+
+  paragraphs.reverse()
+
+  const classes = ['tagline', 'date']
+
+  if (bodyClass === 'post' && paragraphs.length === 1) {
+    classes.shift()
+  }
+
+  pOpen.attrSet('class', classes.shift())
+  inline.children = paragraphs[0]
+
+  const newTokens = []
+
+  for (const children of paragraphs.slice(1)) {
+    newTokens.push(
+      Object.assign(new state.Token('paragraph_open', 'p', 1), { attrs: [['class', classes.shift()]] }),
+      Object.assign(new state.Token('inline', '', 0), { children }),
+      new state.Token('paragraph_close', 'p', -1)
+    )
+  }
+
+  // Add a marker that is always there and will be removed during the split below.
+  newTokens.push(new state.Token('hr', 'hr', 0))
+
+  state.tokens.splice(index + 3, 0, ...newTokens)
+
+  // Keep track for finding excerpt.
+  state.env.paragraphsAfterTitle = paragraphs.length
+})
+
+const html = md.render(markdown, env)
+const markerIndex = html.indexOf('<hr>')
+const header = html.slice(0, markerIndex).trim().replace(/<h1>([^<]*) <small>/, '<h1 class="has-subtitle"><span>$1</span> <small>')
+const body = html.slice(markerIndex + '<hr>'.length).trim()
 
 let metaTags = `  <meta property="og:title" content="${escape(env.title)}">\n`
 
 if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(md.typographer(meta.excerpt))}">\n`
 } else if (env.excerpt) {
-  metaTags += `  <meta property="og:description" content="${escape(env.excerpt[bodyClass === 'post' ? 1 : 0])}">\n`
+  const tagline = env.excerpt.slice(0, env.paragraphsAfterTitle).filter(text => !text.match(/, 20\d\d$/))[0]
+  const excerpt = env.excerpt.slice(env.paragraphsAfterTitle)[0]
+  const description = (tagline ? `${tagline}.`.replace(/\.\.?$/, '. ') : '') + excerpt
+  metaTags += `  <meta property="og:description" content="${escape(description)}">\n`
 }
 
 const image = meta.image || meta.hero

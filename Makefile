@@ -86,6 +86,18 @@ dist/js/main-20210719.js: js/main.js
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
 
+dist/img/icons/instagram.png:
+	curl 'https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png' | convert - -resize 16x $@
+
+dist/img/icons/twitter.png:
+	curl 'https://abs.twimg.com/responsive-web/client-web/icon-ios.b1fc7275.png' | convert - -resize 16x $@
+
+dist/img/icons/gmail.png:
+	curl 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico' | convert 'ico:-[3]' -resize 16x $@
+
+dist/img/icons/linkedin.png:
+	curl 'https://static-exp1.licdn.com/sc/h/eahiplrwoq61f4uan012ia17i' | convert - -resize 16x $@
+
 css/colors.css:
 	echo ':root {' > $@
 	curl -s 'https://raw.githubusercontent.com/cdnjs/cdnjs/master/ajax/libs/Primer/17.4.0/base.css' \

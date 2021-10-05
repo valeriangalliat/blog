@@ -44,7 +44,7 @@ it was to slow down.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640263.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640263.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640263.jpg">
   </a>
 </figure>
 
@@ -68,7 +68,7 @@ So do yourself a favor and get a wort chiller.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640253.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640253.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640253.jpg">
   </a>
 </figure>
 
@@ -79,7 +79,7 @@ Here, we have a 1/2" (sink) to 3/4" (garden hose) adapter.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640255.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640255.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640255.jpg">
   </a>
 </figure>
 
@@ -107,7 +107,7 @@ unless you really need that jar or tube.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640264.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640264.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640264.jpg">
   </a>
 </figure>
 
@@ -126,13 +126,13 @@ a while to get it open.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640257.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640257.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640257.jpg">
   </a>
 </figure>
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640259.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640259.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640259.jpg">
   </a>
 </figure>
 
@@ -156,13 +156,13 @@ filter in parallel instead of it delaying the start of your boil.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640248.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640248.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640248.jpg">
   </a>
 </figure>
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640251.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640251.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640251.jpg">
   </a>
 </figure>
 
@@ -174,7 +174,7 @@ effect in parties.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2600461.html">
-    <img src="https://photography.codejam.info/photos/hd/P2600461.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2600461.jpg">
   </a>
 </figure>
 
@@ -185,13 +185,13 @@ enjoy one of your previous homebrews!
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2580621.html">
-    <img src="https://photography.codejam.info/photos/hd/P2580621.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2580621.jpg">
   </a>
 </figure>
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2580635.html">
-    <img src="https://photography.codejam.info/photos/hd/P2580635.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2580635.jpg">
   </a>
 </figure>
 
@@ -210,6 +210,6 @@ out and didn't pair well with the sweeter taste of hot mash.
 
 <figure class="center">
   <a href="https://photography.codejam.info/photos/P2640272.html">
-    <img src="https://photography.codejam.info/photos/hd/P2640272.jpg">
+    <img src="https://photography.codejam.info/photos/sd/P2640272.jpg">
   </a>
 </figure>

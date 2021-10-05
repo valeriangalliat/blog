@@ -4,7 +4,6 @@
 }
 
 .index h1 {
-    line-height: 1;
     margin: 0;
 }
 
@@ -16,6 +15,10 @@
 @media (min-width: 42em) {
     .index .header-inner {
         text-align: left;
+
+        /* Seems to be what consistently looks better across a variety of
+         * system fonts. */
+        line-height: normal;
     }
 
     .index h1.has-subtitle {

@@ -38,7 +38,7 @@ backend and infrastructure. Previously, I was working at [Sportlogiq],
 and before that, [Busbud].
 
 [bike]: https://www.codejam.info/img/2020/06/gopro.jpg
-[motorcycle]: https://photography.codejam.info/photos/hd/P2570525.jpg
+[motorcycle]: https://photography.codejam.info/photos/P2570525.html
 [channel]: https://www.youtube.com/FunkyVal
 [Sportlogiq]: https://sportlogiq.com/en/about-us
 [Busbud]: https://www.busbud.com/en/about

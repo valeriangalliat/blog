@@ -9,6 +9,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links posts">
 
+* [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
 * [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
 * [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>
 * [Elixir, Ecto and Heroku Postgres: unverified SSL certificates](2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.md) <small>September 24, 2021</small>
@@ -23,7 +24,6 @@ A blog by a programmer who loves many other things.
 * [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
-* [A journey to scripting Firefox Sync / Lockwise: understanding BrowserID](2021/08/scripting-firefox-sync-lockwise-understanding-browserid.md) <small>August 8, 2021</small>
 
 [All the posts](posts.md)
 

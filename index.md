@@ -44,8 +44,8 @@ A blog by a programmer who loves many other things.
 
 <div class="links">
 
-* [About](val.md) <small>| who I am</small>
-* [About the name](about-the-name.md) <small>| why that stupid domain name</small>
+* [About](val.md) <small>| meet the author</small>
+* [About the name](about-the-name.md) <small>| why CodeJam</small>
 * [Photography](https://photography.codejam.info/) <small>| my photos</small>
 * [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
 * [More links](val.md#links) <small>| social media, contact, ...</small>

@@ -143,15 +143,11 @@ if (meta.excerpt) {
 const image = meta.image || meta.hero
 
 if (image) {
-  let absoluteImage = image
+  const absoluteImage = new URL(image, `${baseUrl}${file}`).href
 
-  if (!image.startsWith('http://') && !image.startsWith('https://')) {
-    absoluteImage = new URL(image, `${baseUrl}${file}`).href
-  }
-
-  metaTags += `  <meta property="og:image" content="${absoluteImage}">\n`
+  metaTags += `  <meta property="og:image" content="${escape(absoluteImage)}">\n`
 } else {
-  metaTags += `  <meta property="og:image" content="${baseUrl}img/profile.jpg">\n`
+  metaTags += `  <meta property="og:image" content="${escape(`${baseUrl}img/profile.jpg`)}">\n`
 }
 
 metaTags += `  <meta name="twitter:card" content="${image ? 'summary_large_image' : 'summary'}">

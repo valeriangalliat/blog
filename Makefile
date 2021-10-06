@@ -83,6 +83,12 @@ dist/js/emojicon.js: node_modules/emojicon-big/index.js node_modules/emojicon-bi
 dist/js/main-20210719.js: js/main.js
 	cp $^ $@
 
+dist/img/val.jpg:
+	curl https://photography.codejam.info/photos/full/P2570771.jpg | magick - -resize 1280x -crop '1280x512+0+%[fx:88.5/100*(h-512)]' $@
+
+dist/img/freelance.jpg:
+	magick IMG_7587.jpeg -resize 1280x -crop '1280x512+0+%[fx:50/100*(h-512)]' $@
+
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
 

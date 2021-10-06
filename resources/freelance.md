@@ -23,10 +23,6 @@ I work the vast majority of the time with **JavaScript** and **Node.js**
 which I've been using on a daily basis for the past **10 years**. I'll
 happily work with **Python** and **Elixir** as well.
 
-That said, if you work with a **transpiled language** like TypeScript,
-CoffeeScript, or to a lesser extent, Babel, I'm not the right person for
-the job, as those tools take all the joy away from the craft for me.
-
 ## Philosophy
 
 I will write the [most simple](simple.md) solution to a problem,

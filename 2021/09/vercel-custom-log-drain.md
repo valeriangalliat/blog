@@ -372,7 +372,7 @@ of that for free (or nearly).
 
 **Note:** if you need to forward your Vercel logs to a custom endpoint
 but this article was too technical for you, feel free to [contact me](/val.md#links),
-I'm available for [freelance work](/resources/freelance.md) and I'll be
+I'm available for [freelance work](/freelance.md) and I'll be
 happy to help you with that. ✌️
 
 </div>

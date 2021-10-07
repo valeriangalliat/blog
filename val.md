@@ -67,7 +67,7 @@ touch!
 * [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
 * [Twitter](https://twitter.com/valeriangalliat) <small>| 50% jokes, 50% tips, 100% tech</small>
 * [GitHub](https://github.com/valeriangalliat) <small>| my projects</small>
-* [Freelance](resources/freelance.md) <small>| your projects</small>
+* [Freelance](freelance.md) <small>| your projects</small>
 * [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| connect with me</small>
 * [SoundCloud](https://soundcloud.com/funkyval) <small>| my music</small>
 * [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>

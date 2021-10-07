@@ -33,10 +33,10 @@ A blog by a programmer who loves many other things.
 
 <div class="links">
 
-* [Git](resources/git.md) <small>| how I learnt Git</small>
-* [Vim](resources/vim.md) <small>| how I learnt Vim</small>
-* [Simple](resources/simple.md) <small>| why I write boring code</small>
-* [Freelance](resources/freelance.md) <small>| I'll write boring code for you</small>
+* [Git](git.md) <small>| how I learnt Git</small>
+* [Vim](vim.md) <small>| how I learnt Vim</small>
+* [Simple](simple.md) <small>| why I write boring code</small>
+* [Freelance](freelance.md) <small>| I'll write boring code for you</small>
 
 </div>
 

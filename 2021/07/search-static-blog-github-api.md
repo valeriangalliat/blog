@@ -379,7 +379,7 @@ transpiling everything possible and new cool, revolutionary ways of
 doing one thing or another.
 
 While those kept me excited for many years, I ended up getting bored of
-it, and incidentally started writing [boring code](../../resources/simple.md).
+it, and incidentally started writing [boring code](../../simple.md).
 
 They're all tools after all, and I won't use them unless I have a good
 reason to.

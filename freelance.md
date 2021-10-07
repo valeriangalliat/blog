@@ -1,7 +1,7 @@
 # I'll write code for you
 
 <figure class="center">
-  <img alt="Me working from a pool" src="../../img/freelance.jpg">
+  <img alt="Me working from a pool" src="img/freelance.jpg">
 </figure>
 
 Hi there! My name is **Val**. I wear many hats, and one of them is to be a

@@ -99,13 +99,13 @@ hosting services and their options to get access to server-side
 analytics or logs. Then, I’ll show you <a href="vercel-custom-log-drain.html">in the second part</a>
 how to retrieve logs on a Vercel app, which is the only service I found
 to provide HTTP logs as part of their free offer!</p>
-<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="#github-pages">GitHub Pages</a></h2>
+<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="#github-pages"><span>GitHub Pages</span></a></h2>
 <p><a href="https://pages.github.com/">GitHub Pages</a> is the easiest option to host
 a static website for free, especially if you’re already working with
 GitHub, but it doesn’t have an option to access HTTP logs.</p>
 <p>The only method they document is using Google Analytics or a similar
 script, but that’s not an acceptable solution to me. Let’s move on.</p>
-<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="#netlify">Netlify</a></h2>
+<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="#netlify"><span>Netlify</span></a></h2>
 <p><a href="https://www.netlify.com/">Netlify</a> is my next favorite way to deploy a
 static website. They also have a <a href="https://www.netlify.com/products/analytics/">Netlify Analytics</a>,
 product, an analytics platform based on server logs, which is exactly
@@ -118,7 +118,7 @@ only get on the server side.</p>
 <p>But they price that feature at $9 per month per site, which to be honest
 is pretty decent if you have a website that’s generating some cash, but
 my blog is not and my current budget is closer to $0.</p>
-<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="#cloudflare">Cloudflare</a></h2>
+<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="#cloudflare"><span>Cloudflare</span></a></h2>
 <p><a href="https://www.cloudflare.com/">Cloudflare</a> also has a free static hosting
 offer. They’ve got a <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Analytics</a>
 product, but the free version is only powered by a client-side script,
@@ -129,7 +129,7 @@ the “pro” plan that’s $20 per month. Too much for me.</p>
 which seems like it would at least give access to raw HTTP logs, but the
 pricing is not mentioned and you need to contact their sales department
 to maybe get access to it. Doesn’t look good.</p>
-<h2 id="render" tabindex="-1"><a class="header-anchor" href="#render">Render</a></h2>
+<h2 id="render" tabindex="-1"><a class="header-anchor" href="#render"><span>Render</span></a></h2>
 <p><a href="https://render.com/">Render</a> is another service with free static
 hosting, and a it’s a very well built product. Simple and efficient. Out
 of all the websites in this list, it’s the one with my favorite UI so
@@ -140,7 +140,7 @@ hosted Git provider through OAuth like it’s the case with <a href="#vercel">Ve
 <p>Sadly, while you can <a href="https://render.com/docs/log-streams">configure a syslog drain</a>,
 it only forward application logs and doesn’t include edge load balancer
 HTTP logs, which is the only thing I care about.</p>
-<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="#google-cloud-free-tier-vm">Google Cloud free tier VM</a></h2>
+<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="#google-cloud-free-tier-vm"><span>Google Cloud free tier VM</span></a></h2>
 <p>While it’s very different from the other managed services I mention in
 this list, <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">Google Cloud</a>
 allows you to run a <code>e2-micro</code> instance constantly for free.</p>
@@ -165,7 +165,7 @@ like me, you find it to be exciting and a lot of fun, it’s definitely a
 good solution. That being said you’ll also be responsible of managing
 the VM, keeping it up-to-date, and fixing any issue that might happen
 with it, otherwise you website might get some downtime.</p>
-<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="#vercel">Vercel</a></h2>
+<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="#vercel"><span>Vercel</span></a></h2>
 <p>Finally, <a href="https://vercel.com/">Vercel</a> also has free static hosting. Yay!</p>
 <p>They even have a <a href="https://vercel.com/analytics">Vercel Analytics</a>
 product, but it’s mostly focused on performance, and the data is

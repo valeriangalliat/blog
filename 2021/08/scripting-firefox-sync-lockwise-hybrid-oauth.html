@@ -126,7 +126,7 @@ to sign a BrowserID public key and get back a certificate:</p>
 </blockquote>
 <p>I don’t like the idea of using a legacy endpoint when writing new code.
 There must be something better.</p>
-<h2 id="exploring-oauth" tabindex="-1"><a class="header-anchor" href="#exploring-oauth">Exploring OAuth</a></h2>
+<h2 id="exploring-oauth" tabindex="-1"><a class="header-anchor" href="#exploring-oauth"><span>Exploring OAuth</span></a></h2>
 <p>While the TokenServer <a href="https://github.com/mozilla-services/tokenserver#using-oauth">documents OAuth</a>
 as an alternative to BrowserID to get credentials, it’s unclear how to
 use it. All that page says is “the client must obtain an OAuth access
@@ -136,7 +136,7 @@ where to get the OAuth token and the corresponding key.</p>
 had the competitive advantage of having multiple working implementations
 in the wild that made it easier to understand how it works. OAuth was
 a different kind of beast.</p>
-<h3 id="sending-emails-how-about-no" tabindex="-1"><a class="header-anchor" href="#sending-emails-how-about-no">Sending emails? How about no</a></h3>
+<h3 id="sending-emails-how-about-no" tabindex="-1"><a class="header-anchor" href="#sending-emails-how-about-no"><span>Sending emails? How about no</span></a></h3>
 <p>The <a href="https://mozilla.github.io/ecosystem-platform/">Firefox Ecosystem Platform</a>
 documents <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">how to integrate with Firefox Accounts</a>
 using OAuth, but the first thing we can read there is:</p>
@@ -182,7 +182,7 @@ need to contact Mozilla in order to register for OAuth credentials. At
 that point it seems like a dead end, and I’m considering to build my
 client on top of the legacy BrowserID API, since it still works after
 all, and I spent so much time to understand it in depth anyways.</p>
-<h3 id="circling-back" tabindex="-1"><a class="header-anchor" href="#circling-back">Circling back</a></h3>
+<h3 id="circling-back" tabindex="-1"><a class="header-anchor" href="#circling-back"><span>Circling back</span></a></h3>
 <p>Going back to the <a href="https://github.com/mozilla/fxa-oauth-server/blob/master/docs/api.md">OAuth 2.0 API</a>
 link from the former quote, this points to a page in an archived repo on
 Github, <a href="https://github.com/mozilla/fxa-oauth-server/blob/master/docs/api.md"><code>mozilla/fxa-oauth-server/docs/api.md</code></a>,
@@ -199,7 +199,7 @@ in there, but I pretty much instantly hit a wall when I see that all
 those endpoints require an OAuth client ID, which is part of the OAuth
 credentials I’m supposed to email Mozilla in order to get.</p>
 <p>It feels like I’m going in circles. 🧐</p>
-<h2 id="harvesting-a-client-id-from-the-android-app" tabindex="-1"><a class="header-anchor" href="#harvesting-a-client-id-from-the-android-app">Harvesting a <code>client_id</code> from the Android app</a></h2>
+<h2 id="harvesting-a-client-id-from-the-android-app" tabindex="-1"><a class="header-anchor" href="#harvesting-a-client-id-from-the-android-app"><span>Harvesting a <code>client_id</code> from the Android app</span></a></h2>
 <p>While those endpoints require a client ID, it’s not necessary to provide
 a client secret for public clients (see <a href="https://auth0.com/docs/applications/confidential-and-public-applications">OAuth grant types</a>).
 And because the client ID of public clients is… public, we should be
@@ -224,7 +224,7 @@ and I do get back a valid OAuth token. Sweet.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> scope = <span class="hljs-string">&#x27;https://identity.mozilla.com/apps/oldsync&#x27;</span>
 <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.createOAuthToken(creds.sessionToken, clientId, { scope })
 </code></pre>
-<h2 id="unmasking-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="#unmasking-the-x-keyid-header">Unmasking the <code>X-KeyID</code> header</a></h2>
+<h2 id="unmasking-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="#unmasking-the-x-keyid-header"><span>Unmasking the <code>X-KeyID</code> header</span></a></h2>
 <p>Now that’s not enough to authenticate to the TokenServer, I also <a href="https://github.com/mozilla-services/tokenserver#using-oauth">need to pass</a>
 “the <code>kid</code> field of the encryption key in the <code>X-KeyID</code> header”.</p>
 <p>This is not really obvious to me because I don’t have a <code>kid</code> field in
@@ -271,7 +271,7 @@ it most necessarily means that there’s a better alternative.</p>
 <p>But let’s put that aside for now. This will be an adventure for another
 day. For now we’re so close to getting this code work that I can’t just
 move on to something else right now.</p>
-<h2 id="tracking-keyrotationtimestamp" tabindex="-1"><a class="header-anchor" href="#tracking-keyrotationtimestamp">Tracking <code>keyRotationTimestamp</code></a></h2>
+<h2 id="tracking-keyrotationtimestamp" tabindex="-1"><a class="header-anchor" href="#tracking-keyrotationtimestamp"><span>Tracking <code>keyRotationTimestamp</code></span></a></h2>
 <p>I start with the Python code form the original email:</p>
 <pre><code class="hljs language-python">kid = <span class="hljs-built_in">str</span>(keyRotationTimestamp) + <span class="hljs-string">&#x27;-&#x27;</span> + base64.urlsafe_b64encode(tmp[:<span class="hljs-number">16</span>]).decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>).rstrip(<span class="hljs-string">&#x27;=&#x27;</span>)
 </code></pre>
@@ -302,7 +302,7 @@ first result is from <a href="https://github.com/mozilla/fxa/blob/d1283314c15d81
 earlier doesn’t include the details of the payload <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md#post-accountscoped-key-data">for this endpoint</a>.</p>
 <p>This one too, <a href="https://github.com/mozilla/fxa/blob/96161f37753101c1a64d9588d5cdc5434243e91f/packages/fxa-js-client/client/FxAccountClient.js#L2718">has a neat matching function in fxa-js-client</a>
 and I can move to the next step.</p>
-<h2 id="actually-computing-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="#actually-computing-the-x-keyid-header">Actually computing the <code>X-KeyID</code> header</a></h2>
+<h2 id="actually-computing-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="#actually-computing-the-x-keyid-header"><span>Actually computing the <code>X-KeyID</code> header</span></a></h2>
 <p>Let’s get back one more time to the Python code from the email we’re
 trying to adapt.</p>
 <pre><code class="hljs language-python">kid = <span class="hljs-built_in">str</span>(keyRotationTimestamp) + <span class="hljs-string">&#x27;-&#x27;</span> + base64.urlsafe_b64encode(tmp[:<span class="hljs-number">16</span>]).decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>).rstrip(<span class="hljs-string">&#x27;=&#x27;</span>)
@@ -330,7 +330,7 @@ keys_changed_at, client_state = parse_key_id(kid)
 <p>So I try to combine the <code>keyRotationTimestamp</code> I just retrieved with the
 hexadecimal representation of my previous <code>X-Client-State</code>, and guess
 what. It works!</p>
-<h2 id="i-want-to-see-the-code" tabindex="-1"><a class="header-anchor" href="#i-want-to-see-the-code">I want to see the code!</a></h2>
+<h2 id="i-want-to-see-the-code" tabindex="-1"><a class="header-anchor" href="#i-want-to-see-the-code"><span>I want to see the code!</span></a></h2>
 <p>The great news is that this not only makes our code use the latest and
 greatest way to connect to Firefox Sync, without relying on anything
 legacy or deprecated, but it also makes our implementation much simpler!</p>
@@ -449,7 +449,7 @@ main()
 </details>
 <p>But while this is a solid improvement from what we had previously built
 since the beginning of this series, there’s still a bit more to unwrap.</p>
-<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="#going-further">Going further</a></h2>
+<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="#going-further"><span>Going further</span></a></h2>
 <p>You can probably tell by now that I love digging into rabbit holes and
 I’m eternally unsatisfied.</p>
 <p>While I thought that I had found the last piece of the puzzle with the

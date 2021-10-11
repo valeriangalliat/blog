@@ -97,7 +97,7 @@ a token that’s exchanged through a <a href="https://pancakeswap.finance/">Panc
 pool, but my understanding is that this should be applicable with pretty
 much the same code to <a href="https://ethereum.org/en/">Ethereum</a> and
 <a href="https://uniswap.org/">Uniswap</a>.</p>
-<h2 id="first-attempt-trying-to-scrape-existing-sites" tabindex="-1"><a class="header-anchor" href="#first-attempt-trying-to-scrape-existing-sites">First attempt: trying to scrape existing sites</a></h2>
+<h2 id="first-attempt-trying-to-scrape-existing-sites" tabindex="-1"><a class="header-anchor" href="#first-attempt-trying-to-scrape-existing-sites"><span>First attempt: trying to scrape existing sites</span></a></h2>
 <p>Sites like <a href="https://poocoin.app/tokens/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">PooCoin</a>
 and <a href="https://www.dextools.io/app/pancakeswap/pair-explorer/0x194850932e48753cbeedf0af85022152148addc6">DEXTools</a>
 show a live graph of the token transactions, which is exactly the kind
@@ -109,7 +109,7 @@ for requests and responses that’s totally obscure.</p>
 <p>Googling that domain leads me to Binance’s <a href="https://docs.binance.org/smart-chain/developer/rpc.html">JSON-RPC</a>
 documentation, but it’s not instantly clear from this page or the linked
 resources how to concretely encode and decode the binary protocol.</p>
-<h2 id="filling-the-gap" tabindex="-1"><a class="header-anchor" href="#filling-the-gap">Filling the gap</a></h2>
+<h2 id="filling-the-gap" tabindex="-1"><a class="header-anchor" href="#filling-the-gap"><span>Filling the gap</span></a></h2>
 <p>I grab a beer with my friend <a href="https://www.damiengonot.com/">Damien</a>
 who’s much more knowledgable than me about cryptocurrencies, and he
 instantly recognizes the <a href="https://ethereum.org/en/developers/docs/apis/json-rpc/">Ethereum JSON-RPC API</a>,
@@ -125,7 +125,7 @@ to access it.</p>
 <p>With that, there’s a number of ways we can determine the value of a
 token, and we’ll explore two below: dividing the pool balances, and
 polling the latest transactions.</p>
-<h2 id="first-method-dividing-the-pool-balances" tabindex="-1"><a class="header-anchor" href="#first-method-dividing-the-pool-balances">First method: dividing the pool balances</a></h2>
+<h2 id="first-method-dividing-the-pool-balances" tabindex="-1"><a class="header-anchor" href="#first-method-dividing-the-pool-balances"><span>First method: dividing the pool balances</span></a></h2>
 <p>The token I’m interested in is exchanged with PancakeSwap, a fork of
 Uniswap for the Binance Smart Chain. Uniswap and PancakeSwap allow
 trading (swapping) between two tokens with smart contracts through a
@@ -145,7 +145,7 @@ applying that to the CheCoin value.</p>
 <p>Now, this is great, but how to do that concretely? Let’s start by doing
 it from Etherscan (for Ethereum) or BscScan (Etherscan fork for the
 Binance Smart Chain) and then port that logic to web3.js.</p>
-<h3 id="doing-the-operation-manually-on-bscscan" tabindex="-1"><a class="header-anchor" href="#doing-the-operation-manually-on-bscscan">Doing the operation manually on BscScan</a></h3>
+<h3 id="doing-the-operation-manually-on-bscscan" tabindex="-1"><a class="header-anchor" href="#doing-the-operation-manually-on-bscscan"><span>Doing the operation manually on BscScan</span></a></h3>
 <p>While the PancakeSwap UI conveniently gives us the address of the
 CheCoin / wBNB pool, let’s figure it as if we only knew the address of
 the CheCoin token contract: <code>0x54626300818e5c5b44db0fcf45ba4943ca89a9e2</code>.</p>
@@ -175,7 +175,7 @@ CheCoin balance, we get the current CheCoin price in wBNB. At the time
 of writing:</p>
 <pre><code class="hljs">898088729263450811395 / 19062285402212133851022386471 = 0.000000047113381754
 </code></pre>
-<h3 id="a-note-about-token-decimals" tabindex="-1"><a class="header-anchor" href="#a-note-about-token-decimals">A note about token decimals</a></h3>
+<h3 id="a-note-about-token-decimals" tabindex="-1"><a class="header-anchor" href="#a-note-about-token-decimals"><span>A note about token decimals</span></a></h3>
 <p>This works here because it happens that both CheCoin and wBNB tokens use
 18 decimals internally. There is <a href="https://ethereum.stackexchange.com/questions/99747/what-unit-are-the-uniswap-pancakeswap-router-functions-expecting">no guarantee</a>
 that the tokens will use 18 decimals, even though it seems to be pretty
@@ -192,7 +192,7 @@ us:</p>
 
 </code></pre>
 <p>Which is an accurate reading for the current price of PooCoin in wBNB.</p>
-<h3 id="a-note-about-the-pair-address" tabindex="-1"><a class="header-anchor" href="#a-note-about-the-pair-address">A note about the pair address</a></h3>
+<h3 id="a-note-about-the-pair-address" tabindex="-1"><a class="header-anchor" href="#a-note-about-the-pair-address"><span>A note about the pair address</span></a></h3>
 <p>We saw earlier that the CheCoin token included a <code>uniswapV2Pair</code>
 function to get the pair address, but it’s not the case of every token,
 for example PooCoin doesn’t have any.</p>
@@ -207,7 +207,7 @@ wBNB (<code>0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c</code>). It returns
 the address of the <a href="https://pancakeswap.info/pool/0x0c5da0f07962dd0256c079248633f2b43cad6f62">PooCoin / wBNB pool</a>.</p>
 <p>Now we know how to calculate the price of the token we want, let’s
 script this with web3.js.</p>
-<h3 id="getting-the-contracts-abi" tabindex="-1"><a class="header-anchor" href="#getting-the-contracts-abi">Getting the contracts ABI</a></h3>
+<h3 id="getting-the-contracts-abi" tabindex="-1"><a class="header-anchor" href="#getting-the-contracts-abi"><span>Getting the contracts ABI</span></a></h3>
 <p>The first important thing here is that to be able to call methods on a
 smart contract, you need to know the contract <abbr title="Application binary interface">ABI</abbr>.</p>
 <p>This is typically a JSON file, that BscScan shows at the bottom of the <a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">contract tab</a>.</p>
@@ -226,7 +226,7 @@ contracts. Copy the ABI JSON and put them respectively in
 <p>I you need to do that programmatically, you can check out the <a href="https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">BscScan API</a>
 or <a href="https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">Etherscan API</a>
 that feature an endpoint to fetch a given contract ABI.</p>
-<h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="#calling-the-smart-contracts">Calling the smart contracts</a></h3>
+<h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="#calling-the-smart-contracts"><span>Calling the smart contracts</span></a></h3>
 <p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
 <p>If you read everything I wrote until now, the code should be
 self-explanatory.</p>
@@ -277,7 +277,7 @@ main()
 <p>This displays the latest block timestamp, the current CheCoin balance,
 wBNB balance, then the price of CheCoin in wBNB, and the price of wBNB
 in CheCoin.</p>
-<h2 id="second-method-polling-the-latest-transactions" tabindex="-1"><a class="header-anchor" href="#second-method-polling-the-latest-transactions">Second method: polling the latest transactions</a></h2>
+<h2 id="second-method-polling-the-latest-transactions" tabindex="-1"><a class="header-anchor" href="#second-method-polling-the-latest-transactions"><span>Second method: polling the latest transactions</span></a></h2>
 <p>The pool balances method works well, and while the value we get matches
 exactly the one displayed by PancakeSwap on the pool view, it can differ
 a bit from the one we see on PooCoin, because the latter uses the price
@@ -404,7 +404,7 @@ transaction hash and block number.</p>
 
 <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
 </code></pre>
-<h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="#actually-polling">Actually polling</a></h3>
+<h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="#actually-polling"><span>Actually polling</span></a></h3>
 <p>The previous script will only log the latest transaction once, then
 exit. If you want to poll in real time the latest transactions and log
 them to the console, it’s easily done with an infinite loop.</p>
@@ -429,7 +429,7 @@ them to the console, it’s easily done with an infinite loop.</p>
 current volume of transactions of the token you’re watching), making
 sure to request the next block in the next poll to avoid duplicates
 (because the <code>fromBlock</code> parameter is otherwise inclusive).</p>
-<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word">Final word</a></h2>
+<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word"><span>Final word</span></a></h2>
 <p>While everything looked pretty complex and obscure at first sight, with
 no cryptocurrency background, it turned out to be fairly simple after
 understanding a couple concepts like liquidity pools and how to navigate

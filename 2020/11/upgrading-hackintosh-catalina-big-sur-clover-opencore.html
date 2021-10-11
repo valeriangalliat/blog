@@ -97,7 +97,7 @@ nearly seamless) but this time I realized that they made some changes
 that would require me to update my current configuration in order for it
 to work.</p>
 <p>So I figured if I had to configure something, it might as well be OpenCore.</p>
-<h2 id="why-opencore" tabindex="-1"><a class="header-anchor" href="#why-opencore">Why OpenCore?</a></h2>
+<h2 id="why-opencore" tabindex="-1"><a class="header-anchor" href="#why-opencore"><span>Why OpenCore?</span></a></h2>
 <p>If I was to make a comparison, I would say that OpenCore is to Clover
 what Arch is to Ubuntu.</p>
 <p>In the way that with Clover, like with Ubuntu, you don’t need to know a
@@ -147,7 +147,7 @@ parts that you know, rather than in a fuckton of parts that you have no
 clue what they do and what put it there.</p>
 <p>Now that I told you why I’m interested to move to OpenCore, here’s how I
 did it. And it was much easier than I expected.</p>
-<h2 id="installing-macos-big-sur-with-opencore-and-the-issues-i-encountered" tabindex="-1"><a class="header-anchor" href="#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">Installing macOS Big Sur with OpenCore <small>and the issues I encountered</small></a></h2>
+<h2 id="installing-macos-big-sur-with-opencore-and-the-issues-i-encountered" tabindex="-1"><a class="header-anchor" href="#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered"><span>Installing macOS Big Sur with OpenCore <small>and the issues I encountered</small></span></a></h2>
 <p>First, here’s the relevant details of my machine:</p>
 <dl>
 <dt>Motherboard</dt>
@@ -221,20 +221,20 @@ a <code>iMac17,1</code> SMBIOS and configured the matching parameters in
 the guide, which they already did.</p>
 <p>Then I booted my OpenCore USB and launched the installer “Install macOS
 Big Sur (External)”.</p>
-<h3 id="waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media" tabindex="-1"><a class="header-anchor" href="#waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media"><code>Waiting on IOProviderClass IOResourceMatch boot-uuid-media</code></a></h3>
+<h3 id="waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media" tabindex="-1"><a class="header-anchor" href="#waiting-on-ioproviderclass-ioresourcematch-boot-uuid-media"><span><code>Waiting on IOProviderClass IOResourceMatch boot-uuid-media</code></span></a></h3>
 <p>The first issue I encountered is this message in the logs when launching
 the installer. It turns out the installer wasn’t able to detect the USB
 key it was booting from and got stuck there, eventually crashing.</p>
 <p>I solved that by adding the <a href="https://bitbucket.org/RehabMan/os-x-usb-inject-all/downloads/">USBInjectAll</a>
 kext, which allowed me to continue booting.</p>
-<h3 id="disk5-device-is-write-locked" tabindex="-1"><a class="header-anchor" href="#disk5-device-is-write-locked"><code>disk5: device is write locked</code></a></h3>
+<h3 id="disk5-device-is-write-locked" tabindex="-1"><a class="header-anchor" href="#disk5-device-is-write-locked"><span><code>disk5: device is write locked</code></span></a></h3>
 <p>I got a bunch of those messages during the boot after I fixed the USB
 issue, and it was hanging for a while on those, so I figured something
 was wrong and I shut down the computer and started looking up for
 solutions. It turns out nothing was wrong and I just needed to be
 patient.</p>
 <p>It eventually kept logging more stuff and booted to the installer UI.</p>
-<h3 id="can-t-find-my-sata-drives-in-the-macos-installer" tabindex="-1"><a class="header-anchor" href="#can-t-find-my-sata-drives-in-the-macos-installer">Can’t find my SATA drives in the macOS installer</a></h3>
+<h3 id="can-t-find-my-sata-drives-in-the-macos-installer" tabindex="-1"><a class="header-anchor" href="#can-t-find-my-sata-drives-in-the-macos-installer"><span>Can’t find my SATA drives in the macOS installer</span></a></h3>
 <p>Everything seems fine, until I want to pick the drive to install to and
 there’s like all my USB drives but not my HDD nor SSD (both are plugged
 in SATA).</p>
@@ -255,7 +255,7 @@ conflicting symbols patched, which they actually provide an
 for (thanks Dortania, much appreciated).</p>
 <p>That allowed me to see my SATA drives and I could keep on with the
 installation.</p>
-<h3 id="booting-on-macos-installer-just-reboots-into-recovery" tabindex="-1"><a class="header-anchor" href="#booting-on-macos-installer-just-reboots-into-recovery">Booting on “macOS Installer” just reboots into recovery</a></h3>
+<h3 id="booting-on-macos-installer-just-reboots-into-recovery" tabindex="-1"><a class="header-anchor" href="#booting-on-macos-installer-just-reboots-into-recovery"><span>Booting on “macOS Installer” just reboots into recovery</span></a></h3>
 <p>The installation keeps on going, until it reboots. This is usual, and
 normally that’s where you boot from “macOS Installer” on the actual
 system drive rather than “Install macOS Big Sur” from the USB drive, and
@@ -275,7 +275,7 @@ among others that suggested disabling secure boot (by setting
 <code>SecureBootModel</code> to <code>Disabled</code> in <code>config.plist</code>).</p>
 <p>This worked and the installer kept doing its thing until I get to the
 setup screen!</p>
-<h3 id="no-wi-fi-on-big-sur" tabindex="-1"><a class="header-anchor" href="#no-wi-fi-on-big-sur">No Wi-Fi on Big Sur</a></h3>
+<h3 id="no-wi-fi-on-big-sur" tabindex="-1"><a class="header-anchor" href="#no-wi-fi-on-big-sur"><span>No Wi-Fi on Big Sur</span></a></h3>
 <p>I go through the setup, but when it’s time to connect the network, I
 realize I don’t have the option to connect Wi-Fi. I expected that as the
 guide said in the beginning I would need an Ethernet connection, that
@@ -306,14 +306,14 @@ passphrase in order to connect, and that macOS stores that key in NVRAM
 (which I now know what it is thanks to the OpenCore guide), which is how
 my new totally unrelated installation of Big Sur was able to
 automatically connect to my Wi-Fi network.</p>
-<h3 id="post-install" tabindex="-1"><a class="header-anchor" href="#post-install">Post-install</a></h3>
+<h3 id="post-install" tabindex="-1"><a class="header-anchor" href="#post-install"><span>Post-install</span></a></h3>
 <p>The last step was to follow the <a href="https://dortania.github.io/OpenCore-Post-Install/">OpenCore post-install guide</a>.</p>
 <p>Seems that mostly everything I need worked out of the box so I didn’t
 have much to fix there, I just copied OpenCore’s EFI from the USB to my
 SSD instead, and then the main thing was to generate the USB map to
 avoid using USBInjectAll and the <code>XhciPortLimit</code> quirk, as well as some
 cosmetic tweaks.</p>
-<h4 id="generating-the-usb-map" tabindex="-1"><a class="header-anchor" href="#generating-the-usb-map">Generating the USB map</a></h4>
+<h4 id="generating-the-usb-map" tabindex="-1"><a class="header-anchor" href="#generating-the-usb-map"><span>Generating the USB map</span></a></h4>
 <p>I’m not gonna go in the details of why this needs to be done as <a href="https://dortania.github.io/OpenCore-Post-Install/usb/">the guide</a>
 does one more time an amazing job at that, but this turned out much
 easier than I expected.</p>
@@ -325,7 +325,7 @@ and it generated a map of just those ports under the form of a kext.</p>
 <p>That’s literally all that I had to do, and I could indeed remove
 USBInjectAll and set the <code>XhciPortLimit</code> quirk to <code>False</code> and everything
 worked.</p>
-<h4 id="cosmetic-tweaks" tabindex="-1"><a class="header-anchor" href="#cosmetic-tweaks">Cosmetic tweaks</a></h4>
+<h4 id="cosmetic-tweaks" tabindex="-1"><a class="header-anchor" href="#cosmetic-tweaks"><span>Cosmetic tweaks</span></a></h4>
 <p>Finally I followed the guide’s <a href="https://dortania.github.io/OpenCore-Post-Install/cosmetic/verbose.html">beauty</a>
 <a href="https://dortania.github.io/OpenCore-Post-Install/cosmetic/gui.html">treatment</a>,
 which meant I:</p>
@@ -344,7 +344,7 @@ which meant I:</p>
 but I couldn’t do it by modifying <code>/System/Library/Displays</code> as the
 <code>/System</code> directory is immutable, but I learnt that you can do the same
 thing in <code>/Library/Displays</code> and it just works!</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>And that’s it, a working Big Sur installation using OpenCore for the
 first time!</p>
 <p>I spent basically a whole day on it, and looking back at it, it’s
@@ -363,7 +363,7 @@ chipsets!</p>
 <p>I’m also amazed by the fact that all of this works without requiring any
 patching of the macOS installation, everything is contained in the
 OpenCore EFI partition, and the macOS system itself is 100% stock.</p>
-<h2 id="upgrading-2021-edit" tabindex="-1"><a class="header-anchor" href="#upgrading-2021-edit">Upgrading (2021 edit)</a></h2>
+<h2 id="upgrading-2021-edit" tabindex="-1"><a class="header-anchor" href="#upgrading-2021-edit"><span>Upgrading (2021 edit)</span></a></h2>
 <p>Just a quick edit to note that I’ve since then been able to apply all
 Big Sur updates normally, without any issue.</p>
 <p>While it’s usually recommended to update OpenCore as well as your kexts
@@ -373,7 +373,7 @@ it do its thing, it reboots a couple of times and always pick the right
 boot option by default to get successful updates.</p>
 <p>I will upgrade OpenCore and the kexts for the next major release, if I
 don’t run into an issue until then.</p>
-<h2 id="thanks" tabindex="-1"><a class="header-anchor" href="#thanks">Thanks</a></h2>
+<h2 id="thanks" tabindex="-1"><a class="header-anchor" href="#thanks"><span>Thanks</span></a></h2>
 <p>I would also like to thank the Dortania team for their fabulous guide. I
 learnt so much while installing Big Sur with OpenCore and I’m still
 impressed at how well everything was explained and how detailed the

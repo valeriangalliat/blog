@@ -106,7 +106,7 @@ protocols than I’m willing to admit, and now I finally managed to
 programmatically connect to my Firefox Account and interact with Firefox
 Sync, I’m going to share that journey in a series of blog posts. Fasten
 your seatbelts!</p>
-<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="#fair-warning">Fair warning</a></h2>
+<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="#fair-warning"><span>Fair warning</span></a></h2>
 <p>You might not be interested in the whole story, especially in the two
 following posts, where I explain how I started by implementing the
 legacy BrowserID authentication mechanism (because it’s what’s
@@ -126,7 +126,7 @@ password and primary encryption key.</p>
 authentication is performed remains the same and is explained
 <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">in the second post</a>.</p>
 <p>That being said, if you want the whole story, let’s get started!</p>
-<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="#our-good-old-friend-stack-overflow">Our good old friend Stack Overflow</a></h2>
+<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="#our-good-old-friend-stack-overflow"><span>Our good old friend Stack Overflow</span></a></h2>
 <p>I started looking for an API, and possibly existing API clients, and I
 quickly figured Lockwise was built on top of Firefox Sync’s <code>passwords</code>
 collection.</p>
@@ -138,7 +138,7 @@ only explain the protocol specification, but it’s unclear where to start
 as there’s no mention of an URL to query the API and how to authenticate
 to it.</p>
 <p>Looking at the client should give us a more concrete understanding.</p>
-<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="#official-python-client">Official Python client</a></h2>
+<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="#official-python-client"><span>Official Python client</span></a></h2>
 <p>The first thing I notice is that the repository hasn’t been updated
 since 2016 and is now archived, which means it’s probably not
 up-to-date, definitely not actively maintained, and it’s even
@@ -150,7 +150,7 @@ I left it at that.</p>
 fixing some <code>requirements.txt</code> versions issues, it does run
 successfully! But it doesn’t implement the collection decryption part so
 it would only have solved part of my problem.</p>
-<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="#unofficial-node-js-client">Unofficial Node.js client</a></h2>
+<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="#unofficial-node-js-client"><span>Unofficial Node.js client</span></a></h2>
 <p>There is also a <a href="https://github.com/zaach/node-fx-sync">Node.js client</a>,
 last updated in 2014.</p>
 <p>Out of the box, I cannot install it with <code>npm install fx-sync</code>, it fails

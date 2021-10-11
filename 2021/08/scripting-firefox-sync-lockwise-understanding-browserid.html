@@ -122,7 +122,7 @@ point, but I’m happy to take small fixes like this all the same.</p>
 gets the job done, I took this as a challenge to implement the protocol
 using only native (or more generic, well-maintained) modules, and this
 is going to be the topic of this blog post!</p>
-<h2 id="isolating-the-browserid-crypto-code" tabindex="-1"><a class="header-anchor" href="#isolating-the-browserid-crypto-code">Isolating the browserid-crypto code</a></h2>
+<h2 id="isolating-the-browserid-crypto-code" tabindex="-1"><a class="header-anchor" href="#isolating-the-browserid-crypto-code"><span>Isolating the browserid-crypto code</span></a></h2>
 <p>Let’s start from the <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">script we previously built</a>
 and extract the part that use the browserid-crypto package.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
@@ -163,7 +163,7 @@ do with the Node.js <code>crypto</code> module.</li>
 <li>Finally, we sign a JWT using our private key, and bundle it with the
 certificate to make a “backed identity assertion”.</li>
 </ol>
-<h2 id="generating-the-keypair" tabindex="-1"><a class="header-anchor" href="#generating-the-keypair">Generating the keypair</a></h2>
+<h2 id="generating-the-keypair" tabindex="-1"><a class="header-anchor" href="#generating-the-keypair"><span>Generating the keypair</span></a></h2>
 <p>This is the easy part. The main difference is that while
 <code>jwcrypto.generateKeyPair</code> takes an internal <code>keysize</code> parameter, which
 they <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L10">map to RSA</a>,
@@ -193,7 +193,7 @@ useful for later.</p>
 browserid-crypto and the TokenServer don’t accept any other divisor
 length for a key size of 2048.</p>
 </div>
-<h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="#encoding-the-key">Encoding the key</a></h2>
+<h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="#encoding-the-key"><span>Encoding the key</span></a></h2>
 <p>Where it gets a bit more tricky, especially for DSA, is when we want to
 encode the key as JSON for the Firefox Accounts API to sign:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
@@ -203,7 +203,7 @@ function that formats the key in the BrowserID JSON format. I couldn’t
 find documentation for it, but from looking at the actual JSON objects,
 it is very similar to (but not compatible with) the <a href="https://datatracker.ietf.org/doc/html/rfc7517"><abbr title="JSON Web Key">JWK</abbr></a>
 format.</p>
-<h3 id="browserid-vs-jwk-and-base-conversion" tabindex="-1"><a class="header-anchor" href="#browserid-vs-jwk-and-base-conversion">BrowserID vs. JWK and base conversion</a></h3>
+<h3 id="browserid-vs-jwk-and-base-conversion" tabindex="-1"><a class="header-anchor" href="#browserid-vs-jwk-and-base-conversion"><span>BrowserID vs. JWK and base conversion</span></a></h3>
 <p>BrowserID was <a href="https://hacks.mozilla.org/2011/07/introducing-browserid-easier-and-safer-authentication-on-the-web/">introduced in 2011</a>,
 well before <a href="https://datatracker.ietf.org/doc/html/rfc7517">the JWK specification was proposed</a>
 in 2015. They both encode the low-level key parameters in a JSON object,
@@ -218,7 +218,7 @@ RSA keys),while BrowserID uses an <code>algorithm</code> property that can be
 while BrowserID <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L68">uses decimal (base 10) for RSA</a>
 and <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js#L141">hexadecimal (base 16) for DSA</a>.</li>
 </ol>
-<h3 id="rsa" tabindex="-1"><a class="header-anchor" href="#rsa">RSA</a></h3>
+<h3 id="rsa" tabindex="-1"><a class="header-anchor" href="#rsa"><span>RSA</span></a></h3>
 <p>The <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.1">RSA parameters</a>
 are <code>n</code> (modulus) and <code>e</code> (exponent), as well as <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.2">a fuckton of other parameters</a>
 for private keys (which we don’t need here). You can see them on an
@@ -279,7 +279,7 @@ hexadecimal.</p>
   <span class="hljs-attr">e</span>: base64to10(jwk.e)
 }
 </code></pre>
-<h3 id="dsa" tabindex="-1"><a class="header-anchor" href="#dsa">DSA</a></h3>
+<h3 id="dsa" tabindex="-1"><a class="header-anchor" href="#dsa"><span>DSA</span></a></h3>
 <p>The <a href="https://mozilla.github.io/id-specs/docs/formats/keys/#parameters-for-dsa-keys">DSA parameters</a>
 are <code>p</code> (larger prime modulus), <code>q</code> (smaller prime modulus), <code>g</code>
 (generator), <code>y</code> (public group element), as well as <code>x</code> (private
@@ -451,7 +451,7 @@ with, and rename the properties to make a BrowserID JSON key.</p>
   <span class="hljs-attr">g</span>: params.G.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 }
 </code></pre>
-<h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="#signing-the-jwt">Signing the JWT</a></h2>
+<h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="#signing-the-jwt"><span>Signing the JWT</span></a></h2>
 <p>The last part to refactor is the JWT:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
   {},
@@ -491,7 +491,7 @@ that’s in <code>kp.privateKey</code>.</p>
 <p>Here we specified the <code>RS256</code> algorithm for a RSA key. This works
 perfectly, and with this code, we can effectively generate a BrowserID
 assertion that will be accepted by the TokenServer!</p>
-<h3 id="hacking-around-dsa" tabindex="-1"><a class="header-anchor" href="#hacking-around-dsa">Hacking around DSA</a></h3>
+<h3 id="hacking-around-dsa" tabindex="-1"><a class="header-anchor" href="#hacking-around-dsa"><span>Hacking around DSA</span></a></h3>
 <p>But neither <a href="https://github.com/jwtk/njwt#supported-algorithms"><code>njwt</code></a>
 nor <a href="https://github.com/auth0/node-jsonwebtoken#algorithms-supported"><code>jsonwebtoken</code></a>
 support DSA signatures. In fact, it seems that most JWT libraries don’t
@@ -534,7 +534,7 @@ previous code this would look like:</p>
 )
 </code></pre>
 <p>Congratulations! We now also have a working DSA JWT!</p>
-<h3 id="fully-native-implementation" tabindex="-1"><a class="header-anchor" href="#fully-native-implementation">Fully native implementation</a></h3>
+<h3 id="fully-native-implementation" tabindex="-1"><a class="header-anchor" href="#fully-native-implementation"><span>Fully native implementation</span></a></h3>
 <p>Now, let’s even remove the <code>njwt</code> dependency, and bake our own JWT
 in-house. Because why not. It’s actually pretty trivial, and to be
 honest, a simpler and cleaner solution for DSA than the hack we just
@@ -558,7 +558,7 @@ made.</p>
 </code></pre>
 <p>Believe it or not, this is all it takes to make a valid JWT. Not so bad,
 isn’t it?</p>
-<h2 id="making-the-backed-identity-assertion" tabindex="-1"><a class="header-anchor" href="#making-the-backed-identity-assertion">Making the backed identity assertion</a></h2>
+<h2 id="making-the-backed-identity-assertion" tabindex="-1"><a class="header-anchor" href="#making-the-backed-identity-assertion"><span>Making the backed identity assertion</span></a></h2>
 <p>Since we have a valid <code>cert</code> and <code>signedObject</code> at that point, that part
 stays the same. All we need to do is to <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion">bundle them together</a>
 with the <code>~</code> character (tilde).</p>
@@ -567,7 +567,7 @@ with the <code>~</code> character (tilde).</p>
 <p>This is the value we can pass in the <code>Authorization</code> header such as:</p>
 <pre><code class="hljs">Authorization: BrowserID &lt;backedAssertion&gt;
 </code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>And that’s it! We now have a fully working BrowserID implementation,
 with both RSA and DSA support, that only depend on the native <code>crypto</code>
 module!</p>

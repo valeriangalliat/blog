@@ -95,7 +95,7 @@ protocol with any compatible certificate authority.</p>
 authorities, but I personally use <a href="https://zerossl.com/">ZeroSSL</a> which
 is another ACME-compatible authority to provide free certificates.</p>
 </div>
-<h2 id="why-do-i-spawn-debian-vms" tabindex="-1"><a class="header-anchor" href="#why-do-i-spawn-debian-vms">Why do I spawn Debian VMs?</a></h2>
+<h2 id="why-do-i-spawn-debian-vms" tabindex="-1"><a class="header-anchor" href="#why-do-i-spawn-debian-vms"><span>Why do I spawn Debian VMs?</span></a></h2>
 <p>Let’s start with the why I’m doing that. See, Google Cloud has
 <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">a cool thing</a>
 where they allow you to run a <code>e2-micro</code> instance for free per billing
@@ -107,12 +107,12 @@ or lightweight project like this blog.</p>
 <p>Google Cloud defaults their VM image to latest stable Debian, which I
 find to be a good base for a server when you don’t want to spend a lot
 of time setting things up and don’t want to think too much about it.</p>
-<h2 id="why-do-i-install-nginx-and-let-s-encrypt" tabindex="-1"><a class="header-anchor" href="#why-do-i-install-nginx-and-let-s-encrypt">Why do I install nginx and Let’s Encrypt?</a></h2>
+<h2 id="why-do-i-install-nginx-and-let-s-encrypt" tabindex="-1"><a class="header-anchor" href="#why-do-i-install-nginx-and-let-s-encrypt"><span>Why do I install nginx and Let’s Encrypt?</span></a></h2>
 <p>Most of the time I spawn such a VM, it’s to run some kind of web
 service over HTTPS. nginx is my favorite web server, and ACME is my
 favorite way to manage TLS certificates (see note above about my usage
 of the term “Let’s Encrypt”).</p>
-<h2 id="what-about-infrastructure-as-code" tabindex="-1"><a class="header-anchor" href="#what-about-infrastructure-as-code">What about infrastructure as code?</a></h2>
+<h2 id="what-about-infrastructure-as-code" tabindex="-1"><a class="header-anchor" href="#what-about-infrastructure-as-code"><span>What about infrastructure as code?</span></a></h2>
 <p>I won’t go into this topic in this blog post because there’s a fuckton
 of ways you could want to code your infrastructure and provision your
 servers depending on your needs.</p>
@@ -122,7 +122,7 @@ whatever tools you use! Personally, my favorite provisioning tool is
 explanations about everything it’s doing.</p>
 <p>Now the context is set, let’s get into how I set up everything in a
 minimalistic way (I like to keep things simple).</p>
-<h2 id="preventing-the-bloat-on-debian" tabindex="-1"><a class="header-anchor" href="#preventing-the-bloat-on-debian">Preventing the bloat on Debian</a></h2>
+<h2 id="preventing-the-bloat-on-debian" tabindex="-1"><a class="header-anchor" href="#preventing-the-bloat-on-debian"><span>Preventing the bloat on Debian</span></a></h2>
 <p>First things first, I start every of my Debian installations by adding
 this <code>apt.conf</code> I shared on this blog over 7 years ago, to <a href="../../2014/09/keeping-debian-clean-and-minimal.html">keep Debian clean and minimal</a>.</p>
 <p>The gist of it is that by default Debian packages can come with
@@ -172,14 +172,14 @@ purge the dangling configuration files with the <a href="https://askubuntu.com/a
 </code></pre>
 <p>This will purge the configuration files of all packages that were ever
 deinstalled and left with existing configuration files in place.</p>
-<h2 id="installing-the-essentials" tabindex="-1"><a class="header-anchor" href="#installing-the-essentials">Installing the essentials</a></h2>
+<h2 id="installing-the-essentials" tabindex="-1"><a class="header-anchor" href="#installing-the-essentials"><span>Installing the essentials</span></a></h2>
 <p>In most Unix systems that I use, I’ll install the following packages:</p>
 <pre><code class="hljs language-sh">apt install tmux vim git htop ca-certificates
 </code></pre>
 <p>On top of that, on Debian I like to add the <code>build-essential</code> package if
 I need to compile anything, as it depends on the most common tools that
 are necessary to build software from source.</p>
-<h2 id="my-minimalist-nginx-configuration" tabindex="-1"><a class="header-anchor" href="#my-minimalist-nginx-configuration">My minimalist nginx configuration</a></h2>
+<h2 id="my-minimalist-nginx-configuration" tabindex="-1"><a class="header-anchor" href="#my-minimalist-nginx-configuration"><span>My minimalist nginx configuration</span></a></h2>
 <p>Let’s start with installing nginx.</p>
 <pre><code class="hljs language-sh">apt install nginx
 </code></pre>
@@ -195,7 +195,7 @@ mv nginx2 nginx
 </code></pre>
 <p>This wipes all the default nginx configuration and only keeps the
 <code>mime.types</code> file which I’ll include in my custom configuration.</p>
-<h3 id="trimmed-down-debian-configuration" tabindex="-1"><a class="header-anchor" href="#trimmed-down-debian-configuration">Trimmed-down Debian configuration</a></h3>
+<h3 id="trimmed-down-debian-configuration" tabindex="-1"><a class="header-anchor" href="#trimmed-down-debian-configuration"><span>Trimmed-down Debian configuration</span></a></h3>
 <p>Speaking about my custom configuration, here’s the base. Everything
 there is the parts of the default <code>nginx.conf</code> on Debian that I kept.
 I’ll post my custom additions after.</p>
@@ -229,7 +229,7 @@ I’ll post my custom additions after.</p>
     <span class="hljs-attribute">gzip</span> <span class="hljs-literal">on</span>;
 }
 </code></pre>
-<h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="#val-s-essential-tweaks">Val’s essential tweaks</a></h3>
+<h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="#val-s-essential-tweaks"><span>Val’s essential tweaks</span></a></h3>
 <p>From there, I tweak a few things.</p>
 <pre><code class="hljs language-diff">     sendfile on;
      tcp_nopush on;
@@ -270,7 +270,7 @@ more that makes sense to you here.</li>
 <code>Content-Type</code> response header, e.g. <code>Content-Type: text/html; charset=utf-8</code>.</li>
 </ul>
 <p>But we’re still missing a very important part. The TLS configuration!</p>
-<h3 id="tls-settings" tabindex="-1"><a class="header-anchor" href="#tls-settings">TLS settings</a></h3>
+<h3 id="tls-settings" tabindex="-1"><a class="header-anchor" href="#tls-settings"><span>TLS settings</span></a></h3>
 <p>I use <a href="https://ssl-config.mozilla.org/">Mozilla’s SSL configuration generator</a>
 for that, with the intermediate setting, which gives me the following
 (comments removed):</p>
@@ -313,7 +313,7 @@ reload).</p>
 <span class="hljs-deletion">-ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
 <span class="hljs-addition">+# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
 </code></pre>
-<h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="#default-server-with-https-and-www-redirect">Default server with HTTPS and <code>www</code> redirect</a></h3>
+<h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="#default-server-with-https-and-www-redirect"><span>Default server with HTTPS and <code>www</code> redirect</span></a></h3>
 <p>I like <code><strong>http://</strong>www.codejam.info/</code> to redirect to
 <code><strong>https://</strong>www.codejam.info/</code>, and also
 <code>https://codejam.info/</code> to redirect to <code>https://<strong>www.</strong>codejam.info/</code>.
@@ -423,7 +423,7 @@ let us generate our initial certificates:</p>
 }
 </code></pre>
 </div>
-<h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="#enabling-starting-or-reloading-nginx">Enabling, starting or reloading nginx</a></h3>
+<h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="#enabling-starting-or-reloading-nginx"><span>Enabling, starting or reloading nginx</span></a></h3>
 <p>First, let’s test the configuration:</p>
 <pre><code class="hljs language-sh">nginx -t
 </code></pre>
@@ -446,7 +446,7 @@ running.</p>
 <p>While in this state we don’t have proper TLS certificates to handle
 HTTPS just yet, we have everything we need to automatically generate and
 renew TLS certificates with the ACME protocol.</p>
-<h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="#managing-tls-certificates-with-acme-sh">Managing TLS certificates with acme.sh</a></h2>
+<h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="#managing-tls-certificates-with-acme-sh"><span>Managing TLS certificates with acme.sh</span></a></h2>
 <p><abbr title="Automatic certificate management environment">ACME</abbr>
 is the protocol behind Let’s Encrypt. <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
 is an ACME client written in pure Unix shell. It’s simple and
@@ -456,7 +456,7 @@ client that Let’s Encrypt recommends to use.</p>
 instructions still do some magic that I would rather avoid, so I’ll
 present here my modified installation method, which doesn’t have any
 magic and where you’re fully in control of every step.</p>
-<h3 id="setting-up-a-restricted-user" tabindex="-1"><a class="header-anchor" href="#setting-up-a-restricted-user">Setting up a restricted user</a></h3>
+<h3 id="setting-up-a-restricted-user" tabindex="-1"><a class="header-anchor" href="#setting-up-a-restricted-user"><span>Setting up a restricted user</span></a></h3>
 <p>We’ll do a custom installation of <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
 so that it runs <strong>with its own restricted user</strong> based on <a href="https://gist.github.com/lachesis/943769f3fac740d5848352752ac08741">this Gist</a>,
 because running it as root like they show out of the box is
@@ -504,7 +504,7 @@ We make sure to run a login shell using <code>-</code>.</p>
 <pre><code class="hljs language-sh">su -s /bin/bash - acme
 </code></pre>
 <p>We’ll end up in the home directory which we set earlier to <code>/var/lib/acme</code>.</p>
-<h3 id="installation" tabindex="-1"><a class="header-anchor" href="#installation">Installation</a></h3>
+<h3 id="installation" tabindex="-1"><a class="header-anchor" href="#installation"><span>Installation</span></a></h3>
 <p>We can now follow the official <a href="https://github.com/acmesh-official/acme.sh#2-or-install-from-git">install from Git instructions</a>
 because piping scripts from the web into <code>sh</code> is a terrible idea.</p>
 <pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/acmesh-official/acme.sh
@@ -547,7 +547,7 @@ that the certificate authority doesn’t get a huge burst of requests at
 the same second every day, which I think is a good practice to keep.</p>
 <p>From there, the commands we’ll run are the same as the recommended ones
 in the acme.sh readme.</p>
-<h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="#preparing-the-certificates-directory-and-dh-parameters">Preparing the certificates directory and DH parameters</a></h2>
+<h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="#preparing-the-certificates-directory-and-dh-parameters"><span>Preparing the certificates directory and DH parameters</span></a></h2>
 <p>I like to install my certificates in <code>/etc/acme</code> which we created
 earlier, with a directory per domain, but this is totally arbitrary.</p>
 <pre><code class="hljs language-sh">mkdir /etc/acme/codejam.info
@@ -564,7 +564,7 @@ provided by Mozilla, unless the key size is considered short (1024 bits
 or less as of today’s standards), then using shared DH parameters could
 introduce more security risks than it would prevent.</p>
 </div>
-<h3 id="generating-our-certificate" tabindex="-1"><a class="header-anchor" href="#generating-our-certificate">Generating our certificate</a></h3>
+<h3 id="generating-our-certificate" tabindex="-1"><a class="header-anchor" href="#generating-our-certificate"><span>Generating our certificate</span></a></h3>
 <pre><code class="hljs language-sh">./acme.sh --issue -d codejam.info -d www.codejam.info -w /var/www/challenges
 </code></pre>
 <p>This will issue a certificate for <code>codejam.info</code> with <code>www.codejam.info</code>
@@ -573,7 +573,7 @@ subsequent <code>-d</code> parameters), meaning that the certificate will be val
 for all of those domains. You can also generate a wildcard certificate
 but this requires going through automated DNS validation which I won’t
 cover in this blog post.</p>
-<h3 id="installing-the-certificate" tabindex="-1"><a class="header-anchor" href="#installing-the-certificate">Installing the certificate</a></h3>
+<h3 id="installing-the-certificate" tabindex="-1"><a class="header-anchor" href="#installing-the-certificate"><span>Installing the certificate</span></a></h3>
 <p>In the previous step, acme.sh generated the key and certificate files in
 its own state directory, but it’s not recommended to hardcode those
 paths. That’s why we configure certificate installation paths as well as
@@ -611,7 +611,7 @@ reference those files we just installed.</p>
 <span class="hljs-addition">+ssl_trusted_certificate /etc/acme/codejam.info/chain.pem;</span>
 </code></pre>
 <p>Verify the config is valid with <code>nginx -t</code> and run a final <code>systemctl reload nginx</code> to apply the changes.</p>
-<h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="#bonus-http-basic-authentication">Bonus: HTTP basic authentication</a></h2>
+<h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="#bonus-http-basic-authentication"><span>Bonus: HTTP basic authentication</span></a></h2>
 <p>You don’t want your website to be public just yet but still want to test
 it from there? Add basic authentication to it!</p>
 <pre><code class="hljs language-sh">apt install apache2-utils
@@ -627,7 +627,7 @@ to add authentication to:</p>
 <p>Here, “private” is the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate#directives">basic authentication <code>realm</code> parameter</a>
 and could be literally anything. It doesn’t even seem to be shown in
 browser UIs anymore so it doesn’t really matter.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>At that point, you should have a working HTTPS server with auto-renewed
 certificates. I hope this post was useful to you!</p>
 <div class="note">

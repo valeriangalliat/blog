@@ -100,7 +100,7 @@ traffic through HTTP logs (the only proper source of truth).</p>
 article on <a href="vercel-custom-log-drain.html">how to get access to raw HTTP logs on a Vercel website</a>.
 Check it out!</p>
 </div>
-<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="#the-problem-with-vercel">The problem with Vercel</a></h2>
+<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="#the-problem-with-vercel"><span>The problem with Vercel</span></a></h2>
 <p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
 <p>I like to keep things simple and minimal, and have the least amount of
 noise possible. Vercel likes to make things complicated, over-engineered
@@ -115,17 +115,17 @@ anything else but hey, it was once hosted on GitHub Pages after all).</p>
 why I commit the HTML files on a separate branch, instead of asking
 Vercel or any other hosting platform to compile everything from <code>master</code>
 on every deploy. This keeps things <em>fast as fuck</em> and low energy.</p>
-<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="#preview-deployments">Preview deployments</a></h3>
+<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="#preview-deployments"><span>Preview deployments</span></a></h3>
 <p>By default, Vercel expects every branch to be deployable, and they have
 that cool feature of automatically deploying every single commit to a
 random URL (preview deployments). I don’t need preview deployments for
 my blog, but there’s no way to turn them off.</p>
-<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="#very-verbose-vercel">Very verbose Vercel</a></h3>
+<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="#very-verbose-vercel"><span>Very verbose Vercel</span></a></h3>
 <p>They also have the annoying habit of posting a comment on every GitHub
 PR and commit with the deployment URL by default. I hate noise and this
 is pure noise for me. Luckily there’s a non-intuitive way of turning it
 off and I’ll show you how.</p>
-<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="#managing-garbage">Managing garbage</a></h3>
+<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="#managing-garbage"><span>Managing garbage</span></a></h3>
 <p>Finally, because each PR and commit is going to trigger a deployment
 with a not-so-temporary URL. This creates a lot of old, unused, garbage
 deployments, and Vercel doesn’t know when you don’t need them anymore
@@ -135,7 +135,7 @@ not the latest production build).</p>
 command that does just that for you (also sad, but less sad), and I’ll
 show you how.</p>
 <p>Let’s get into it.</p>
-<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="#turning-off-preview-deployments-kinda">Turning off preview deployments (kinda)</a></h2>
+<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="#turning-off-preview-deployments-kinda"><span>Turning off preview deployments (kinda)</span></a></h2>
 <p>I guess that the whole point of Vercel is to offer preview deployments,
 so they didn’t really consider the use case where you would want to
 remove them.</p>
@@ -166,7 +166,7 @@ production branch, in order to trigger a build.</p>
 <p>The ignored build will still show up in your deployments list as
 “cancelled” deployments, and there’s no way around that, but I show you
 below <a href="#garbage-collecting-dangling-deployments">how to garbage collect them</a>.</p>
-<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="#getting-rid-of-bot-comments">Getting rid of bot comments</a></h2>
+<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="#getting-rid-of-bot-comments"><span>Getting rid of bot comments</span></a></h2>
 <p>By default Vercel will comment on every PR and commit with the link to
 the deployment.</p>
 <p>To avoid that, create a <code>vercel.json</code> file in every branch where you
@@ -181,7 +181,7 @@ want to turn this off, with the following content:</p>
 <p><strong>Note:</strong> if you used the previous trick to only run builds in the
 production branch, you only need to add this configuration there.</p>
 </div>
-<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="#garbage-collecting-dangling-deployments">Garbage collecting dangling deployments</a></h2>
+<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="#garbage-collecting-dangling-deployments"><span>Garbage collecting dangling deployments</span></a></h2>
 <p>Vercel knows to create preview deployments, but doesn’t know when to
 delete them. This means that you need to more or less manually delete
 the old preview deployments that are not needed anymore.</p>
@@ -203,7 +203,7 @@ command to remove deployments.</p>
   <img alt="Clean deployments" src="../../img/2021/09/vercel-clean-deployments.png">
   <figcaption>Now this is better!</figcaption>
 </figure>
-<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="#final-thoughts">Final thoughts</a></h2>
+<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="#final-thoughts"><span>Final thoughts</span></a></h2>
 <p>I’m not blaming Vercel for all of this, I’m happy they provide this
 service for free and <a href="free-static-hosting-server-side-analytics.html">they’re the only ones</a>
 to include HTTP logs access in the free offer.</p>

@@ -92,7 +92,7 @@ installed it without GRUB.</p>
 use a bootloader, just <code>efibootmgr</code>.</p>
 <p>I didn’t know this was possible, so I looked into it and quickly found
 about EFISTUB.</p>
-<h2 id="what-is-efistub" tabindex="-1"><a class="header-anchor" href="#what-is-efistub">What is EFISTUB</a></h2>
+<h2 id="what-is-efistub" tabindex="-1"><a class="header-anchor" href="#what-is-efistub"><span>What is EFISTUB</span></a></h2>
 <p><a href="https://wiki.archlinux.org/title/EFISTUB">EFISTUB</a> allows “EFI firmware
 to load the kernel as an EFI executable”. It was introduced in Linux
 3.3, released in 2012. I should have known about that before. 😅</p>
@@ -103,7 +103,7 @@ such as GRUB. If your motherboard has a good UEFI implementation, it
 is possible to embed the kernel parameters within a UEFI boot entry
 and for the motherboard to boot Arch directly.</p>
 </blockquote>
-<h2 id="configuring-efistub" tabindex="-1"><a class="header-anchor" href="#configuring-efistub">Configuring EFISTUB</a></h2>
+<h2 id="configuring-efistub" tabindex="-1"><a class="header-anchor" href="#configuring-efistub"><span>Configuring EFISTUB</span></a></h2>
 <p>With <code>efibootmgr</code>, you can add an EFI boot entry that contains all the
 parameters you need to properly boot the kernel, including in my case,
 LUKS encryption and hibernation.</p>

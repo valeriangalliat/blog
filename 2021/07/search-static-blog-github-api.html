@@ -111,7 +111,7 @@ matching pages and return results.</p>
 GitHub API was the obvious, most simple solution.</p>
 <p>You can see the full source code <a href="https://github.com/valeriangalliat/blog/blob/01ded0c8defe399526032030bf17b912be6b6319/js/main.js#L163">here</a>,
 but in this blog post, I’ll break it down for you.</p>
-<h2 id="the-html-part" tabindex="-1"><a class="header-anchor" href="#the-html-part">The HTML part</a></h2>
+<h2 id="the-html-part" tabindex="-1"><a class="header-anchor" href="#the-html-part"><span>The HTML part</span></a></h2>
 <p>I don’t use any framework on this blog, it’s vanilla everything.</p>
 <p>For the search form, I just added this snippet.</p>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;search&quot;</span> <span class="hljs-attr">onsubmit</span>=<span class="hljs-string">&quot;return onSearchSubmit(this)&quot;</span>&gt;</span>
@@ -155,7 +155,7 @@ using an “outdated” pattern.</p>
 <p>That being said, for anything bigger than this use case, it’ll probably
 make more sense to use proper JS event handlers, or an actual framework.
 Consider yourself warned!</p>
-<h2 id="the-js-part" tabindex="-1"><a class="header-anchor" href="#the-js-part">The JS part</a></h2>
+<h2 id="the-js-part" tabindex="-1"><a class="header-anchor" href="#the-js-part"><span>The JS part</span></a></h2>
 <p>Before going to the main JS code, I’ll introduce the helpers that it
 uses (don’t worry, there’s only two!).</p>
 <p>The first one is called <code>el</code> and just adds some sugar around
@@ -191,7 +191,7 @@ want to clear an eventual previous results set.</p>
 }
 </code></pre>
 <p>Now, to the interesting parts.</p>
-<h3 id="the-submit-part" tabindex="-1"><a class="header-anchor" href="#the-submit-part">The submit part</a></h3>
+<h3 id="the-submit-part" tabindex="-1"><a class="header-anchor" href="#the-submit-part"><span>The submit part</span></a></h3>
 <p>The <code>onSearchSubmit</code> function needs to be defined globally to be
 callable from the HTML.</p>
 <p>ESLint doesn’t like this, and thinks the function is unused (it can’t
@@ -218,7 +218,7 @@ current URL.</p>
   <span class="hljs-comment">// Code goes here.</span>
 }
 </code></pre>
-<h3 id="the-search-part" tabindex="-1"><a class="header-anchor" href="#the-search-part">The search part</a></h3>
+<h3 id="the-search-part" tabindex="-1"><a class="header-anchor" href="#the-search-part"><span>The search part</span></a></h3>
 <p>We start with a quick sanity check.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> query = form.query.value.trim().toLowerCase()
 
@@ -246,7 +246,7 @@ In the end the code looks like this:</p>
     .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.text())
 ])
 </code></pre>
-<h3 id="the-render-part" tabindex="-1"><a class="header-anchor" href="#the-render-part">The render part</a></h3>
+<h3 id="the-render-part" tabindex="-1"><a class="header-anchor" href="#the-render-part"><span>The render part</span></a></h3>
 <p>First, I remove <code>index.md</code> and <code>posts.md</code> from the results, since those
 pages include a lot of links to existing articles, they would be matched
 very often, and are not usually relevant.</p>
@@ -293,7 +293,7 @@ included in a <code>&lt;small&gt;</code> element whose content is compatible wit
 emptyFormData(form)
 form.querySelector(<span class="hljs-string">&#x27;.posts&#x27;</span>).appendChild(ul)
 </code></pre>
-<h3 id="the-reality-is-a-bit-more-complex-just-a-bit" tabindex="-1"><a class="header-anchor" href="#the-reality-is-a-bit-more-complex-just-a-bit">The reality is a bit more complex (just a bit)</a></h3>
+<h3 id="the-reality-is-a-bit-more-complex-just-a-bit" tabindex="-1"><a class="header-anchor" href="#the-reality-is-a-bit-more-complex-just-a-bit"><span>The reality is a bit more complex (just a bit)</span></a></h3>
 <p>This whole search feature is implemented in around 50 lines of code, HTML and
 JS combined, including helpers. And this is awesome.</p>
 <p>In reality, I want to search not only blog posts, but also pages. Pages
@@ -353,7 +353,7 @@ lis.sort(<span class="hljs-function">(<span class="hljs-params">a, b</span>) =&g
 <p>This block starts to be a bit long and could probably be refactored into
 different functions, but since it’s not code that I foresee evolving a
 lot, I’m fine with it like this.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>I hope you find this feature useful on the blog, or this code useful for
 you to implement a similar feature on your own site.</p>
 <p>This tweet popped in my timeline yesterday, and couldn’t relate more. I

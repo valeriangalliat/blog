@@ -109,7 +109,7 @@ will then let us query collections, that we can decrypt with some more
 crypto wizardry.</p>
 <p>I’ll break that down in pieces below, then give a fully working example
 that you can just copy and run yourself.</p>
-<h2 id="sign-in-to-firefox-accounts" tabindex="-1"><a class="header-anchor" href="#sign-in-to-firefox-accounts">Sign in to Firefox Accounts</a></h2>
+<h2 id="sign-in-to-firefox-accounts" tabindex="-1"><a class="header-anchor" href="#sign-in-to-firefox-accounts"><span>Sign in to Firefox Accounts</span></a></h2>
 <p>First we instantiate a <a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a> to interact
 with the Firefox Accounts API.</p>
 <div class="note">
@@ -142,7 +142,7 @@ login to work without needing an unblock code sent to the user email.</p>
 This will be useful later.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
 </code></pre>
-<h2 id="the-firefox-sync-tokenserver-authentication-dance" tabindex="-1"><a class="header-anchor" href="#the-firefox-sync-tokenserver-authentication-dance">The Firefox Sync TokenServer authentication dance</a></h2>
+<h2 id="the-firefox-sync-tokenserver-authentication-dance" tabindex="-1"><a class="header-anchor" href="#the-firefox-sync-tokenserver-authentication-dance"><span>The Firefox Sync TokenServer authentication dance</span></a></h2>
 <p>Next, we need to <a href="https://github.com/mozilla-services/tokenserver">call the TokenServer</a>
 to get the credentials for the Firefox Sync API.</p>
 <p>There is two ways of authenticating to the TokenServer: <a href="https://github.com/mozilla-services/tokenserver#using-browserid">BrowserID</a>
@@ -226,7 +226,7 @@ that.</p>
 <p>This gives us “the URL of the user’s Sync storage node, and some
 short-lived credentials that can be used to access it” as documented
 <a href="https://github.com/mozilla-services/tokenserver#api">here</a>.</p>
-<h2 id="actually-calling-firefox-sync" tabindex="-1"><a class="header-anchor" href="#actually-calling-firefox-sync">Actually calling Firefox Sync</a></h2>
+<h2 id="actually-calling-firefox-sync" tabindex="-1"><a class="header-anchor" href="#actually-calling-firefox-sync"><span>Actually calling Firefox Sync</span></a></h2>
 <p>We now have the credentials to call the <a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">Firefox Sync API</a>.
 It uses <a href="https://github.com/mozilla/hawk/blob/main/API.md#usage-example">Hawk authentication</a>,
 so we’ll write a <code>fetch</code> wrapper to handle it for us.</p>
@@ -368,7 +368,7 @@ I’ll leave that as an exercise to the reader. 😉</p>
 <p>But we’re not done yet. First I’ll share with you the code that we built
 in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwise-understanding-browserid.html">how BrowserID works</a>
 (you’ll understand <a href="#going-further">why</a>).</p>
-<h2 id="give-me-the-whole-code" tabindex="-1"><a class="header-anchor" href="#give-me-the-whole-code">Give me the whole code!</a></h2>
+<h2 id="give-me-the-whole-code" tabindex="-1"><a class="header-anchor" href="#give-me-the-whole-code"><span>Give me the whole code!</span></a></h2>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
@@ -524,7 +524,7 @@ in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwi
 
 main()
 </code></pre>
-<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="#going-further">Going further</a></h2>
+<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="#going-further"><span>Going further</span></a></h2>
 <p>This works like a charm, but one thing still bugs me. When running the
 code, I see a deprecation warning in the console.</p>
 <pre><code class="hljs">[DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.

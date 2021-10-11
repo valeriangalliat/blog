@@ -100,7 +100,7 @@ to improve markdown-it-anchor’s way of rendering permalinks out of the box.</p
 to <a href="#another-take-on-accessible-permalinks">another take on accessible permalinks</a>.
 Otherwise, I’ll start by giving a bit of backstory on the way
 markdown-it-anchor handles permalinks.</p>
-<h2 id="history-of-markdown-it-anchor-s-permalinks" tabindex="-1"><a class="header-anchor" href="#history-of-markdown-it-anchor-s-permalinks">History of markdown-it-anchor’s permalinks</a></h2>
+<h2 id="history-of-markdown-it-anchor-s-permalinks" tabindex="-1"><a class="header-anchor" href="#history-of-markdown-it-anchor-s-permalinks"><span>History of markdown-it-anchor’s permalinks</span></a></h2>
 <p>When I originally built this plugin back in 2015, I gave a boolean
 option to enable permalink generation, which would then default to a
 GitHub-style permalink. The markup was the following.</p>
@@ -119,7 +119,7 @@ to fully mimic GitHub’s behaviour, under the premise that the permalinks
 weren’t relevant to screen reader users, and that GitHub was probably a
 good example to follow about doing the Right Thing™.</p>
 <p>This was fine for the next couple of years, until…</p>
-<h2 id="first-accessibility-request" tabindex="-1"><a class="header-anchor" href="#first-accessibility-request">First accessibility request</a></h2>
+<h2 id="first-accessibility-request" tabindex="-1"><a class="header-anchor" href="#first-accessibility-request"><span>First accessibility request</span></a></h2>
 <p>In 2019, we get our <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58">first accessibility issue</a>,
 pointing out that using <code>aria-hidden</code> was incorrect here because those
 links would be useful to screen reader users too, and especially,
@@ -134,7 +134,7 @@ of markdown-it-anchor in Eleventy to remove the <code>aria-hidden</code> attribu
 <a href="https://github.com/valeriangalliat/markdown-it-anchor/commit/e276fe53e259bcd2bf6045b6093f82d3cd606f8c">removed <code>aria-hidden</code> from permalinks</a>
 after <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-542385189">doing some research</a>
 to confirm this was the right thing to do.</p>
-<h2 id="first-issue-with-the-fix" tabindex="-1"><a class="header-anchor" href="#first-issue-with-the-fix">First issue with the fix</a></h2>
+<h2 id="first-issue-with-the-fix" tabindex="-1"><a class="header-anchor" href="#first-issue-with-the-fix"><span>First issue with the fix</span></a></h2>
 <p>Do you know that feeling when you fix a bug, only to discover it
 introduced at least another bug?</p>
 <p>This is basically what happened by removing the <code>aria-hidden</code> attribute.</p>
@@ -150,7 +150,7 @@ went on and <a href="https://github.com/valeriangalliat/markdown-it-anchor/pull/
 This allowed, for example, to configure a generic <code>aria-label</code> on the
 permalink (e.g. “heading permalink”), but we’ll see later that this is
 not an ideal solution either.</p>
-<h2 id="the-hard-truth" tabindex="-1"><a class="header-anchor" href="#the-hard-truth">The hard truth</a></h2>
+<h2 id="the-hard-truth" tabindex="-1"><a class="header-anchor" href="#the-hard-truth"><span>The hard truth</span></a></h2>
 <p>Exactly a year later, Binyamin brings back the <code>aria-hidden</code> topic,
 explaining that <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-716849952">the default behaviour is still not accessible</a>,
 because screen readers read out the permalink symbol instead of a
@@ -163,7 +163,7 @@ that I realized that the accessibility of permalinks was a complex
 topic, and that it was going to be hard, if not impossible, to satisfy
 everybody.</em></p>
 <p>The question of accessible permalinks stayed in my mind, until…</p>
-<h2 id="the-very-simple-solution" tabindex="-1"><a class="header-anchor" href="#the-very-simple-solution">The <em>very</em> simple solution</a></h2>
+<h2 id="the-very-simple-solution" tabindex="-1"><a class="header-anchor" href="#the-very-simple-solution"><span>The <em>very</em> simple solution</span></a></h2>
 <p>About at the same time, my friend <a href="https://twitter.com/KittyGiraudel/">Kitty</a>,
 is <a href="https://kittygiraudel.com/2020/11/30/from-jekyll-to-11ty/">switching from Jekyll to Eleventy</a>,
 and finds my plugin while looking for a way to add <code>id</code>s to headings. 😎</p>
@@ -179,7 +179,7 @@ contents. More technical users can still inspect the page to find
 the <code>id</code>s and use them as anchors.</p>
 <p>Sometimes, the smartest way to implement a nonstandard feature, might be
 to… not?</p>
-<h2 id="another-take-on-accessible-permalinks" tabindex="-1"><a class="header-anchor" href="#another-take-on-accessible-permalinks">Another take on accessible permalinks</a></h2>
+<h2 id="another-take-on-accessible-permalinks" tabindex="-1"><a class="header-anchor" href="#another-take-on-accessible-permalinks"><span>Another take on accessible permalinks</span></a></h2>
 <p>Just two weeks later, <a href="https://twitter.com/ambrwlsn90">Amber</a> publishes
 a post about <a href="https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/">designing truly accessible anchor links</a>.</p>
 <p>This is an awesome article that I highly recommend reading. Amber
@@ -208,7 +208,7 @@ on the alternative solution of turning headers themselves into links
 ways of making the markup of header links behave like the original
 implementation, so be sure to check out the <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-788268457">GitHub issue</a>
 to find out about all of this!</p>
-<h2 id="conclusion-0-no-one-solution-can-satisfy-all-users" tabindex="-1"><a class="header-anchor" href="#conclusion-0-no-one-solution-can-satisfy-all-users">Conclusion #0: no one solution can satisfy all users</a></h2>
+<h2 id="conclusion-0-no-one-solution-can-satisfy-all-users" tabindex="-1"><a class="header-anchor" href="#conclusion-0-no-one-solution-can-satisfy-all-users"><span>Conclusion #0: no one solution can satisfy all users</span></a></h2>
 <p>This discussion made me realize that until there is a standard and
 native way of implementing anchor links, no solution is going to satisfy
 all users.</p>
@@ -231,7 +231,7 @@ solution, to <strong>giving more visibility to all the available solutions</stro
 that were identified and carefully analyzed, explaining their pros and
 cons, <strong>so that markdown-it-anchor users can make an educated choice on
 what suits their website and audience best</strong>.</p>
-<h2 id="conclusion-1-no-default-is-better-than-a-bad-default" tabindex="-1"><a class="header-anchor" href="#conclusion-1-no-default-is-better-than-a-bad-default">Conclusion #1: no default is better than a bad default</a></h2>
+<h2 id="conclusion-1-no-default-is-better-than-a-bad-default" tabindex="-1"><a class="header-anchor" href="#conclusion-1-no-default-is-better-than-a-bad-default"><span>Conclusion #1: no default is better than a bad default</span></a></h2>
 <p>The absolute default (and main purpose) of markdown-it-anchor is to
 automatically add an <code>id</code> attribute on headings. Adding permalinks is an
 <em>option</em>, and doesn’t <em>need</em> a default.</p>
@@ -246,7 +246,7 @@ them.</p>
 markdown-it-anchor user’s permalinks accessible with a <code>npm update</code>, we
 don’t have a single solution that suits every use case and wouldn’t
 break existing markup and styling, so this is not a realistic option.</p>
-<h2 id="final-implementation" tabindex="-1"><a class="header-anchor" href="#final-implementation">Final implementation</a></h2>
+<h2 id="final-implementation" tabindex="-1"><a class="header-anchor" href="#final-implementation"><span>Final implementation</span></a></h2>
 <p>I made a <a href="https://github.com/valeriangalliat/markdown-it-anchor/pull/89">pull request</a>
 that deprecates the <code>permalink: true</code> way of using a default (poorly
 accessible) renderer, and instead made the <code>permalink</code> option accept a
@@ -256,7 +256,7 @@ their upsides and caveats. All of this can be found on the
 <a href="https://github.com/valeriangalliat/markdown-it-anchor">project’s repo</a>,
 and it’s part of the 8.0.0 release. Here’s an overview of what was
 added.</p>
-<h3 id="header-link" tabindex="-1"><a class="header-anchor" href="#header-link">Header link</a></h3>
+<h3 id="header-link" tabindex="-1"><a class="header-anchor" href="#header-link"><span>Header link</span></a></h3>
 <pre><code class="hljs language-js">md.use(anchor, {
   <span class="hljs-attr">permalink</span>: anchor.permalink.headerLink()
 })
@@ -283,7 +283,7 @@ look and feel like other more recognized implementations.</p>
 an issue you can also notice on the referenced websites above. This was
 already <a href="https://bugs.webkit.org/show_bug.cgi?id=225609#c2">reported to Apple</a>
 but their bug tracker is not public.</p>
-<h3 id="link-after-header" tabindex="-1"><a class="header-anchor" href="#link-after-header">Link after header</a></h3>
+<h3 id="link-after-header" tabindex="-1"><a class="header-anchor" href="#link-after-header"><span>Link after header</span></a></h3>
 <pre><code class="hljs language-js">md.use(anchor, {
   <span class="hljs-attr">permalink</span>: anchor.permalink.linkAfterHeader({
     <span class="hljs-attr">style</span>: <span class="hljs-string">&#x27;visually-hidden&#x27;</span>,
@@ -314,7 +314,7 @@ multiple times the same “Link to this section”.</p>
 localize, causes the visually hidden text to show in SERP and RSS
 readers, and adds extra padding below headers in reader mode. Not bad,
 considering.</p>
-<h3 id="aria-hidden" tabindex="-1"><a class="header-anchor" href="#aria-hidden">ARIA hidden</a></h3>
+<h3 id="aria-hidden" tabindex="-1"><a class="header-anchor" href="#aria-hidden"><span>ARIA hidden</span></a></h3>
 <pre><code class="hljs language-js">md.use(anchor, {
   <span class="hljs-attr">permalink</span>: anchor.permalink.ariaHidden({
     <span class="hljs-attr">placement</span>: <span class="hljs-string">&#x27;before&#x27;</span>
@@ -332,7 +332,7 @@ styling and behaves in the way most users will expect out of the box,
 but it’s explicitly made <em>inaccessible</em>.</p>
 <p>This might or might not be an issue for you, but it’s definitely worth
 thinking about, and considering the options above instead.</p>
-<h2 id="try-it-with-a-screen-reader-yourself" tabindex="-1"><a class="header-anchor" href="#try-it-with-a-screen-reader-yourself">Try it with a screen reader yourself!</a></h2>
+<h2 id="try-it-with-a-screen-reader-yourself" tabindex="-1"><a class="header-anchor" href="#try-it-with-a-screen-reader-yourself"><span>Try it with a screen reader yourself!</span></a></h2>
 <p>Are you wondering if the experience on your website is accessible to
 screen reader users? Reading about accessibility is great, but nothing
 can teach you as much as actually using a screen reader.</p>
@@ -354,7 +354,7 @@ clean and intact above all.</p>
 which allows you to list all the links and headings of the page. You
 can browse through the lists by using the arrow keys. Make sure that
 those are usable on your website!</p>
-<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word">Final word</a></h2>
+<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word"><span>Final word</span></a></h2>
 <p>As a newbie to the topic of accessibility, it was wonderful getting to
 learn from many knowledgeable peers who documented that aspect of anchor
 links, and contributed to the discussion in <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">markdown-it-anchor’s

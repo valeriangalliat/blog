@@ -110,7 +110,7 @@ called with a <a href="https://vercel.com/account/tokens">regular user token</a>
 like the ones the CLI and web app use.</p>
 <p>This means that we’ll need to create our own Vercel integration in order
 to have an integration token that will let us call the log drains API.</p>
-<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="#how-does-a-vercel-integration-work">How does a Vercel integration work</a></h2>
+<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="#how-does-a-vercel-integration-work"><span>How does a Vercel integration work</span></a></h2>
 <ul>
 <li>A Vercel integration is a web app hosted on your own domain, which
 needs to respond to a “Vercel callback” page.</li>
@@ -142,7 +142,7 @@ fee for a service that allows you to fully manage your Vercel log drains
 with arbitrary URLs, <a href="/val.html#links">let me know</a>. If there’s enough
 demand I’ll consider building something!</p>
 </div>
-<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="#creating-our-own-vercel-integration">Creating our own Vercel integration</a></h2>
+<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="#creating-our-own-vercel-integration"><span>Creating our own Vercel integration</span></a></h2>
 <p>For this, head to the <a href="https://vercel.com/dashboard/integrations/console">Vercel integrations console</a>,
 which lists you all the integrations that you have created, and allows
 you to create new ones.</p>
@@ -154,7 +154,7 @@ going to host it on.</p>
 <p>You can ignore the webhook and configuration URLs unless you want to
 build a stateful version that allows editing the log drains after
 installation (then you’d need the configuration URL specifically).</p>
-<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="#making-the-form">Making the form</a></h3>
+<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="#making-the-form"><span>Making the form</span></a></h3>
 <p>We’ll go for a very basic HTML form that allows selecting between
 <code>json</code>, <code>ndjson</code> and <code>syslog</code> as the log drain type, which are the only
 formats supported by Vercel as of writing, as well as the URL to the log
@@ -173,7 +173,7 @@ drain we want to add.</p>
 </code></pre>
 <p>See the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/form.html">full HTML</a>
 with a tiny layer of CSS.</p>
-<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="#serving-the-form">Serving the form</a></h3>
+<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="#serving-the-form"><span>Serving the form</span></a></h3>
 <p>I’ll use <a href="https://www.fastify.io/">Fastify</a> to handle the HTTP requests,
 but <a href="https://expressjs.com/">Express</a> would have worked just fine for
 this too.</p>
@@ -206,7 +206,7 @@ built on <code>/vercel/callback</code>.</p>
 redirected from Vercel integration installation, and we just show a
 simple message to say hello, because the form wouldn’t be useful when
 it’s not called from Vercel.</p>
-<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="#handling-the-form">Handling the form</a></h3>
+<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="#handling-the-form"><span>Handling the form</span></a></h3>
 <p>First, we’ll need to trade the <code>code</code> parameter for a Vercel OAuth
 access token. We can do that by calling the <code>https://api.vercel.com/v2/oauth/access_token</code>.</p>
 <p>This requires us to configure the OAuth client ID and client secret that
@@ -290,7 +290,7 @@ you want for your Vercel apps.</p>
 only on certain apps and not globally (see other <a href="https://vercel.com/docs/rest-api#integrations/log-drains/create-a-log-drain/request-parameters">request parameters</a>),
 or make it stateful with the option to edit and remove existing log
 drains without having to reinstall the integration.</p>
-<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="#making-a-simple-log-drain-with-nginx">Making a simple log drain with nginx</a></h2>
+<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="#making-a-simple-log-drain-with-nginx"><span>Making a simple log drain with nginx</span></a></h2>
 <p>Now, we only solved half of the problem. We can configure any URL as a
 log drain on our Vercel apps, but we don’t have a URL to put there yet!
 Most of the logging software as a service apps already have
@@ -324,7 +324,7 @@ and the other one (fully native) leverages a hack with the <code>proxy_pass</cod
 directive.</p>
 <p>In both cases, you’ll be able to configure <code>https://your.domain/vercel/drain</code>
 as a Vercel log drain. I find that NDJSON works best with this format.</p>
-<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="#with-echo-read-request-body">With <code>echo_read_request_body</code></a></h3>
+<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="#with-echo-read-request-body"><span>With <code>echo_read_request_body</code></span></a></h3>
 <pre><code class="hljs language-nginx"><span class="hljs-comment"># Make sure this is loaded, method may vary depending on your setup.</span>
 <span class="hljs-attribute">load_module</span> modules/ngx_http_echo_module.so;
 
@@ -343,7 +343,7 @@ as a Vercel log drain. I find that NDJSON works best with this format.</p>
     }
 }
 </code></pre>
-<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="#with-proxy-pass-hack">With <code>proxy_pass</code> hack</a></h3>
+<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="#with-proxy-pass-hack"><span>With <code>proxy_pass</code> hack</span></a></h3>
 <p>If you don’t want to load <code>ngx_http_echo_module</code>, you can instead use
 the native <code>proxy_pass</code> directive to force nginx to read the request
 body.</p>
@@ -370,7 +370,7 @@ become accessible to our log format.</p>
     }
 }
 </code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>You should now have everything you need to store your Vercel logs in
 plain text files on a Google Cloud free tier VM (or wherever else you
 wanted to)!</p>

@@ -84,7 +84,7 @@
     </div>
   </header>
   <div class="content">
-<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr">TLDR</a></h2>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
 <p>To get dmenu to work with emojis, you need to compile it from source
 against <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> (from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>),
 after removing the <code>iscol</code> check in <code>drw.c</code> that prevents colored fonts
@@ -92,7 +92,7 @@ to be used, and configuring a colored font in <code>config.h</code> or
 <code>config.def.h</code> (see patches below).</p>
 <p>Go check out <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
 that does all that work for you!</p>
-<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="#the-story">The story</a></h2>
+<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="#the-story"><span>The story</span></a></h2>
 <p>A couple weeks ago, during my daily procrastination routine (I like to
 procrastinate in the mornings right after meditating and taking a cold
 shower), I figured it would be nice to have some kind of emoji picker on
@@ -112,7 +112,7 @@ specifically for that and find <a href="https://github.com/porras/dmenu-emoji">d
 which despite the name, is actually meant to be used with Rofi, but also
 claims to work with dmenu. But when I try it with plain dmenu, the
 emojis only show up as empty squares. Not ideal.</p>
-<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="#making-dmenu-show-emojis">Making dmenu show emojis</a></h2>
+<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="#making-dmenu-show-emojis"><span>Making dmenu show emojis</span></a></h2>
 <p>Trying to figure that issue, I stumble upon <a href="https://youtu.be/0QkByBugq_4">this video</a>
 which explains that you need to compile dmenu from source against
 <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a>, a patched version of libXft from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>
@@ -169,7 +169,7 @@ an emoji font in dmenu’s source, as you can see in <a href="https://github.com
  static const char *colors[SchemeLast][2] = {
 </code></pre>
 <p>After doing so, the emojis did show up! 🎉</p>
-<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="#automating-the-build">Automating the build</a></h2>
+<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="#automating-the-build"><span>Automating the build</span></a></h2>
 <p>This is great, but it still takes a lot of manual steps, and needs root
 access to install libxft-bgra globally. I think this is unnecessary, and
 I figured it would be cool to compile dmenu <em>statically</em> against the
@@ -243,7 +243,7 @@ compiling everything.</p>
 <p>With that, a simple <code>make</code> command gives us a fully working dmenu with
 emoji support. You can find all of that (and more) in the <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
 repo I created to bundle everything together!</p>
-<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="#bonus-dynamically-linked-against-a-custom-location">Bonus: dynamically linked against a custom location</a></h2>
+<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="#bonus-dynamically-linked-against-a-custom-location"><span>Bonus: dynamically linked against a custom location</span></a></h2>
 <p>Out of curiosity, I wanted to see what it would take, to dynamically
 link to our patched version of libXft without installing it in the
 standard library path (e.g. <code>/usr/lib</code>).</p>

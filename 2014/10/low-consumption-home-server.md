@@ -2,7 +2,7 @@
 October 26, 2014
 
 [CodeJam](../../2015/03/naming-things.md) is my little homemade piece
-of Internet -- a €200 server optimized for low consumption, while being
+of internet -- a €200 server optimized for low consumption, while being
 a decent x86-64 machine, where I run all the "cloud" services I need.
 
 To be more clear, I planned to decently host a web server (mostly, but

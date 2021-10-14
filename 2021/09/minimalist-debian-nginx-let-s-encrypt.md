@@ -728,7 +728,7 @@ certificates. I hope this post was useful to you!
 <div class="note">
 
 **Note:** if you're looking to integrate Let's Encrypt or similar on
-your server but this post was too technical for you, [let me know](/val.md#links),
+your server but this post was too technical for you, [let me know](/val.md#contact),
 I'm available for [contracting](/freelance.md) projects and
 I'll be happy to help you with that. ✌️
 

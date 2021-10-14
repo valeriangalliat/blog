@@ -375,5 +375,5 @@ Shoutout to [Amber](https://twitter.com/ambrwlsn90),
 research this issue and sharing their findings!
 
 Finally, if I said anything wrong or inaccurate in this post, please
-[let me know](/val.md#links), I'll be more than happy to fix mistakes
+[let me know](/val.md#contact), I'll be more than happy to fix mistakes
 and integrate improvements!

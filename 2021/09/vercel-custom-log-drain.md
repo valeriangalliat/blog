@@ -70,7 +70,7 @@ Vercel integration.
 
 **Note:** if I'm wrong with that assumption, and you would pay a monthly
 fee for a service that allows you to fully manage your Vercel log drains
-with arbitrary URLs, [let me know](/val.md#links). If there's enough
+with arbitrary URLs, [let me know](/val.md#contact). If there's enough
 demand I'll consider building something!
 
 </div>
@@ -371,7 +371,7 @@ of that for free (or nearly).
 <div class="note">
 
 **Note:** if you need to forward your Vercel logs to a custom endpoint
-but this article was too technical for you, feel free to [contact me](/val.md#links),
+but this article was too technical for you, feel free to [contact me](/val.md#contact),
 I'm available for [freelance work](/freelance.md) and I'll be
 happy to help you with that. ✌️
 

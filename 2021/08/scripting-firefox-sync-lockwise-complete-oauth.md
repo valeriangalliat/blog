@@ -969,7 +969,7 @@ Needless to say this code is not production ready, and can be considered
 to be more of an academic resource for learning purpose. If you're going
 to use it, please refactor it in a more maintainable way and add proper
 error handling! Also if you need help integrating Firefox Accounts to
-your app, feel free to [reach out](/val.md#links), I'm open to
+your app, feel free to [reach out](/val.md#contact), I'm open to
 contracting work.
 
 ## A note about granular scopes

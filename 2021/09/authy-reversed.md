@@ -333,7 +333,7 @@ favorite TOTP provider! 🎉
 <div class="note">
 
 **Note:** if you need help understanding and documenting other
-undocumented APIs and protocols, [let me know](/val.md#links), I'm
+undocumented APIs and protocols, [let me know](/val.md#contact), I'm
 currently available for [contracting](/freelance.md) projects
 and I'll be happy to help you with that. ✌️
 

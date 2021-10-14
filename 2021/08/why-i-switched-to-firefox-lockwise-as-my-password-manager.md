@@ -14,7 +14,7 @@ Feel free to [skip it](#why-firefox-lockwise)!
 ## Why you should use a password manager
 
 * Passwords are the most widespread way of authentication to websites
-  and other services on the Internet.
+  and other services on the internet.
 * The average user tends to log in [on over a hundred services](https://blog.dashlane.com/world-password-day/),
   and it's only going to grow over time.
 

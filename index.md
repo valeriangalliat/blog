@@ -9,6 +9,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links posts">
 
+* [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
 * [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
 * [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
 * [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>
@@ -23,7 +24,6 @@ A blog by a programmer who loves many other things.
 * [dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪](2021/08/dmenu-libxft-bgra-emoji-support.md) <small>August 22, 2021</small>
 * [Super fast boot on Linux with EFISTUB 🚀](2021/08/super-fast-boot-linux-efistub.md) <small>August 10, 2021</small>
 * [A journey to scripting Firefox Sync / Lockwise: complete OAuth](2021/08/scripting-firefox-sync-lockwise-complete-oauth.md) <small>August 8, 2021</small>
-* [A journey to scripting Firefox Sync / Lockwise: hybrid OAuth](2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.md) <small>August 8, 2021</small>
 
 [All the posts](posts.md)
 

@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
 * [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
 * [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
 * [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>

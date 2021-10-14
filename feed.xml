@@ -5,10 +5,126 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-10-05T18:10:18.546Z</updated>
+  <updated>2021-10-14T18:44:37.250Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Bypass SQLite exclusive lock 🔐</title>
+    <link href="https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html" />
+    <id>https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html</id>
+    <updated>2021-10-14T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>There’s a <a href="https://www.sqlite.org/lockingv3.html">number of ways</a> SQLite
+can lock a database file, and if you’re encountering a “database is
+locked” error, according to <a href="https://stackoverflow.com/questions/151026/how-do-i-unlock-a-sqlite-database">the internet</a>,
+you have two options:</p>
+<ol>
+<li>If you control the software that created the lock, go and fix the
+problematic queries.</li>
+<li>You’re fucked.</li>
+</ol>
+<p>By “you’re fucked” I mean that your seemingly only option is to <strong>copy
+the whole database file and query the copy</strong>. If working off a one-time
+snapshot of the database work for you, awesome, problem solved:</p>
+<pre><code class="hljs language-sh">$ <span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite
+Error: database is locked
+$ cp db.sqlite db-snapshot.sqlite
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 db-snapshot.sqlite
+actual_table
+</code></pre>
+<p>But it seems that’s not a good enough solution for many people (including myself)
+and we’re desperately trying to <a href="https://stackoverflow.com/questions/7857755/is-it-possible-to-open-a-locked-sqlite-database-in-read-only-mode">perform</a>
+<a href="https://www.linuxquestions.org/questions/linux-server-73/can-i-open-sqlite-datbase-in-read-only-mode-4175578075/">read-only</a>
+<a href="https://github.com/skeeto/emacsql/issues/34">queries</a>
+<a href="https://www.reddit.com/r/firefox/comments/aw01gq/how_to_disable_sqlite_database_locking_for/">on a</a>
+<a href="https://dba.stackexchange.com/questions/45368/how-do-i-prevent-sqlite-database-locks">locked</a>
+SQLite database.</p>
+<p>This is especially useful for <strong>Firefox</strong> and <strong>Chrome</strong> SQLite files
+because both browsers have a bad tendency to keep them permanently
+locked, preventing us to access the database without closing the browser
+first.</p>
+<p>In my case, I want to poll a specific table, and while technically the
+database is small enough that it’s not a problem to copy it over and
+over to query it periodically, <strong>I just don’t like this idea</strong>
+and I believe there <em>must</em> be a better way.</p>
+<p>So let me tell you the better way.</p>
+<h2 id="the-better-way" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html#the-better-way"><span>The better way</span></a></h2>
+<p>SQLite <a href="https://www.sqlite.org/c3ref/open.html">allows passing</a> a
+<a href="https://www.sqlite.org/uri.html"><code>file:</code> URI</a> instead of a filename
+(e.g. <code>file:db.sqlite</code> instead of <code>db.sqlite</code>), which comes with the
+extra ability to pass query string parameters.</p>
+<p>Some of those are aliases for flags you could otherwise set when opening
+the connexion, for example <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/main.c#L3023"><code>mode=ro</code></a>
+is equivalent to setting <a href="https://www.sqlite.org/c3ref/c_open_autoproxy.html"><code>SQLITE_OPEN_READONLY</code></a>
+and <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/main.c#L3011"><code>cache=private</code></a>
+the same as <a href="https://www.sqlite.org/c3ref/c_open_autoproxy.html"><code>SQLITE_OPEN_PRIVATECACHE</code></a>.</p>
+<p>But we also have other parameters that have a deeper implementation that
+would otherwise be inaccessible to the SQLite user (no configuration
+flags for those). In particular, <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4913"><code>nolock</code></a>
+and <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4915"><code>immutable</code></a>.</p>
+<p>While <code>nolock</code> only prevents this connection from locking the database
+and doesn’t do anything about the fact a lock is already being held by
+another connection, the <code>immutable</code> is especially interesting for us.
+From its <a href="https://www.sqlite.org/c3ref/open.html">documentation</a>:</p>
+<blockquote>
+<p>The immutable parameter is a boolean query parameter that indicates
+that the database file is stored on read-only media. When <code>immutable</code>
+is set, SQLite assumes that the database file cannot be changed, and
+so the database is opened read-only and <strong>all locking and change
+detection is disabled</strong>.</p>
+<p><strong>Caution:</strong> setting the immutable property on a database file that
+does in fact change can result in incorrect query results and/or
+<a href="https://www.sqlite.org/rescode.html#corrupt"><code>SQLITE_CORRUPT</code></a> errors.</p>
+<p><strong>See also:</strong> <a href="https://www.sqlite.org/c3ref/c_iocap_atomic.html"><code>SQLITE_IOCAP_IMMUTABLE</code></a>.</p>
+</blockquote>
+<p>Even though <code>SQLITE_IOCAP_IMMUTABLE</code> is not an option per se, but a
+particular characteristic of the IO device, we can force SQLite to treat
+the database as if was on an read-only device by setting <code>immutable=1</code>,
+which has the particularity of disabling all locking mechanisms,
+<strong>including that of respecting existing locks</strong>.</p>
+<p>With this trick, we can rewrite the previous fix:</p>
+<pre><code class="hljs language-sh">$ <span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite
+Error: database is locked
+$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>
+actual_table
+</code></pre>
+<p>This doesn’t require creating a copy of the file that you want to
+query it despite it being locked by another active connection!</p>
+<p>The only caveat is because SQLite doesn’t expect that file to be
+updated, changes wont be reflected in that immutable connexion, so it’s
+still like you’re querying a snapshot, it’s just that you don’t have to
+physically copy the database in order to read it.</p>
+<p>Also as mentioned earlier, if the underlying database is updated, this
+might result in errors when querying over the immutable connection.
+Because of that, I would recommending opening a new connection every
+time you want to query the database.</p>
+<h2 id="applying-it-to-a-sqlite-driver" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html#applying-it-to-a-sqlite-driver"><span>Applying it to a SQLite driver</span></a></h2>
+<p>It’s nice to be able to do that with the CLI, but how do we do that from
+a program that uses a SQLite driver? In my case I’m using
+<a href="https://www.npmjs.com/package/sqlite3"><code>sqlite3</code></a> with Node.js, but the
+method should be very similar in your language of choice.</p>
+<p>Because the <code>immutable</code> option is only available in the <a href="https://www.sqlite.org/uri.html">URI filename</a>
+format, we need to pass this kind of URI to our driver, e.g.
+<code>file:db.sqlite?immutable=1</code> as opposed to <code>db.sqlite</code>.</p>
+<p>The URI format is not enabled by default and you need to pass the
+<a href="https://www.sqlite.org/c3ref/c_open_autoproxy.html"><code>SQLITE_OPEN_URI</code></a>
+flag in order to enable it.</p>
+<p>With <code>sqlite3</code>, this looks like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> sqlite3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;sqlite3&#x27;</span>)
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.Database(<span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>, sqlite3.OPEN_READONLY | sqlite3.OPEN_URI)
+</code></pre>
+<p>We need to precise <code>OPEN_READONLY</code> because <code>OPEN_URI</code> alone is not a
+valid mode, and by passing an explicit mode, we’re effectively
+overriding the <a href="https://github.com/mapbox/node-sqlite3/blob/918052b538b0effe6c4a44c74a16b2749c08a0d2/src/database.cc#L135">default</a>
+of <code>SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX</code>.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>I hope you enjoyed this trick! If you find a better way to do this, or
+a way that allows to reflect underlying database updates without
+reloading the connection, please <a href="https://www.codejam.info/val.html#contact">let me know</a>, I’d
+love to know about it!</p>
+<p>And as usual, keep hacking. 😜</p>
+]]></content>
+  </entry>
   <entry>
     <title>How long can you keep a tent and sleeping bag packed wet? 🏕</title>
     <link href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html" />
@@ -28,7 +144,7 @@ your equipment? Here’s my experience.</p>
     <img alt="Tents in snow" src="https://photography.codejam.info/photos/sd/P2560398.jpg">
   </a>
 </figure>
-<h2 id="equipment-and-context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#equipment-and-context">Equipment and context</a></h2>
+<h2 id="equipment-and-context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#equipment-and-context"><span>Equipment and context</span></a></h2>
 <p>My tent is a <a href="https://www.msrgear.com/ca/tents/backpacking-tents/hubba-hubba-nx-2-person-backpacking-tent/10316.html">MSR Hubba Hubba NX</a>,
 and my sleeping bag is actually a <a href="https://enlightenedequipment.com/revelation-custom/">down quilt</a>
 made by <a href="https://enlightenedequipment.com/">Enlightened Equipment</a>. Both
@@ -48,7 +164,7 @@ unless the gear is tightly packed and cannot breathe.</p>
     <img alt="Tent on an island" src="https://photography.codejam.info/photos/sd/P2640878.jpg">
   </a>
 </figure>
-<h2 id="the-exception" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#the-exception">The exception</a></h2>
+<h2 id="the-exception" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#the-exception"><span>The exception</span></a></h2>
 <p>Initially I had in mind to unpack everything at the chalet where we were
 staying for the rest of the trip, so that the gear could dry properly,
 and especially so that the sleeping bag wouldn’t stay compressed for
@@ -87,7 +203,7 @@ the fabric of your tent.</p>
     <img alt="Tents with a sunset" src="https://photography.codejam.info/photos/sd/P2560533.jpg">
   </a>
 </figure>
-<h2 id="how-bad-was-it" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#how-bad-was-it">How bad was it?</a></h2>
+<h2 id="how-bad-was-it" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#how-bad-was-it"><span>How bad was it?</span></a></h2>
 <p>When I unpacked everything, they were both still pretty wet to the
 touch. I let them dry overnight in my apartment. 🙏 Those are very good
 and expensive equipment and I was worried that I might have ruined or
@@ -97,7 +213,7 @@ significantly damaged them by leaving them packed wet for pretty much
 develop any mold! And the sleeping bag was nicely dry and took back its
 normal fluffiness. Both smelled as smokey as usual 😆, no worst no
 better, but definitely not like mold or anything concerning.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#conclusion">Conclusion</a></h2>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#conclusion"><span>Conclusion</span></a></h2>
 <p>While you should definitely avoid doing that, if you end up in a
 situation where you left your tent or sleeping bag packed wet for a
 few days, maybe even a week, don’t sweat it, <strong>you probably didn’t ruin
@@ -144,7 +260,7 @@ transfer your Authy secrets to another authenticator, check out
 <a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
 <p>Otherwise, keep reading, I’ll give you all the details about it! ✌️</p>
 </div>
-<h2 id="here-we-go-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#here-we-go-again">Here we go again</a></h2>
+<h2 id="here-we-go-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#here-we-go-again"><span>Here we go again</span></a></h2>
 <p>Every time I face a situation like this, I reverse.
 <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">I love</a>
 <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">reversing</a>
@@ -168,7 +284,7 @@ Sweet.</p>
 existing Authy app and account, instead of replacing it completely, but
 a lot of the code is the same. If Go is more your jam, check it out!</p>
 </div>
-<h2 id="understanding-the-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#understanding-the-implementation">Understanding the implementation</a></h2>
+<h2 id="understanding-the-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#understanding-the-implementation"><span>Understanding the implementation</span></a></h2>
 <p>That article <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">I linked earlier</a>
 gives us a good starting point:</p>
 <ol>
@@ -194,7 +310,7 @@ By inspecting the network traffic of the Chrome app, we clearly see
 that… the secrets are directly retrieved from the Authy servers.</p>
 <p>Now, how do we write our own code that fetches the secrets from the
 Authy servers, without installing the Authy app? Let me tell you.</p>
-<h2 id="documenting-the-protocol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#documenting-the-protocol">Documenting the protocol</a></h2>
+<h2 id="documenting-the-protocol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#documenting-the-protocol"><span>Documenting the protocol</span></a></h2>
 <p>If we install the Chrome app, use our phone number to sign up or log in,
 and generate a one-time code, the following happens:</p>
 <ol>
@@ -223,7 +339,7 @@ be invalidated and the codes generated by this device are no longer
 valid.</p>
 </div>
 <p>With that in mind, we can write an API client.</p>
-<h2 id="making-a-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-client">Making a client</a></h2>
+<h2 id="making-a-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-client"><span>Making a client</span></a></h2>
 <p>At that point you’ll be interested to look at the code of <a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
 <p>I won’t copy everything here, but I essentially made a quick
 <a href="https://github.com/valeriangalliat/authy-user-client/blob/c77d5c6e56619b012079482da4d7b9d269bab485/index.js#L38">API wrapper</a>
@@ -310,7 +426,7 @@ time period sequence:</p>
 which might or might not be merged when you read this.</p>
 <p>From there I export those methods to be used in the CLI, or by other
 Node.js programs.</p>
-<h2 id="making-a-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-cli">Making a CLI</a></h2>
+<h2 id="making-a-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-cli"><span>Making a CLI</span></a></h2>
 <p>From there, we can use the awesome <a href="https://www.npmjs.com/package/prompts">prompts</a>
 package to build an interactive CLI that dumps the TOTP secrets from
 your Authy account.</p>
@@ -389,7 +505,7 @@ to be used in any compliant authenticator or password manager.</p>
 <p>You can look at <a href="https://github.com/valeriangalliat/authy-user-client/blob/master/cli.js">the full source</a>
 for the implementation of individual calls for more fine-grained
 control!</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>Thanks to this, we can work around services that force the Authy app for
 2FA and extract the secret and settings to use them with our favorite
 authenticator app.</p>
@@ -399,8 +515,8 @@ You can just use the CLI and happily move on with your life and your
 favorite TOTP provider! 🎉</p>
 <div class="note">
 <p><strong>Note:</strong> if you need help understanding and documenting other
-undocumented APIs and protocols, <a href="https://www.codejam.info/val.html#links">let me know</a>, I’m
-currently available for <a href="https://www.codejam.info/resources/freelance.html">contracting</a> projects
+undocumented APIs and protocols, <a href="https://www.codejam.info/val.html#contact">let me know</a>, I’m
+currently available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects
 and I’ll be happy to help you with that. ✌️</p>
 </div>
 ]]></content>
@@ -432,14 +548,14 @@ that’s the most explicit name that I came up with.</p>
 above, but if you want to learn how it works in more technical details,
 keep reading!</p>
 </div>
-<h2 id="why-would-you-do-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#why-would-you-do-that">Why would you do that?</a></h2>
+<h2 id="why-would-you-do-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#why-would-you-do-that"><span>Why would you do that?</span></a></h2>
 <p>Maybe like me you really like Lockwise or another password manager
 that doesn’t support TOTP, and that’s not enough of a reason to migrate
 to another app like Bitwarden, especially where TOTP support only comes
 in the paid version.</p>
 <p>And you don’t want to install Yet Another App™ to do this.</p>
 <p>Maybe a bit of a niche, I’ll admit.</p>
-<h2 id="how-does-it-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#how-does-it-work">How does it work?</a></h2>
+<h2 id="how-does-it-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#how-does-it-work"><span>How does it work?</span></a></h2>
 <p>First things first, you probably want to <a href="https://github.com/valeriangalliat/totp">check out the repo on GitHub</a>.</p>
 <p>The principle is pretty simple. Most password managers will recognize
 login forms on websites (e.g. username and password fields). Upon
@@ -497,7 +613,7 @@ thanks to the following code:</p>
 <p>For convenience, we can automatically copy the code to the user’s clipboard:</p>
 <pre><code class="hljs language-js">navigator.clipboard.writeText(code)
 </code></pre>
-<h2 id="scanning-qr-codes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#scanning-qr-codes">Scanning QR codes</a></h2>
+<h2 id="scanning-qr-codes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#scanning-qr-codes"><span>Scanning QR codes</span></a></h2>
 <p>But that’s not enough. While some services will give us an option to
 retrieve the plaintext secret or a <code>otpauth://</code> URI, a lot will only
 give a QR code to scan, and some will even give <em>nothing</em> and force you
@@ -510,7 +626,7 @@ or import a QR code from an existing image (like a screenshot).</p>
 </figure>
 <p>Luckily, there’s a <a href="https://www.npmjs.com/package/qr-scanner">QR scanner</a>
 package that makes that really easy.</p>
-<h3 id="using-the-camera" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#using-the-camera">Using the camera</a></h3>
+<h3 id="using-the-camera" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#using-the-camera"><span>Using the camera</span></a></h3>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> QrScanner = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;qr-scanner&#x27;</span>)
 
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleTotpUri</span> (<span class="hljs-params">uri</span>) </span>{
@@ -535,7 +651,7 @@ video element.</p>
 service that issued that secret) and fill the username field with it to
 give a meaningful name to our secret. Then we can store the full URI in
 the password field.</p>
-<h3 id="from-file-upload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#from-file-upload">From file upload</a></h3>
+<h3 id="from-file-upload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#from-file-upload"><span>From file upload</span></a></h3>
 <p>We’ll support two ways to upload files. With a regular file input, and
 with drag and drop.</p>
 <p>For the file input, the following will do:</p>
@@ -575,7 +691,7 @@ both of those, where we scan the uploaded file and parse the TOTP URI in it.</p>
     })
 }
 </code></pre>
-<h2 id="manually-editing-totp-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#manually-editing-totp-settings">Manually editing TOTP settings</a></h2>
+<h2 id="manually-editing-totp-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#manually-editing-totp-settings"><span>Manually editing TOTP settings</span></a></h2>
 <p>Lastly, we might encounter situations where we only have the secret and
 specific TOTP settings (algorithm, digits and period), but no TOTP URI.</p>
 <p>To support that, we need to add an “advanced” mode allowing to edit the
@@ -615,7 +731,7 @@ algorithm.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, 
 digits.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
 period.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
 </code></pre>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#conclusion">Conclusion</a></h2>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#conclusion"><span>Conclusion</span></a></h2>
 <p>And this is it! You know everything that’s behind <a href="https://totp.vercel.app/">totp.vercel.app</a>.</p>
 <p>Did you find this useful? Did you like that I explained some of the code
 behind it in this blog post? Don’t hesitate to let me know and <a href="https://twitter.com/valeriangalliat">ping me on Twitter</a>!</p>
@@ -639,7 +755,7 @@ warning that was showing only in production when starting the app:</p>
 Ecto <code>:pool_size</code>, but I didn’t think about that right away.</p>
 <p>There was no context around that, and since the app interacts with quite
 a few things over SSL, it could have come from a lot of places.</p>
-<h2 id="tracing-warnings-in-elixir-investigation-and-delusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#tracing-warnings-in-elixir-investigation-and-delusion">Tracing warnings in Elixir: investigation and delusion</a></h2>
+<h2 id="tracing-warnings-in-elixir-investigation-and-delusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#tracing-warnings-in-elixir-investigation-and-delusion"><span>Tracing warnings in Elixir: investigation and delusion</span></a></h2>
 <p>My first reflex was to look for something similar to
 <a href="https://nodejs.org/api/cli.html#cli_trace_warnings">Node.js’ <code>--trace-warnings</code> option</a>.
 This will add a stack trace to all warnings, making it very easy to
@@ -647,7 +763,7 @@ track where they’re from and address them.</p>
 <p>Sadly, I couldn’t find anything similar with Elixir and Erlang. I
 resorted to <a href="https://elixirforum.com/t/tracing-runtime-warnings/42576">asking on Elixir Forum</a>,
 only to get confirmation that this wasn’t possible.</p>
-<h2 id="compiling-erlang" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#compiling-erlang">Compiling Erlang?</a></h2>
+<h2 id="compiling-erlang" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#compiling-erlang"><span>Compiling Erlang?</span></a></h2>
 <p><a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl.erl#L2833">The line that logged that warning</a>
 was easy to find in the Erlang <code>ssl</code> module, but that didn’t help me
 identifying what code path triggers it.</p>
@@ -667,7 +783,7 @@ causing it.</p>
 any alternative, this is guaranteed to give you an answer, so it’s
 probably worth the effort at that point!</p>
 </div>
-<h2 id="going-for-a-walk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#going-for-a-walk">Going for a walk</a></h2>
+<h2 id="going-for-a-walk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#going-for-a-walk"><span>Going for a walk</span></a></h2>
 <p>I didn’t actually go for a walk, but that’s the kind of thoughts that
 usually happen when you take a walk, or when you’re under the shower, so
 I would have probably gotten that idea earlier if I did.</p>
@@ -684,7 +800,7 @@ variables, and bingo! I can repro the warning.</p>
 <p>At that point it becomes very obvious to me that my database connection
 is the culprit, because it’s the only thing in the environment that’s
 related to SSL in a way or another.</p>
-<h2 id="heroku-postgres-and-ssl-certificate-verification" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#heroku-postgres-and-ssl-certificate-verification">Heroku Postgres and SSL certificate verification</a></h2>
+<h2 id="heroku-postgres-and-ssl-certificate-verification" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#heroku-postgres-and-ssl-certificate-verification"><span>Heroku Postgres and SSL certificate verification</span></a></h2>
 <p>Now that I found the offender, it’s easier to look for a specific
 solution. The first result on Google for <code>heroku postgres ssl verify</code> is
 <a href="https://help.heroku.com/3DELT3RK/why-can-t-my-third-party-utility-connect-to-heroku-postgres-with-ssl">this page on the Heroku support website</a>.</p>
@@ -704,7 +820,7 @@ mute it, so that it doesn’t adds noise to the logs.</p>
 notice a new SSL verification warning that would appears in another
 potentially <strong>more critical part of the codebase</strong>, leaving me with
 vulnerabilities.</p>
-<h2 id="muting-this-particular-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#muting-this-particular-warning">Muting this particular warning</a></h2>
+<h2 id="muting-this-particular-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#muting-this-particular-warning"><span>Muting this particular warning</span></a></h2>
 <p><a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl.erl#L2833">As we saw earlier</a>,
 for that warning to show up, we need the SSL connection’s <code>verify</code> to
 be set to <code>verify_none</code>, and the <code>ssl_logger</code>'s level to be configured
@@ -743,7 +859,7 @@ allowed me to do even more with it.</p>
 </figure>
 <p>But first, I’ll give you a little bit of backstory about how I got
 there in the first place. Feel free to <a href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#my-do-to-microphone-setting">skip it</a>.</p>
-<h2 id="the-story-about-my-h2n" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#the-story-about-my-h2n">The story about my H2n</a></h2>
+<h2 id="the-story-about-my-h2n" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#the-story-about-my-h2n"><span>The story about my H2n</span></a></h2>
 <p>The reason I got it in the first place was put it in my motorcycle
 jacket while I ride to record clean engine sound for my
 <a href="https://www.youtube.com/playlist?list=PL3gQ6-WYh7kU8QjpRSMpDknhAwvccFiMu">GoPro recordings</a>.
@@ -769,7 +885,7 @@ in an impressively wide set of settings.</p>
 <p>After years of using it, I have a couple of tips to share with you that
 will make you even more productive with your H2n and enable you to do
 even more with it.</p>
-<h2 id="my-go-to-mic-setting" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#my-go-to-mic-setting">My go-to mic setting</a></h2>
+<h2 id="my-go-to-mic-setting" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#my-go-to-mic-setting"><span>My go-to mic setting</span></a></h2>
 <p>The H2n has 5 built-in microphones and lets you use them in the
 <a href="https://composerfocus.com/zoom-h2n-review/">following settings</a>:</p>
 <ul>
@@ -792,7 +908,7 @@ screen, and puts the record button right in front of you.</p>
 <p>That being said the H2n is well designed because the clipping light on
 top is visible from both sides, meaning that if you want to record in
 M/S mode, you’ll still see the light while facing the back of the Zoom!</p>
-<h2 id="my-go-to-gain-setting" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#my-go-to-gain-setting">My go-to gain setting</a></h2>
+<h2 id="my-go-to-gain-setting" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#my-go-to-gain-setting"><span>My go-to gain setting</span></a></h2>
 <p>When I first got my H2n, I wasn’t sure where to put the gain. My usual
 rule of thumb with gain is to put it <strong>as high as possible</strong> at the
 source so that <strong>the highest peaks</strong> I plan to have are gonna be <strong>close
@@ -817,7 +933,7 @@ like singing very close to the mic through a pop filter or recording an
 instrument, I’ll go back to step one where I try to get the gain as high
 as possible while making sure it doesn’t clip during the highest peaks I
 plan to have. FWIW in those settings, I rarely needed to go below 6.</p>
-<h2 id="battery-and-clock-reset-trick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#battery-and-clock-reset-trick">Battery and clock reset trick</a></h2>
+<h2 id="battery-and-clock-reset-trick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#battery-and-clock-reset-trick"><span>Battery and clock reset trick</span></a></h2>
 <p>You might have noticed that the H2n internal clock is reset when you
 remove the AA batteries to change or recharge them. It’s pretty
 frustrating to have to configure the date and time again every time you
@@ -828,7 +944,7 @@ battery in the Zoom at all, it will keep the clock intact!</p>
 <figure class="center">
   <img alt="Changing the H2n batteries" src="https://www.codejam.info/img/2021/09/h2n/batteries.jpg">
 </figure>
-<h2 id="preventing-the-filename-counter-to-reset" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#preventing-the-filename-counter-to-reset">Preventing the filename counter to reset</a></h2>
+<h2 id="preventing-the-filename-counter-to-reset" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#preventing-the-filename-counter-to-reset"><span>Preventing the filename counter to reset</span></a></h2>
 <p>By default, the H2n names files like <code>ZOOM0001.WAV</code>, incrementing the
 number for every new file.</p>
 <p>This is fine with me, but every time I empty the SD card, the file
@@ -850,7 +966,7 @@ still technically enough free space on the SD card.</p>
 <p>For this reason, and also because it’s even easier overall, I recommend
 switching to <a href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#using-date-and-time-as-filename">naming files after the date</a>,
 which is something that I didn’t know was possible until very recently!</p>
-<h2 id="using-date-and-time-as-filename" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#using-date-and-time-as-filename">Using date and time as filename</a></h2>
+<h2 id="using-date-and-time-as-filename" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#using-date-and-time-as-filename"><span>Using date and time as filename</span></a></h2>
 <p>If you want something more deterministic to name files that the default
 strategy of incrementing a counter that resets every time you empty the
 SD card, I recommend switching to using the date file naming strategy
@@ -862,7 +978,7 @@ instead.</p>
   </a>
   <figcaption>From the operation manual</figcaption>
 </figure>
-<h2 id="hot-shoe-mount" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#hot-shoe-mount">Hot shoe mount</a></h2>
+<h2 id="hot-shoe-mount" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#hot-shoe-mount"><span>Hot shoe mount</span></a></h2>
 <p>Because I often record <a href="https://www.youtube.com/FunkyVal">YouTube videos</a>,
 I like to mount my H2n on top of my camera to get high quality audio in
 my videos.</p>
@@ -886,7 +1002,7 @@ even though it’s a bit more expensive than what I’d like to pay for a
 camera strap, it’s super simple to attach and detach and that would make
 my life much easier.</p>
 </div>
-<h2 id="wind-muff" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#wind-muff">Wind muff</a></h2>
+<h2 id="wind-muff" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#wind-muff"><span>Wind muff</span></a></h2>
 <p>A wind muff is a must for outdoor recording especially if it’s a bit
 windy. This is <a href="https://amzn.to/3lYlpcQ">the one I use</a>, it’s for the
 H4n but works perfectly on the H2n as well!</p>
@@ -909,7 +1025,7 @@ it’s “H4n” and “H4n Pro” furs, not a “Pro Fur™”. 😂</p>
 <p>Zoom also provides one as part of their <a href="https://amzn.to/3i0GnqA">H2n accessory pack</a>,
 and if you’re going to buy a few of the items that are part of it, it
 might be cheaper to just get the pack!</p>
-<h2 id="mic-stand-adapter" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#mic-stand-adapter">Mic stand adapter</a></h2>
+<h2 id="mic-stand-adapter" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#mic-stand-adapter"><span>Mic stand adapter</span></a></h2>
 <p>Another thing that’s part of the <a href="https://amzn.to/3i0GnqA">accessory pack</a>
 that I didn’t get but probably should have, is the <a href="https://amzn.to/39G0mWF">mic stand adapter</a>.</p>
 <figure class="center">
@@ -940,7 +1056,7 @@ mount the Zoom on the whole thing.</li>
 </ul>
 <p>Here’s an awesome article on <a href="https://www.lewitt-audio.com/blog/do-i-need-a-shock-mount-and-a-pop-filter-for-my-microphone">why a shock mount and pop filter are important</a>
 if you’re not sure if you need them or not.</p>
-<h2 id="use-as-an-audio-interface" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#use-as-an-audio-interface">Use as an audio interface</a></h2>
+<h2 id="use-as-an-audio-interface" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#use-as-an-audio-interface"><span>Use as an audio interface</span></a></h2>
 <p>If you have the proper cable, you can connect your H2n to your computer
 via USB and use it as an audio interface, meaning that you can capture
 sound from it directly from a screen recording or from your
@@ -973,7 +1089,7 @@ Zoom!</p>
 <figure class="center">
   <img alt="H2n as an aggregate defice with another sound card" src="https://www.codejam.info/img/2021/09/h2n/aggregate-device.png">
 </figure>
-<h2 id="record-motorcycle-sound-rj-style" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#record-motorcycle-sound-rj-style">Record motorcycle sound, RJ style</a></h2>
+<h2 id="record-motorcycle-sound-rj-style" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#record-motorcycle-sound-rj-style"><span>Record motorcycle sound, RJ style</span></a></h2>
 <p>As I mentioned earlier <a href="https://www.youtube.com/c/royaljordanianR">Royal Jordanian</a>
 is a famous motorcycle YouTuber, and makes some of the best sounding
 motorcycle videos out there.</p>
@@ -1011,7 +1127,7 @@ unusable. Maybe start around 5 and go up or down from there!</p>
 use to power it on but sliding it up). This will make sure that any
 accidental contact with buttons around the mic won’t stop the recording
 or open menus and change random things there.</p>
-<h2 id="the-potholder-trick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#the-potholder-trick">The potholder trick</a></h2>
+<h2 id="the-potholder-trick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#the-potholder-trick"><span>The potholder trick</span></a></h2>
 <p>Lastly, I’ll share with you a small trick that I use when I put the Zoom
 on a hard surface in front of me, like a table or a desk.</p>
 <p>If you just leave it directly on the hard surface, it’ll pick up all the
@@ -1024,7 +1140,7 @@ overall!</p>
 <figure class="center">
   <img alt="Potholder trick" src="https://www.codejam.info/img/2021/09/h2n/potholder.jpg">
 </figure>
-<h2 id="zooming-out" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#zooming-out">Zooming out</a></h2>
+<h2 id="zooming-out" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#zooming-out"><span>Zooming out</span></a></h2>
 <p>That’s it for today! I hope that you learnt a thing or two today thanks
 to this post. Consider subscribing to my <a href="https://www.youtube.com/FunkyVal">YouTube channel</a>
 where I also share video versions of those articles (and much more).
@@ -1050,7 +1166,7 @@ protocol with any compatible certificate authority.</p>
 authorities, but I personally use <a href="https://zerossl.com/">ZeroSSL</a> which
 is another ACME-compatible authority to provide free certificates.</p>
 </div>
-<h2 id="why-do-i-spawn-debian-vms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-spawn-debian-vms">Why do I spawn Debian VMs?</a></h2>
+<h2 id="why-do-i-spawn-debian-vms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-spawn-debian-vms"><span>Why do I spawn Debian VMs?</span></a></h2>
 <p>Let’s start with the why I’m doing that. See, Google Cloud has
 <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">a cool thing</a>
 where they allow you to run a <code>e2-micro</code> instance for free per billing
@@ -1062,12 +1178,12 @@ or lightweight project like this blog.</p>
 <p>Google Cloud defaults their VM image to latest stable Debian, which I
 find to be a good base for a server when you don’t want to spend a lot
 of time setting things up and don’t want to think too much about it.</p>
-<h2 id="why-do-i-install-nginx-and-let-s-encrypt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-install-nginx-and-let-s-encrypt">Why do I install nginx and Let’s Encrypt?</a></h2>
+<h2 id="why-do-i-install-nginx-and-let-s-encrypt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-install-nginx-and-let-s-encrypt"><span>Why do I install nginx and Let’s Encrypt?</span></a></h2>
 <p>Most of the time I spawn such a VM, it’s to run some kind of web
 service over HTTPS. nginx is my favorite web server, and ACME is my
 favorite way to manage TLS certificates (see note above about my usage
 of the term “Let’s Encrypt”).</p>
-<h2 id="what-about-infrastructure-as-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#what-about-infrastructure-as-code">What about infrastructure as code?</a></h2>
+<h2 id="what-about-infrastructure-as-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#what-about-infrastructure-as-code"><span>What about infrastructure as code?</span></a></h2>
 <p>I won’t go into this topic in this blog post because there’s a fuckton
 of ways you could want to code your infrastructure and provision your
 servers depending on your needs.</p>
@@ -1077,7 +1193,7 @@ whatever tools you use! Personally, my favorite provisioning tool is
 explanations about everything it’s doing.</p>
 <p>Now the context is set, let’s get into how I set up everything in a
 minimalistic way (I like to keep things simple).</p>
-<h2 id="preventing-the-bloat-on-debian" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preventing-the-bloat-on-debian">Preventing the bloat on Debian</a></h2>
+<h2 id="preventing-the-bloat-on-debian" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preventing-the-bloat-on-debian"><span>Preventing the bloat on Debian</span></a></h2>
 <p>First things first, I start every of my Debian installations by adding
 this <code>apt.conf</code> I shared on this blog over 7 years ago, to <a href="https://www.codejam.info/2014/09/keeping-debian-clean-and-minimal.html">keep Debian clean and minimal</a>.</p>
 <p>The gist of it is that by default Debian packages can come with
@@ -1127,14 +1243,14 @@ purge the dangling configuration files with the <a href="https://askubuntu.com/a
 </code></pre>
 <p>This will purge the configuration files of all packages that were ever
 deinstalled and left with existing configuration files in place.</p>
-<h2 id="installing-the-essentials" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-essentials">Installing the essentials</a></h2>
+<h2 id="installing-the-essentials" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-essentials"><span>Installing the essentials</span></a></h2>
 <p>In most Unix systems that I use, I’ll install the following packages:</p>
 <pre><code class="hljs language-sh">apt install tmux vim git htop ca-certificates
 </code></pre>
 <p>On top of that, on Debian I like to add the <code>build-essential</code> package if
 I need to compile anything, as it depends on the most common tools that
 are necessary to build software from source.</p>
-<h2 id="my-minimalist-nginx-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#my-minimalist-nginx-configuration">My minimalist nginx configuration</a></h2>
+<h2 id="my-minimalist-nginx-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#my-minimalist-nginx-configuration"><span>My minimalist nginx configuration</span></a></h2>
 <p>Let’s start with installing nginx.</p>
 <pre><code class="hljs language-sh">apt install nginx
 </code></pre>
@@ -1150,7 +1266,7 @@ mv nginx2 nginx
 </code></pre>
 <p>This wipes all the default nginx configuration and only keeps the
 <code>mime.types</code> file which I’ll include in my custom configuration.</p>
-<h3 id="trimmed-down-debian-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#trimmed-down-debian-configuration">Trimmed-down Debian configuration</a></h3>
+<h3 id="trimmed-down-debian-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#trimmed-down-debian-configuration"><span>Trimmed-down Debian configuration</span></a></h3>
 <p>Speaking about my custom configuration, here’s the base. Everything
 there is the parts of the default <code>nginx.conf</code> on Debian that I kept.
 I’ll post my custom additions after.</p>
@@ -1184,7 +1300,7 @@ I’ll post my custom additions after.</p>
     <span class="hljs-attribute">gzip</span> <span class="hljs-literal">on</span>;
 }
 </code></pre>
-<h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#val-s-essential-tweaks">Val’s essential tweaks</a></h3>
+<h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#val-s-essential-tweaks"><span>Val’s essential tweaks</span></a></h3>
 <p>From there, I tweak a few things.</p>
 <pre><code class="hljs language-diff">     sendfile on;
      tcp_nopush on;
@@ -1225,7 +1341,7 @@ more that makes sense to you here.</li>
 <code>Content-Type</code> response header, e.g. <code>Content-Type: text/html; charset=utf-8</code>.</li>
 </ul>
 <p>But we’re still missing a very important part. The TLS configuration!</p>
-<h3 id="tls-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#tls-settings">TLS settings</a></h3>
+<h3 id="tls-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#tls-settings"><span>TLS settings</span></a></h3>
 <p>I use <a href="https://ssl-config.mozilla.org/">Mozilla’s SSL configuration generator</a>
 for that, with the intermediate setting, which gives me the following
 (comments removed):</p>
@@ -1268,7 +1384,7 @@ reload).</p>
 <span class="hljs-deletion">-ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
 <span class="hljs-addition">+# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
 </code></pre>
-<h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#default-server-with-https-and-www-redirect">Default server with HTTPS and <code>www</code> redirect</a></h3>
+<h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#default-server-with-https-and-www-redirect"><span>Default server with HTTPS and <code>www</code> redirect</span></a></h3>
 <p>I like <code><strong>http://</strong>www.codejam.info/</code> to redirect to
 <code><strong>https://</strong>www.codejam.info/</code>, and also
 <code>https://codejam.info/</code> to redirect to <code>https://<strong>www.</strong>codejam.info/</code>.
@@ -1378,7 +1494,7 @@ let us generate our initial certificates:</p>
 }
 </code></pre>
 </div>
-<h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#enabling-starting-or-reloading-nginx">Enabling, starting or reloading nginx</a></h3>
+<h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#enabling-starting-or-reloading-nginx"><span>Enabling, starting or reloading nginx</span></a></h3>
 <p>First, let’s test the configuration:</p>
 <pre><code class="hljs language-sh">nginx -t
 </code></pre>
@@ -1401,7 +1517,7 @@ running.</p>
 <p>While in this state we don’t have proper TLS certificates to handle
 HTTPS just yet, we have everything we need to automatically generate and
 renew TLS certificates with the ACME protocol.</p>
-<h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#managing-tls-certificates-with-acme-sh">Managing TLS certificates with acme.sh</a></h2>
+<h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#managing-tls-certificates-with-acme-sh"><span>Managing TLS certificates with acme.sh</span></a></h2>
 <p><abbr title="Automatic certificate management environment">ACME</abbr>
 is the protocol behind Let’s Encrypt. <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
 is an ACME client written in pure Unix shell. It’s simple and
@@ -1411,7 +1527,7 @@ client that Let’s Encrypt recommends to use.</p>
 instructions still do some magic that I would rather avoid, so I’ll
 present here my modified installation method, which doesn’t have any
 magic and where you’re fully in control of every step.</p>
-<h3 id="setting-up-a-restricted-user" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#setting-up-a-restricted-user">Setting up a restricted user</a></h3>
+<h3 id="setting-up-a-restricted-user" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#setting-up-a-restricted-user"><span>Setting up a restricted user</span></a></h3>
 <p>We’ll do a custom installation of <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
 so that it runs <strong>with its own restricted user</strong> based on <a href="https://gist.github.com/lachesis/943769f3fac740d5848352752ac08741">this Gist</a>,
 because running it as root like they show out of the box is
@@ -1459,7 +1575,7 @@ We make sure to run a login shell using <code>-</code>.</p>
 <pre><code class="hljs language-sh">su -s /bin/bash - acme
 </code></pre>
 <p>We’ll end up in the home directory which we set earlier to <code>/var/lib/acme</code>.</p>
-<h3 id="installation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installation">Installation</a></h3>
+<h3 id="installation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installation"><span>Installation</span></a></h3>
 <p>We can now follow the official <a href="https://github.com/acmesh-official/acme.sh#2-or-install-from-git">install from Git instructions</a>
 because piping scripts from the web into <code>sh</code> is a terrible idea.</p>
 <pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/acmesh-official/acme.sh
@@ -1502,7 +1618,7 @@ that the certificate authority doesn’t get a huge burst of requests at
 the same second every day, which I think is a good practice to keep.</p>
 <p>From there, the commands we’ll run are the same as the recommended ones
 in the acme.sh readme.</p>
-<h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preparing-the-certificates-directory-and-dh-parameters">Preparing the certificates directory and DH parameters</a></h2>
+<h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preparing-the-certificates-directory-and-dh-parameters"><span>Preparing the certificates directory and DH parameters</span></a></h2>
 <p>I like to install my certificates in <code>/etc/acme</code> which we created
 earlier, with a directory per domain, but this is totally arbitrary.</p>
 <pre><code class="hljs language-sh">mkdir /etc/acme/codejam.info
@@ -1519,7 +1635,7 @@ provided by Mozilla, unless the key size is considered short (1024 bits
 or less as of today’s standards), then using shared DH parameters could
 introduce more security risks than it would prevent.</p>
 </div>
-<h3 id="generating-our-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#generating-our-certificate">Generating our certificate</a></h3>
+<h3 id="generating-our-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#generating-our-certificate"><span>Generating our certificate</span></a></h3>
 <pre><code class="hljs language-sh">./acme.sh --issue -d codejam.info -d www.codejam.info -w /var/www/challenges
 </code></pre>
 <p>This will issue a certificate for <code>codejam.info</code> with <code>www.codejam.info</code>
@@ -1528,7 +1644,7 @@ subsequent <code>-d</code> parameters), meaning that the certificate will be val
 for all of those domains. You can also generate a wildcard certificate
 but this requires going through automated DNS validation which I won’t
 cover in this blog post.</p>
-<h3 id="installing-the-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-certificate">Installing the certificate</a></h3>
+<h3 id="installing-the-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-certificate"><span>Installing the certificate</span></a></h3>
 <p>In the previous step, acme.sh generated the key and certificate files in
 its own state directory, but it’s not recommended to hardcode those
 paths. That’s why we configure certificate installation paths as well as
@@ -1566,7 +1682,7 @@ reference those files we just installed.</p>
 <span class="hljs-addition">+ssl_trusted_certificate /etc/acme/codejam.info/chain.pem;</span>
 </code></pre>
 <p>Verify the config is valid with <code>nginx -t</code> and run a final <code>systemctl reload nginx</code> to apply the changes.</p>
-<h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#bonus-http-basic-authentication">Bonus: HTTP basic authentication</a></h2>
+<h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#bonus-http-basic-authentication"><span>Bonus: HTTP basic authentication</span></a></h2>
 <p>You don’t want your website to be public just yet but still want to test
 it from there? Add basic authentication to it!</p>
 <pre><code class="hljs language-sh">apt install apache2-utils
@@ -1582,13 +1698,13 @@ to add authentication to:</p>
 <p>Here, “private” is the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate#directives">basic authentication <code>realm</code> parameter</a>
 and could be literally anything. It doesn’t even seem to be shown in
 browser UIs anymore so it doesn’t really matter.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>At that point, you should have a working HTTPS server with auto-renewed
 certificates. I hope this post was useful to you!</p>
 <div class="note">
 <p><strong>Note:</strong> if you’re looking to integrate Let’s Encrypt or similar on
-your server but this post was too technical for you, <a href="https://www.codejam.info/val.html#links">let me know</a>,
-I’m available for <a href="https://www.codejam.info/resources/freelance.html">contracting</a> projects and
+your server but this post was too technical for you, <a href="https://www.codejam.info/val.html#contact">let me know</a>,
+I’m available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects and
 I’ll be happy to help you with that. ✌️</p>
 </div>
 ]]></content>
@@ -1623,7 +1739,7 @@ called with a <a href="https://vercel.com/account/tokens">regular user token</a>
 like the ones the CLI and web app use.</p>
 <p>This means that we’ll need to create our own Vercel integration in order
 to have an integration token that will let us call the log drains API.</p>
-<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#how-does-a-vercel-integration-work">How does a Vercel integration work</a></h2>
+<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#how-does-a-vercel-integration-work"><span>How does a Vercel integration work</span></a></h2>
 <ul>
 <li>A Vercel integration is a web app hosted on your own domain, which
 needs to respond to a “Vercel callback” page.</li>
@@ -1652,10 +1768,10 @@ Vercel integration.</p>
 <div class="note">
 <p><strong>Note:</strong> if I’m wrong with that assumption, and you would pay a monthly
 fee for a service that allows you to fully manage your Vercel log drains
-with arbitrary URLs, <a href="https://www.codejam.info/val.html#links">let me know</a>. If there’s enough
+with arbitrary URLs, <a href="https://www.codejam.info/val.html#contact">let me know</a>. If there’s enough
 demand I’ll consider building something!</p>
 </div>
-<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#creating-our-own-vercel-integration">Creating our own Vercel integration</a></h2>
+<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#creating-our-own-vercel-integration"><span>Creating our own Vercel integration</span></a></h2>
 <p>For this, head to the <a href="https://vercel.com/dashboard/integrations/console">Vercel integrations console</a>,
 which lists you all the integrations that you have created, and allows
 you to create new ones.</p>
@@ -1667,7 +1783,7 @@ going to host it on.</p>
 <p>You can ignore the webhook and configuration URLs unless you want to
 build a stateful version that allows editing the log drains after
 installation (then you’d need the configuration URL specifically).</p>
-<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-the-form">Making the form</a></h3>
+<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-the-form"><span>Making the form</span></a></h3>
 <p>We’ll go for a very basic HTML form that allows selecting between
 <code>json</code>, <code>ndjson</code> and <code>syslog</code> as the log drain type, which are the only
 formats supported by Vercel as of writing, as well as the URL to the log
@@ -1686,7 +1802,7 @@ drain we want to add.</p>
 </code></pre>
 <p>See the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/form.html">full HTML</a>
 with a tiny layer of CSS.</p>
-<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#serving-the-form">Serving the form</a></h3>
+<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#serving-the-form"><span>Serving the form</span></a></h3>
 <p>I’ll use <a href="https://www.fastify.io/">Fastify</a> to handle the HTTP requests,
 but <a href="https://expressjs.com/">Express</a> would have worked just fine for
 this too.</p>
@@ -1719,7 +1835,7 @@ built on <code>/vercel/callback</code>.</p>
 redirected from Vercel integration installation, and we just show a
 simple message to say hello, because the form wouldn’t be useful when
 it’s not called from Vercel.</p>
-<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#handling-the-form">Handling the form</a></h3>
+<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#handling-the-form"><span>Handling the form</span></a></h3>
 <p>First, we’ll need to trade the <code>code</code> parameter for a Vercel OAuth
 access token. We can do that by calling the <code>https://api.vercel.com/v2/oauth/access_token</code>.</p>
 <p>This requires us to configure the OAuth client ID and client secret that
@@ -1803,7 +1919,7 @@ you want for your Vercel apps.</p>
 only on certain apps and not globally (see other <a href="https://vercel.com/docs/rest-api#integrations/log-drains/create-a-log-drain/request-parameters">request parameters</a>),
 or make it stateful with the option to edit and remove existing log
 drains without having to reinstall the integration.</p>
-<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-a-simple-log-drain-with-nginx">Making a simple log drain with nginx</a></h2>
+<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-a-simple-log-drain-with-nginx"><span>Making a simple log drain with nginx</span></a></h2>
 <p>Now, we only solved half of the problem. We can configure any URL as a
 log drain on our Vercel apps, but we don’t have a URL to put there yet!
 Most of the logging software as a service apps already have
@@ -1837,7 +1953,7 @@ and the other one (fully native) leverages a hack with the <code>proxy_pass</cod
 directive.</p>
 <p>In both cases, you’ll be able to configure <code>https://your.domain/vercel/drain</code>
 as a Vercel log drain. I find that NDJSON works best with this format.</p>
-<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-echo-read-request-body">With <code>echo_read_request_body</code></a></h3>
+<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-echo-read-request-body"><span>With <code>echo_read_request_body</code></span></a></h3>
 <pre><code class="hljs language-nginx"><span class="hljs-comment"># Make sure this is loaded, method may vary depending on your setup.</span>
 <span class="hljs-attribute">load_module</span> modules/ngx_http_echo_module.so;
 
@@ -1856,7 +1972,7 @@ as a Vercel log drain. I find that NDJSON works best with this format.</p>
     }
 }
 </code></pre>
-<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-proxy-pass-hack">With <code>proxy_pass</code> hack</a></h3>
+<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-proxy-pass-hack"><span>With <code>proxy_pass</code> hack</span></a></h3>
 <p>If you don’t want to load <code>ngx_http_echo_module</code>, you can instead use
 the native <code>proxy_pass</code> directive to force nginx to read the request
 body.</p>
@@ -1883,7 +1999,7 @@ become accessible to our log format.</p>
     }
 }
 </code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>You should now have everything you need to store your Vercel logs in
 plain text files on a Google Cloud free tier VM (or wherever else you
 wanted to)!</p>
@@ -1892,8 +2008,8 @@ with the data to get all the stats and insights that you want. And all
 of that for free (or nearly).</p>
 <div class="note">
 <p><strong>Note:</strong> if you need to forward your Vercel logs to a custom endpoint
-but this article was too technical for you, feel free to <a href="https://www.codejam.info/val.html#links">contact me</a>,
-I’m available for <a href="https://www.codejam.info/resources/freelance.html">freelance work</a> and I’ll be
+but this article was too technical for you, feel free to <a href="https://www.codejam.info/val.html#contact">contact me</a>,
+I’m available for <a href="https://www.codejam.info/freelance.html">freelance work</a> and I’ll be
 happy to help you with that. ✌️</p>
 </div>
 ]]></content>
@@ -1917,13 +2033,13 @@ hosting services and their options to get access to server-side
 analytics or logs. Then, I’ll show you <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">in the second part</a>
 how to retrieve logs on a Vercel app, which is the only service I found
 to provide HTTP logs as part of their free offer!</p>
-<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#github-pages">GitHub Pages</a></h2>
+<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#github-pages"><span>GitHub Pages</span></a></h2>
 <p><a href="https://pages.github.com/">GitHub Pages</a> is the easiest option to host
 a static website for free, especially if you’re already working with
 GitHub, but it doesn’t have an option to access HTTP logs.</p>
 <p>The only method they document is using Google Analytics or a similar
 script, but that’s not an acceptable solution to me. Let’s move on.</p>
-<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#netlify">Netlify</a></h2>
+<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#netlify"><span>Netlify</span></a></h2>
 <p><a href="https://www.netlify.com/">Netlify</a> is my next favorite way to deploy a
 static website. They also have a <a href="https://www.netlify.com/products/analytics/">Netlify Analytics</a>,
 product, an analytics platform based on server logs, which is exactly
@@ -1936,7 +2052,7 @@ only get on the server side.</p>
 <p>But they price that feature at $9 per month per site, which to be honest
 is pretty decent if you have a website that’s generating some cash, but
 my blog is not and my current budget is closer to $0.</p>
-<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#cloudflare">Cloudflare</a></h2>
+<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#cloudflare"><span>Cloudflare</span></a></h2>
 <p><a href="https://www.cloudflare.com/">Cloudflare</a> also has a free static hosting
 offer. They’ve got a <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Analytics</a>
 product, but the free version is only powered by a client-side script,
@@ -1947,7 +2063,7 @@ the “pro” plan that’s $20 per month. Too much for me.</p>
 which seems like it would at least give access to raw HTTP logs, but the
 pricing is not mentioned and you need to contact their sales department
 to maybe get access to it. Doesn’t look good.</p>
-<h2 id="render" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#render">Render</a></h2>
+<h2 id="render" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#render"><span>Render</span></a></h2>
 <p><a href="https://render.com/">Render</a> is another service with free static
 hosting, and a it’s a very well built product. Simple and efficient. Out
 of all the websites in this list, it’s the one with my favorite UI so
@@ -1958,7 +2074,7 @@ hosted Git provider through OAuth like it’s the case with <a href="https://www
 <p>Sadly, while you can <a href="https://render.com/docs/log-streams">configure a syslog drain</a>,
 it only forward application logs and doesn’t include edge load balancer
 HTTP logs, which is the only thing I care about.</p>
-<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#google-cloud-free-tier-vm">Google Cloud free tier VM</a></h2>
+<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#google-cloud-free-tier-vm"><span>Google Cloud free tier VM</span></a></h2>
 <p>While it’s very different from the other managed services I mention in
 this list, <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">Google Cloud</a>
 allows you to run a <code>e2-micro</code> instance constantly for free.</p>
@@ -1983,7 +2099,7 @@ like me, you find it to be exciting and a lot of fun, it’s definitely a
 good solution. That being said you’ll also be responsible of managing
 the VM, keeping it up-to-date, and fixing any issue that might happen
 with it, otherwise you website might get some downtime.</p>
-<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#vercel">Vercel</a></h2>
+<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#vercel"><span>Vercel</span></a></h2>
 <p>Finally, <a href="https://vercel.com/">Vercel</a> also has free static hosting. Yay!</p>
 <p>They even have a <a href="https://vercel.com/analytics">Vercel Analytics</a>
 product, but it’s mostly focused on performance, and the data is
@@ -2029,7 +2145,7 @@ traffic through HTTP logs (the only proper source of truth).</p>
 article on <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">how to get access to raw HTTP logs on a Vercel website</a>.
 Check it out!</p>
 </div>
-<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#the-problem-with-vercel">The problem with Vercel</a></h2>
+<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#the-problem-with-vercel"><span>The problem with Vercel</span></a></h2>
 <p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
 <p>I like to keep things simple and minimal, and have the least amount of
 noise possible. Vercel likes to make things complicated, over-engineered
@@ -2044,17 +2160,17 @@ anything else but hey, it was once hosted on GitHub Pages after all).</p>
 why I commit the HTML files on a separate branch, instead of asking
 Vercel or any other hosting platform to compile everything from <code>master</code>
 on every deploy. This keeps things <em>fast as fuck</em> and low energy.</p>
-<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#preview-deployments">Preview deployments</a></h3>
+<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#preview-deployments"><span>Preview deployments</span></a></h3>
 <p>By default, Vercel expects every branch to be deployable, and they have
 that cool feature of automatically deploying every single commit to a
 random URL (preview deployments). I don’t need preview deployments for
 my blog, but there’s no way to turn them off.</p>
-<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#very-verbose-vercel">Very verbose Vercel</a></h3>
+<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#very-verbose-vercel"><span>Very verbose Vercel</span></a></h3>
 <p>They also have the annoying habit of posting a comment on every GitHub
 PR and commit with the deployment URL by default. I hate noise and this
 is pure noise for me. Luckily there’s a non-intuitive way of turning it
 off and I’ll show you how.</p>
-<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#managing-garbage">Managing garbage</a></h3>
+<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#managing-garbage"><span>Managing garbage</span></a></h3>
 <p>Finally, because each PR and commit is going to trigger a deployment
 with a not-so-temporary URL. This creates a lot of old, unused, garbage
 deployments, and Vercel doesn’t know when you don’t need them anymore
@@ -2064,7 +2180,7 @@ not the latest production build).</p>
 command that does just that for you (also sad, but less sad), and I’ll
 show you how.</p>
 <p>Let’s get into it.</p>
-<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#turning-off-preview-deployments-kinda">Turning off preview deployments (kinda)</a></h2>
+<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#turning-off-preview-deployments-kinda"><span>Turning off preview deployments (kinda)</span></a></h2>
 <p>I guess that the whole point of Vercel is to offer preview deployments,
 so they didn’t really consider the use case where you would want to
 remove them.</p>
@@ -2095,7 +2211,7 @@ production branch, in order to trigger a build.</p>
 <p>The ignored build will still show up in your deployments list as
 “cancelled” deployments, and there’s no way around that, but I show you
 below <a href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#garbage-collecting-dangling-deployments">how to garbage collect them</a>.</p>
-<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#getting-rid-of-bot-comments">Getting rid of bot comments</a></h2>
+<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#getting-rid-of-bot-comments"><span>Getting rid of bot comments</span></a></h2>
 <p>By default Vercel will comment on every PR and commit with the link to
 the deployment.</p>
 <p>To avoid that, create a <code>vercel.json</code> file in every branch where you
@@ -2110,7 +2226,7 @@ want to turn this off, with the following content:</p>
 <p><strong>Note:</strong> if you used the previous trick to only run builds in the
 production branch, you only need to add this configuration there.</p>
 </div>
-<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#garbage-collecting-dangling-deployments">Garbage collecting dangling deployments</a></h2>
+<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#garbage-collecting-dangling-deployments"><span>Garbage collecting dangling deployments</span></a></h2>
 <p>Vercel knows to create preview deployments, but doesn’t know when to
 delete them. This means that you need to more or less manually delete
 the old preview deployments that are not needed anymore.</p>
@@ -2132,7 +2248,7 @@ command to remove deployments.</p>
   <img alt="Clean deployments" src="https://www.codejam.info/img/2021/09/vercel-clean-deployments.png">
   <figcaption>Now this is better!</figcaption>
 </figure>
-<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#final-thoughts">Final thoughts</a></h2>
+<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#final-thoughts"><span>Final thoughts</span></a></h2>
 <p>I’m not blaming Vercel for all of this, I’m happy they provide this
 service for free and <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html">they’re the only ones</a>
 to include HTTP logs access in the free offer.</p>
@@ -2160,7 +2276,7 @@ a token that’s exchanged through a <a href="https://pancakeswap.finance/">Panc
 pool, but my understanding is that this should be applicable with pretty
 much the same code to <a href="https://ethereum.org/en/">Ethereum</a> and
 <a href="https://uniswap.org/">Uniswap</a>.</p>
-<h2 id="first-attempt-trying-to-scrape-existing-sites" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-attempt-trying-to-scrape-existing-sites">First attempt: trying to scrape existing sites</a></h2>
+<h2 id="first-attempt-trying-to-scrape-existing-sites" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-attempt-trying-to-scrape-existing-sites"><span>First attempt: trying to scrape existing sites</span></a></h2>
 <p>Sites like <a href="https://poocoin.app/tokens/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">PooCoin</a>
 and <a href="https://www.dextools.io/app/pancakeswap/pair-explorer/0x194850932e48753cbeedf0af85022152148addc6">DEXTools</a>
 show a live graph of the token transactions, which is exactly the kind
@@ -2172,7 +2288,7 @@ for requests and responses that’s totally obscure.</p>
 <p>Googling that domain leads me to Binance’s <a href="https://docs.binance.org/smart-chain/developer/rpc.html">JSON-RPC</a>
 documentation, but it’s not instantly clear from this page or the linked
 resources how to concretely encode and decode the binary protocol.</p>
-<h2 id="filling-the-gap" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#filling-the-gap">Filling the gap</a></h2>
+<h2 id="filling-the-gap" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#filling-the-gap"><span>Filling the gap</span></a></h2>
 <p>I grab a beer with my friend <a href="https://www.damiengonot.com/">Damien</a>
 who’s much more knowledgable than me about cryptocurrencies, and he
 instantly recognizes the <a href="https://ethereum.org/en/developers/docs/apis/json-rpc/">Ethereum JSON-RPC API</a>,
@@ -2188,7 +2304,7 @@ to access it.</p>
 <p>With that, there’s a number of ways we can determine the value of a
 token, and we’ll explore two below: dividing the pool balances, and
 polling the latest transactions.</p>
-<h2 id="first-method-dividing-the-pool-balances" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-method-dividing-the-pool-balances">First method: dividing the pool balances</a></h2>
+<h2 id="first-method-dividing-the-pool-balances" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-method-dividing-the-pool-balances"><span>First method: dividing the pool balances</span></a></h2>
 <p>The token I’m interested in is exchanged with PancakeSwap, a fork of
 Uniswap for the Binance Smart Chain. Uniswap and PancakeSwap allow
 trading (swapping) between two tokens with smart contracts through a
@@ -2208,7 +2324,7 @@ applying that to the CheCoin value.</p>
 <p>Now, this is great, but how to do that concretely? Let’s start by doing
 it from Etherscan (for Ethereum) or BscScan (Etherscan fork for the
 Binance Smart Chain) and then port that logic to web3.js.</p>
-<h3 id="doing-the-operation-manually-on-bscscan" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#doing-the-operation-manually-on-bscscan">Doing the operation manually on BscScan</a></h3>
+<h3 id="doing-the-operation-manually-on-bscscan" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#doing-the-operation-manually-on-bscscan"><span>Doing the operation manually on BscScan</span></a></h3>
 <p>While the PancakeSwap UI conveniently gives us the address of the
 CheCoin / wBNB pool, let’s figure it as if we only knew the address of
 the CheCoin token contract: <code>0x54626300818e5c5b44db0fcf45ba4943ca89a9e2</code>.</p>
@@ -2238,7 +2354,7 @@ CheCoin balance, we get the current CheCoin price in wBNB. At the time
 of writing:</p>
 <pre><code class="hljs">898088729263450811395 / 19062285402212133851022386471 = 0.000000047113381754
 </code></pre>
-<h3 id="a-note-about-token-decimals" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-token-decimals">A note about token decimals</a></h3>
+<h3 id="a-note-about-token-decimals" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-token-decimals"><span>A note about token decimals</span></a></h3>
 <p>This works here because it happens that both CheCoin and wBNB tokens use
 18 decimals internally. There is <a href="https://ethereum.stackexchange.com/questions/99747/what-unit-are-the-uniswap-pancakeswap-router-functions-expecting">no guarantee</a>
 that the tokens will use 18 decimals, even though it seems to be pretty
@@ -2255,7 +2371,7 @@ us:</p>
 
 </code></pre>
 <p>Which is an accurate reading for the current price of PooCoin in wBNB.</p>
-<h3 id="a-note-about-the-pair-address" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-the-pair-address">A note about the pair address</a></h3>
+<h3 id="a-note-about-the-pair-address" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-the-pair-address"><span>A note about the pair address</span></a></h3>
 <p>We saw earlier that the CheCoin token included a <code>uniswapV2Pair</code>
 function to get the pair address, but it’s not the case of every token,
 for example PooCoin doesn’t have any.</p>
@@ -2270,7 +2386,7 @@ wBNB (<code>0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c</code>). It returns
 the address of the <a href="https://pancakeswap.info/pool/0x0c5da0f07962dd0256c079248633f2b43cad6f62">PooCoin / wBNB pool</a>.</p>
 <p>Now we know how to calculate the price of the token we want, let’s
 script this with web3.js.</p>
-<h3 id="getting-the-contracts-abi" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#getting-the-contracts-abi">Getting the contracts ABI</a></h3>
+<h3 id="getting-the-contracts-abi" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#getting-the-contracts-abi"><span>Getting the contracts ABI</span></a></h3>
 <p>The first important thing here is that to be able to call methods on a
 smart contract, you need to know the contract <abbr title="Application binary interface">ABI</abbr>.</p>
 <p>This is typically a JSON file, that BscScan shows at the bottom of the <a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">contract tab</a>.</p>
@@ -2289,7 +2405,7 @@ contracts. Copy the ABI JSON and put them respectively in
 <p>I you need to do that programmatically, you can check out the <a href="https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">BscScan API</a>
 or <a href="https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">Etherscan API</a>
 that feature an endpoint to fetch a given contract ABI.</p>
-<h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#calling-the-smart-contracts">Calling the smart contracts</a></h3>
+<h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#calling-the-smart-contracts"><span>Calling the smart contracts</span></a></h3>
 <p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
 <p>If you read everything I wrote until now, the code should be
 self-explanatory.</p>
@@ -2340,7 +2456,7 @@ main()
 <p>This displays the latest block timestamp, the current CheCoin balance,
 wBNB balance, then the price of CheCoin in wBNB, and the price of wBNB
 in CheCoin.</p>
-<h2 id="second-method-polling-the-latest-transactions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#second-method-polling-the-latest-transactions">Second method: polling the latest transactions</a></h2>
+<h2 id="second-method-polling-the-latest-transactions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#second-method-polling-the-latest-transactions"><span>Second method: polling the latest transactions</span></a></h2>
 <p>The pool balances method works well, and while the value we get matches
 exactly the one displayed by PancakeSwap on the pool view, it can differ
 a bit from the one we see on PooCoin, because the latter uses the price
@@ -2467,7 +2583,7 @@ transaction hash and block number.</p>
 
 <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
 </code></pre>
-<h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#actually-polling">Actually polling</a></h3>
+<h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#actually-polling"><span>Actually polling</span></a></h3>
 <p>The previous script will only log the latest transaction once, then
 exit. If you want to poll in real time the latest transactions and log
 them to the console, it’s easily done with an infinite loop.</p>
@@ -2492,7 +2608,7 @@ them to the console, it’s easily done with an infinite loop.</p>
 current volume of transactions of the token you’re watching), making
 sure to request the next block in the next poll to avoid duplicates
 (because the <code>fromBlock</code> parameter is otherwise inclusive).</p>
-<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#final-word">Final word</a></h2>
+<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#final-word"><span>Final word</span></a></h2>
 <p>While everything looked pretty complex and obscure at first sight, with
 no cryptocurrency background, it turned out to be fairly simple after
 understanding a couple concepts like liquidity pools and how to navigate
@@ -2528,7 +2644,7 @@ suspend the system after a period of inactivity.</p>
 and fixes that issue, but I didn’t like to introduce another graphical
 interface that’s not consistent with the rest of my system, and I’d
 rather not get into configuring it extensively and theming it.</p>
-<h2 id="logging-in-to-a-lock-screen" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html#logging-in-to-a-lock-screen">Logging in to a lock screen?</a></h2>
+<h2 id="logging-in-to-a-lock-screen" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html#logging-in-to-a-lock-screen"><span>Logging in to a lock screen?</span></a></h2>
 <p>Since I’m the only user of my laptop, I don’t need a fancy interface to
 select among a list of users and such, and it felt like my lock screen
 would be a perfect fit as a login screen. I use i3lock which I configure
@@ -2563,7 +2679,7 @@ for my password. I hope you find this useful!</p>
     <link href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html" />
     <id>https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html</id>
     <updated>2021-08-22T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#tldr">TLDR</a></h2>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#tldr"><span>TLDR</span></a></h2>
 <p>To get dmenu to work with emojis, you need to compile it from source
 against <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> (from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>),
 after removing the <code>iscol</code> check in <code>drw.c</code> that prevents colored fonts
@@ -2571,7 +2687,7 @@ to be used, and configuring a colored font in <code>config.h</code> or
 <code>config.def.h</code> (see patches below).</p>
 <p>Go check out <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
 that does all that work for you!</p>
-<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#the-story">The story</a></h2>
+<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#the-story"><span>The story</span></a></h2>
 <p>A couple weeks ago, during my daily procrastination routine (I like to
 procrastinate in the mornings right after meditating and taking a cold
 shower), I figured it would be nice to have some kind of emoji picker on
@@ -2591,7 +2707,7 @@ specifically for that and find <a href="https://github.com/porras/dmenu-emoji">d
 which despite the name, is actually meant to be used with Rofi, but also
 claims to work with dmenu. But when I try it with plain dmenu, the
 emojis only show up as empty squares. Not ideal.</p>
-<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#making-dmenu-show-emojis">Making dmenu show emojis</a></h2>
+<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#making-dmenu-show-emojis"><span>Making dmenu show emojis</span></a></h2>
 <p>Trying to figure that issue, I stumble upon <a href="https://youtu.be/0QkByBugq_4">this video</a>
 which explains that you need to compile dmenu from source against
 <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a>, a patched version of libXft from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>
@@ -2648,7 +2764,7 @@ an emoji font in dmenu’s source, as you can see in <a href="https://github.com
  static const char *colors[SchemeLast][2] = {
 </code></pre>
 <p>After doing so, the emojis did show up! 🎉</p>
-<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#automating-the-build">Automating the build</a></h2>
+<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#automating-the-build"><span>Automating the build</span></a></h2>
 <p>This is great, but it still takes a lot of manual steps, and needs root
 access to install libxft-bgra globally. I think this is unnecessary, and
 I figured it would be cool to compile dmenu <em>statically</em> against the
@@ -2722,7 +2838,7 @@ compiling everything.</p>
 <p>With that, a simple <code>make</code> command gives us a fully working dmenu with
 emoji support. You can find all of that (and more) in the <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
 repo I created to bundle everything together!</p>
-<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#bonus-dynamically-linked-against-a-custom-location">Bonus: dynamically linked against a custom location</a></h2>
+<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#bonus-dynamically-linked-against-a-custom-location"><span>Bonus: dynamically linked against a custom location</span></a></h2>
 <p>Out of curiosity, I wanted to see what it would take, to dynamically
 link to our patched version of libXft without installing it in the
 standard library path (e.g. <code>/usr/lib</code>).</p>
@@ -2764,7 +2880,7 @@ installed it without GRUB.</p>
 use a bootloader, just <code>efibootmgr</code>.</p>
 <p>I didn’t know this was possible, so I looked into it and quickly found
 about EFISTUB.</p>
-<h2 id="what-is-efistub" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/super-fast-boot-linux-efistub.html#what-is-efistub">What is EFISTUB</a></h2>
+<h2 id="what-is-efistub" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/super-fast-boot-linux-efistub.html#what-is-efistub"><span>What is EFISTUB</span></a></h2>
 <p><a href="https://wiki.archlinux.org/title/EFISTUB">EFISTUB</a> allows “EFI firmware
 to load the kernel as an EFI executable”. It was introduced in Linux
 3.3, released in 2012. I should have known about that before. 😅</p>
@@ -2775,7 +2891,7 @@ such as GRUB. If your motherboard has a good UEFI implementation, it
 is possible to embed the kernel parameters within a UEFI boot entry
 and for the motherboard to boot Arch directly.</p>
 </blockquote>
-<h2 id="configuring-efistub" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/super-fast-boot-linux-efistub.html#configuring-efistub">Configuring EFISTUB</a></h2>
+<h2 id="configuring-efistub" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/super-fast-boot-linux-efistub.html#configuring-efistub"><span>Configuring EFISTUB</span></a></h2>
 <p>With <code>efibootmgr</code>, you can add an EFI boot entry that contains all the
 parameters you need to properly boot the kernel, including in my case,
 LUKS encryption and hibernation.</p>
@@ -2839,7 +2955,7 @@ unrestricted access</em> to the user account, including fetching their
 Firefox Sync collections.</p>
 <p>This is unideal and we can do better. The good thing is that even though
 it wasn’t exactly easy to figure out, it’s possible.</p>
-<h2 id="logging-in-with-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#logging-in-with-oauth">Logging in with OAuth</a></h2>
+<h2 id="logging-in-with-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#logging-in-with-oauth"><span>Logging in with OAuth</span></a></h2>
 <p>The first thing we’ll need to change is logging in with OAuth instead of
 email/password.</p>
 <p>The <a href="https://github.com/mozilla/fxa-crypto-relier/tree/master/docs">fxa-crypto-relier</a>
@@ -2873,7 +2989,7 @@ an account in the local application database as needed.</li>
 <p>Sweet and simple. Since we don’t have our own OAuth credentials
 (<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">mostly because I don’t like sending emails</a>),
 we’ll <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app">keep using the client ID from the Android app</a>.</p>
-<h3 id="generating-the-authorization-url" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#generating-the-authorization-url">Generating the authorization URL</a></h3>
+<h3 id="generating-the-authorization-url" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#generating-the-authorization-url"><span>Generating the authorization URL</span></a></h3>
 <p>Let’s start by building the authorization URL. The parameters we need
 <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa#authorization-query-parameters">are listed here</a>.</p>
 <blockquote>
@@ -3028,7 +3144,7 @@ authentication. Brilliant.</p>
 URL, don’t forget to validate that the <code>state</code> parameter matches the one
 you originally passed in the authorization URL!</p>
 </div>
-<h3 id="trading-the-oauth-code-for-an-access-token" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#trading-the-oauth-code-for-an-access-token">Trading the OAuth code for an access token</a></h3>
+<h3 id="trading-the-oauth-code-for-an-access-token" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#trading-the-oauth-code-for-an-access-token"><span>Trading the OAuth code for an access token</span></a></h3>
 <p>The next step is to trade the code we get back from the OAuth flow for a
 proper token. Thanks to the <a href="https://accounts.firefox.com/.well-known/openid-configuration">OpenID Connect configuration</a>,
 we know that the token endpoint is <code>https://oauth.accounts.firefox.com/v1/token</code>.
@@ -3084,7 +3200,7 @@ password and a session token for their Firefox Account, we could easily
 compute the Sync key and hash it to <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#actually-computing-the-x-keyid-header">make the <code>X-KeyID</code> header</a>
 with the <code>keyRotationTimestamp</code>, but with our OAuth token, we can do
 none of that anymore.</p>
-<h2 id="getting-scoped-keys-the-theory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#getting-scoped-keys-the-theory">Getting scoped keys: the theory</a></h2>
+<h2 id="getting-scoped-keys-the-theory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#getting-scoped-keys-the-theory"><span>Getting scoped keys: the theory</span></a></h2>
 <p>By browsing the Firefox Ecosystem Platform, where I was already reading
 about <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">how to integrate with Firefox Accounts</a>,
 I find a page about <a href="https://mozilla.github.io/ecosystem-platform/docs/process/becoming-a-sync-client">becoming a Sync client</a>.</p>
@@ -3179,10 +3295,10 @@ in two 32 bytes slices to obtain the Sync encryption key and HMAC key
 <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#derive-sync-key">as we’ve done before</a>.</p>
 <p>Now that’s a lot to unpack, so let’s go through all of this again in
 details, and this time with some actual code.</p>
-<h2 id="getting-scoped-keys-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#getting-scoped-keys-the-code">Getting scoped keys: the code</a></h2>
+<h2 id="getting-scoped-keys-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#getting-scoped-keys-the-code"><span>Getting scoped keys: the code</span></a></h2>
 <p>Let’s go back to <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#generating-the-authorization-url">the code to make the authorization URL</a>
 and include the <code>keys_jwk</code> field, that we found about earlier.</p>
-<h3 id="sending-our-ecdh-public-key-in-keys-jwk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#sending-our-ecdh-public-key-in-keys-jwk">Sending our ECDH public key in <code>keys_jwk</code></a></h3>
+<h3 id="sending-our-ecdh-public-key-in-keys-jwk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#sending-our-ecdh-public-key-in-keys-jwk"><span>Sending our ECDH public key in <code>keys_jwk</code></span></a></h3>
 <p>First, we generate a <a href="https://neuromancer.sk/std/nist/P-256">P-256 elliptic curve</a>
 keypair. It stands for “256-bit prime field Weierstrass curve”, and it’s
 also known as <code>secp256r1</code> and <code>prime256v1</code>.</p>
@@ -3211,7 +3327,7 @@ also known as <code>secp256r1</code> and <code>prime256v1</code>.</p>
 code, we now get back an extra <code>keys_jwe</code> parameter <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#trading-the-oauth-code-for-an-access-token">from the token endpoint</a>!
 I’ll continue from this step where we have the result of the token
 endpoint in a <code>oauthToken</code> variable.</p>
-<h3 id="parsing-keys-jwe" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#parsing-keys-jwe">Parsing <code>keys_jwe</code></a></h3>
+<h3 id="parsing-keys-jwe" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#parsing-keys-jwe"><span>Parsing <code>keys_jwe</code></span></a></h3>
 <p>Because <code>keys_jwe</code> is formatted according to <a href="https://datatracker.ietf.org/doc/html/rfc7516#section-3.1">JWE compact serialization</a>
 it’s made of 5 Base64URL encoded segments separated by a <code>.</code>, so let’s
 parse it.</p>
@@ -3255,7 +3371,7 @@ in the <code>kp</code> variable, we can establish a shared secret through ECDH.<
 </code></pre>
 <p>We’ll name this shared secret <code>ikm</code>, for input keying material, as we’re
 effectively going to use it as input for a key derivation function.</p>
-<h3 id="deriving-the-shared-secret-with-concat-kdf" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#deriving-the-shared-secret-with-concat-kdf">Deriving the shared secret with Concat KDF</a></h3>
+<h3 id="deriving-the-shared-secret-with-concat-kdf" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#deriving-the-shared-secret-with-concat-kdf"><span>Deriving the shared secret with Concat KDF</span></a></h3>
 <p>Here, we use <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-4.6">Concat KDF</a>,
 defined in more details in section 5.8.1 of <a href="https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-56Ar2.pdf">NIST SP 800-56A</a>
 “The single step key derivation function” to derive that shared secret
@@ -3415,7 +3531,7 @@ I ended up with:</p>
 we established earlier to get the decryption key.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> key = concatKdf(ikm, otherInfo)
 </code></pre>
-<h3 id="decrypting-the-ciphertext" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#decrypting-the-ciphertext">Decrypting the ciphertext</a></h3>
+<h3 id="decrypting-the-ciphertext" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#decrypting-the-ciphertext"><span>Decrypting the ciphertext</span></a></h3>
 <p>Finally, we have everything we need to decrypt the ciphertext of the JWE
 that <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#parsing-keys-jwe">we got back earlier</a>.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
@@ -3452,7 +3568,7 @@ using HKDF in the <code>deriveKeys</code> function of our non-OAuth implementati
 <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/deriver/ScopedKeys.js#L107">is the one</a>
 to perform HKDF, so that we never get access to the user’s primary key,
 which is a cool security feature.</p>
-<h2 id="putting-it-all-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#putting-it-all-together">Putting it all together</a></h2>
+<h2 id="putting-it-all-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#putting-it-all-together"><span>Putting it all together</span></a></h2>
 <p>Because the JWK we get back after decrypting <code>keys_jwe</code> from that custom
 OAuth dance contains the same 64 bytes of key material that we used to
 derive from the user’s primary key, it means that by splitting it in two
@@ -3493,7 +3609,7 @@ the HMAC key:</p>
 <p>This is enough to decrypt the response of <code>storage/crypto/keys</code>, which
 in turn gives us the keys to decrypt the user’s passwords, bookmarks
 and other collections.</p>
-<h2 id="the-code-all-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#the-code-all-the-code">The code, all the code!</a></h2>
+<h2 id="the-code-all-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#the-code-all-the-code"><span>The code, all the code!</span></a></h2>
 <p>If you were to take all the small blocks of code from this post and put
 them together, you would get something like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
@@ -3643,9 +3759,9 @@ I won’t include that part again here.</p>
 to be more of an academic resource for learning purpose. If you’re going
 to use it, please refactor it in a more maintainable way and add proper
 error handling! Also if you need help integrating Firefox Accounts to
-your app, feel free to <a href="https://www.codejam.info/val.html#links">reach out</a>, I’m open to
+your app, feel free to <a href="https://www.codejam.info/val.html#contact">reach out</a>, I’m open to
 contracting work.</p>
-<h2 id="a-note-about-granular-scopes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-granular-scopes">A note about granular scopes</a></h2>
+<h2 id="a-note-about-granular-scopes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-granular-scopes"><span>A note about granular scopes</span></a></h2>
 <p>Mozilla’s <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/oauth/scopes.md#url-scopes">OAuth scopes documentation</a>
 mentions a set of scopes that would allow granular access to the Sync
 data, for instance <code>https://identity.mozilla.com/apps/oldsync/bookmarks</code>
@@ -3681,7 +3797,7 @@ token endpoint didn’t return a <code>keys_jwe</code> even though I specified
 they’re not yet implemented, and the only way to get access to Firefox
 Sync data right now is to request full access.</p>
 <p>Please let me know if I missed something, or if this was to change!</p>
-<h2 id="a-note-about-client-id-and-redirect-url" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-client-id-and-redirect-url">A note about client ID and redirect URL</a></h2>
+<h2 id="a-note-about-client-id-and-redirect-url" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-client-id-and-redirect-url"><span>A note about client ID and redirect URL</span></a></h2>
 <p>In this post, for convenience and learning purpose, we used the public
 OAuth client ID <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app">from the Android app</a>,
 because we’d otherwise need to <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">email Mozilla</a>
@@ -3710,7 +3826,7 @@ forwarding or similar to support a loopback redirect URL.</p>
 and I think that it’s a good inspiration for future improvements to the
 Firefox Accounts OAuth flow. The limited input device method is also a
 nice fallback!</p>
-<h2 id="a-note-about-security-and-more" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-security-and-more">A note about security, and more…</a></h2>
+<h2 id="a-note-about-security-and-more" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#a-note-about-security-and-more"><span>A note about security, and more…</span></a></h2>
 <p>I strongly believe that proper security is achieved by ensuring that the
 most secure options are the easiest to implement and to use by design.
 Obviously this is idealistic and not always possible.</p>
@@ -3742,7 +3858,7 @@ ecosystem Mozilla built around Firefox Accounts and Firefox Sync
 features some awesome pieces of technology and infrastructure that are
 well worth basing off and extending, and I could see it having a similar
 success if it was more inviting to integrate with.</p>
-<h2 id="closing-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#closing-thoughts">Closing thoughts</a></h2>
+<h2 id="closing-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#closing-thoughts"><span>Closing thoughts</span></a></h2>
 <p>After nearly 20,000 words, this is the end of this in-depth exploration
 of Lockwise, Firefox Sync and their underlying APIs and protocols.</p>
 <p>This series is the result of the distillation of <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#documentation">FORTY TWO pieces of content online</a>
@@ -3772,7 +3888,7 @@ of cryptography in order to build a compatible client, and I believe
 that the schemes behind Firefox Accounts and Sync encryption are
 exemplary in respect to encrypting user data end-to-end, without
 sacrificing too much (if any) convenience or flexibility.</p>
-<h2 id="bonus-references" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#bonus-references">Bonus: references</a></h2>
+<h2 id="bonus-references" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#bonus-references"><span>Bonus: references</span></a></h2>
 <p>Let’s use the following script to extract all the references from this
 series.</p>
 <pre><code class="hljs language-sh">grep -Eoh <span class="hljs-string">&#x27;[(&lt;]http[^)]+[)&gt;]&#x27;</span> 2021/08/scripting-firefox-sync-lockwise-* \
@@ -3780,7 +3896,7 @@ series.</p>
   | sort | uniq -c
 </code></pre>
 <p>With some quick filtering and formatting, here’s the list!</p>
-<h3 id="documentation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#documentation">Documentation</a></h3>
+<h3 id="documentation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#documentation"><span>Documentation</span></a></h3>
 <table>
 <thead>
 <tr>
@@ -4002,7 +4118,7 @@ series.</p>
 </tr>
 </tbody>
 </table>
-<h3 id="code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#code">Code</a></h3>
+<h3 id="code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#code"><span>Code</span></a></h3>
 <table>
 <thead>
 <tr>
@@ -4178,7 +4294,7 @@ to sign a BrowserID public key and get back a certificate:</p>
 </blockquote>
 <p>I don’t like the idea of using a legacy endpoint when writing new code.
 There must be something better.</p>
-<h2 id="exploring-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#exploring-oauth">Exploring OAuth</a></h2>
+<h2 id="exploring-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#exploring-oauth"><span>Exploring OAuth</span></a></h2>
 <p>While the TokenServer <a href="https://github.com/mozilla-services/tokenserver#using-oauth">documents OAuth</a>
 as an alternative to BrowserID to get credentials, it’s unclear how to
 use it. All that page says is “the client must obtain an OAuth access
@@ -4188,7 +4304,7 @@ where to get the OAuth token and the corresponding key.</p>
 had the competitive advantage of having multiple working implementations
 in the wild that made it easier to understand how it works. OAuth was
 a different kind of beast.</p>
-<h3 id="sending-emails-how-about-no" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no">Sending emails? How about no</a></h3>
+<h3 id="sending-emails-how-about-no" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#sending-emails-how-about-no"><span>Sending emails? How about no</span></a></h3>
 <p>The <a href="https://mozilla.github.io/ecosystem-platform/">Firefox Ecosystem Platform</a>
 documents <a href="https://mozilla.github.io/ecosystem-platform/docs/process/integration-with-fxa">how to integrate with Firefox Accounts</a>
 using OAuth, but the first thing we can read there is:</p>
@@ -4234,7 +4350,7 @@ need to contact Mozilla in order to register for OAuth credentials. At
 that point it seems like a dead end, and I’m considering to build my
 client on top of the legacy BrowserID API, since it still works after
 all, and I spent so much time to understand it in depth anyways.</p>
-<h3 id="circling-back" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#circling-back">Circling back</a></h3>
+<h3 id="circling-back" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#circling-back"><span>Circling back</span></a></h3>
 <p>Going back to the <a href="https://github.com/mozilla/fxa-oauth-server/blob/master/docs/api.md">OAuth 2.0 API</a>
 link from the former quote, this points to a page in an archived repo on
 Github, <a href="https://github.com/mozilla/fxa-oauth-server/blob/master/docs/api.md"><code>mozilla/fxa-oauth-server/docs/api.md</code></a>,
@@ -4251,7 +4367,7 @@ in there, but I pretty much instantly hit a wall when I see that all
 those endpoints require an OAuth client ID, which is part of the OAuth
 credentials I’m supposed to email Mozilla in order to get.</p>
 <p>It feels like I’m going in circles. 🧐</p>
-<h2 id="harvesting-a-client-id-from-the-android-app" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app">Harvesting a <code>client_id</code> from the Android app</a></h2>
+<h2 id="harvesting-a-client-id-from-the-android-app" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#harvesting-a-client-id-from-the-android-app"><span>Harvesting a <code>client_id</code> from the Android app</span></a></h2>
 <p>While those endpoints require a client ID, it’s not necessary to provide
 a client secret for public clients (see <a href="https://auth0.com/docs/applications/confidential-and-public-applications">OAuth grant types</a>).
 And because the client ID of public clients is… public, we should be
@@ -4276,7 +4392,7 @@ and I do get back a valid OAuth token. Sweet.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> scope = <span class="hljs-string">&#x27;https://identity.mozilla.com/apps/oldsync&#x27;</span>
 <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.createOAuthToken(creds.sessionToken, clientId, { scope })
 </code></pre>
-<h2 id="unmasking-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#unmasking-the-x-keyid-header">Unmasking the <code>X-KeyID</code> header</a></h2>
+<h2 id="unmasking-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#unmasking-the-x-keyid-header"><span>Unmasking the <code>X-KeyID</code> header</span></a></h2>
 <p>Now that’s not enough to authenticate to the TokenServer, I also <a href="https://github.com/mozilla-services/tokenserver#using-oauth">need to pass</a>
 “the <code>kid</code> field of the encryption key in the <code>X-KeyID</code> header”.</p>
 <p>This is not really obvious to me because I don’t have a <code>kid</code> field in
@@ -4323,7 +4439,7 @@ it most necessarily means that there’s a better alternative.</p>
 <p>But let’s put that aside for now. This will be an adventure for another
 day. For now we’re so close to getting this code work that I can’t just
 move on to something else right now.</p>
-<h2 id="tracking-keyrotationtimestamp" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#tracking-keyrotationtimestamp">Tracking <code>keyRotationTimestamp</code></a></h2>
+<h2 id="tracking-keyrotationtimestamp" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#tracking-keyrotationtimestamp"><span>Tracking <code>keyRotationTimestamp</code></span></a></h2>
 <p>I start with the Python code form the original email:</p>
 <pre><code class="hljs language-python">kid = <span class="hljs-built_in">str</span>(keyRotationTimestamp) + <span class="hljs-string">&#x27;-&#x27;</span> + base64.urlsafe_b64encode(tmp[:<span class="hljs-number">16</span>]).decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>).rstrip(<span class="hljs-string">&#x27;=&#x27;</span>)
 </code></pre>
@@ -4354,7 +4470,7 @@ first result is from <a href="https://github.com/mozilla/fxa/blob/d1283314c15d81
 earlier doesn’t include the details of the payload <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md#post-accountscoped-key-data">for this endpoint</a>.</p>
 <p>This one too, <a href="https://github.com/mozilla/fxa/blob/96161f37753101c1a64d9588d5cdc5434243e91f/packages/fxa-js-client/client/FxAccountClient.js#L2718">has a neat matching function in fxa-js-client</a>
 and I can move to the next step.</p>
-<h2 id="actually-computing-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#actually-computing-the-x-keyid-header">Actually computing the <code>X-KeyID</code> header</a></h2>
+<h2 id="actually-computing-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#actually-computing-the-x-keyid-header"><span>Actually computing the <code>X-KeyID</code> header</span></a></h2>
 <p>Let’s get back one more time to the Python code from the email we’re
 trying to adapt.</p>
 <pre><code class="hljs language-python">kid = <span class="hljs-built_in">str</span>(keyRotationTimestamp) + <span class="hljs-string">&#x27;-&#x27;</span> + base64.urlsafe_b64encode(tmp[:<span class="hljs-number">16</span>]).decode(<span class="hljs-string">&#x27;utf-8&#x27;</span>).rstrip(<span class="hljs-string">&#x27;=&#x27;</span>)
@@ -4382,7 +4498,7 @@ keys_changed_at, client_state = parse_key_id(kid)
 <p>So I try to combine the <code>keyRotationTimestamp</code> I just retrieved with the
 hexadecimal representation of my previous <code>X-Client-State</code>, and guess
 what. It works!</p>
-<h2 id="i-want-to-see-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#i-want-to-see-the-code">I want to see the code!</a></h2>
+<h2 id="i-want-to-see-the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#i-want-to-see-the-code"><span>I want to see the code!</span></a></h2>
 <p>The great news is that this not only makes our code use the latest and
 greatest way to connect to Firefox Sync, without relying on anything
 legacy or deprecated, but it also makes our implementation much simpler!</p>
@@ -4501,7 +4617,7 @@ main()
 </details>
 <p>But while this is a solid improvement from what we had previously built
 since the beginning of this series, there’s still a bit more to unwrap.</p>
-<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#going-further">Going further</a></h2>
+<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html#going-further"><span>Going further</span></a></h2>
 <p>You can probably tell by now that I love digging into rabbit holes and
 I’m eternally unsatisfied.</p>
 <p>While I thought that I had found the last piece of the puzzle with the
@@ -4602,7 +4718,7 @@ point, but I’m happy to take small fixes like this all the same.</p>
 gets the job done, I took this as a challenge to implement the protocol
 using only native (or more generic, well-maintained) modules, and this
 is going to be the topic of this blog post!</p>
-<h2 id="isolating-the-browserid-crypto-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#isolating-the-browserid-crypto-code">Isolating the browserid-crypto code</a></h2>
+<h2 id="isolating-the-browserid-crypto-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#isolating-the-browserid-crypto-code"><span>Isolating the browserid-crypto code</span></a></h2>
 <p>Let’s start from the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">script we previously built</a>
 and extract the part that use the browserid-crypto package.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
@@ -4643,7 +4759,7 @@ do with the Node.js <code>crypto</code> module.</li>
 <li>Finally, we sign a JWT using our private key, and bundle it with the
 certificate to make a “backed identity assertion”.</li>
 </ol>
-<h2 id="generating-the-keypair" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#generating-the-keypair">Generating the keypair</a></h2>
+<h2 id="generating-the-keypair" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#generating-the-keypair"><span>Generating the keypair</span></a></h2>
 <p>This is the easy part. The main difference is that while
 <code>jwcrypto.generateKeyPair</code> takes an internal <code>keysize</code> parameter, which
 they <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L10">map to RSA</a>,
@@ -4673,7 +4789,7 @@ useful for later.</p>
 browserid-crypto and the TokenServer don’t accept any other divisor
 length for a key size of 2048.</p>
 </div>
-<h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#encoding-the-key">Encoding the key</a></h2>
+<h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#encoding-the-key"><span>Encoding the key</span></a></h2>
 <p>Where it gets a bit more tricky, especially for DSA, is when we want to
 encode the key as JSON for the Firefox Accounts API to sign:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
@@ -4683,7 +4799,7 @@ function that formats the key in the BrowserID JSON format. I couldn’t
 find documentation for it, but from looking at the actual JSON objects,
 it is very similar to (but not compatible with) the <a href="https://datatracker.ietf.org/doc/html/rfc7517"><abbr title="JSON Web Key">JWK</abbr></a>
 format.</p>
-<h3 id="browserid-vs-jwk-and-base-conversion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#browserid-vs-jwk-and-base-conversion">BrowserID vs. JWK and base conversion</a></h3>
+<h3 id="browserid-vs-jwk-and-base-conversion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#browserid-vs-jwk-and-base-conversion"><span>BrowserID vs. JWK and base conversion</span></a></h3>
 <p>BrowserID was <a href="https://hacks.mozilla.org/2011/07/introducing-browserid-easier-and-safer-authentication-on-the-web/">introduced in 2011</a>,
 well before <a href="https://datatracker.ietf.org/doc/html/rfc7517">the JWK specification was proposed</a>
 in 2015. They both encode the low-level key parameters in a JSON object,
@@ -4698,7 +4814,7 @@ RSA keys),while BrowserID uses an <code>algorithm</code> property that can be
 while BrowserID <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L68">uses decimal (base 10) for RSA</a>
 and <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js#L141">hexadecimal (base 16) for DSA</a>.</li>
 </ol>
-<h3 id="rsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#rsa">RSA</a></h3>
+<h3 id="rsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#rsa"><span>RSA</span></a></h3>
 <p>The <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.1">RSA parameters</a>
 are <code>n</code> (modulus) and <code>e</code> (exponent), as well as <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.2">a fuckton of other parameters</a>
 for private keys (which we don’t need here). You can see them on an
@@ -4759,7 +4875,7 @@ hexadecimal.</p>
   <span class="hljs-attr">e</span>: base64to10(jwk.e)
 }
 </code></pre>
-<h3 id="dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#dsa">DSA</a></h3>
+<h3 id="dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#dsa"><span>DSA</span></a></h3>
 <p>The <a href="https://mozilla.github.io/id-specs/docs/formats/keys/#parameters-for-dsa-keys">DSA parameters</a>
 are <code>p</code> (larger prime modulus), <code>q</code> (smaller prime modulus), <code>g</code>
 (generator), <code>y</code> (public group element), as well as <code>x</code> (private
@@ -4931,7 +5047,7 @@ with, and rename the properties to make a BrowserID JSON key.</p>
   <span class="hljs-attr">g</span>: params.G.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 }
 </code></pre>
-<h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#signing-the-jwt">Signing the JWT</a></h2>
+<h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#signing-the-jwt"><span>Signing the JWT</span></a></h2>
 <p>The last part to refactor is the JWT:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
   {},
@@ -4971,7 +5087,7 @@ that’s in <code>kp.privateKey</code>.</p>
 <p>Here we specified the <code>RS256</code> algorithm for a RSA key. This works
 perfectly, and with this code, we can effectively generate a BrowserID
 assertion that will be accepted by the TokenServer!</p>
-<h3 id="hacking-around-dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#hacking-around-dsa">Hacking around DSA</a></h3>
+<h3 id="hacking-around-dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#hacking-around-dsa"><span>Hacking around DSA</span></a></h3>
 <p>But neither <a href="https://github.com/jwtk/njwt#supported-algorithms"><code>njwt</code></a>
 nor <a href="https://github.com/auth0/node-jsonwebtoken#algorithms-supported"><code>jsonwebtoken</code></a>
 support DSA signatures. In fact, it seems that most JWT libraries don’t
@@ -5014,7 +5130,7 @@ previous code this would look like:</p>
 )
 </code></pre>
 <p>Congratulations! We now also have a working DSA JWT!</p>
-<h3 id="fully-native-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#fully-native-implementation">Fully native implementation</a></h3>
+<h3 id="fully-native-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#fully-native-implementation"><span>Fully native implementation</span></a></h3>
 <p>Now, let’s even remove the <code>njwt</code> dependency, and bake our own JWT
 in-house. Because why not. It’s actually pretty trivial, and to be
 honest, a simpler and cleaner solution for DSA than the hack we just
@@ -5038,7 +5154,7 @@ made.</p>
 </code></pre>
 <p>Believe it or not, this is all it takes to make a valid JWT. Not so bad,
 isn’t it?</p>
-<h2 id="making-the-backed-identity-assertion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#making-the-backed-identity-assertion">Making the backed identity assertion</a></h2>
+<h2 id="making-the-backed-identity-assertion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#making-the-backed-identity-assertion"><span>Making the backed identity assertion</span></a></h2>
 <p>Since we have a valid <code>cert</code> and <code>signedObject</code> at that point, that part
 stays the same. All we need to do is to <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion">bundle them together</a>
 with the <code>~</code> character (tilde).</p>
@@ -5047,7 +5163,7 @@ with the <code>~</code> character (tilde).</p>
 <p>This is the value we can pass in the <code>Authorization</code> header such as:</p>
 <pre><code class="hljs">Authorization: BrowserID &lt;backedAssertion&gt;
 </code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#wrapping-up">Wrapping up</a></h2>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>And that’s it! We now have a fully working BrowserID implementation,
 with both RSA and DSA support, that only depend on the native <code>crypto</code>
 module!</p>
@@ -5110,7 +5226,7 @@ will then let us query collections, that we can decrypt with some more
 crypto wizardry.</p>
 <p>I’ll break that down in pieces below, then give a fully working example
 that you can just copy and run yourself.</p>
-<h2 id="sign-in-to-firefox-accounts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#sign-in-to-firefox-accounts">Sign in to Firefox Accounts</a></h2>
+<h2 id="sign-in-to-firefox-accounts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#sign-in-to-firefox-accounts"><span>Sign in to Firefox Accounts</span></a></h2>
 <p>First we instantiate a <a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a> to interact
 with the Firefox Accounts API.</p>
 <div class="note">
@@ -5143,7 +5259,7 @@ login to work without needing an unblock code sent to the user email.</p>
 This will be useful later.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
 </code></pre>
-<h2 id="the-firefox-sync-tokenserver-authentication-dance" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#the-firefox-sync-tokenserver-authentication-dance">The Firefox Sync TokenServer authentication dance</a></h2>
+<h2 id="the-firefox-sync-tokenserver-authentication-dance" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#the-firefox-sync-tokenserver-authentication-dance"><span>The Firefox Sync TokenServer authentication dance</span></a></h2>
 <p>Next, we need to <a href="https://github.com/mozilla-services/tokenserver">call the TokenServer</a>
 to get the credentials for the Firefox Sync API.</p>
 <p>There is two ways of authenticating to the TokenServer: <a href="https://github.com/mozilla-services/tokenserver#using-browserid">BrowserID</a>
@@ -5227,7 +5343,7 @@ that.</p>
 <p>This gives us “the URL of the user’s Sync storage node, and some
 short-lived credentials that can be used to access it” as documented
 <a href="https://github.com/mozilla-services/tokenserver#api">here</a>.</p>
-<h2 id="actually-calling-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">Actually calling Firefox Sync</a></h2>
+<h2 id="actually-calling-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync"><span>Actually calling Firefox Sync</span></a></h2>
 <p>We now have the credentials to call the <a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">Firefox Sync API</a>.
 It uses <a href="https://github.com/mozilla/hawk/blob/main/API.md#usage-example">Hawk authentication</a>,
 so we’ll write a <code>fetch</code> wrapper to handle it for us.</p>
@@ -5369,7 +5485,7 @@ I’ll leave that as an exercise to the reader. 😉</p>
 <p>But we’re not done yet. First I’ll share with you the code that we built
 in this post, then we’ll take a look at <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">how BrowserID works</a>
 (you’ll understand <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#going-further">why</a>).</p>
-<h2 id="give-me-the-whole-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">Give me the whole code!</a></h2>
+<h2 id="give-me-the-whole-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code"><span>Give me the whole code!</span></a></h2>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
@@ -5525,7 +5641,7 @@ in this post, then we’ll take a look at <a href="https://www.codejam.info/2021
 
 main()
 </code></pre>
-<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#going-further">Going further</a></h2>
+<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#going-further"><span>Going further</span></a></h2>
 <p>This works like a charm, but one thing still bugs me. When running the
 code, I see a deprecation warning in the console.</p>
 <pre><code class="hljs">[DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
@@ -5580,7 +5696,7 @@ protocols than I’m willing to admit, and now I finally managed to
 programmatically connect to my Firefox Account and interact with Firefox
 Sync, I’m going to share that journey in a series of blog posts. Fasten
 your seatbelts!</p>
-<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#fair-warning">Fair warning</a></h2>
+<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#fair-warning"><span>Fair warning</span></a></h2>
 <p>You might not be interested in the whole story, especially in the two
 following posts, where I explain how I started by implementing the
 legacy BrowserID authentication mechanism (because it’s what’s
@@ -5600,7 +5716,7 @@ password and primary encryption key.</p>
 authentication is performed remains the same and is explained
 <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">in the second post</a>.</p>
 <p>That being said, if you want the whole story, let’s get started!</p>
-<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#our-good-old-friend-stack-overflow">Our good old friend Stack Overflow</a></h2>
+<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#our-good-old-friend-stack-overflow"><span>Our good old friend Stack Overflow</span></a></h2>
 <p>I started looking for an API, and possibly existing API clients, and I
 quickly figured Lockwise was built on top of Firefox Sync’s <code>passwords</code>
 collection.</p>
@@ -5612,7 +5728,7 @@ only explain the protocol specification, but it’s unclear where to start
 as there’s no mention of an URL to query the API and how to authenticate
 to it.</p>
 <p>Looking at the client should give us a more concrete understanding.</p>
-<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#official-python-client">Official Python client</a></h2>
+<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#official-python-client"><span>Official Python client</span></a></h2>
 <p>The first thing I notice is that the repository hasn’t been updated
 since 2016 and is now archived, which means it’s probably not
 up-to-date, definitely not actively maintained, and it’s even
@@ -5624,7 +5740,7 @@ I left it at that.</p>
 fixing some <code>requirements.txt</code> versions issues, it does run
 successfully! But it doesn’t implement the collection decryption part so
 it would only have solved part of my problem.</p>
-<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#unofficial-node-js-client">Unofficial Node.js client</a></h2>
+<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#unofficial-node-js-client"><span>Unofficial Node.js client</span></a></h2>
 <p>There is also a <a href="https://github.com/zaach/node-fx-sync">Node.js client</a>,
 last updated in 2014.</p>
 <p>Out of the box, I cannot install it with <code>npm install fx-sync</code>, it fails
@@ -5739,24 +5855,24 @@ this, read on!</p>
 manager</em> in the first place. But you should probably use a password
 manager, and in case you don’t, I’ll write a quick section about that.
 Feel free to <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-firefox-lockwise">skip it</a>!</p>
-<h2 id="why-you-should-use-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-you-should-use-a-password-manager">Why you should use a password manager</a></h2>
+<h2 id="why-you-should-use-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-you-should-use-a-password-manager"><span>Why you should use a password manager</span></a></h2>
 <ul>
 <li>Passwords are the most widespread way of authentication to websites
-and other services on the Internet.</li>
+and other services on the internet.</li>
 <li>The average user tends to log in <a href="https://blog.dashlane.com/world-password-day/">on over a hundred services</a>,
 and it’s only going to grow over time.</li>
 </ul>
 <p>This brings a number of challenges that are addressed by some common
 ways of dealing with passwords, some worst than others, which I’ll go
 through below.</p>
-<h3 id="using-a-single-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-single-password">Using a single password</a></h3>
+<h3 id="using-a-single-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-single-password"><span>Using a single password</span></a></h3>
 <p>If you use the same password everywhere, would a single of the services
 you signed up with have a security issue, that allows an attacker to
 gain access to your password, and all of your other accounts sharing
 that password can be considered compromised. Not great.</p>
 <p>Using a different password everywhere mitigates that, but it’s not
 scalable for most of us to remember hundreds of different passwords.</p>
-<h3 id="deriving-a-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#deriving-a-password">Deriving a password</a></h3>
+<h3 id="deriving-a-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#deriving-a-password"><span>Deriving a password</span></a></h3>
 <p>A common solution that people found to help with this was to <em>derive</em> a
 primary password for each service. Typically, since most people can’t
 perform <a href="https://en.wikipedia.org/wiki/HKDF">HKDF</a> or
@@ -5766,7 +5882,7 @@ similar.</p>
 <p>This is only an illusion of security and it’s fairly easy for an
 attacker with access to one of your “unique” passwords to guess in a
 limited number of tries the corresponding passwords to other websites.</p>
-<h3 id="using-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-oauth">Using OAuth</a></h3>
+<h3 id="using-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-oauth"><span>Using OAuth</span></a></h3>
 <p><a href="https://en.wikipedia.org/wiki/OAuth">OAuth</a>, e.g. “sign in with Google
 / Apple / Twitter / Facebook / GitHub” is another common way to
 authenticate to services, and is a solid alternative to passwords in a
@@ -5781,7 +5897,7 @@ at least for all of those. And anyways, a lot of services just don’t
 support OAuth whatsoever meaning you’ll need unique passwords for them
 too.</p>
 <p>In practice, OAuth is useful, but doesn’t solve the problem.</p>
-<h3 id="using-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-password-manager">Using a password manager</a></h3>
+<h3 id="using-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-password-manager"><span>Using a password manager</span></a></h3>
 <p>A password manager takes away from you the responsibility of remembering
 passwords. This means that it’s now easy to have a strong, unique
 password for every account you have. The only password you need to
@@ -5802,7 +5918,7 @@ a password, as pointed out by <a href="https://xkcd.com/936/">this legendary xkc
     <img alt="Passphrases vs. passwords" src="https://imgs.xkcd.com/comics/password_strength.png">
   </a>
 </figure>
-<h2 id="why-firefox-lockwise" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-firefox-lockwise">Why Firefox Lockwise</a></h2>
+<h2 id="why-firefox-lockwise" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-firefox-lockwise"><span>Why Firefox Lockwise</span></a></h2>
 <p>Now we’re on the same page about using a password manager (or not),
 let’s see why I, personally, chose to move to Lockwise.</p>
 <p>But before digging in what’s good or not about it, let me give a bit of
@@ -5827,10 +5943,10 @@ just a tiny layer of (desktop-only) convenience over Git, PBKDF2 and
 AES-256. While it could have worked on mobile, I was lazy to build an
 app for it and decided it was time to change.</p>
 </div>
-<h2 id="pros" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#pros">Pros</a></h2>
+<h2 id="pros" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#pros"><span>Pros</span></a></h2>
 <p>Let’s start with the pros of Firefox Lockwise. Sadly, there’s not a lot,
 but their impact is so big for me that they make all the difference.</p>
-<h3 id="it-s-native-to-firefox" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-native-to-firefox">It’s native to Firefox</a></h3>
+<h3 id="it-s-native-to-firefox" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-native-to-firefox"><span>It’s native to Firefox</span></a></h3>
 <p>Lockwise is not a browser extension, it’s directly baked in Firefox
 itself. This means that it is not limited to a browser extension sandbox
 like third-party password managers. It’s basically just a cool name for
@@ -5857,18 +5973,18 @@ else.</p>
 <p>In other words, Lockwise is great 95% the time I use it, but sucks at
 the remaining 5%, while Bitwarden is just consistently good (but not
 great).</p>
-<h3 id="it-s-part-of-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-part-of-firefox-sync">It’s part of Firefox Sync</a></h3>
+<h3 id="it-s-part-of-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-part-of-firefox-sync"><span>It’s part of Firefox Sync</span></a></h3>
 <p>As I mentioned in the previous part, Lockwise is built on top of Firefox
 Sync, which happens to be the tool I use to synchronise my tabs and
 bookmarks between all my devices.</p>
 <p>At that point it seems like an obvious solution to also use it for
 my passwords. After all, if the tool I’m already using fits my needs,
 why try to add another one?</p>
-<h2 id="cons" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#cons">Cons</a></h2>
+<h2 id="cons" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#cons"><span>Cons</span></a></h2>
 <p>Now as of today, Lockwise is missing a number of features one would
 expect from a password manager, some of them being being so basic that
 it can look pretty ridiculous.</p>
-<h3 id="no-extension-for-other-browsers" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-extension-for-other-browsers">No extension for other browsers</a></h3>
+<h3 id="no-extension-for-other-browsers" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-extension-for-other-browsers"><span>No extension for other browsers</span></a></h3>
 <p>Lockwise is part of Firefox, but there’s no integration with other
 browsers. If Firefox isn’t your primary browser, you’re probably not
 reading this anyways, but if you need to have convenient access to your
@@ -5876,7 +5992,7 @@ passwords in another browser, Lockwise is definitely not for you.</p>
 <p>You can obviously still open Lockwise in Firefox and copy passwords to
 your clipboard to use them anywhere, but in no way this can compete with
 a proper integration.</p>
-<h3 id="can-t-generate-new-passwords-on-mobile" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#can-t-generate-new-passwords-on-mobile">Can’t generate new passwords on mobile</a></h3>
+<h3 id="can-t-generate-new-passwords-on-mobile" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#can-t-generate-new-passwords-on-mobile"><span>Can’t generate new passwords on mobile</span></a></h3>
 <p>From the mobile version of Firefox, we can’t generate new passwords.
 Neither can we from the Lockwise standalone mobile app.</p>
 <p>If we submit a login form with a new password that we manually typed,
@@ -5886,7 +6002,7 @@ option to “suggest a strong password” like the desktop version does.</p>
 <p>This is probably a dealbreaker for a lot of people, unless you only use
 your phone a negligible part of the time like I do, and mostly as a
 read-only client as far as for passwords are concerned.</p>
-<h3 id="the-mobile-app-crashes-regularly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#the-mobile-app-crashes-regularly">The mobile app crashes regularly</a></h3>
+<h3 id="the-mobile-app-crashes-regularly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#the-mobile-app-crashes-regularly"><span>The mobile app crashes regularly</span></a></h3>
 <p>While Firefox for Android works flawlessly for me, the Lockwise app
 crashes pretty often (something as simple as trying to edit an entry
 from the app). Since Firefox also have a UI to manage (synced)
@@ -5895,7 +6011,7 @@ often on mobile anyways, if ever really.</p>
 <p>The only reason I have the Lockwise app installed is to be able to
 autofill a password in other native apps, and it does a good job at
 this.</p>
-<h3 id="no-totp-support" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-totp-support">No TOTP support</a></h3>
+<h3 id="no-totp-support" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-totp-support"><span>No TOTP support</span></a></h3>
 <p><a href="https://en.wikipedia.org/wiki/Time-based_One-Time_Password">TOTP</a>
 (time-based one-time password) is a common mechanism to provide
 <a href="https://en.wikipedia.org/wiki/Multi-factor_authentication">multi-factor authentication</a>
@@ -5922,11 +6038,11 @@ and I can <a href="https://www.codejam.info/2021/09/totp-2fa-support-any-passwor
 storing the TOTP secrets in Lockwise. While it’s far from a world-class
 integration like the one Bitwarden offers, it’s good enough for me for
 the time being.</p>
-<h3 id="no-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-cli">No CLI</a></h3>
+<h3 id="no-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-cli"><span>No CLI</span></a></h3>
 <p>A CLI would have been a nice to have, but I rarely need to input
 passwords on the command line these days anyways, since most tools now
 use OAuth. Worst case, I can build one myself.</p>
-<h3 id="no-explicitly-public-api-let-me-explain" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-explicitly-public-api-let-me-explain">No explicitly public API (let me explain)</a></h3>
+<h3 id="no-explicitly-public-api-let-me-explain" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-explicitly-public-api-let-me-explain"><span>No explicitly public API (let me explain)</span></a></h3>
 <p>I’m not going to say that there’s no public API, because <a href="https://mozilla-services.readthedocs.io/en/latest/sync/">there is</a>.
 But this document <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#bonus-references">is not enough by itself</a>
 to do anything useful with your Lockwise passwords.</p>
@@ -5954,7 +6070,7 @@ comprehensive API client in the first place. Because I “reviewed” so
 much of the code behind Lockwise, I’m now even more confident about
 trusting it with my passwords.</p>
 </div>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#conclusion">Conclusion</a></h2>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#conclusion"><span>Conclusion</span></a></h2>
 <p>I find it pretty funny that the main reason I’m switching password
 managers is to be able to use it from my phone, yet I chose Lockwise
 which have a pretty limited mobile experience.</p>
@@ -5972,104 +6088,6 @@ excellent job at giving you access to existing passwords on your phone,
 whether it’s in the browser or native apps.</p>
 <p>In the end, it doesn’t really matter what password manager you’re going
 to use, as long as you actually use one!</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>Intercept a macOS app traffic using mitmproxy</title>
-    <link href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html" />
-    <id>https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html</id>
-    <updated>2021-07-20T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I’ll take as an example for this use case <a href="https://github.com/valeriangalliat/spotify-buddylist">a project of mine</a>
-that exposes a hidden endpoint of the Spotify app, allowing to see the
-friend activity feed (what your friends are currently playing).</p>
-<p>In most cases I’ll try to reverse a web app directly in the browser by
-monitoring the HTTP calls in the network tab of the developer tools, but
-the Spotify web player doesn’t support the friend activity feature, it’s
-only available in the desktop app, so this wasn’t an option here.</p>
-<p>In this post, I’ll go through the steps necessary to intercept the
-Spotify macOS app traffic using <a href="https://mitmproxy.org/">mitmproxy</a>, but
-this could work with other apps as well.</p>
-<h2 id="what-s-an-intercepting-proxy" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#what-s-an-intercepting-proxy">What’s an intercepting proxy?</a></h2>
-<p>An intercepting proxy like <a href="https://mitmproxy.org/">mitmproxy</a> uses <a href="https://en.wikipedia.org/wiki/HTTP_tunnel">HTTP tunnelling</a>
-to forward (and optionally capture) all the traffic that is sent to it.</p>
-<p>Typically, you can configure a specific app, browser, or the whole
-system to use a HTTP proxy to forward requests, so that, instead of
-connecting directly to the desired hosts, it sends the traffic to the
-configured proxy.</p>
-<p>This can be useful for a number of reasons, and in our case, it allows
-us to configure a proxy that we control, so that we can inspect the HTTP
-traffic going through it.</p>
-<h2 id="installing-and-running-mitmproxy" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#installing-and-running-mitmproxy">Installing and running mitmproxy</a></h2>
-<p>Assuming you use <a href="https://brew.sh/">Homebrew</a>:</p>
-<pre><code class="hljs language-sh">brew install mitmproxy
-mitmproxy
-</code></pre>
-<p>This starts a terminal interface that will show all the requests going
-through the proxy. Press <kbd>?</kbd> to see the keybindings.</p>
-<p>By default the proxy runs on <code>localhost:8080</code>.</p>
-<h2 id="first-try-macos-network-proxy-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#first-try-macos-network-proxy-settings">First try: macOS network proxy settings</a></h2>
-<p>The first thing I usually try for this is to configure the proxy
-settings <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp2591/mac">directly at the system level</a>,
-because most apps don’t allow configuring a proxy in their settings. On
-macOS, this will be in “System Preferences”, “Network”, “Advanced…”,
-“Proxies”, “Web Proxy (HTTP)”.</p>
-<p>But when opening the Spotify app, I only see a single authentication
-request going through (interestingly), but definitely not the whole
-traffic. It appears that the Spotify app currently ignores the system
-proxy settings.</p>
-<p>For other apps, especially ones that don’t allow configuring a proxy
-inside the app, this might work.</p>
-<h2 id="second-try-spotify-supports-app-level-proxy-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#second-try-spotify-supports-app-level-proxy-settings">Second try: Spotify supports app-level proxy settings!</a></h2>
-<p>To my surprise, Spotify allows you to configure a proxy directly inside
-the app. Go in “Spotify”, “Preferences”, “Show advanced settings”,
-“Proxy settings” to configure <code>localhost:8080</code> as a proxy.</p>
-<figure class="center">
-  <img alt="Spotfiy proxy" src="https://www.codejam.info/img/2021/07/spotify-proxy.png">
-</figure>
-<p>But after restarting the app we get an error in the mitmproxy console:</p>
-<pre><code class="hljs">Warn: [::1]:65468: Client TLS handshake failed. The client may not trust the proxy&#x27;s certificate for login5.spotify.com (OpenSSL Error([(&#x27;SSL routines&#x27;, &#x27;ssl3_read_bytes&#x27;, &#x27;sslv3 alert certificate unknown&#x27;)]))
-</code></pre>
-<p>This is because to inspect HTTPS traffic, mitmproxy needs to use its own
-SSL certificate, otherwise all we would see would be the encrypted
-traffic between the app and Spotify servers.</p>
-<h2 id="configuring-the-mitmproxy-ca-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#configuring-the-mitmproxy-ca-certificate">Configuring the mitmproxy CA certificate</a></h2>
-<p>mitmproxy comes with a <abbr title="Certificate authority">CA</abbr>
-certificate that trusts the certificate used by mitmproxy to
-terminate the SSL connection. By <a href="https://docs.mitmproxy.org/stable/concepts-certificates/">adding this CA certificate</a>
-to the <a href="https://support.apple.com/en-ca/guide/keychain-access/kyca2431/mac">system list of trusted certificate</a>,
-the app should allow the traffic to go through (unless it does <a href="https://security.stackexchange.com/questions/29988/what-is-certificate-pinning">certificate pinning</a>).</p>
-<p>To do this, open the <code>~/.mitmproxy</code> directory which contains the
-certificate files, open Keychain Access, and drop
-<code>mitmproxy-ca-cert.pem</code> into it.</p>
-<p>By default, macOS will not trust that new certificate, so you need to
-double-click on it, and in the “Trust” section, set “Always Trust”.</p>
-<p>After restarting the Spotify app, you should now see the traffic going
-through in mitmproxy.</p>
-<figure class="center">
-  <img alt="mitmproxy screenshot" src="https://www.codejam.info/img/2021/07/mitmproxy.png">
-</figure>
-<div class="note">
-<p><strong>Note:</strong> I usually delete the certificate after I’m done inspecting
-requests, just to be safe.</p>
-</div>
-<h2 id="identifying-the-friend-activity-endpoint" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#identifying-the-friend-activity-endpoint">Identifying the friend activity endpoint</a></h2>
-<p>Then it’s a matter of browsing all the requests in the mitmproxy UI.</p>
-<p>Here, it’ll be particularly handy to use the filter function by pressing
-<kbd>f</kbd>. This allows us to specify a <a href="https://docs.mitmproxy.org/stable/concepts-filters/">filter pattern</a>.</p>
-<p>For example, if I know the URL I’m looking for contains the string
-<code>buddylist</code>, I can type that in the filter prompt, which equals to the
-command <code>set view_filter 'buddylist'</code>, so that mitmproxy only shows the
-matching calls.</p>
-<p>If I didn’t know this string was part of the URL, but instead wanted to
-match on the body, which I know contains the string <code>shaktirockgym</code> (one
-of my Spotify friends), I can use <code>~b shaktirockgym</code> as a filter.</p>
-<p>Then, most of the work will be about <code>curl</code>ing the endpoints to get
-successful responses, identifying what headers are necessary, what
-parameters to pass, how to deal with authentication and other security
-means the app have in place.</p>
-<p>This should be enough to get you started on reversing a macOS app
-network requests, to build your own client, scripts or whatnot. Happy
-hacking!</p>
 ]]></content>
   </entry>
 </feed>

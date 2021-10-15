@@ -802,7 +802,7 @@ only to need to split the `k` field to separate the encryption key from
 the HMAC key:
 
 ```js
-const rawBundle = Buffer.from(keys[scope].k)
+const rawBundle = Buffer.from(keys[scope].k, 'base64')
 
 const syncKeyBundle = {
   encryptionKey: rawBundle.slice(0, 32),

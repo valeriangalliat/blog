@@ -584,7 +584,7 @@ output to the desired length.
 // integer as a buffer.
 function uint32BE (number) {
   const buffer = Buffer.alloc(4)
-  buffer.writeUint32BE(number)
+  buffer.writeUInt32BE(number)
   return buffer
 }
 
@@ -836,7 +836,7 @@ const clientId = 'e7ce535d93522896'
 // integer as a buffer.
 function uint32BE (number) {
   const buffer = Buffer.alloc(4)
-  buffer.writeUint32BE(number)
+  buffer.writeUInt32BE(number)
   return buffer
 }
 

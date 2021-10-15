@@ -755,7 +755,7 @@ encryption key in the <code>X-KeyID</code> header</strong>.</p>
 JWK, so we don’t need the <code>deriveKeys</code> function anymore. Instead, we
 only to need to split the <code>k</code> field to separate the encryption key from
 the HMAC key:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k, <span class="hljs-string">&#x27;base64&#x27;</span>)
 
 <span class="hljs-keyword">const</span> syncKeyBundle = {
   <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),

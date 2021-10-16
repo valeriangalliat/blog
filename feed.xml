@@ -5,10 +5,158 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-10-14T18:44:37.250Z</updated>
+  <updated>2021-10-16T18:23:19.016Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>TypeScript: cannot write file .d.ts because it would overwrite input file</title>
+    <link href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html" />
+    <id>https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html</id>
+    <updated>2021-10-16T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>There’s <a href="https://stackoverflow.com/questions/42609768/typescript-error-cannot-write-file-because-it-would-overwrite-input-file">countless</a>
+<a href="https://stackoverflow.com/questions/46914070/how-to-exclude-d-ts-file-for-typescript-compiler">issues</a>
+<a href="https://github.com/microsoft/TypeScript/issues/16749">about</a>
+this error and I thought it would be useful to write a clear explanation
+of what’s going on and a summary of the possible solutions.</p>
+<p>This happens for two reasons:</p>
+<ol>
+<li>You’re explicitly including those <code>.d.ts</code> files e.g. as part of your
+<code>include</code> array in <code>tsconfig.json</code> or as part of the <code>tsc</code> arguments,
+and you’re asking TypeScript to output type declarations in the same
+place. Then the error is pretty obvious and the fix should be too
+(don’t output the generated declarations in the same place as types
+you’re importing, for example using <code>outDir</code>, or don’t import those
+generated declarations in the first place).</li>
+<li>You’re not importing those <code>.d.ts</code> files, or you’re even explicitly
+ignoring them e.g. with the <code>exclude</code> array in <code>tsconfig.json</code>, yet
+TypeScript keeps using them as input and complaining that it can’t
+overwrite them when generating type declarations.</li>
+</ol>
+<p>Here we’ll go in more details about the second reason.</p>
+<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#the-problem"><span>The problem</span></a></h2>
+<p>The main thing that you need to know is that if you’re importing a <code>.js</code>
+file and there’s a matching <code>.d.ts</code> next to it, TypeScript will
+<strong>always</strong> import it, even if you didn’t explicitly include those
+<code>.d.ts</code> files as input, and even if you explicitly put them in the
+<code>exclude</code> array. There’s no way around this.</p>
+<h2 id="output-d-ts-declarations-to-a-separate-directory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#output-d-ts-declarations-to-a-separate-directory"><span>Output <code>.d.ts</code> declarations to a separate directory</span></a></h2>
+<p>One solution is to put the generated type declarations in a separate
+directory instead of next to the <code>.js</code> files. You can do that by
+configuring a <code>outDir</code>, as explained in the documentation about
+<a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">creating <code>.d.ts</code> files from <code>.js</code> files</a>:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;compilerOptions&quot;</span>: {
+    <span class="hljs-comment">// Tells TypeScript to read `.js` files, as normally they are</span>
+    <span class="hljs-comment">// ignored as source files.</span>
+    <span class="hljs-attr">&quot;allowJs&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// Generate `d.ts` files.</span>
+    <span class="hljs-attr">&quot;declaration&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// This compiler run should only output `d.ts` files.</span>
+    <span class="hljs-attr">&quot;emitDeclarationOnly&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// Types should go into this directory. Removing this would place</span>
+    <span class="hljs-comment">// the `.d.ts` files next to the `.js` files.</span>
+    <span class="hljs-attr">&quot;outDir&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
+  }
+}
+</code></pre>
+<p>As they nicely indicate, if you don’t specify <code>outDir</code>, the <code>.d.ts</code> will
+be put next to the <code>.js</code> files (which literally means they’ll be
+automatically considered as inputs on the next build and it will crash),
+and it’s probably the way you’re using this right now.</p>
+<p>Then you can tell TypeScript where to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html">find the package types</a>
+in your <code>package.json</code>:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
+}
+</code></pre>
+<p>But this only work for the main export (<code>import 'my-lib'</code>) and will
+break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
+<p>If you want to support this use case, you <strong>have to</strong> ship the <code>.d.ts</code>
+files next to the <code>.js</code> files.</p>
+<p>So here’s a few alternative solutions and their tradeoffs.</p>
+<h2 id="copy-the-js-files-next-to-the-d-ts-declarations" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#copy-the-js-files-next-to-the-d-ts-declarations"><span>Copy the <code>.js</code> files next to the <code>.d.ts</code> declarations</span></a></h2>
+<p>Since we can’t generate the <code>.d.ts</code> next to the source <code>.js</code> files (well
+we can, but just once), we can instead generate the <code>.d.ts</code> files to a
+<code>dist</code> directory and copy the <code>.js</code> files next to them.</p>
+<p>There’s two ways you can do that, the first one I tried is to remove
+<code>emitDeclarationOnly</code> so that let TypeScript compiles the source <code>.js</code>
+files to the <code>outDir</code>, and the other one is to manually copy them.</p>
+<p>In both cases there’s a number of caveats with that about how you import
+nested files, and I’ll go through the possible workarounds.</p>
+<h3 id="compile-your-js-files-to-js-lol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#compile-your-js-files-to-js-lol"><span>Compile your JS files to JS (lol)</span></a></h3>
+<p>The reason you have this error in the first place is likely because
+you’re writing actual JavaScript and generating types from JSDoc.</p>
+<p>One of the numerous benefits of doing that is that you don’t need to
+compile your code. Your <code>src</code> is your <code>dist</code> and that’s the beauty of
+it. You run what you write, no compilation, no source maps, and no
+configuration of every single tool and service you use to deal with this
+extra complexity.</p>
+<p>You can throw away all of those benefits by letting TypeScript compile
+your <code>.js</code> files to the <code>outDir</code>, by removing <code>emitDeclarationOnly</code> from
+the <code>tsc</code> command or <code>tsconfig.json</code>, so that they’re put along the
+generated <code>.d.ts</code> files.</p>
+<p>But at that point you might as well write TypeScript in the first place.</p>
+<h3 id="manually-copy-your-js-files-to-the-outdir" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#manually-copy-your-js-files-to-the-outdir"><span>Manually copy your JS files to the <code>outDir</code></span></a></h3>
+<p>A <a href="https://vccolombo.github.io/blog/tsc-how-to-copy-non-typescript-files-when-building/">better way</a>
+if you want to ship your <code>.js</code> files unaltered is to copy them yourself
+next to the <code>.d.ts</code> declarations.</p>
+<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly --outDir dist &amp;&amp; cp *.js dist
+</code></pre>
+<p>Then you can <code>import 'my-lib/dist/some-file</code> and types will work
+properly. If you want to allow deep imports though, we need to dig a bit
+further.</p>
+<h2 id="getting-it-to-work-with-deep-nested-imports" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#getting-it-to-work-with-deep-nested-imports"><span>Getting it to work with deep/nested imports</span></a></h2>
+<p>If you want to allow <code>import 'my-lib/some-file'</code> and don’t like the idea
+of documenting <code>import 'my-lib/dist/some-file'</code>, you have again
+<a href="https://stackoverflow.com/questions/67097803/how-to-let-users-import-from-subfolders-of-my-npm-package">a few options</a>.</p>
+<h3 id="compile-to-the-project-root" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#compile-to-the-project-root"><span>Compile to the project root</span></a></h3>
+<p>Make sure your source files are in a subfolder, e.g. <code>src</code>, then compile
+to the project root directory.</p>
+<pre><code class="hljs language-sh">tsc src/*.js --allowJs --declaration --emitDeclarationOnly --outDir . &amp;&amp; cp src/*.js .
+</code></pre>
+<h3 id="publish-from-your-dist-directory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#publish-from-your-dist-directory"><span>Publish from your <code>dist</code> directory</span></a></h3>
+<p>The previous solution might get a bit messy though so
+<a href="https://stackoverflow.com/questions/38935176/how-to-npm-publish-specific-folder-but-as-package-root">alternatively</a>
+you can use the earlier command with <code>--outDir dist</code>, but put your
+<code>package.json</code> in the <code>dist</code> directory as well, and run <code>npm publish dist</code> (or <code>cd dist &amp;&amp; npm publish</code>).</p>
+<p>Whether you want your <code>package.json</code> to live in the <code>dist</code> directory
+(and commit it there), or run <code>cp package.json dist</code> as part of your
+build command is up to you.</p>
+<h3 id="write-an-exports-map" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#write-an-exports-map"><span>Write an <code>exports</code> map</span></a></h3>
+<p>If you’re not happy with the previous solutions, you can write an
+<a href="https://nodejs.org/api/packages.html#packages_exports"><code>exports</code> map</a>
+in your <code>package.json</code> so that <code>import 'my-lib/some-file</code> translates
+to <code>my-lib/dist/some-file</code>.</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;exports&quot;</span>: {
+   <span class="hljs-attr">&quot;./some-file&quot;</span>: <span class="hljs-string">&quot;./dist/some-file&quot;</span>,
+   <span class="hljs-attr">&quot;./some/other-file&quot;</span>: <span class="hljs-string">&quot;./dist/some/other-file&quot;</span>
+  }
+}
+</code></pre>
+<p>That being said only the paths defined here will be allowed to be
+imported, you won’t be able to import arbitrary files anymore, which
+might not be a bad thing, but maybe you like the simplicity of
+everything being importable by default.</p>
+<h2 id="quick-and-dirty-hack-that-actually-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#quick-and-dirty-hack-that-actually-work"><span>Quick and dirty hack that actually work</span></a></h2>
+<p>To get the best of both worlds by generating <code>.d.ts</code> files next to your
+source <code>.js</code> files without adding extra configuration and still allowing
+deep imports, you need to <strong>explicitly remove the generated files before
+running the compiler</strong>.</p>
+<p>Simple, easy and dirty:</p>
+<pre><code class="hljs language-sh">rm -f *.d.ts &amp;&amp; tsc *.js --allowJs --declaration --emitDeclarationOnly
+</code></pre>
+<p>Here I use <code>rm -f</code> so that it doesn’t fail if the declaration files are
+not generated yet. Feel free to tweak the pattern, for example if you
+have subfolders you want to include.</p>
+<p>I’m not a big fan of this solution, but it’s still my favorite of all
+the ones I described in this post. It seems that TypeScript wasn’t built
+for simplicity, let alone for working with source <code>.js</code> files, and deep
+imports don’t seem to be part of the happy path either. If you found a
+better way, please <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
+]]></content>
+  </entry>
   <entry>
     <title>Bypass SQLite exclusive lock 🔐</title>
     <link href="https://www.codejam.info/2021/10/bypass-sqlite-exclusive-lock.html" />
@@ -3418,7 +3566,7 @@ output to the desired length.</p>
 <span class="hljs-comment">// integer as a buffer.</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
   <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
-  buffer.writeUint32BE(number)
+  buffer.writeUInt32BE(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
@@ -3599,7 +3747,7 @@ encryption key in the <code>X-KeyID</code> header</strong>.</p>
 JWK, so we don’t need the <code>deriveKeys</code> function anymore. Instead, we
 only to need to split the <code>k</code> field to separate the encryption key from
 the HMAC key:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k, <span class="hljs-string">&#x27;base64&#x27;</span>)
 
 <span class="hljs-keyword">const</span> syncKeyBundle = {
   <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
@@ -3628,7 +3776,7 @@ them together, you would get something like this:</p>
 <span class="hljs-comment">// integer as a buffer.</span>
 <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
   <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
-  buffer.writeUint32BE(number)
+  buffer.writeUInt32BE(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
@@ -5840,254 +5988,6 @@ making our own client. Let’s dig into it!</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>
 </div>
-]]></content>
-  </entry>
-  <entry>
-    <title>Why I switched to Firefox Lockwise as my password manager</title>
-    <link href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html" />
-    <id>https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html</id>
-    <updated>2021-08-08T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>First thing first, the purpose of this article is not to convince you to
-do the same. I just like to document the reasoning behind some of my
-choices, because I think it can be interesting. If you’re curious about
-this, read on!</p>
-<p>Also, this post is not going to be about <em>why you should use a password
-manager</em> in the first place. But you should probably use a password
-manager, and in case you don’t, I’ll write a quick section about that.
-Feel free to <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-firefox-lockwise">skip it</a>!</p>
-<h2 id="why-you-should-use-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-you-should-use-a-password-manager"><span>Why you should use a password manager</span></a></h2>
-<ul>
-<li>Passwords are the most widespread way of authentication to websites
-and other services on the internet.</li>
-<li>The average user tends to log in <a href="https://blog.dashlane.com/world-password-day/">on over a hundred services</a>,
-and it’s only going to grow over time.</li>
-</ul>
-<p>This brings a number of challenges that are addressed by some common
-ways of dealing with passwords, some worst than others, which I’ll go
-through below.</p>
-<h3 id="using-a-single-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-single-password"><span>Using a single password</span></a></h3>
-<p>If you use the same password everywhere, would a single of the services
-you signed up with have a security issue, that allows an attacker to
-gain access to your password, and all of your other accounts sharing
-that password can be considered compromised. Not great.</p>
-<p>Using a different password everywhere mitigates that, but it’s not
-scalable for most of us to remember hundreds of different passwords.</p>
-<h3 id="deriving-a-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#deriving-a-password"><span>Deriving a password</span></a></h3>
-<p>A common solution that people found to help with this was to <em>derive</em> a
-primary password for each service. Typically, since most people can’t
-perform <a href="https://en.wikipedia.org/wiki/HKDF">HKDF</a> or
-<a href="https://en.wikipedia.org/wiki/PBKDF2">PBKDF2</a> mentally, we tend to just
-prepend or append the base password to the website name or something
-similar.</p>
-<p>This is only an illusion of security and it’s fairly easy for an
-attacker with access to one of your “unique” passwords to guess in a
-limited number of tries the corresponding passwords to other websites.</p>
-<h3 id="using-oauth" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-oauth"><span>Using OAuth</span></a></h3>
-<p><a href="https://en.wikipedia.org/wiki/OAuth">OAuth</a>, e.g. “sign in with Google
-/ Apple / Twitter / Facebook / GitHub” is another common way to
-authenticate to services, and is a solid alternative to passwords in a
-lot of cases, but it is limited to the support of the websites you’re
-trying to access.</p>
-<p>For example, while your local grocery store might allow you to sign in
-with Google, or the latest trending project with a .io domain probably
-allows you to sign in with GitHub, it would be very weird if Apple /
-Twitter / Facebook allowed you to sign in with Google, or any possible
-combinations among them, meaning that you’ll need a different password
-at least for all of those. And anyways, a lot of services just don’t
-support OAuth whatsoever meaning you’ll need unique passwords for them
-too.</p>
-<p>In practice, OAuth is useful, but doesn’t solve the problem.</p>
-<h3 id="using-a-password-manager" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#using-a-password-manager"><span>Using a password manager</span></a></h3>
-<p>A password manager takes away from you the responsibility of remembering
-passwords. This means that it’s now easy to have a strong, unique
-password for every account you have. The only password you need to
-remember is now the one of your password manager (unless it uses a
-different kind of authentication).</p>
-<p>While you can import your existing (potentially weak, because you had to
-remember them) passwords, moving to a password manager is also a good
-opportunity to replace them with strong, randomly generated passwords.</p>
-<p>The downside is that the primary password you choose for your password
-manager becomes a single point of failure. If it is compromised, all
-your passwords are compromised.</p>
-<p>There’s a <a href="https://security.stackexchange.com/questions/152269/a-password-manager-a-single-point-of-failure-then-why-is-it-so-often-recommende">great thread on Stack Exchange</a>
-about the tradeoffs of password managers.</p>
-<p>Still, to mitigate that, I would recommend using a passphrase instead of
-a password, as pointed out by <a href="https://xkcd.com/936/">this legendary xkcd</a>.</p>
-<figure class="center">
-  <a href="https://xkcd.com/936/">
-    <img alt="Passphrases vs. passwords" src="https://imgs.xkcd.com/comics/password_strength.png">
-  </a>
-</figure>
-<h2 id="why-firefox-lockwise" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#why-firefox-lockwise"><span>Why Firefox Lockwise</span></a></h2>
-<p>Now we’re on the same page about using a password manager (or not),
-let’s see why I, personally, chose to move to Lockwise.</p>
-<p>But before digging in what’s good or not about it, let me give a bit of
-context about the way I use a password manager.</p>
-<ul>
-<li>I’m primarily a desktop (and laptop) user. I barely use my phone for
-anything else than texting.</li>
-<li>For the rare times I use my phone for something else, I want to be
-able to easily access my passwords, and login to <em>existing</em> accounts
-in the browser (I use Firefox for Android) and native apps.</li>
-<li>I use Firefox passwords autosave/autofill feature (offline) as a
-companion to my current CLI password manager. I want to keep at least
-the same level of convenience, and ideally a better integration.</li>
-<li>I need my password manager to be open source. If I can’t review the
-code that’s going to deal with my passwords, I can’t trust it.</li>
-<li>I currently don’t pay for any subscription other than my ISP and
-mobile carrier, and I’d like to keep things this way.</li>
-</ul>
-<div class="note">
-<p><strong>Fun fact!</strong> Before that, I was using my own password manager which was
-just a tiny layer of (desktop-only) convenience over Git, PBKDF2 and
-AES-256. While it could have worked on mobile, I was lazy to build an
-app for it and decided it was time to change.</p>
-</div>
-<h2 id="pros" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#pros"><span>Pros</span></a></h2>
-<p>Let’s start with the pros of Firefox Lockwise. Sadly, there’s not a lot,
-but their impact is so big for me that they make all the difference.</p>
-<h3 id="it-s-native-to-firefox" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-native-to-firefox"><span>It’s native to Firefox</span></a></h3>
-<p>Lockwise is not a browser extension, it’s directly baked in Firefox
-itself. This means that it is not limited to a browser extension sandbox
-like third-party password managers. It’s basically just a cool name for
-Firefox’s native passwords autofill engine, and the <code>passwords</code>
-collection of Firefox Sync.</p>
-<p>This has the advantage of allowing for a super smooth user experience
-(at least for the happy path it was designed for). It pretty much always
-does the right thing at the right time when it’s about filling login
-forms, or asking to save new login information.</p>
-<p>For comparison, when I was using Bitwarden (which to be honest, I find
-superior in all other aspects), the experience wasn’t as seamless. Quite
-often I wouldn’t be prompted to save new passwords, and I had to go in
-the extension UI to add them manually, or it would fail to fill a login
-form for which it had matching credentials, making me open the extension
-to explicitly ask it to fill out the boxes. I think most of those issues
-weren’t necessarily “poor quality” from Bitwarden, but more due to the
-fact it’s limited to a browser extension sandbox, and cannot get the
-same level of integration than the browser engine itself.</p>
-<p>Because the happy path Lockwise was designed for overlaps so much with
-my own usage (which might not be the case of everybody), this makes it a
-great fit for me, compared to Bitwarden, which doesn’t perform as well
-on my main use case, but does a better job at pretty much everything
-else.</p>
-<p>In other words, Lockwise is great 95% the time I use it, but sucks at
-the remaining 5%, while Bitwarden is just consistently good (but not
-great).</p>
-<h3 id="it-s-part-of-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#it-s-part-of-firefox-sync"><span>It’s part of Firefox Sync</span></a></h3>
-<p>As I mentioned in the previous part, Lockwise is built on top of Firefox
-Sync, which happens to be the tool I use to synchronise my tabs and
-bookmarks between all my devices.</p>
-<p>At that point it seems like an obvious solution to also use it for
-my passwords. After all, if the tool I’m already using fits my needs,
-why try to add another one?</p>
-<h2 id="cons" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#cons"><span>Cons</span></a></h2>
-<p>Now as of today, Lockwise is missing a number of features one would
-expect from a password manager, some of them being being so basic that
-it can look pretty ridiculous.</p>
-<h3 id="no-extension-for-other-browsers" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-extension-for-other-browsers"><span>No extension for other browsers</span></a></h3>
-<p>Lockwise is part of Firefox, but there’s no integration with other
-browsers. If Firefox isn’t your primary browser, you’re probably not
-reading this anyways, but if you need to have convenient access to your
-passwords in another browser, Lockwise is definitely not for you.</p>
-<p>You can obviously still open Lockwise in Firefox and copy passwords to
-your clipboard to use them anywhere, but in no way this can compete with
-a proper integration.</p>
-<h3 id="can-t-generate-new-passwords-on-mobile" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#can-t-generate-new-passwords-on-mobile"><span>Can’t generate new passwords on mobile</span></a></h3>
-<p>From the mobile version of Firefox, we can’t generate new passwords.
-Neither can we from the Lockwise standalone mobile app.</p>
-<p>If we submit a login form with a new password that we manually typed,
-both Firefox and the Lockwise app will happily ask us if we want to
-update an existing entry or save a new entry, but we just don’t have the
-option to “suggest a strong password” like the desktop version does.</p>
-<p>This is probably a dealbreaker for a lot of people, unless you only use
-your phone a negligible part of the time like I do, and mostly as a
-read-only client as far as for passwords are concerned.</p>
-<h3 id="the-mobile-app-crashes-regularly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#the-mobile-app-crashes-regularly"><span>The mobile app crashes regularly</span></a></h3>
-<p>While Firefox for Android works flawlessly for me, the Lockwise app
-crashes pretty often (something as simple as trying to edit an entry
-from the app). Since Firefox also have a UI to manage (synced)
-passwords, I use that instead. It’s not something I need to do really
-often on mobile anyways, if ever really.</p>
-<p>The only reason I have the Lockwise app installed is to be able to
-autofill a password in other native apps, and it does a good job at
-this.</p>
-<h3 id="no-totp-support" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-totp-support"><span>No TOTP support</span></a></h3>
-<p><a href="https://en.wikipedia.org/wiki/Time-based_One-Time_Password">TOTP</a>
-(time-based one-time password) is a common mechanism to provide
-<a href="https://en.wikipedia.org/wiki/Multi-factor_authentication">multi-factor authentication</a>
-through authenticator apps. If you’re new to the concept, it’s
-essentially a second password that is randomly generated by the issuing
-service during setup, that you store in the authenticator app of your
-choice, usually through a QR code.</p>
-<p>When you later login on that service, on top of your actual password,
-they’ll request a confirmation code. Your authenticator app can use the
-key that was configured during setup, together with the current time,
-rounded down to the closest 30 seconds (or as configured otherwise) to
-<a href="https://en.wikipedia.org/wiki/HMAC">generate</a> a short code that the
-service will be able to verify only for that period of time.</p>
-<p>It’s a common feature for password managers to support acting as a TOTP
-authenticator, and <a href="https://jamesrcridland.medium.com/should-you-store-your-2fa-totp-tokens-in-your-password-manager-9798199b728">this post</a>
-explains better than me why it’s a good thing. Sadly Lockwise doesn’t
-support it.</p>
-<p>While I would love TOTP support, it’s not a critical-enough feature for
-me to trade off the quality of experience I otherwise have with Lockwise
-to move to Bitwarden.</p>
-<p>It’s especially not a big deal for me because I already have my own
-“authenticator app” based on <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>,
-and I can <a href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html">hack my way around</a>
-storing the TOTP secrets in Lockwise. While it’s far from a world-class
-integration like the one Bitwarden offers, it’s good enough for me for
-the time being.</p>
-<h3 id="no-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-cli"><span>No CLI</span></a></h3>
-<p>A CLI would have been a nice to have, but I rarely need to input
-passwords on the command line these days anyways, since most tools now
-use OAuth. Worst case, I can build one myself.</p>
-<h3 id="no-explicitly-public-api-let-me-explain" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-explicitly-public-api-let-me-explain"><span>No explicitly public API (let me explain)</span></a></h3>
-<p>I’m not going to say that there’s no public API, because <a href="https://mozilla-services.readthedocs.io/en/latest/sync/">there is</a>.
-But this document <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html#bonus-references">is not enough by itself</a>
-to do anything useful with your Lockwise passwords.</p>
-<p>It <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">took</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">me</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">days</a>
-to figure out how to implement what was the legacy way
-of reading passwords from Firefox Sync, and it took me
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">even</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">longer</a>
-to figure out the little documented but up-to-date way of doing so. I
-wrote about it <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">in this series</a>,
-and I really wish it didn’t need to be that long.</p>
-<p>It seems to me that the main reason this API and documentation is public
-is because Mozilla works in the open. They share all their code,
-documentation, and even some (most?) of their communications. But they
-don’t necessarily <em>intend</em> them to be consumed by third-party developers
-and end-users like me.</p>
-<div class="note">
-<p><strong>Positive note:</strong> the fact that it was particularly hard to build
-something with the “public but not really” Firefox Sync API made me dig
-very deep in the code and protocols behind it, and I now have a better
-understanding of the tool than I would have had if it featured a
-comprehensive API client in the first place. Because I “reviewed” so
-much of the code behind Lockwise, I’m now even more confident about
-trusting it with my passwords.</p>
-</div>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#conclusion"><span>Conclusion</span></a></h2>
-<p>I find it pretty funny that the main reason I’m switching password
-managers is to be able to use it from my phone, yet I chose Lockwise
-which have a pretty limited mobile experience.</p>
-<p>It just turns out that my use case on mobile overlaps exactly with the
-part that the Lockwise app is good at (being a read-only password
-manager).</p>
-<p>Overall, the fact that Lockwise is baked in the browser gives it the
-ability to provide a better experience than an extension would, and
-while they do a solid job on desktop, they don’t leverage that ability
-to its full potential on mobile.</p>
-<p>If you’re a heavy mobile user, Lockwise is probably a no-go just because
-of the lack of password generation feature (Bitwarden is probably a
-better option for you at that point), but otherwise, it does an
-excellent job at giving you access to existing passwords on your phone,
-whether it’s in the browser or native apps.</p>
-<p>In the end, it doesn’t really matter what password manager you’re going
-to use, as long as you actually use one!</p>
 ]]></content>
   </entry>
 </feed>

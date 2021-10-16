@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>TypeScript: cannot write file .d.ts because it would overwrite input file</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211003.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="TypeScript: cannot write file .d.ts because it would overwrite input file">
+  <meta property="og:description" content="There’s countless issues about this error and I thought it would be useful to write a clear explanation of what’s going on and a summary of the possible solutions.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/freelance.html">Freelance</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>TypeScript: cannot write file <code>.d.ts</code> because it would overwrite input file</h1>
+<p class="date">October 16, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>There’s <a href="https://stackoverflow.com/questions/42609768/typescript-error-cannot-write-file-because-it-would-overwrite-input-file">countless</a>
+<a href="https://stackoverflow.com/questions/46914070/how-to-exclude-d-ts-file-for-typescript-compiler">issues</a>
+<a href="https://github.com/microsoft/TypeScript/issues/16749">about</a>
+this error and I thought it would be useful to write a clear explanation
+of what’s going on and a summary of the possible solutions.</p>
+<p>This happens for two reasons:</p>
+<ol>
+<li>You’re explicitly including those <code>.d.ts</code> files e.g. as part of your
+<code>include</code> array in <code>tsconfig.json</code> or as part of the <code>tsc</code> arguments,
+and you’re asking TypeScript to output type declarations in the same
+place. Then the error is pretty obvious and the fix should be too
+(don’t output the generated declarations in the same place as types
+you’re importing, for example using <code>outDir</code>, or don’t import those
+generated declarations in the first place).</li>
+<li>You’re not importing those <code>.d.ts</code> files, or you’re even explicitly
+ignoring them e.g. with the <code>exclude</code> array in <code>tsconfig.json</code>, yet
+TypeScript keeps using them as input and complaining that it can’t
+overwrite them when generating type declarations.</li>
+</ol>
+<p>Here we’ll go in more details about the second reason.</p>
+<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="#the-problem"><span>The problem</span></a></h2>
+<p>The main thing that you need to know is that if you’re importing a <code>.js</code>
+file and there’s a matching <code>.d.ts</code> next to it, TypeScript will
+<strong>always</strong> import it, even if you didn’t explicitly include those
+<code>.d.ts</code> files as input, and even if you explicitly put them in the
+<code>exclude</code> array. There’s no way around this.</p>
+<h2 id="output-d-ts-declarations-to-a-separate-directory" tabindex="-1"><a class="header-anchor" href="#output-d-ts-declarations-to-a-separate-directory"><span>Output <code>.d.ts</code> declarations to a separate directory</span></a></h2>
+<p>One solution is to put the generated type declarations in a separate
+directory instead of next to the <code>.js</code> files. You can do that by
+configuring a <code>outDir</code>, as explained in the documentation about
+<a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">creating <code>.d.ts</code> files from <code>.js</code> files</a>:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;compilerOptions&quot;</span>: {
+    <span class="hljs-comment">// Tells TypeScript to read `.js` files, as normally they are</span>
+    <span class="hljs-comment">// ignored as source files.</span>
+    <span class="hljs-attr">&quot;allowJs&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// Generate `d.ts` files.</span>
+    <span class="hljs-attr">&quot;declaration&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// This compiler run should only output `d.ts` files.</span>
+    <span class="hljs-attr">&quot;emitDeclarationOnly&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-comment">// Types should go into this directory. Removing this would place</span>
+    <span class="hljs-comment">// the `.d.ts` files next to the `.js` files.</span>
+    <span class="hljs-attr">&quot;outDir&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
+  }
+}
+</code></pre>
+<p>As they nicely indicate, if you don’t specify <code>outDir</code>, the <code>.d.ts</code> will
+be put next to the <code>.js</code> files (which literally means they’ll be
+automatically considered as inputs on the next build and it will crash),
+and it’s probably the way you’re using this right now.</p>
+<p>Then you can tell TypeScript where to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html">find the package types</a>
+in your <code>package.json</code>:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
+}
+</code></pre>
+<p>But this only work for the main export (<code>import 'my-lib'</code>) and will
+break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
+<p>If you want to support this use case, you <strong>have to</strong> ship the <code>.d.ts</code>
+files next to the <code>.js</code> files.</p>
+<p>So here’s a few alternative solutions and their tradeoffs.</p>
+<h2 id="copy-the-js-files-next-to-the-d-ts-declarations" tabindex="-1"><a class="header-anchor" href="#copy-the-js-files-next-to-the-d-ts-declarations"><span>Copy the <code>.js</code> files next to the <code>.d.ts</code> declarations</span></a></h2>
+<p>Since we can’t generate the <code>.d.ts</code> next to the source <code>.js</code> files (well
+we can, but just once), we can instead generate the <code>.d.ts</code> files to a
+<code>dist</code> directory and copy the <code>.js</code> files next to them.</p>
+<p>There’s two ways you can do that, the first one I tried is to remove
+<code>emitDeclarationOnly</code> so that let TypeScript compiles the source <code>.js</code>
+files to the <code>outDir</code>, and the other one is to manually copy them.</p>
+<p>In both cases there’s a number of caveats with that about how you import
+nested files, and I’ll go through the possible workarounds.</p>
+<h3 id="compile-your-js-files-to-js-lol" tabindex="-1"><a class="header-anchor" href="#compile-your-js-files-to-js-lol"><span>Compile your JS files to JS (lol)</span></a></h3>
+<p>The reason you have this error in the first place is likely because
+you’re writing actual JavaScript and generating types from JSDoc.</p>
+<p>One of the numerous benefits of doing that is that you don’t need to
+compile your code. Your <code>src</code> is your <code>dist</code> and that’s the beauty of
+it. You run what you write, no compilation, no source maps, and no
+configuration of every single tool and service you use to deal with this
+extra complexity.</p>
+<p>You can throw away all of those benefits by letting TypeScript compile
+your <code>.js</code> files to the <code>outDir</code>, by removing <code>emitDeclarationOnly</code> from
+the <code>tsc</code> command or <code>tsconfig.json</code>, so that they’re put along the
+generated <code>.d.ts</code> files.</p>
+<p>But at that point you might as well write TypeScript in the first place.</p>
+<h3 id="manually-copy-your-js-files-to-the-outdir" tabindex="-1"><a class="header-anchor" href="#manually-copy-your-js-files-to-the-outdir"><span>Manually copy your JS files to the <code>outDir</code></span></a></h3>
+<p>A <a href="https://vccolombo.github.io/blog/tsc-how-to-copy-non-typescript-files-when-building/">better way</a>
+if you want to ship your <code>.js</code> files unaltered is to copy them yourself
+next to the <code>.d.ts</code> declarations.</p>
+<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly --outDir dist &amp;&amp; cp *.js dist
+</code></pre>
+<p>Then you can <code>import 'my-lib/dist/some-file</code> and types will work
+properly. If you want to allow deep imports though, we need to dig a bit
+further.</p>
+<h2 id="getting-it-to-work-with-deep-nested-imports" tabindex="-1"><a class="header-anchor" href="#getting-it-to-work-with-deep-nested-imports"><span>Getting it to work with deep/nested imports</span></a></h2>
+<p>If you want to allow <code>import 'my-lib/some-file'</code> and don’t like the idea
+of documenting <code>import 'my-lib/dist/some-file'</code>, you have again
+<a href="https://stackoverflow.com/questions/67097803/how-to-let-users-import-from-subfolders-of-my-npm-package">a few options</a>.</p>
+<h3 id="compile-to-the-project-root" tabindex="-1"><a class="header-anchor" href="#compile-to-the-project-root"><span>Compile to the project root</span></a></h3>
+<p>Make sure your source files are in a subfolder, e.g. <code>src</code>, then compile
+to the project root directory.</p>
+<pre><code class="hljs language-sh">tsc src/*.js --allowJs --declaration --emitDeclarationOnly --outDir . &amp;&amp; cp src/*.js .
+</code></pre>
+<h3 id="publish-from-your-dist-directory" tabindex="-1"><a class="header-anchor" href="#publish-from-your-dist-directory"><span>Publish from your <code>dist</code> directory</span></a></h3>
+<p>The previous solution might get a bit messy though so
+<a href="https://stackoverflow.com/questions/38935176/how-to-npm-publish-specific-folder-but-as-package-root">alternatively</a>
+you can use the earlier command with <code>--outDir dist</code>, but put your
+<code>package.json</code> in the <code>dist</code> directory as well, and run <code>npm publish dist</code> (or <code>cd dist &amp;&amp; npm publish</code>).</p>
+<p>Whether you want your <code>package.json</code> to live in the <code>dist</code> directory
+(and commit it there), or run <code>cp package.json dist</code> as part of your
+build command is up to you.</p>
+<h3 id="write-an-exports-map" tabindex="-1"><a class="header-anchor" href="#write-an-exports-map"><span>Write an <code>exports</code> map</span></a></h3>
+<p>If you’re not happy with the previous solutions, you can write an
+<a href="https://nodejs.org/api/packages.html#packages_exports"><code>exports</code> map</a>
+in your <code>package.json</code> so that <code>import 'my-lib/some-file</code> translates
+to <code>my-lib/dist/some-file</code>.</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;exports&quot;</span>: {
+   <span class="hljs-attr">&quot;./some-file&quot;</span>: <span class="hljs-string">&quot;./dist/some-file&quot;</span>,
+   <span class="hljs-attr">&quot;./some/other-file&quot;</span>: <span class="hljs-string">&quot;./dist/some/other-file&quot;</span>
+  }
+}
+</code></pre>
+<p>That being said only the paths defined here will be allowed to be
+imported, you won’t be able to import arbitrary files anymore, which
+might not be a bad thing, but maybe you like the simplicity of
+everything being importable by default.</p>
+<h2 id="quick-and-dirty-hack-that-actually-work" tabindex="-1"><a class="header-anchor" href="#quick-and-dirty-hack-that-actually-work"><span>Quick and dirty hack that actually work</span></a></h2>
+<p>To get the best of both worlds by generating <code>.d.ts</code> files next to your
+source <code>.js</code> files without adding extra configuration and still allowing
+deep imports, you need to <strong>explicitly remove the generated files before
+running the compiler</strong>.</p>
+<p>Simple, easy and dirty:</p>
+<pre><code class="hljs language-sh">rm -f *.d.ts &amp;&amp; tsc *.js --allowJs --declaration --emitDeclarationOnly
+</code></pre>
+<p>Here I use <code>rm -f</code> so that it doesn’t fail if the declaration files are
+not generated yet. Feel free to tweak the pattern, for example if you
+have subfolders you want to include.</p>
+<p>I’m not a big fan of this solution, but it’s still my favorite of all
+the ones I described in this post. It seems that TypeScript wasn’t built
+for simplicity, let alone for working with source <code>.js</code> files, and deep
+imports don’t seem to be part of the happy path either. If you found a
+better way, please <a href="/val.html#contact">let me know</a>!</p>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/10/typescript-cannot-write-file-overwrite-input.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

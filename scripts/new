@@ -1,11 +1,9 @@
 #!/bin/sh -e
 
-printf 'Title: '
-read title
+read -e -p 'Title: ' title
 
 suggested_slug=$(node -p "require('@sindresorhus/slugify')(process.argv[1], { decamelize: false })" "$title")
-printf "Slug [$suggested_slug]: "
-read slug
+read -e -p "Slug [$suggested_slug]: " slug
 slug=${slug:-$suggested_slug}
 
 year=$(date +%Y)

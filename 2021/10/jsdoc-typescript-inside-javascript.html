@@ -297,7 +297,7 @@ runnable JS code even when there’s type errors.</p>
 that allows running the code even if it doesn’t pass type validation,
 which seems like a must-have during development. I’m kinda sour that
 it took me a 4 months post-burnout retirement kind of step back to
-finally find about it, after having fought with this problem for years. 😬</p>
+finally find about it, after fighting with this problem for years. 😬</p>
 </div>
 <h2 id="the-chicken-and-egg-problem-between-js-and-d-ts" tabindex="-1"><a class="header-anchor" href="#the-chicken-and-egg-problem-between-js-and-d-ts"><span>The chicken and egg problem between <code>.js</code> and <code>.d.ts</code></span></a></h2>
 <p>I didn’t share the commands I use to do the type checking and derive the
@@ -329,9 +329,9 @@ doing things.</p>
 any <code>.d.ts</code> file that’s next to an imported <code>.js</code> file. This is
 regardless of your explicit <code>include</code> and <code>exclude</code> patterns and
 there’s no way to turn off this behavior.</li>
-<li>TypeScript refuses to write over input files (and that’s a good thing).</li>
+<li>TypeScript refuses to overwrite input files (and that’s a good thing).</li>
 </ul>
-<p>And guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
+<p>Bug guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
 test it).</p>
 <p>The problem here is that while this command will run fine the first
 time, <a href="https://github.com/microsoft/TypeScript/issues/16749">subsequent runs will fail</a>
@@ -358,8 +358,8 @@ in a <code>src</code> or <code>dist</code> directory or some combination of both
 they all solve this particular problem, they also all leak into other
 aspects that you’ll have to work around.</p>
 <p>For example in the “complex” case above, you might want to allow
-importing <code>my-cool-package/some-other-file</code>, and not just
-<code>my-cool-package</code>. How wild would that be?</p>
+your users to <code>import 'my-cool-package/some-other-file'</code>, and not just
+<code>import 'my-cool-package'</code>. How wild would that be?</p>
 <p>Apparently, wild enough that most of the recommended solutions for the
 earlier problem will fail to deliver types information for that use
 case, or require you to do crazy things like copying your <code>package.json</code>

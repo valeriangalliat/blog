@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1449783928970256394
+---
+
 # JSDoc: TypeScript inside JavaScript and not the other way around 🤯
 October 17, 2021
 
@@ -378,7 +382,7 @@ that's mostly because I'm a perfectionist and I wasn't happy with having
 just the happy path working. 😜
 
 Still, I believe that this method allows to reduce the gap between
-JavaScript and TypeScript, while **getting rid of manual work**, making
+TypeScript and JavaScript, while **getting rid of manual work**, making
 the JavaScript code **safer**, and making the type definitions **more
 accurate and reliable** by tightly coupling them to the code.
 

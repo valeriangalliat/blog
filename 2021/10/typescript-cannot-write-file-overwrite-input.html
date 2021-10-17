@@ -140,7 +140,7 @@ in your <code>package.json</code>:</p>
   <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
 }
 </code></pre>
-<p>But this only work for the main export (<code>import 'my-lib'</code>) and will
+<p>But this only works for the main export (<code>import 'my-lib'</code>) and will
 break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
 <p>If you want to support this use case, you <strong>have to</strong> ship the <code>.d.ts</code>
 files next to the <code>.js</code> files.</p>
@@ -209,7 +209,7 @@ to <code>my-lib/dist/some-file</code>.</p>
 imported, you won’t be able to import arbitrary files anymore, which
 might not be a bad thing, but maybe you like the simplicity of
 everything being importable by default.</p>
-<h2 id="quick-and-dirty-hack-that-actually-work" tabindex="-1"><a class="header-anchor" href="#quick-and-dirty-hack-that-actually-work"><span>Quick and dirty hack that actually work</span></a></h2>
+<h2 id="quick-and-dirty-hack-that-actually-works" tabindex="-1"><a class="header-anchor" href="#quick-and-dirty-hack-that-actually-works"><span>Quick and dirty hack that actually works</span></a></h2>
 <p>To get the best of both worlds by generating <code>.d.ts</code> files next to your
 source <code>.js</code> files without adding extra configuration and still allowing
 deep imports, you need to <strong>explicitly remove the generated files before

@@ -378,7 +378,7 @@ final definitions.</p>
 <p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
 <pre><code class="hljs language-json">{
   <span class="hljs-attr">&quot;scripts&quot;</span>: {
-    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc auth/*.js *.js --checkJs --noEmit&quot;</span>,
+    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span>,
     <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
     <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
     <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>

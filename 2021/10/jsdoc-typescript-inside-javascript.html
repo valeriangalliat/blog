@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>JSDoc: TypeScript inside JavaScript and not the other way around 🤯</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211003.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="JSDoc: TypeScript inside JavaScript and not the other way around 🤯">
+  <meta property="og:description" content="This post is inspired by this great Speakeasy JS talk by Austin Gil. 💯">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/freelance.html">Freelance</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>JSDoc: TypeScript inside JavaScript and not the other way around 🤯</h1>
+<p class="date">October 17, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This post is inspired by this great <a href="https://speakeasyjs.com/">Speakeasy JS</a>
+talk by <a href="https://austingil.com/">Austin Gil</a>. 💯</p>
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/iP5XwRT2tNw" allowfullscreen></iframe>
+</figure>
+<p>Even though I was familiar with the concept of type checking JS files
+with TypeScript through JSDoc, I’ve always seen it as a way to
+<strong>transition to TypeScript</strong>. You would progressively add
+TypeScript-compatible JSDoc to an existing JavaScript project until
+everything is covered, to ultimately transition to the actual TypeScript
+syntax.</p>
+<p>But it never crossed my mind to use TypeScript with JSDoc as an end
+goal. Until I saw that talk.</p>
+<h2 id="the-problem-with-compiled-javascript" tabindex="-1"><a class="header-anchor" href="#the-problem-with-compiled-javascript"><span>The problem with compiled JavaScript</span></a></h2>
+<p>The main reason I don’t use TypeScript is not because of TypeScript
+itself (even though there’s a lot to say here). It’s because I don’t
+like to compile my JavaScript in the first place, at least not when it’s
+intended for Node.js.</p>
+<p>It’s the same reason I don’t use <a href="https://flow.org/">Flow</a>,
+<a href="https://elm-lang.org/">Elm</a>, <a href="https://dart.dev/">Dart</a>,
+<a href="https://babeljs.io/">Babel</a> or <a href="https://coffeescript.org/">CoffeeScript</a>.</p>
+<p>JavaScript being an interpreted language, it naturally comes with the
+ability to directly run your code. <strong>This is an incredibly convenient
+thing.</strong></p>
+<ul>
+<li>It’s fast as fuck because there’s nothing to compile.</li>
+<li>You can inspect and debug directly what you write without any extra
+tool or configuration.</li>
+<li>Your stack traces will be readable and usable out of the box.</li>
+<li>Every tool and service you use will (mostly) understand your code by
+default, because it’s <em>native</em> and doesn’t require special treatment.</li>
+</ul>
+<p>That’s a lot of time saved right there by not having to maintain custom
+configurations on all the tools and services you use, on top of the fact
+you need to install, configure, update and maintain a number of extra
+tools, pipelines, workflows, which you’ll also need to teach to
+everybody who’s going to work with you because we all do those things a
+little bit differently.</p>
+<p>Now, there are benefits to invest in this extra work, so if the cost of
+compiling your JavaScript is worth it for you, or you just enjoy the
+process, that’s fine! As far as I’m concerned, I don’t enjoy a single
+bit of it.</p>
+<h2 id="separate-type-definitions-hell" tabindex="-1"><a class="header-anchor" href="#separate-type-definitions-hell"><span>Separate type definitions hell 🔥</span></a></h2>
+<p>Static types are useful and there’s no argument that having type
+checking is generally a beneficial thing. For that reason, more and more
+people want types with the libraries they’re going to use.</p>
+<p>I maintain <a href="https://github.com/valeriangalliat">quite a few</a> open source
+JavaScript libraries, and on the most popular ones, people have
+requested (or better, contributed) TypeScript definitions, whether it’s
+directly in the package repository or on <a href="https://github.com/DefinitelyTyped/DefinitelyTyped">Definitely Typed</a>.</p>
+<p>While this comes from a good intention, it causes a number of issues for
+everybody involved:</p>
+<ul>
+<li>
+<p>When added directly to the package repository, types represent extra
+work for the maintainers who initially wrote a JavaScript project and
+didn’t want to write, maintain, and deal with a TypeScript project.</p>
+</li>
+<li>
+<p>Types are pretty much always added as manually written, static <code>.d.ts</code>
+files, because it would represent a lot more work (on top of being
+extremely bold and opinionated) to convert the project to TypeScript,
+and nobody really wants to do that.</p>
+<p>This means there’s no guarantee that the types will match what the JS
+code is actually doing. It’s a best effort that worked good enough for
+whoever contributed it.</p>
+</li>
+<li>
+<p>On top of that, the maintainers (e.g. me) might “forget” to update the
+previously contributed TypeScript definitions when they make changes.
+The more changes there is, the more likely the types won’t be updated
+because of the amount of extra work it represents.</p>
+<p>This means that the included types will most certainly drift out of
+sync with the actual code (even more than they already are) until it
+breaks someone’s build and they contribute a fix.</p>
+</li>
+</ul>
+<p>As a maintainer, what can I do?</p>
+<ul>
+<li>Should I reject a PR that add type definitions because I’m not ready
+to commit to the extra work required to maintain them?</li>
+<li>Should I merge the PR only at the condition that the person becomes a
+core contributor and maintain the types in future updates?</li>
+<li>Should I merge the PR but put a note somewhere that types are
+community contributed and might drift out of sync from the JavaScript
+code, a bit like I do for translations contributed in languages that I
+don’t speak?</li>
+</ul>
+<p>I don’t like any of those choices. Luckily, most of my projects are
+small enough that the types don’t represent a lot of extra work, plus
+everybody seems to be happy with type definitions covering only the
+happy path which is usually a small subset of the codebase.</p>
+<p>So for now I just merge the PRs and let TypeScript users contribute
+improvements and bug fixes over time as they need them. It seems that
+they’re used to having things partially broken all the time and they
+prefer to have inaccurate or incomplete types than no types.</p>
+<h2 id="having-the-best-of-both-worlds" tabindex="-1"><a class="header-anchor" href="#having-the-best-of-both-worlds"><span>Having the best of both worlds</span></a></h2>
+<p>Out of sympathy for those users (I truly think they deserve something
+better), and also because I do believe in the benefits of static typing
+(as much as I hate compiling an interpreted language), I decided to
+start my <a href="https://github.com/valeriangalliat/node-firefox-sync">latest JavaScript library</a>
+with TypeScript definitions in mind from the start.</p>
+<p>Thanks to the talk I shared in the beginning of this post, I decided to
+write my JSDoc comments in a way that the TypeScript compiler can
+consume. Here’s a few examples:</p>
+<details>
+  <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/auth/oauth.js"><code>auth/oauth.js</code></a></summary>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> base = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./oauth-base&#x27;</span>)
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOAuthChallengeImpl</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{crypto.KeyPairKeyObjectResult}</span> <span class="hljs-variable">keyPair</span></span>
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{base.OAuthChallenge &amp; SyncOAuthChallengeImpl}</span> <span class="hljs-variable">SyncOAuthChallenge</span></span>
+ */</span>
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@param <span class="hljs-type">{SyncOAuthChallenge}</span> <span class="hljs-variable">challenge</span></span>
+ * <span class="hljs-doctag">@param <span class="hljs-type">{base.OAuthResult}</span> <span class="hljs-variable">result</span></span>
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Object}</span> </span>[options]
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.clientId] - OAuth client ID.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.scope] - OAuth scope.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenEndpoint] - OAuth token endpoint.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenServerUrl] - TokenServer URL.
+ * <span class="hljs-doctag">@returns <span class="hljs-type">{Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;}</span></span>
+ */</span>
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">complete</span> (<span class="hljs-params">challenge, result, options</span>) </span>{
+  <span class="hljs-comment">// Actual code.</span>
+}
+
+<span class="hljs-built_in">module</span>.exports = { complete }
+</code></pre>
+</details>
+<details>
+  <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/types.js"><code>types.js</code></a></summary>
+<pre><code class="hljs language-js"><span class="hljs-comment">/**
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOptions</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authServerUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authorizationUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenEndpoint]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenServerUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{import(&#x27;./auth/oauth-base&#x27;).OAuthOptions}</span> </span>[oauthOptions]
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">OAuthToken</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">access_token</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">scope</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">expires_in</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncToken</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">id</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">key</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncKeyBundle</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">encryptionKey</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">hmacKey</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">kid</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncCredentials</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{OAuthToken}</span> <span class="hljs-variable">oauthToken</span></span> - The OAuth token required to authenticate to the TokenServer.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{SyncKeyBundle}</span> <span class="hljs-variable">syncKeyBundle</span></span> - The Sync key bundle required to decrypt the collection keys.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{SyncToken}</span> <span class="hljs-variable">token</span></span> - The token object required to call the Firefox Sync API.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">tokenIssuedAt</span></span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
+ */</span>
+
+<span class="hljs-comment">// Does nothing but required for TypeScript to import this file.</span>
+<span class="hljs-built_in">module</span>.exports = {}
+</code></pre>
+</details>
+<p>Because I was writing that library from scratch and not adding types to
+an existing project, this came at a lower cost, and yielded two major
+benefits:</p>
+<ul>
+<li>I can leverage TypeScript for type checking even though the code is
+pure JavaScript.</li>
+<li>I can let TypeScript derivate <strong>accurate</strong> type definitions from the
+source code.</li>
+</ul>
+<p>Since the <code>.d.ts</code> files are automatically generated as opposed to being
+manually maintained, this drastically reduces the chance for them to go
+out of sync or be inaccurate, especially because the code itself is also
+type checked (this is important because TypeScript will otherwise
+happily generate totally broken type definitions from JSDoc comments
+that don’t pass type checking).</p>
+<p>Also for that same reason, if the types were to be incomplete (there’s
+still a number of <code>any</code> in this project, I admit), contributors will
+have to add them as JSDoc comments to the JavaScript source and not just
+to a “dead” <code>.d.ts</code> file, making the code safer as a side effect by
+increasing the actual type checking coverage, and guaranteeing that the
+exported types match the underlying implementation. Not only this tests
+code against the types, but as importantly, <strong>it tests the types against
+the code</strong>.</p>
+<h2 id="why-this-works-best-for-me" tabindex="-1"><a class="header-anchor" href="#why-this-works-best-for-me"><span>Why this works best for me</span></a></h2>
+<p>With this pattern, I can still <strong>write, run and debug native JavaScript
+code</strong>.</p>
+<p>This is what makes me <strong>efficient at what I’m doing</strong>. My development is
+not slowed down by constantly running a compiler, dealing with the extra
+complexity that comes with debugging transpiled code, and time spent
+fixing type errors on non-production code.</p>
+<p>When I write a piece of code, it’s rarely going to be perfect,
+production quality code from the start. It takes me dozens of iterations
+and rewriting pieces of it until I reach a point where I’m satisfied.
+Only when I’m done I’ll clean up and refactor whatever parts need extra
+love, handle the edge cases, and make the linter happy. This is when,
+and only when, I want to run the type checks. There’s no point in having
+blocking type checks on code that I’ll rewrite or remove a minute later.</p>
+<div class="note">
+<p><strong>Note:</strong> this last point is a problem that I had specifically with the
+<code>ts-node</code> utility, but <code>tsc</code> itself is more forgiving and will output a
+runnable JS code even when there’s type errors.</p>
+<p>Also while writing this section, I stumbled upon <code>ts-node --transpile-only</code>
+that allows running the code even if it doesn’t pass type validation,
+which seems like a must-have during development. I’m kinda sour that
+it took me a 4 months post-burnout retirement kind of step back to
+finally find about it, after having fought with this problem for years. 😬</p>
+</div>
+<h2 id="the-chicken-and-egg-problem-between-js-and-d-ts" tabindex="-1"><a class="header-anchor" href="#the-chicken-and-egg-problem-between-js-and-d-ts"><span>The chicken and egg problem between <code>.js</code> and <code>.d.ts</code></span></a></h2>
+<p>I didn’t share the commands I use to do the type checking and derive the
+<code>.d.ts</code> files from the JSDoc comments yet, and you’re probably dying to
+know them. 😉</p>
+<p>But first, I need to share something else with you. See, I usually have
+this kind of structure for packages I publish on npm:</p>
+<pre><code class="hljs">my-cool-package
+├── index.js
+├── package.json
+└── test.js
+</code></pre>
+<p>It seems that the natural way to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">extract type definitions</a>
+would be:</p>
+<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly
+</code></pre>
+<p>Which yields:</p>
+<pre><code class="hljs">my-cool-package
+├── <span class="hljs-addition">index.d.ts</span>
+├── index.js
+├── package.json
+├── <span class="hljs-addition">test.d.ts</span>
+└── test.js</code></pre>
+<p>You’ll quickly notice that there’s something funky with this method of
+doing things.</p>
+<ul>
+<li>We generate <code>.d.ts</code> files from <code>.js</code> files.</li>
+<li>TypeScript has an <strong>hardcoded</strong> rule where it systematically imports
+any <code>.d.ts</code> file that’s next to an imported <code>.js</code> file. This is
+regardless of your explicit <code>include</code> and <code>exclude</code> patterns and
+there’s no way to turn off this behavior.</li>
+<li>TypeScript refuses to write over input files (and that’s a good thing).</li>
+</ul>
+<p>And guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
+test it).</p>
+<p>The problem here is that while this command will run fine the first
+time, <a href="https://github.com/microsoft/TypeScript/issues/16749">subsequent runs will fail</a>
+because TypeScript will <em>always</em> consider a <code>.d.ts</code> that is next to an
+included <code>.js</code> file to be part of its inputs and will refuse to
+overwrite it. And even if it allowed to overwrite the declaration files,
+we would still be loading the stale <code>.d.ts</code> instead of using the
+up-to-date JSDoc types, which sounds like a hot mess.</p>
+<p>You might tell me that hey, we don’t really need a <code>.d.ts</code> to be
+generated for the test file, and you would be right. Replacing <code>*.js</code> by
+<code>index.js</code> in the above example does fix the problem.</p>
+<p>But sometimes, I’m dealing with a more complex package where the
+structure would look something like this:</p>
+<pre><code class="hljs">my-cool-package
+├── index.js
+├── package.json
+├── <span class="hljs-addition">some-other-file.js</span>
+└── test.js</code></pre>
+<p>As soon as <code>index.js</code> imports <code>some-other-file.js</code>, we’re off the happy
+path for TypeScript again.</p>
+<p>I wrote about this in more details in <a href="typescript-cannot-write-file-overwrite-input.html">cannot write file <code>.d.ts</code> because it would overwrite input file</a>,
+and you have many options to go about this, including splitting the code
+in a <code>src</code> or <code>dist</code> directory or some combination of both, and while
+they all solve this particular problem, they also all leak into other
+aspects that you’ll have to work around.</p>
+<p>For example in the “complex” case above, you might want to allow
+importing <code>my-cool-package/some-other-file</code>, and not just
+<code>my-cool-package</code>. How wild would that be?</p>
+<p>Apparently, wild enough that most of the recommended solutions for the
+earlier problem will fail to deliver types information for that use
+case, or require you to do crazy things like copying your <code>package.json</code>
+to the <code>dist</code> directory and publishing from there.</p>
+<h2 id="the-simple-hack-that-just-works" tabindex="-1"><a class="header-anchor" href="#the-simple-hack-that-just-works"><span>The simple hack that just works</span></a></h2>
+<p>Because I prefer a simple hack that just works to a fix that will break
+other things and require a cascade of other fixes, I settled for the
+following command:</p>
+<pre><code class="hljs"><span class="hljs-addition">rm -f *.d.ts && </span>tsc *.js --allowJs --declaration --emitDeclarationOnly</code></pre>
+<p>It’s simple, reliable, it works and I understand every bit of why it
+works and why it needs to be there (as much as I hate that it needs to
+be there in the first place).</p>
+<p>I also added <code>--removeComments</code> and replaced <code>--allowJs</code> by <code>--checkJs</code>
+to make sure that the code passes type checking when I generate the
+final definitions.</p>
+<p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;scripts&quot;</span>: {
+    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc auth/*.js *.js --checkJs --noEmit&quot;</span>,
+    <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
+    <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
+    <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
+  }
+}
+</code></pre>
+<p>As always, I use <a href="https://standardjs.com/"><code>standard</code></a> to lint my code,
+and in the <a href="https://docs.npmjs.com/cli/v7/using-npm/scripts#life-cycle-scripts"><code>prepare</code></a>
+script, the code is linted, typed checked and the definitions are
+updated.</p>
+<p>There’s also a convenience <code>check</code> script that doesn’t emits the
+declaration files, to be used for quick checks during development.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>As usual with TypeScript it was a pain in the ass to get this to work
+and (also as usual) I had to resort to a hack at the end of the day. But
+that’s mostly because I’m a perfectionist and I wasn’t happy with having
+just the happy path working. 😜</p>
+<p>Still, I believe that this method allows to reduce the gap between
+JavaScript and TypeScript, while <strong>getting rid of manual work</strong>, making
+the JavaScript code <strong>safer</strong>, and making the type definitions <strong>more
+accurate and reliable</strong> by tightly coupling them to the code.</p>
+<p>Because it yields <strong>most of the benefit</strong> at the <strong>lowest cost and
+initial investment</strong>, TypeScript-aware JSDoc comments is likely to
+become my go-to for writing JS libraries from now on.</p>
+<p>What do you think of this solution? Have you used it yourself, or did
+this make you want to type your projects this way? Feel free to <a href="/val.html#contact">reach out</a>
+and let me know. And as usual, keep hacking! ✨</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/10/jsdoc-typescript-inside-javascript.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

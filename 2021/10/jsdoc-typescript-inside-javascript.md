@@ -354,7 +354,7 @@ In my `package.json`, the final `scripts` property looks like this:
 ```json
 {
   "scripts": {
-    "check": "tsc auth/*.js *.js --checkJs --noEmit",
+    "check": "tsc *.js --checkJs --noEmit",
     "lint": "standard",
     "prepare": "npm run lint && npm run types",
     "types": "rm *.d.ts && tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments"

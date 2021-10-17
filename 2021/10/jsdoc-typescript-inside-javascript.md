@@ -245,7 +245,7 @@ Also while writing this section, I stumbled upon `ts-node --transpile-only`
 that allows running the code even if it doesn't pass type validation,
 which seems like a must-have during development. I'm kinda sour that
 it took me a 4 months post-burnout retirement kind of step back to
-finally find about it, after having fought with this problem for years. 😬
+finally find about it, after fighting with this problem for years. 😬
 
 </div>
 
@@ -289,9 +289,9 @@ doing things.
   any `.d.ts` file that's next to an imported `.js` file. This is
   regardless of your explicit `include` and `exclude` patterns and
   there's no way to turn off this behavior.
-* TypeScript refuses to write over input files (and that's a good thing).
+* TypeScript refuses to overwrite input files (and that's a good thing).
 
-And guess what? `test.js` imports `index.js` (so that it can, you know,
+Bug guess what? `test.js` imports `index.js` (so that it can, you know,
 test it).
 
 The problem here is that while this command will run fine the first
@@ -325,8 +325,8 @@ they all solve this particular problem, they also all leak into other
 aspects that you'll have to work around.
 
 For example in the "complex" case above, you might want to allow
-importing `my-cool-package/some-other-file`, and not just
-`my-cool-package`. How wild would that be?
+your users to `import 'my-cool-package/some-other-file'`, and not just
+`import 'my-cool-package'`. How wild would that be?
 
 Apparently, wild enough that most of the recommended solutions for the
 earlier problem will fail to deliver types information for that use

@@ -69,7 +69,7 @@ in your `package.json`:
 }
 ```
 
-But this only work for the main export (`import 'my-lib'`) and will
+But this only works for the main export (`import 'my-lib'`) and will
 break if you attempt to import nested files `import 'my-lib/some-file'`.
 
 If you want to support this use case, you **have to** ship the `.d.ts`
@@ -170,7 +170,7 @@ imported, you won't be able to import arbitrary files anymore, which
 might not be a bad thing, but maybe you like the simplicity of
 everything being importable by default.
 
-## Quick and dirty hack that actually work
+## Quick and dirty hack that actually works
 
 To get the best of both worlds by generating `.d.ts` files next to your
 source `.js` files without adding extra configuration and still allowing

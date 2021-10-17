@@ -59,7 +59,7 @@ By doing `onsubmit="return onSearchSubmit(this)"`, I define the action
 inline from the markup. Passing `this` allows me to forward the current
 `<form>` element that's being submitted for context, and the `return`
 allows to propagate a `return false` from the function to cancel the
-default behaviour of submitting a query.
+default behavior of submitting a query.
 
 This is actually the oldest way of scripting events, and the browser
 support of this pattern is going to be way better than that of the
@@ -168,7 +168,7 @@ function onSearchSubmit (form) {
 It then calls the `searchBlog` asynchronous function, handles any error
 by logging it and showing a message using the `formMessage` helper.
 
-Finally it returns `false` to prevent the default behaviour of the form
+Finally it returns `false` to prevent the default behavior of the form
 submission, which is to submit the form data as query parameters on the
 current URL.
 

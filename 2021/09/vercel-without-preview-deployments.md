@@ -174,7 +174,7 @@ service for free and [they're the only ones](free-static-hosting-server-side-ana
 to include HTTP logs access in the free offer.
 
 Sadly their approach to deploying websites if very far from mine, and
-this requires me to work around those default behaviours to have
+this requires me to work around those default behaviors to have
 something that fits me better.
 
 If you're in a similar situation, I hope you found this post useful!

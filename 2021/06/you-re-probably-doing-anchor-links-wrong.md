@@ -49,7 +49,7 @@ directly manipulate the markdown-it token stream.
 
 I decided closely after the first release to
 [add `aria-hidden="true"` to the permalink](https://github.com/valeriangalliat/markdown-it-anchor/commit/bd2c324da38b0cfbb32f7ba0871b14877e273f41)
-to fully mimic GitHub's behaviour, under the premise that the permalinks
+to fully mimic GitHub's behavior, under the premise that the permalinks
 weren't relevant to screen reader users, and that GitHub was probably a
 good example to follow about doing the Right Thing(tm).
 
@@ -98,13 +98,13 @@ not an ideal solution either.
 ## The hard truth
 
 Exactly a year later, Binyamin brings back the `aria-hidden` topic,
-explaining that [the default behaviour is still not accessible](https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-716849952),
+explaining that [the default behavior is still not accessible](https://github.com/valeriangalliat/markdown-it-anchor/issues/58#issuecomment-716849952),
 because screen readers read out the permalink symbol instead of a
 meaningful label.
 
 He notes that GitHub (still) sets `aria-hidden="true"` on the
 permalinks, likely to suggest that we could do the same --- which would
-bring us back to the original behaviour. 😜
+bring us back to the original behavior. 😜
 
 *Even though I didn't answer then, it is while reading this notification
 that I realized that the accessibility of permalinks was a complex
@@ -207,7 +207,7 @@ automatically add an `id` attribute on headings. Adding permalinks is an
 Since I realized that no single default would make everybody happy, and
 it's not essential to have one for this option anyway, I decided to
 modify the API to require explicit configuration of the permalink
-*behaviour* if it is going to be enabled.
+*behavior* if it is going to be enabled.
 
 This makes sure that the user reads about the existing options and their
 tradeoffs, so they explicitly chose the one that makes the most sense to
@@ -344,7 +344,7 @@ can teach you as much as actually using a screen reader.
 This was much easier than I expected, at least on macOS. The system
 ships with VoiceOver, which you can turn on by pressing
 <kbd>Command</kbd> + <kbd>F5</kbd>. I recommend using it in
-Safari as I've found the behaviour to be more quirky in other browsers.
+Safari as I've found the behavior to be more quirky in other browsers.
 
 We saw earlier that "screen reader users often ask for the list of
 links in the page", as well as the list of headings.

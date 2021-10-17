@@ -132,7 +132,8 @@ h1.has-subtitle small {
 
 blockquote > *,
 details,
-dd > * {
+dd > *,
+li > * {
     --vertical-margin: 1rem;
 }
 
@@ -693,4 +694,8 @@ nav .social a:hover svg {
 
 .post .date {
     color: var(--gray-4);
+}
+
+.post-footer {
+    border-top: 1px solid var(--gray-2);
 }

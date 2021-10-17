@@ -1,7 +1,7 @@
 MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
 ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/458-linkedin.svg dist/img/icons/412-rss.svg
-ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20211003.css dist/js/emojicon.js dist/js/main-20210719.js $(ICONS)
+ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20211017.css dist/js/emojicon.js dist/js/main-20210719.js $(ICONS)
 FEED = dist/feed.xml
 
 build: dist $(HTML) $(ASSETS)
@@ -61,7 +61,7 @@ dist/css/normalize.css: node_modules/normalize.css/normalize.css
 dist/css/github.css: node_modules/highlight.js/styles/github.css
 	cp $< $@
 
-dist/css/main-20211003.css: \
+dist/css/main-20211017.css: \
 	css/colors.css \
 	css/base.css \
 	css/components/anchor.css \

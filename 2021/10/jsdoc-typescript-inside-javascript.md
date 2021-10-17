@@ -291,7 +291,7 @@ doing things.
   there's no way to turn off this behavior.
 * TypeScript refuses to overwrite input files (and that's a good thing).
 
-Bug guess what? `test.js` imports `index.js` (so that it can, you know,
+But guess what? `test.js` imports `index.js` (so that it can, you know,
 test it).
 
 The problem here is that while this command will run fine the first

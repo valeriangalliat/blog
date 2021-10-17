@@ -15,3 +15,7 @@
 .post .date {
     color: var(--gray-4);
 }
+
+.post-footer {
+    border-top: 1px solid var(--gray-2);
+}

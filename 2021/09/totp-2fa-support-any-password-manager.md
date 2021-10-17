@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1442937054854221828
+---
+
 # TOTP/2FA support with ANY password manager (you read that right)
 September 28, 2021
 

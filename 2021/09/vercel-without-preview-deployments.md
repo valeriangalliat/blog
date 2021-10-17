@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1440401242522406912
+---
+
 # Using Vercel without preview deployments
 Keeping Vercel clean and silent  
 September 21, 2021

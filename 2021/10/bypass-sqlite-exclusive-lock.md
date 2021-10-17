@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1448722067638177795
+---
+
 # Bypass SQLite exclusive lock 🔐
 "Error: database is locked" is not an acceptable answer
 October 14, 2021

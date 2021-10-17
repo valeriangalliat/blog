@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1429921911509819395
+---
+
 # Tracking the value of an Ethereum or Binance Smart Chain token in real time
 August 23, 2021
 

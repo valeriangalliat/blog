@@ -2,6 +2,7 @@
 hero: https://photography.codejam.info/photos/hd/P2650060.jpg
 heroCredit: Val
 heroCreditUrl: https://photography.codejam.info/photos/P2650060.html
+tweet: https://twitter.com/valeriangalliat/status/1424714983137583105
 ---
 
 # A journey to scripting Firefox Sync / Lockwise: complete OAuth

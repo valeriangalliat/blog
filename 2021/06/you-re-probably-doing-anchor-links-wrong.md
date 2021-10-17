@@ -3,6 +3,7 @@ hero: https://photography.codejam.info/photos/hd/P2600039.jpg
 heroCredit: Val
 heroCreditUrl: https://photography.codejam.info/photos/P2600039.html
 focus: 50% 80%
+tweet: https://twitter.com/valeriangalliat/status/1410245285008269317
 ---
 
 # You're (probably) doing anchor links wrong

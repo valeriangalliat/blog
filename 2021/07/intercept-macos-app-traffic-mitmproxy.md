@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1417924036789739520
+---
+
 # Intercept a macOS app traffic using mitmproxy
 July 20, 2021
 

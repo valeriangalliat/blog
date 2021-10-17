@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1419304289751678980
+---
+
 # Super fast boot on Linux with EFISTUB 🚀
 Boot without an intermediate bootloader, with encryption and hibernation  
 August 10, 2021

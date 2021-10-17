@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1440401250927857668
+---
+
 # Vercel custom log drain (dump HTTP traffic for free on a Vercel app)
 With Google Cloud free tier and nginx shenanigans  
 September 21, 2021

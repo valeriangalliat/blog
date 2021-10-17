@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1441563191557849090
+---
+
 # Elixir, Ecto and Heroku Postgres: unverified SSL certificates
 Or attempting to trace warnings with Erlang  
 September 24, 2021

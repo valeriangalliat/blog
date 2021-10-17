@@ -5,10 +5,343 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-10-16T18:23:19.016Z</updated>
+  <updated>2021-10-17T17:05:15.537Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>JSDoc: TypeScript inside JavaScript and not the other way around 🤯</title>
+    <link href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html" />
+    <id>https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html</id>
+    <updated>2021-10-17T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>This post is inspired by this great <a href="https://speakeasyjs.com/">Speakeasy JS</a>
+talk by <a href="https://austingil.com/">Austin Gil</a>. 💯</p>
+<figure class="video">
+  <iframe src="https://www.youtube.com/embed/iP5XwRT2tNw" allowfullscreen></iframe>
+</figure>
+<p>Even though I was familiar with the concept of type checking JS files
+with TypeScript through JSDoc, I’ve always seen it as a way to
+<strong>transition to TypeScript</strong>. You would progressively add
+TypeScript-compatible JSDoc to an existing JavaScript project until
+everything is covered, to ultimately transition to the actual TypeScript
+syntax.</p>
+<p>But it never crossed my mind to use TypeScript with JSDoc as an end
+goal. Until I saw that talk.</p>
+<h2 id="the-problem-with-compiled-javascript" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#the-problem-with-compiled-javascript"><span>The problem with compiled JavaScript</span></a></h2>
+<p>The main reason I don’t use TypeScript is not because of TypeScript
+itself (even though there’s a lot to say here). It’s because I don’t
+like to compile my JavaScript in the first place, at least not when it’s
+intended for Node.js.</p>
+<p>It’s the same reason I don’t use <a href="https://flow.org/">Flow</a>,
+<a href="https://elm-lang.org/">Elm</a>, <a href="https://dart.dev/">Dart</a>,
+<a href="https://babeljs.io/">Babel</a> or <a href="https://coffeescript.org/">CoffeeScript</a>.</p>
+<p>JavaScript being an interpreted language, it naturally comes with the
+ability to directly run your code. <strong>This is an incredibly convenient
+thing.</strong></p>
+<ul>
+<li>It’s fast as fuck because there’s nothing to compile.</li>
+<li>You can inspect and debug directly what you write without any extra
+tool or configuration.</li>
+<li>Your stack traces will be readable and usable out of the box.</li>
+<li>Every tool and service you use will (mostly) understand your code by
+default, because it’s <em>native</em> and doesn’t require special treatment.</li>
+</ul>
+<p>That’s a lot of time saved right there by not having to maintain custom
+configurations on all the tools and services you use, on top of the fact
+you need to install, configure, update and maintain a number of extra
+tools, pipelines, workflows, which you’ll also need to teach to
+everybody who’s going to work with you because we all do those things a
+little bit differently.</p>
+<p>Now, there are benefits to invest in this extra work, so if the cost of
+compiling your JavaScript is worth it for you, or you just enjoy the
+process, that’s fine! As far as I’m concerned, I don’t enjoy a single
+bit of it.</p>
+<h2 id="separate-type-definitions-hell" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#separate-type-definitions-hell"><span>Separate type definitions hell 🔥</span></a></h2>
+<p>Static types are useful and there’s no argument that having type
+checking is generally a beneficial thing. For that reason, more and more
+people want types with the libraries they’re going to use.</p>
+<p>I maintain <a href="https://github.com/valeriangalliat">quite a few</a> open source
+JavaScript libraries, and on the most popular ones, people have
+requested (or better, contributed) TypeScript definitions, whether it’s
+directly in the package repository or on <a href="https://github.com/DefinitelyTyped/DefinitelyTyped">Definitely Typed</a>.</p>
+<p>While this comes from a good intention, it causes a number of issues for
+everybody involved:</p>
+<ul>
+<li>
+<p>When added directly to the package repository, types represent extra
+work for the maintainers who initially wrote a JavaScript project and
+didn’t want to write, maintain, and deal with a TypeScript project.</p>
+</li>
+<li>
+<p>Types are pretty much always added as manually written, static <code>.d.ts</code>
+files, because it would represent a lot more work (on top of being
+extremely bold and opinionated) to convert the project to TypeScript,
+and nobody really wants to do that.</p>
+<p>This means there’s no guarantee that the types will match what the JS
+code is actually doing. It’s a best effort that worked good enough for
+whoever contributed it.</p>
+</li>
+<li>
+<p>On top of that, the maintainers (e.g. me) might “forget” to update the
+previously contributed TypeScript definitions when they make changes.
+The more changes there is, the more likely the types won’t be updated
+because of the amount of extra work it represents.</p>
+<p>This means that the included types will most certainly drift out of
+sync with the actual code (even more than they already are) until it
+breaks someone’s build and they contribute a fix.</p>
+</li>
+</ul>
+<p>As a maintainer, what can I do?</p>
+<ul>
+<li>Should I reject a PR that add type definitions because I’m not ready
+to commit to the extra work required to maintain them?</li>
+<li>Should I merge the PR only at the condition that the person becomes a
+core contributor and maintain the types in future updates?</li>
+<li>Should I merge the PR but put a note somewhere that types are
+community contributed and might drift out of sync from the JavaScript
+code, a bit like I do for translations contributed in languages that I
+don’t speak?</li>
+</ul>
+<p>I don’t like any of those choices. Luckily, most of my projects are
+small enough that the types don’t represent a lot of extra work, plus
+everybody seems to be happy with type definitions covering only the
+happy path which is usually a small subset of the codebase.</p>
+<p>So for now I just merge the PRs and let TypeScript users contribute
+improvements and bug fixes over time as they need them. It seems that
+they’re used to having things partially broken all the time and they
+prefer to have inaccurate or incomplete types than no types.</p>
+<h2 id="having-the-best-of-both-worlds" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#having-the-best-of-both-worlds"><span>Having the best of both worlds</span></a></h2>
+<p>Out of sympathy for those users (I truly think they deserve something
+better), and also because I do believe in the benefits of static typing
+(as much as I hate compiling an interpreted language), I decided to
+start my <a href="https://github.com/valeriangalliat/node-firefox-sync">latest JavaScript library</a>
+with TypeScript definitions in mind from the start.</p>
+<p>Thanks to the talk I shared in the beginning of this post, I decided to
+write my JSDoc comments in a way that the TypeScript compiler can
+consume. Here’s a few examples:</p>
+<details>
+  <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/auth/oauth.js"><code>auth/oauth.js</code></a></summary>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
+<span class="hljs-keyword">const</span> base = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./oauth-base&#x27;</span>)
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOAuthChallengeImpl</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{crypto.KeyPairKeyObjectResult}</span> <span class="hljs-variable">keyPair</span></span>
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{base.OAuthChallenge &amp; SyncOAuthChallengeImpl}</span> <span class="hljs-variable">SyncOAuthChallenge</span></span>
+ */</span>
+
+<span class="hljs-comment">/**
+ * <span class="hljs-doctag">@param <span class="hljs-type">{SyncOAuthChallenge}</span> <span class="hljs-variable">challenge</span></span>
+ * <span class="hljs-doctag">@param <span class="hljs-type">{base.OAuthResult}</span> <span class="hljs-variable">result</span></span>
+ * <span class="hljs-doctag">@param <span class="hljs-type">{Object}</span> </span>[options]
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.clientId] - OAuth client ID.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.scope] - OAuth scope.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenEndpoint] - OAuth token endpoint.
+ * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenServerUrl] - TokenServer URL.
+ * <span class="hljs-doctag">@returns <span class="hljs-type">{Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;}</span></span>
+ */</span>
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">complete</span> (<span class="hljs-params">challenge, result, options</span>) </span>{
+  <span class="hljs-comment">// Actual code.</span>
+}
+
+<span class="hljs-built_in">module</span>.exports = { complete }
+</code></pre>
+</details>
+<details>
+  <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/types.js"><code>types.js</code></a></summary>
+<pre><code class="hljs language-js"><span class="hljs-comment">/**
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOptions</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authServerUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authorizationUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenEndpoint]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenServerUrl]
+ * <span class="hljs-doctag">@property <span class="hljs-type">{import(&#x27;./auth/oauth-base&#x27;).OAuthOptions}</span> </span>[oauthOptions]
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">OAuthToken</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">access_token</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">scope</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">expires_in</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncToken</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">id</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">key</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncKeyBundle</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">encryptionKey</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">hmacKey</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">kid</span></span>
+ *
+ * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncCredentials</span></span>
+ * <span class="hljs-doctag">@property <span class="hljs-type">{OAuthToken}</span> <span class="hljs-variable">oauthToken</span></span> - The OAuth token required to authenticate to the TokenServer.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{SyncKeyBundle}</span> <span class="hljs-variable">syncKeyBundle</span></span> - The Sync key bundle required to decrypt the collection keys.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{SyncToken}</span> <span class="hljs-variable">token</span></span> - The token object required to call the Firefox Sync API.
+ * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">tokenIssuedAt</span></span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
+ */</span>
+
+<span class="hljs-comment">// Does nothing but required for TypeScript to import this file.</span>
+<span class="hljs-built_in">module</span>.exports = {}
+</code></pre>
+</details>
+<p>Because I was writing that library from scratch and not adding types to
+an existing project, this came at a lower cost, and yielded two major
+benefits:</p>
+<ul>
+<li>I can leverage TypeScript for type checking even though the code is
+pure JavaScript.</li>
+<li>I can let TypeScript derivate <strong>accurate</strong> type definitions from the
+source code.</li>
+</ul>
+<p>Since the <code>.d.ts</code> files are automatically generated as opposed to being
+manually maintained, this drastically reduces the chance for them to go
+out of sync or be inaccurate, especially because the code itself is also
+type checked (this is important because TypeScript will otherwise
+happily generate totally broken type definitions from JSDoc comments
+that don’t pass type checking).</p>
+<p>Also for that same reason, if the types were to be incomplete (there’s
+still a number of <code>any</code> in this project, I admit), contributors will
+have to add them as JSDoc comments to the JavaScript source and not just
+to a “dead” <code>.d.ts</code> file, making the code safer as a side effect by
+increasing the actual type checking coverage, and guaranteeing that the
+exported types match the underlying implementation. Not only this tests
+code against the types, but as importantly, <strong>it tests the types against
+the code</strong>.</p>
+<h2 id="why-this-works-best-for-me" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#why-this-works-best-for-me"><span>Why this works best for me</span></a></h2>
+<p>With this pattern, I can still <strong>write, run and debug native JavaScript
+code</strong>.</p>
+<p>This is what makes me <strong>efficient at what I’m doing</strong>. My development is
+not slowed down by constantly running a compiler, dealing with the extra
+complexity that comes with debugging transpiled code, and time spent
+fixing type errors on non-production code.</p>
+<p>When I write a piece of code, it’s rarely going to be perfect,
+production quality code from the start. It takes me dozens of iterations
+and rewriting pieces of it until I reach a point where I’m satisfied.
+Only when I’m done I’ll clean up and refactor whatever parts need extra
+love, handle the edge cases, and make the linter happy. This is when,
+and only when, I want to run the type checks. There’s no point in having
+blocking type checks on code that I’ll rewrite or remove a minute later.</p>
+<div class="note">
+<p><strong>Note:</strong> this last point is a problem that I had specifically with the
+<code>ts-node</code> utility, but <code>tsc</code> itself is more forgiving and will output a
+runnable JS code even when there’s type errors.</p>
+<p>Also while writing this section, I stumbled upon <code>ts-node --transpile-only</code>
+that allows running the code even if it doesn’t pass type validation,
+which seems like a must-have during development. I’m kinda sour that
+it took me a 4 months post-burnout retirement kind of step back to
+finally find about it, after fighting with this problem for years. 😬</p>
+</div>
+<h2 id="the-chicken-and-egg-problem-between-js-and-d-ts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#the-chicken-and-egg-problem-between-js-and-d-ts"><span>The chicken and egg problem between <code>.js</code> and <code>.d.ts</code></span></a></h2>
+<p>I didn’t share the commands I use to do the type checking and derive the
+<code>.d.ts</code> files from the JSDoc comments yet, and you’re probably dying to
+know them. 😉</p>
+<p>But first, I need to share something else with you. See, I usually have
+this kind of structure for packages I publish on npm:</p>
+<pre><code class="hljs">my-cool-package
+├── index.js
+├── package.json
+└── test.js
+</code></pre>
+<p>It seems that the natural way to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">extract type definitions</a>
+would be:</p>
+<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly
+</code></pre>
+<p>Which yields:</p>
+<pre><code class="hljs">my-cool-package
+├── <span class="hljs-addition">index.d.ts</span>
+├── index.js
+├── package.json
+├── <span class="hljs-addition">test.d.ts</span>
+└── test.js</code></pre>
+<p>You’ll quickly notice that there’s something funky with this method of
+doing things.</p>
+<ul>
+<li>We generate <code>.d.ts</code> files from <code>.js</code> files.</li>
+<li>TypeScript has an <strong>hardcoded</strong> rule where it systematically imports
+any <code>.d.ts</code> file that’s next to an imported <code>.js</code> file. This is
+regardless of your explicit <code>include</code> and <code>exclude</code> patterns and
+there’s no way to turn off this behavior.</li>
+<li>TypeScript refuses to overwrite input files (and that’s a good thing).</li>
+</ul>
+<p>Bug guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
+test it).</p>
+<p>The problem here is that while this command will run fine the first
+time, <a href="https://github.com/microsoft/TypeScript/issues/16749">subsequent runs will fail</a>
+because TypeScript will <em>always</em> consider a <code>.d.ts</code> that is next to an
+included <code>.js</code> file to be part of its inputs and will refuse to
+overwrite it. And even if it allowed to overwrite the declaration files,
+we would still be loading the stale <code>.d.ts</code> instead of using the
+up-to-date JSDoc types, which sounds like a hot mess.</p>
+<p>You might tell me that hey, we don’t really need a <code>.d.ts</code> to be
+generated for the test file, and you would be right. Replacing <code>*.js</code> by
+<code>index.js</code> in the above example does fix the problem.</p>
+<p>But sometimes, I’m dealing with a more complex package where the
+structure would look something like this:</p>
+<pre><code class="hljs">my-cool-package
+├── index.js
+├── package.json
+├── <span class="hljs-addition">some-other-file.js</span>
+└── test.js</code></pre>
+<p>As soon as <code>index.js</code> imports <code>some-other-file.js</code>, we’re off the happy
+path for TypeScript again.</p>
+<p>I wrote about this in more details in <a href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html">cannot write file <code>.d.ts</code> because it would overwrite input file</a>,
+and you have many options to go about this, including splitting the code
+in a <code>src</code> or <code>dist</code> directory or some combination of both, and while
+they all solve this particular problem, they also all leak into other
+aspects that you’ll have to work around.</p>
+<p>For example in the “complex” case above, you might want to allow
+your users to <code>import 'my-cool-package/some-other-file'</code>, and not just
+<code>import 'my-cool-package'</code>. How wild would that be?</p>
+<p>Apparently, wild enough that most of the recommended solutions for the
+earlier problem will fail to deliver types information for that use
+case, or require you to do crazy things like copying your <code>package.json</code>
+to the <code>dist</code> directory and publishing from there.</p>
+<h2 id="the-simple-hack-that-just-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#the-simple-hack-that-just-works"><span>The simple hack that just works</span></a></h2>
+<p>Because I prefer a simple hack that just works to a fix that will break
+other things and require a cascade of other fixes, I settled for the
+following command:</p>
+<pre><code class="hljs"><span class="hljs-addition">rm -f *.d.ts && </span>tsc *.js --allowJs --declaration --emitDeclarationOnly</code></pre>
+<p>It’s simple, reliable, it works and I understand every bit of why it
+works and why it needs to be there (as much as I hate that it needs to
+be there in the first place).</p>
+<p>I also added <code>--removeComments</code> and replaced <code>--allowJs</code> by <code>--checkJs</code>
+to make sure that the code passes type checking when I generate the
+final definitions.</p>
+<p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;scripts&quot;</span>: {
+    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc auth/*.js *.js --checkJs --noEmit&quot;</span>,
+    <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
+    <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
+    <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
+  }
+}
+</code></pre>
+<p>As always, I use <a href="https://standardjs.com/"><code>standard</code></a> to lint my code,
+and in the <a href="https://docs.npmjs.com/cli/v7/using-npm/scripts#life-cycle-scripts"><code>prepare</code></a>
+script, the code is linted, typed checked and the definitions are
+updated.</p>
+<p>There’s also a convenience <code>check</code> script that doesn’t emits the
+declaration files, to be used for quick checks during development.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html#conclusion"><span>Conclusion</span></a></h2>
+<p>As usual with TypeScript it was a pain in the ass to get this to work
+and (also as usual) I had to resort to a hack at the end of the day. But
+that’s mostly because I’m a perfectionist and I wasn’t happy with having
+just the happy path working. 😜</p>
+<p>Still, I believe that this method allows to reduce the gap between
+JavaScript and TypeScript, while <strong>getting rid of manual work</strong>, making
+the JavaScript code <strong>safer</strong>, and making the type definitions <strong>more
+accurate and reliable</strong> by tightly coupling them to the code.</p>
+<p>Because it yields <strong>most of the benefit</strong> at the <strong>lowest cost and
+initial investment</strong>, TypeScript-aware JSDoc comments is likely to
+become my go-to for writing JS libraries from now on.</p>
+<p>What do you think of this solution? Have you used it yourself, or did
+this make you want to type your projects this way? Feel free to <a href="https://www.codejam.info/val.html#contact">reach out</a>
+and let me know. And as usual, keep hacking! ✨</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>TypeScript: cannot write file .d.ts because it would overwrite input file</title>
     <link href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html" />
@@ -70,7 +403,7 @@ in your <code>package.json</code>:</p>
   <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
 }
 </code></pre>
-<p>But this only work for the main export (<code>import 'my-lib'</code>) and will
+<p>But this only works for the main export (<code>import 'my-lib'</code>) and will
 break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
 <p>If you want to support this use case, you <strong>have to</strong> ship the <code>.d.ts</code>
 files next to the <code>.js</code> files.</p>
@@ -139,7 +472,7 @@ to <code>my-lib/dist/some-file</code>.</p>
 imported, you won’t be able to import arbitrary files anymore, which
 might not be a bad thing, but maybe you like the simplicity of
 everything being importable by default.</p>
-<h2 id="quick-and-dirty-hack-that-actually-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#quick-and-dirty-hack-that-actually-work"><span>Quick and dirty hack that actually work</span></a></h2>
+<h2 id="quick-and-dirty-hack-that-actually-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#quick-and-dirty-hack-that-actually-works"><span>Quick and dirty hack that actually works</span></a></h2>
 <p>To get the best of both worlds by generating <code>.d.ts</code> files next to your
 source <code>.js</code> files without adding extra configuration and still allowing
 deep imports, you need to <strong>explicitly remove the generated files before
@@ -155,6 +488,10 @@ the ones I described in this post. It seems that TypeScript wasn’t built
 for simplicity, let alone for working with source <code>.js</code> files, and deep
 imports don’t seem to be part of the happy path either. If you found a
 better way, please <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -271,6 +608,10 @@ a way that allows to reflect underlying database updates without
 reloading the connection, please <a href="https://www.codejam.info/val.html#contact">let me know</a>, I’d
 love to know about it!</p>
 <p>And as usual, keep hacking. 😜</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1448722067638177795">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -313,24 +654,18 @@ unless the gear is tightly packed and cannot breathe.</p>
   </a>
 </figure>
 <h2 id="the-exception" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#the-exception"><span>The exception</span></a></h2>
-<p>Initially I had in mind to unpack everything at the chalet where we were
-staying for the rest of the trip, so that the gear could dry properly,
-and especially so that the sleeping bag wouldn’t stay compressed for
-more time than it needs to</p>
 <p>But this time, something different happened that made me forget about my
 equipment. We went for a bouldering session during the day, and <strong>I took
 a pretty bad fall and broke my tailbone</strong>. Not bad enough for me to go
 to the hospital, but still shook me enough that I forgot about my tent
-and sleeping bag. But when we arrived, all I wanted was to do was take a
-warm shower and go to bed,</p>
-<p><strong>I left my (damp) gear packed in my hiking backpack</strong>, in the car, and
-because I didn’t need it during the rest of my stay nor did I think
-about it, so it stayed there the whole time.</p>
-<p>It’s only when getting back home that I realized my tent and sleeping
-bag stayed packed wet for 4 days straight. Kinda worrying when you read
-online a sleeping bag shouldn’t stay compressed more than 12 hours, let
-alone compressed wet, and a tent can develop mold when stored wet for
-more than 24 or 48 hours.</p>
+and sleeping bag during the rest of the trip (we were staying at a
+chalet for the last few days).</p>
+<p><strong>I left my (damp) gear packed in my hiking backpack</strong>. It’s only when
+getting back home that I realized everything stayed packed wet for 4
+days straight. Kinda worrying when you read online a sleeping bag
+shouldn’t stay compressed more than 12 hours, let alone compressed wet,
+and a tent can develop mold when stored wet for more than 24 or 48
+hours.</p>
 <blockquote>
 <p>Generally speaking, you should not leave your sleeping bag in a
 compression sack for longer than 12 hours at a time.</p>
@@ -379,6 +714,10 @@ equipment react to rough situations.</p>
     <img alt="Tents in snow" src="https://photography.codejam.info/photos/sd/P1060390-Edit.jpg">
   </a>
 </figure>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -667,6 +1006,10 @@ undocumented APIs and protocols, <a href="https://www.codejam.info/val.html#cont
 currently available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects
 and I’ll be happy to help you with that. ✌️</p>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442826926545121284">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -884,6 +1227,10 @@ period.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, upd
 <p>Did you find this useful? Did you like that I explained some of the code
 behind it in this blog post? Don’t hesitate to let me know and <a href="https://twitter.com/valeriangalliat">ping me on Twitter</a>!</p>
 <p>Until next time, keep hacking! 🐿</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442937054854221828">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -989,6 +1336,10 @@ the details and subtleties. 😅</p>
 <p>If you’re here to try and solve an unverified warning issue, or trace
 warnings with Elixir and Erlang in general, I hoped that it was useful
 to you. Have a wonderful day!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441563191557849090">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -1296,6 +1647,10 @@ Happy recording!</p>
 <figure class="center">
   <img alt="Cheers!" src="https://www.codejam.info/img/2021/09/h2n/cheers.jpg">
 </figure>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441462405700145154">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -1855,6 +2210,10 @@ your server but this post was too technical for you, <a href="https://www.codeja
 I’m available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects and
 I’ll be happy to help you with that. ✌️</p>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440704576059961362">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -2160,6 +2519,10 @@ but this article was too technical for you, feel free to <a href="https://www.co
 I’m available for <a href="https://www.codejam.info/freelance.html">freelance work</a> and I’ll be
 happy to help you with that. ✌️</p>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401250927857668">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -2271,6 +2634,10 @@ that’s going to be negligible.</p>
 <p>In <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">the next post</a>, I’ll show you how to set
 up Vercel with a custom integration to forward logs to a Google Cloud VM
 (or the log drain of your choice). See you there!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401245991170048">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -2401,9 +2768,13 @@ command to remove deployments.</p>
 service for free and <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html">they’re the only ones</a>
 to include HTTP logs access in the free offer.</p>
 <p>Sadly their approach to deploying websites if very far from mine, and
-this requires me to work around those default behaviours to have
+this requires me to work around those default behaviors to have
 something that fits me better.</p>
 <p>If you’re in a similar situation, I hope you found this post useful!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401242522406912">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -2764,6 +3135,10 @@ and invoke smart contracts.</p>
 <p>As a cryptocurrency noob, this blog post if what I wish I found when I
 first started looking at how to programmatically determine the live
 value of a token. I hope it made things a bit easier for you. Cheers!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1429921911509819395">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -2820,6 +3195,10 @@ start the actual window manager.</p>
 <p>It’s so far the lightest way I’ve found to start a graphical session
 without it being considered a TTY by logind, while still being prompted
 for my password. I hope you find this useful!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -3014,6 +3393,10 @@ of the executable.</p>
 <p>With that, our dmenu executable will know at runtime to dynamically load
 our locally built libXft that has BGRA support, as long as we don’t move
 it from the nonstandard path we hardcoded there.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1429543626640592898">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -3070,6 +3453,10 @@ bootloader (here with encryption and hibernation).</p>
 </code></pre>
 <p>— <a href="https://twitter.com/valeriangalliat">@valeriangalliat</a>, <a href="https://twitter.com/valeriangalliat/status/1419304289751678980">July 25, 2021</a></p>
 </blockquote>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1419304289751678980">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -4395,6 +4782,10 @@ series.</p>
 <li>A journey to scripting Firefox Sync / Lockwise: complete OAuth</li>
 </ol>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424714983137583105">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -4823,6 +5214,10 @@ permissions that we need instead of full access.</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424462810998886416">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -5343,6 +5738,10 @@ support than it first looked like.</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>
 </div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424462810998886416">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
   <entry>
@@ -5816,178 +6215,10 @@ native and generic modules. Keep on reading!</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>
 </div>
-]]></content>
-  </entry>
-  <entry>
-    <title>A journey to scripting Firefox Sync / Lockwise: existing clients</title>
-    <link href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html" />
-    <id>https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html</id>
-    <updated>2021-08-08T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<div class="note">
-<p>This article is part of a series about scripting Firefox Sync / Lockwise.</p>
-<ol>
-<li>A journey to scripting Firefox Sync / Lockwise: existing clients</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
-<p>Recently, I switched to <a href="https://lockwise.firefox.com/">Firefox Lockwise</a>
-as my password manager, for a <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html">number of reasons which I detailed here</a>.</p>
-<p>There is currently no CLI for Lockwise, and while it’s not a critical
-thing for me, I like to have the option to use my password manager from
-the CLI, and to interact with it programmatically. So I figured it would
-be a good exercise to build it myself.</p>
-<p>I spent way more time digging in the Firefox Accounts and Firefox Sync
-protocols than I’m willing to admit, and now I finally managed to
-programmatically connect to my Firefox Account and interact with Firefox
-Sync, I’m going to share that journey in a series of blog posts. Fasten
-your seatbelts!</p>
-<h2 id="fair-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#fair-warning"><span>Fair warning</span></a></h2>
-<p>You might not be interested in the whole story, especially in the two
-following posts, where I explain how I started by implementing the
-legacy BrowserID authentication mechanism (because it’s what’s
-documented and used nearly everywhere), before <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">figuring that there is also support for OAuth</a>
-which seems to be the most modern, recommended way to interact with the
-API, and turned out to be much simpler to implement (<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">until it wasn’t</a>).</p>
-<p>While the two implementations share a lot of code, if you just want to
-know what’s the best way to interact with Firefox Sync in 2021, go
-straight to <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">hybrid OAuth</a>,
-which still requires prompting the user’s email/password to open a
-Firefox Accounts session first (concretely means that users have to
-trust you more), or to <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">complete OAuth</a>
-which, while it requires contacting Mozilla to obtain your own OAuth
-credentials, frees you from the responsibility of handling the user’s
-password and primary encryption key.</p>
-<p>In both cases, the part to call the Firefox Sync API once the
-authentication is performed remains the same and is explained
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">in the second post</a>.</p>
-<p>That being said, if you want the whole story, let’s get started!</p>
-<h2 id="our-good-old-friend-stack-overflow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#our-good-old-friend-stack-overflow"><span>Our good old friend Stack Overflow</span></a></h2>
-<p>I started looking for an API, and possibly existing API clients, and I
-quickly figured Lockwise was built on top of Firefox Sync’s <code>passwords</code>
-collection.</p>
-<p>Looking up “Firefox Sync API” led me to <a href="https://stackoverflow.com/questions/35313330/firefox-sync-api-does-it-exist">this post from 2016 on Stack Overflow</a>,
-where the top answer, which is also the only answer, points to the <a href="https://mozilla-services.readthedocs.io/en/latest/sync/index.html">Sync client documentation</a>
-and mentions an existing <a href="https://github.com/mozilla-services/syncclient">Python client</a>.</p>
-<p>While there’s a lot of documentation on the first link, it seems to
-only explain the protocol specification, but it’s unclear where to start
-as there’s no mention of an URL to query the API and how to authenticate
-to it.</p>
-<p>Looking at the client should give us a more concrete understanding.</p>
-<h2 id="official-python-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#official-python-client"><span>Official Python client</span></a></h2>
-<p>The first thing I notice is that the repository hasn’t been updated
-since 2016 and is now archived, which means it’s probably not
-up-to-date, definitely not actively maintained, and it’s even
-<a href="https://github.com/mozilla-services/syncclient/blob/efe0d49a8bd00d341b6e926f6783325b3fe7b676/syncclient/client.py#L11">documented as a proof of concept</a>.</p>
-<p>I try to use it but <code>pip install -r requirements.txt</code> fails with some
-weird error. Since I also noticed there was a <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#unofficial-node-js-client">Node.js client</a>,
-I left it at that.</p>
-<p>I later came back to it while writing this post, and it turns out after
-fixing some <code>requirements.txt</code> versions issues, it does run
-successfully! But it doesn’t implement the collection decryption part so
-it would only have solved part of my problem.</p>
-<h2 id="unofficial-node-js-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#unofficial-node-js-client"><span>Unofficial Node.js client</span></a></h2>
-<p>There is also a <a href="https://github.com/zaach/node-fx-sync">Node.js client</a>,
-last updated in 2014.</p>
-<p>Out of the box, I cannot install it with <code>npm install fx-sync</code>, it fails
-with the <code>jwcrypto</code> dependency post-install script. <a href="https://www.npmjs.com/package/jwcrypto">On npm</a>
-this package is marked as deprecated, with a recommendation of using <a href="https://www.npmjs.com/package/browserid-crypto">browserid-crypto</a>
-instead (which seems to be API-compatible), so after a quick <code>sed -i 's/jwcrypto/browserid-crypto/g'</code>,
-I try again.</p>
-<p>Sadly I get the same error, and realize that the post-install script was
-broken because of a small issue that had to do with minifying the JS
-output. I made a <a href="https://github.com/mozilla/browserid-crypto/pull/122">quick fix</a>
-for it, which finally allowed the <code>fx-sync</code> package to install.</p>
-<p>But the excitement dropped quickly as I get the following error during
-the login step:</p>
-<pre><code class="hljs language-js">{
-  <span class="hljs-string">&quot;code&quot;</span>: <span class="hljs-number">400</span>,
-  <span class="hljs-string">&quot;errno&quot;</span>: <span class="hljs-number">125</span>,
-  <span class="hljs-string">&quot;error&quot;</span>: <span class="hljs-string">&quot;Request blocked&quot;</span>,
-  <span class="hljs-string">&quot;message&quot;</span>: <span class="hljs-string">&quot;The request was blocked for security reasons&quot;</span>,
-  <span class="hljs-string">&quot;info&quot;</span>: <span class="hljs-string">&quot;https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md#response-format&quot;</span>,
-  <span class="hljs-string">&quot;verificationMethod&quot;</span>: <span class="hljs-string">&quot;email-captcha&quot;</span>,
-  <span class="hljs-string">&quot;verificationReason&quot;</span>: <span class="hljs-string">&quot;login&quot;</span>
-}
-</code></pre>
-<p>The login request is blocked for security reasons, and it’s unclear what
-to do to fix it. While investigating, I find <a href="https://github.com/mozilla/fxa/issues/5794">this GitHub issue</a>
-with the same error. While there is no solution in that issue, the OP
-mentions an “unblock code” which sounds interesting to me, so I figured
-I’ll try it myself.</p>
-<p><a href="https://github.com/zaach/node-fx-sync">node-fx-sync</a> uses
-<a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a> to interact
-with Firefox Accounts, and looking at the package API, it contains a
-method to send an unblock code, and a way to forward it to the <code>signIn</code>
-method, so I integrate this flow to allow continuing the process using
-the code sent to the account email.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
-
-<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(<span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>)
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">login</span> (<span class="hljs-params">email, pass</span>) </span>{
-  <span class="hljs-keyword">const</span> params = {
-    <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>
-  }
-
-  <span class="hljs-keyword">try</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> client.signIn(email, pass, params)
-  } <span class="hljs-keyword">catch</span> (err) {
-    <span class="hljs-keyword">if</span> (err.code === <span class="hljs-number">400</span> &amp;&amp; err.errno === <span class="hljs-number">125</span>) {
-      <span class="hljs-keyword">await</span> client.sendUnblockCode(email)
-      params.unblockCode = <span class="hljs-keyword">await</span> promptUserForCode()
-      <span class="hljs-keyword">return</span> client.signIn(email, pass, params)
-    }
-
-    <span class="hljs-keyword">throw</span> err
-  }
-}
-</code></pre>
-<p>At that point, I hadn’t run the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html#official-python-client">Python client</a>
-yet, but when I did so later, I realized that it <em>just worked</em>, without the
-need for an unblock code. How was that possible? I looked at the source
-and figured the only difference was that <a href="https://github.com/mozilla/PyFxA">PyFxA</a>,
-the Python client for Firefox Accounts, <a href="https://github.com/mozilla/PyFxA/blob/6c3f803b3c27c665f417b0c5bd3ca79add8e2027/fxa/core.py#L78">sent <code>reason=login</code></a>
-as part of the login parameters by default, which made the
-authentication successful without external verification. Sweet!</p>
-<pre><code class="hljs language-js">client.signIn(email, pass, {
-  <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
-})
-</code></pre>
-<p>After this patch, I got <code>fx-sync</code> to work without the need for an
-unblock code, and it was successfully able to access my Firefox Sync
-collections and decrypt them.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> FxSync = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fx-sync&#x27;</span>)
-
-<span class="hljs-keyword">const</span> sync = <span class="hljs-keyword">new</span> FxSync({
-  <span class="hljs-attr">email</span>: <span class="hljs-string">&#x27;...&#x27;</span>,
-  <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;...&#x27;</span>
-})
-
-<span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> sync.fetch(<span class="hljs-string">&#x27;passwords&#x27;</span>)
-
-<span class="hljs-built_in">console</span>.log(passwords)
-</code></pre>
-<p>This is a great start, but there’s something with using a package that
-hasn’t been updated since 2014 that just doesn’t feel right to me.</p>
-<p>Also, this client only allows <em>read</em> access, but I would also like to be
-able to add new objects, or update and delete existing ones. While I
-could just implement this feature in the existing code, this feels like
-a great opportunity to understand better how the protocol works by
-making our own client. Let’s dig into it!</p>
-<div class="note">
-<p>Check out the other posts in this series!</p>
-<ol>
-<li>A journey to scripting Firefox Sync / Lockwise: existing clients</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424462810998886416">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
 ]]></content>
   </entry>
 </feed>

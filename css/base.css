@@ -48,7 +48,8 @@ h1.has-subtitle small {
 
 blockquote > *,
 details,
-dd > * {
+dd > *,
+li > * {
     --vertical-margin: 1rem;
 }
 

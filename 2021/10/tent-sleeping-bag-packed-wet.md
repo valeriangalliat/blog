@@ -51,27 +51,19 @@ unless the gear is tightly packed and cannot breathe.
 
 ## The exception
 
-Initially I had in mind to unpack everything at the chalet where we were
-staying for the rest of the trip, so that the gear could dry properly,
-and especially so that the sleeping bag wouldn't stay compressed for
-more time than it needs to
-
 But this time, something different happened that made me forget about my
 equipment. We went for a bouldering session during the day, and **I took
 a pretty bad fall and broke my tailbone**. Not bad enough for me to go
 to the hospital, but still shook me enough that I forgot about my tent
-and sleeping bag. But when we arrived, all I wanted was to do was take a
-warm shower and go to bed,
+and sleeping bag during the rest of the trip (we were staying at a
+chalet for the last few days).
 
-**I left my (damp) gear packed in my hiking backpack**, in the car, and
-because I didn't need it during the rest of my stay nor did I think
-about it, so it stayed there the whole time.
-
-It's only when getting back home that I realized my tent and sleeping
-bag stayed packed wet for 4 days straight. Kinda worrying when you read
-online a sleeping bag shouldn't stay compressed more than 12 hours, let
-alone compressed wet, and a tent can develop mold when stored wet for
-more than 24 or 48 hours.
+**I left my (damp) gear packed in my hiking backpack**. It's only when
+getting back home that I realized everything stayed packed wet for 4
+days straight. Kinda worrying when you read online a sleeping bag
+shouldn't stay compressed more than 12 hours, let alone compressed wet,
+and a tent can develop mold when stored wet for more than 24 or 48
+hours.
 
 > Generally speaking, you should not leave your sleeping bag in a
 > compression sack for longer than 12 hours at a time.

@@ -209,6 +209,10 @@ even though it's a bit more expensive than what I'd like to pay for a
 camera strap, it's super simple to attach and detach and that would make
 my life much easier.
 
+**Edit:** I ended up buying a simple (and much cheaper) [quick release
+connector](https://amzn.to/3BEqFrS) from Amazon which does wonders with
+the original strap from my camera.
+
 </div>
 
 ## Wind muff

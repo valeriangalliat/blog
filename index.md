@@ -33,6 +33,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links">
 
+* [Gear](gear.md) <small>| the gear I use</small>
 * [Git](git.md) <small>| how I learnt Git</small>
 * [Vim](vim.md) <small>| how I learnt Vim</small>
 * [Simple](simple.md) <small>| why I write boring code</small>

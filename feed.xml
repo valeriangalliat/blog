@@ -5,10 +5,169 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-10-17T17:05:15.537Z</updated>
+  <updated>2021-11-06T00:46:51.729Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Elixir: intercepting Phoenix LiveView events in JavaScript</title>
+    <link href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html" />
+    <id>https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html</id>
+    <updated>2021-11-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Recently, I was dealing with a Phoenix LiveView where I wanted to
+intercept some events from the LiveSocket to take specific action in
+JavaScript.</p>
+<p>Typically, I wanted to know when a form was done being submitted and
+processed by the backend <strong>even if that event didn’t trigger a DOM
+change</strong>.</p>
+<h2 id="the-use-case" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#the-use-case"><span>The use case</span></a></h2>
+<p>To give the context, I have a <code>&lt;span&gt;</code> that is transformed to a <code>&lt;form&gt;</code>
+on click. For reactivity, this is done in JavaScript. When the form is
+submitted, it triggers a Phoenix event that might or might not update
+the DOM.</p>
+<p>I don’t want to reset the state back to the <code>&lt;span&gt;</code> on submission,
+because it would temporarily show the old text until the update is
+processed by the backend and the DOM is updated, which causes a quick
+text flash.</p>
+<p>In the happy path where the form submission triggers a DOM update
+Phoenix resets the DOM to the <code>&lt;span&gt;</code> and everything is good, but
+if we just added a bunch of spaces to the existing text and the backend
+decides to trim the value, Phoenix is smart enough to notice that since
+the input state didn’t change, it doesn’t need to update the DOM. This
+is great, except it leaves us with the open <code>&lt;form&gt;</code> even if the
+submission was handled successfully.</p>
+<p>To deal with this, I wanted a way to tell from JavaScript when the form
+submission was <em>completed</em> so that I can make sure to reset the <code>&lt;span&gt;</code>
+only then (to avoid the quick text flash mentioned earlier).</p>
+<h2 id="using-phoenix-liveview-hooks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#using-phoenix-liveview-hooks"><span>Using Phoenix LiveView hooks?</span></a></h2>
+<p>The first thing I thought about was to use LiveView hooks as documented
+in <a href="https://hexdocs.pm/phoenix_live_view/js-interop.html">JavaScript interoperability</a>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { Socket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
+<span class="hljs-keyword">import</span> { LiveSocket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
+
+<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).getAttribute(<span class="hljs-string">&#x27;content&#x27;</span>)
+
+<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> LiveSocket(<span class="hljs-string">&#x27;/live&#x27;</span>, Socket, {
+  <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken },
+  <span class="hljs-attr">hooks</span>: {
+    <span class="hljs-attr">ElementUpdated</span>: {
+      updated (e) {
+        <span class="hljs-built_in">this</span>.el.dispatchEvent(<span class="hljs-keyword">new</span> CustomEvent(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>))
+      }
+    }
+  }
+})
+
+liveSocket.connect()
+</code></pre>
+<p>By adding <code>phx-hook=&quot;ElementUpdated&quot;</code> on the elements we want to get
+notified for updates, we trigger the hook we defined, which here
+dispatches a custom <code>phx:element-updated</code> on the node. This allows us to
+handle that event at the node level instead of trying to handle every
+single case directly from the hook, which is very nice and decoupled if
+you ask me.</p>
+<p>For example you could now do:</p>
+<pre><code class="hljs language-js">someElement.addEventListener(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-comment">// Deal with the fact this element got updated!</span>
+})
+</code></pre>
+<p>Sadly, this didn’t work for me because the <code>updated</code> hook only fires
+when the element is… updated, which is not the case if the form
+submission completes but doesn’t result in a state change. Bummer.</p>
+<h2 id="leveraging-the-phx-page-loading-stop-window-event" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#leveraging-the-phx-page-loading-stop-window-event"><span>Leveraging the <code>phx:page-loading-stop</code> <code>window</code> event</span></a></h2>
+<p>This is the easiest solution. Unlike the one I talk about after, it
+doesn’t give any granularity on the kind of event that was sent or
+received, but it’s very easy to implement.</p>
+<p>In my case, I use <a href="https://alpinejs.dev/">Alpine</a> so my code looks something like this:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">x-data</span>=<span class="hljs-string">&quot;{ edit: false }&quot;</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;edit = true&quot;</span> @<span class="hljs-attr">click.outside</span>=<span class="hljs-string">&quot;edit = false&quot;</span> @<span class="hljs-attr">phx:page-loading-stop.window</span>=<span class="hljs-string">&quot;edit = false&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">x-show</span>=<span class="hljs-string">&quot;!edit&quot;</span>&gt;</span><span class="hljs-comment">&lt;!-- ... --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">x-show</span>=<span class="hljs-string">&quot;edit&quot;</span> <span class="hljs-attr">phx-submit</span>=<span class="hljs-string">&quot;edit_whatever&quot;</span>&gt;</span><span class="hljs-comment">&lt;!-- ... --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
+  <span class="hljs-comment">&lt;!-- ... --&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<p>We start with a state of <code>edit: false</code>. When that element is clicked, we
+switch the <code>&lt;span&gt;</code> to a <code>&lt;form&gt;</code> to let the user edit it. On
+submission, if the DOM is refreshed, Phoenix will reset the state
+anyways and we’re back to the <code>&lt;span&gt;</code>, but if it’s not (e.g. input not
+modified), we can still handle the <code>page-loading-stop</code> event to go back
+to <code>&lt;span&gt;</code> mode. Sweet!</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t use Alpine, you can just listen to the
+<code>phx:page-loading-stop</code> event on the <code>window</code> object:</p>
+<pre><code class="hljs language-js">addEventListener(<span class="hljs-string">&#x27;phx:page-loading-stop&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+  <span class="hljs-comment">// Your code here!</span>
+})
+</code></pre>
+</div>
+<h2 id="monkey-patching-the-livesocket" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#monkey-patching-the-livesocket"><span>Monkey patching the LiveSocket 🙈</span></a></h2>
+<p>Oh yeah, we love monkey patching. If you use Phoenix LiveView your code
+should look something like this (I left alone the Alpine part because
+it’s not relevant to this example).</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { Socket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
+<span class="hljs-keyword">import</span> { LiveSocket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
+
+<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).getAttribute(<span class="hljs-string">&#x27;content&#x27;</span>)
+
+<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> LiveSocket(<span class="hljs-string">&#x27;/live&#x27;</span>, Socket, {
+  <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken }
+})
+
+liveSocket.connect()
+</code></pre>
+<p>From there, we can intercept the <code>push</code> method on the LiveSocket
+channel. That will in turn allow us to add an event handler to the
+<code>receive</code> event for a given push, so that we can not only get the full
+response from Phoenix, but can also tell from what event it originated!</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> channel = <span class="hljs-built_in">Object</span>.values(liveSocket.roots)[<span class="hljs-number">0</span>].channel
+<span class="hljs-keyword">const</span> pushImpl = channel.push
+
+channel.push = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">wrappedPush</span> (<span class="hljs-params">event, payload, timeout</span>) </span>{
+  <span class="hljs-keyword">const</span> push = pushImpl.call(<span class="hljs-built_in">this</span>, event, payload, timeout)
+
+  push.receive(<span class="hljs-string">&#x27;ok&#x27;</span>, <span class="hljs-function"><span class="hljs-params">resp</span> =&gt;</span> {
+    <span class="hljs-built_in">console</span>.log(event, payload, resp)
+  })
+
+  <span class="hljs-keyword">return</span> push
+}
+</code></pre>
+<p>In the case of my <code>&lt;form&gt;</code> example earlier, <code>event</code> is set to the string
+<code>event</code>, <code>resp</code> would contain a <code>diff</code> object that really only makes
+sense to Phoenix (or be an empty object if nothing was updated), and the
+<code>payload</code> would look something like this:</p>
+<pre><code class="hljs language-json">{
+  <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;form&quot;</span>,
+  <span class="hljs-attr">&quot;event&quot;</span>: <span class="hljs-string">&quot;edit_whatever&quot;</span>,
+  <span class="hljs-attr">&quot;value&quot;</span>: <span class="hljs-string">&quot;URL encoded string of the form elements&quot;</span>
+}
+</code></pre>
+<p>This gives pretty useful informations that can allow to hook to LiveView
+events in a much more granular manner!</p>
+<p>While I didn’t end up needing that method, I found this trick during my
+numerous attempts at dealing with that issue and I found it would be
+pretty useful to documented as it’s pretty easy to implement and I
+didn’t find anything similar online.</p>
+<h2 id="further-reading" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#further-reading"><span>Further reading</span></a></h2>
+<p>If you enjoy reading about this topic, I encourage you to read those two
+articles I stumbled upon during my research on this subject.</p>
+<ul>
+<li><a href="http://blog.pthompson.org/alpine-js-and-liveview">Integrating Phoenix LiveView with JavaScript and AlpineJS</a>
+by <a href="http://blog.pthompson.org/">Patrick Thompson</a>, for a cool demo of
+using hooks and events to make LiveView and Alpine play nice together
+(but sadly not nice enough for my edge case).</li>
+<li><a href="https://elixirschool.com/blog/live-view-with-channels/">Using channels with LiveView for better UX</a>
+by <a href="https://twitter.com/sm_debenedetto">Sophie DeBenedetto</a>, to extend
+the LiveSocket with a custom channel that allow passing granular
+messages to the client. It’s pretty complex and it kinda scared me at
+first to be honest, but if my <a href="https://www.codejam.info/2021/11/monkey-patching-the-livesocket">monkey patch</a>
+solution wasn’t flexible enough for you, this one surely will!</li>
+</ul>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>JSDoc: TypeScript inside JavaScript and not the other way around 🤯</title>
     <link href="https://www.codejam.info/2021/10/jsdoc-typescript-inside-javascript.html" />
@@ -261,7 +420,7 @@ regardless of your explicit <code>include</code> and <code>exclude</code> patter
 there’s no way to turn off this behavior.</li>
 <li>TypeScript refuses to overwrite input files (and that’s a good thing).</li>
 </ul>
-<p>Bug guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
+<p>But guess what? <code>test.js</code> imports <code>index.js</code> (so that it can, you know,
 test it).</p>
 <p>The problem here is that while this command will run fine the first
 time, <a href="https://github.com/microsoft/TypeScript/issues/16749">subsequent runs will fail</a>
@@ -308,7 +467,7 @@ final definitions.</p>
 <p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
 <pre><code class="hljs language-json">{
   <span class="hljs-attr">&quot;scripts&quot;</span>: {
-    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc auth/*.js *.js --checkJs --noEmit&quot;</span>,
+    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span>,
     <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
     <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
     <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
@@ -327,7 +486,7 @@ and (also as usual) I had to resort to a hack at the end of the day. But
 that’s mostly because I’m a perfectionist and I wasn’t happy with having
 just the happy path working. 😜</p>
 <p>Still, I believe that this method allows to reduce the gap between
-JavaScript and TypeScript, while <strong>getting rid of manual work</strong>, making
+TypeScript and JavaScript, while <strong>getting rid of manual work</strong>, making
 the JavaScript code <strong>safer</strong>, and making the type definitions <strong>more
 accurate and reliable</strong> by tightly coupling them to the code.</p>
 <p>Because it yields <strong>most of the benefit</strong> at the <strong>lowest cost and
@@ -338,7 +497,7 @@ this make you want to type your projects this way? Feel free to <a href="https:/
 and let me know. And as usual, keep hacking! ✨</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1449783928970256394">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
 </section>
 ]]></content>
   </entry>
@@ -1500,6 +1659,9 @@ a clean sound. I’m looking forward to buying the <a href="https://amzn.to/39G7
 even though it’s a bit more expensive than what I’d like to pay for a
 camera strap, it’s super simple to attach and detach and that would make
 my life much easier.</p>
+<p><strong>Edit:</strong> I ended up buying a simple (and much cheaper) <a href="https://amzn.to/3BEqFrS">quick release
+connector</a> from Amazon which does wonders with
+the original strap from my camera.</p>
 </div>
 <h2 id="wind-muff" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#wind-muff"><span>Wind muff</span></a></h2>
 <p>A wind muff is a must for outdoor recording especially if it’s a bit
@@ -5734,483 +5896,6 @@ support than it first looked like.</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
 <li>A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424462810998886416">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>A journey to scripting Firefox Sync / Lockwise: figuring the protocol</title>
-    <link href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html" />
-    <id>https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html</id>
-    <updated>2021-08-08T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<div class="note">
-<p>This article is part of a series about scripting Firefox Sync / Lockwise.</p>
-<ol>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
-<li>A journey to scripting Firefox Sync / Lockwise: figuring the protocol</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
-<p>In the previous post, we found existing Firefox Sync clients, one in
-Python and one in Node.js. Both hadn’t been updated in more than 6
-years but with some quick fixes we got them working.</p>
-<p>For learning purpose, let’s extract the code from <a href="https://github.com/zaach/node-fx-sync">node-fx-sync</a>
-that’s necessary to access Firefox Sync collections, and simplify it as
-much as possible.</p>
-<p>The first step is to authenticating with <a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md">Firefox Accounts</a>.
-Then, we need to do a little crypto dance with the <a href="https://github.com/mozilla-services/tokenserver">Firefox Sync TokenServer</a>
-that will in turn give us credentials to access an actual <a href="https://github.com/mozilla-services/syncstorage-rs">Firefox Sync API node</a>.
-The <a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">Sync API</a>
-will then let us query collections, that we can decrypt with some more
-crypto wizardry.</p>
-<p>I’ll break that down in pieces below, then give a fully working example
-that you can just copy and run yourself.</p>
-<h2 id="sign-in-to-firefox-accounts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#sign-in-to-firefox-accounts"><span>Sign in to Firefox Accounts</span></a></h2>
-<p>First we instantiate a <a href="https://www.npmjs.com/package/fxa-js-client">fxa-js-client</a> to interact
-with the Firefox Accounts API.</p>
-<div class="note">
-<p><strong>Note:</strong> this client is not maintained, it’s been replaced with
-<a href="https://github.com/mozilla/fxa/tree/main/packages/fxa-auth-client">fxa-auth-client</a>
-in <a href="https://github.com/mozilla/fxa/pull/5993">this PR</a> a year ago, but
-that newer package is not published on npm, and since it’s part of a
-monorepo, we can’t install it from GitHub with npm either.</p>
-<p><a href="https://gitpkg.vercel.app/">GitPkg</a> can help with that, but I’d rather
-not introduce an element of indirection in fetching the package that
-I’ll give my Firefox Accounts password to.</p>
-</div>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
-
-<span class="hljs-keyword">const</span> authServerUrl = <span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>
-<span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
-<span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
-
-<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(authServerUrl)
-
-<span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.signIn(email, pass, {
-  <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
-  <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
-})
-</code></pre>
-<p>As we saw earlier, setting <code>reason: 'login'</code> is necessary for the
-login to work without needing an unblock code sent to the user email.</p>
-<p>Because we specified <code>keys: true</code>, we get <code>keyFetchToken</code> and
-<code>unwrapBKey</code> in the response, which allows us to fetch the account keys.
-This will be useful later.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
-</code></pre>
-<h2 id="the-firefox-sync-tokenserver-authentication-dance" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#the-firefox-sync-tokenserver-authentication-dance"><span>The Firefox Sync TokenServer authentication dance</span></a></h2>
-<p>Next, we need to <a href="https://github.com/mozilla-services/tokenserver">call the TokenServer</a>
-to get the credentials for the Firefox Sync API.</p>
-<p>There is two ways of authenticating to the TokenServer: <a href="https://github.com/mozilla-services/tokenserver#using-browserid">BrowserID</a>
-and <a href="https://github.com/mozilla-services/tokenserver#using-oauth">OAuth</a>.</p>
-<div class="note">
-<p>At that point I just copied what <a href="https://github.com/mozilla-services/syncclient">Mozilla’s Python client</a>
-and <a href="https://github.com/zaach/node-fx-sync">node-fx-sync</a> were doing,
-which is using BrowserID. It’s also the method that’s referred in most,
-if not all, the documentation I could find online to this day.</p>
-<p>I later found out that OAuth is <a href="https://vladikoff.github.io/app-services-site/docs/accounts/welcome.html">the new, recommended way</a>
-and the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">last</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">posts</a> of this
-series explains how to implement it. If you don’t care about BrowserID,
-you can directly <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">jump to the next section</a>
-that explains how to fetch and decrypt records from a Sync node.</p>
-</div>
-<p>The <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md">BrowserID protocol</a>
-requires us to generate an asymmetric keypair, either DSA or RSA.
-Mozilla made the <a href="https://www.npmjs.com/package/browserid-crypto">browserid-crypto</a>
-package (previously known as <code>jwcrypto</code>) to help with implementing it.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
-
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/ds&#x27;</span>)
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
-
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(jwcrypto.generateKeypair)({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> })
-
-<span class="hljs-comment">// Also works with RSA.</span>
-<span class="hljs-comment">// const kp = await promisify(jwcrypto.generateKeypair)({ algorithm: &#x27;RS&#x27;, keysize: 256 })</span>
-</code></pre>
-<p>After generating the keypair, we need to ask the Firefox Accounts
-server to generate a signed certificate of our public key. As documented
-<a href="https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-32">on the API</a>,
-the certificate validity duration is set in milliseconds and can be up
-to 24 hours.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>
-<span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
-</code></pre>
-<p>Next, we generate an <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#identity-assertion">“identity assertion”</a>
-(essentially a <a href="https://en.wikipedia.org/wiki/JSON_Web_Token"><abbr title="JSON Web Token">JWT</abbr></a>
-with an empty payload) using our private key.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
-
-<span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
-  {},
-  {
-    <span class="hljs-attr">audience</span>: tokenServerUrl,
-    <span class="hljs-attr">issuer</span>: authServerUrl,
-    <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
-  },
-  kp.secretKey
-)
-</code></pre>
-<p>By combining the previous certificate with this JWT, separated by the
-<code>~</code> character (tilde), we create a <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion">“backed identity assertion”</a>,
-that we’ll be able to use in the <code>Authorization</code> header.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
-</code></pre>
-<div id="compute-client-state"></div>
-<p>We also compute the <code>X-Client-State</code> header which is the first 32 bytes
-of a SHA-256 digest of the Sync key <a href="https://github.com/mozilla-services/tokenserver#using-browserid">as documented here</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-<span class="hljs-keyword">const</span> clientState = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(syncKey).digest().slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
-</code></pre>
-<p>We now have everything ready to call the <a href="https://github.com/mozilla-services/tokenserver#using-browserid">TokenServer</a>.
-I’ll use <a href="https://www.npmjs.com/package/node-fetch"><code>node-fetch</code></a> for
-that.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
-
-<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
-  <span class="hljs-attr">headers</span>: {
-    <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`BrowserID <span class="hljs-subst">${backedAssertion}</span>`</span>,
-    <span class="hljs-string">&#x27;X-Client-State&#x27;</span>: clientState
-  }
-})
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-</code></pre>
-<p>This gives us “the URL of the user’s Sync storage node, and some
-short-lived credentials that can be used to access it” as documented
-<a href="https://github.com/mozilla-services/tokenserver#api">here</a>.</p>
-<h2 id="actually-calling-firefox-sync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync"><span>Actually calling Firefox Sync</span></a></h2>
-<p>We now have the credentials to call the <a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">Firefox Sync API</a>.
-It uses <a href="https://github.com/mozilla/hawk/blob/main/API.md#usage-example">Hawk authentication</a>,
-so we’ll write a <code>fetch</code> wrapper to handle it for us.</p>
-<p>For convenience, we’ll make it take the <a href="https://github.com/mozilla-services/tokenserver#response">token we got from the Sync TokenServer</a>
-earlier, since it contains everything we need to perform Hawk
-authentication, and we’ll leverage the <a href="https://www.npmjs.com/package/hawk"><code>hawk</code></a>
-package to do the heavy lifting.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> Hawk = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hawk&#x27;</span>)
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hawkFetch</span> (<span class="hljs-params">token, path, params = {}</span>) </span>{
-  <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${token.api_endpoint}</span>/<span class="hljs-subst">${path}</span>`</span>
-
-  <span class="hljs-keyword">const</span> hawkOptions = {
-    <span class="hljs-attr">credentials</span>: {
-      <span class="hljs-attr">id</span>: token.id,
-      <span class="hljs-attr">key</span>: token.key,
-      <span class="hljs-attr">algorithm</span>: token.hashalg
-    }
-  }
-
-  <span class="hljs-keyword">if</span> (params.body) {
-    hawkOptions.payload = params.body
-  }
-
-  <span class="hljs-keyword">const</span> authHeader = Hawk.client.header(url, params.method || <span class="hljs-string">&#x27;get&#x27;</span>, hawkOptions)
-
-  <span class="hljs-keyword">return</span> fetch(url, <span class="hljs-built_in">Object</span>.assign({}, params, {
-    <span class="hljs-attr">headers</span>: <span class="hljs-built_in">Object</span>.assign({
-      <span class="hljs-attr">Authorization</span>: authHeader.header
-    }, params.headers)
-  }))
-}
-</code></pre>
-<p>We can then use that helper to fetch the passwords:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/passwords?full=true&#x27;</span>)
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-</code></pre>
-<p>But those passwords are encrypted! If we want to access the actual
-payload (including the domain, username and password for each entry), we
-need a couple more steps.</p>
-<p>Sync stores “collections”, e.g. bookmarks, history, tabs, passwords and
-more. The collections are made of objects, referred to as BSO (basic
-storage object) and previously known as a WBO (Weave basic object).</p>
-<p>Each object is encrypted using a symmetric key that is stored in the
-keys collection, a special collection encrypted with a key derived from
-the user Sync key, itself derived locally from the user password,
-effectively making Firefox Sync <a href="https://medium.com/mozilla-tech/how-firefox-sync-keeps-your-secrets-if-tls-fails-14420d45885c">end-to-end</a>
-<a href="https://github.com/mozilla/fxa-auth-server/wiki/onepw-protocol">encrypted</a>. 🤯</p>
-<p>The keys are fetched like the passwords:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cryptoKeys = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/crypto/keys&#x27;</span>)
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-</code></pre>
-<div id="derive-sync-key"></div>
-<p>To decrypt them, we need to derive the user Sync key using <a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#sync-key-bundle">HKDF</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deriveKeys</span> (<span class="hljs-params">syncKey</span>) </span>{
-  <span class="hljs-keyword">const</span> salt = <span class="hljs-string">&#x27;&#x27;</span>
-  <span class="hljs-keyword">const</span> info = <span class="hljs-string">&#x27;identity.mozilla.com/picl/v1/oldsync&#x27;</span>
-  <span class="hljs-keyword">const</span> bundle = Buffer.from(<span class="hljs-keyword">await</span> promisify(crypto.hkdf)(<span class="hljs-string">&#x27;sha256&#x27;</span>, syncKey, salt, info, <span class="hljs-number">64</span>))
-
-  <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">encryptionKey</span>: bundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
-    <span class="hljs-attr">hmacKey</span>: bundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
-  }
-}
-
-<span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-<span class="hljs-keyword">const</span> syncKeyBundle = <span class="hljs-keyword">await</span> deriveKeys(syncKey)
-</code></pre>
-<p>This gives us a bundle containing an encryption key and a HMAC key. The
-records are <a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#record-encryption">encrypted using AES-256-CBC and signed with HMAC using the respective keys</a>.</p>
-<p>We’ll write a <code>decryptBSO</code> helper, that takes a key bundle and a BSO to
-decrypt, performing HMAC verification at the same time.</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">decryptBSO</span> (<span class="hljs-params">keyBundle, bso</span>) </span>{
-  <span class="hljs-keyword">const</span> payload = <span class="hljs-built_in">JSON</span>.parse(bso.payload)
-
-  <span class="hljs-keyword">const</span> hmac = crypto.createHmac(<span class="hljs-string">&#x27;sha256&#x27;</span>, keyBundle.hmacKey)
-    .update(payload.ciphertext)
-    .digest(<span class="hljs-string">&#x27;hex&#x27;</span>)
-
-  <span class="hljs-keyword">if</span> (hmac !== payload.hmac) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;HMAC mismatch&#x27;</span>)
-  }
-
-  <span class="hljs-keyword">const</span> iv = Buffer.from(payload.IV, <span class="hljs-string">&#x27;base64&#x27;</span>)
-  <span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-cbc&#x27;</span>, keyBundle.encryptionKey, iv)
-  <span class="hljs-keyword">const</span> plaintext = decipher.update(payload.ciphertext, <span class="hljs-string">&#x27;base64&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>) + decipher.final(<span class="hljs-string">&#x27;utf8&#x27;</span>)
-  <span class="hljs-keyword">const</span> result = <span class="hljs-built_in">JSON</span>.parse(plaintext)
-
-  <span class="hljs-keyword">if</span> (result.id !== bso.id) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;Record ID mismatch&#x27;</span>)
-  }
-
-  <span class="hljs-keyword">return</span> result
-}
-</code></pre>
-<p>Now we can adapt our keys fetching code so that it also decrypts them.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cryptoKeys = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/crypto/keys&#x27;</span>)
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-  .then(<span class="hljs-function"><span class="hljs-params">bso</span> =&gt;</span> decryptBSO(syncKeyBundle, bso))
-</code></pre>
-<p>Finally, we want to decrypt the passwords that we fetched earlier. The
-keys we just retrieved are made of a <em>default key bundle</em>, as well as
-optional <em>collection-specific keys</em>, as defined in <a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#format">the protocol</a>.</p>
-<p>In practice, I only encountered default keys, but I still support
-collection keys for future compatibility.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> encodedKeyBundle = cryptoKeys.collections.passwords || cryptoKeys.default
-
-<span class="hljs-keyword">const</span> collectionKeyBundle = {
-  <span class="hljs-attr">encryptionKey</span>: Buffer.from(encodedKeyBundle[<span class="hljs-number">0</span>], <span class="hljs-string">&#x27;base64&#x27;</span>),
-  <span class="hljs-attr">hmacKey</span>: Buffer.from(encodedKeyBundle[<span class="hljs-number">1</span>], <span class="hljs-string">&#x27;base64&#x27;</span>)
-}
-</code></pre>
-<p>Notice how the <code>collectionKeyBundle</code> variable is compatible with the
-<code>keyBundle</code> we pass to <code>decryptBSO</code>? This is how we’ll be able to
-decrypt the passwords!</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/passwords?full=true&#x27;</span>)
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-  .then(<span class="hljs-function"><span class="hljs-params">items</span> =&gt;</span> items.map(<span class="hljs-function"><span class="hljs-params">bso</span> =&gt;</span> decryptBSO(collectionKeyBundle, bso)))
-</code></pre>
-<p>And voilà! This is all we need to fetch and decrypt records from Firefox
-Sync! <a href="https://github.com/zaach/node-fx-sync">It</a>
-<a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md">only</a>
-<a href="https://github.com/mozilla-services/tokenserver">took</a>
-<a href="https://github.com/mozilla-services/syncstorage-rs">reading</a>
-<a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html">documentation</a>
-<a href="https://www.npmjs.com/package/fxa-js-client">from</a>
-<a href="https://github.com/mozilla/fxa/tree/main/packages/fxa-auth-client">14</a>
-<a href="https://github.com/mozilla-services/syncclient">different</a>
-<a href="https://vladikoff.github.io/app-services-site/docs/accounts/welcome.html">places</a>
-<a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md">to</a>
-<a href="https://www.npmjs.com/package/browserid-crypto">understand</a>
-<a href="https://github.com/mozilla/hawk/blob/main/API.md">how</a>
-<a href="https://github.com/mozilla/fxa-auth-server/wiki/onepw-protocol">it</a>
-<a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html">works</a>.</p>
-<p>Writing data is only a matter of implementing <code>encryptBSO</code>, essentially
-doing the reverse of what <code>decryptBSO</code> is doing, and sending the
-<a href="https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html#individual-collection-interaction">corresponding <code>PUT</code> or <code>POST</code> requests</a>.
-I’ll leave that as an exercise to the reader. 😉</p>
-<p>But we’re not done yet. First I’ll share with you the code that we built
-in this post, then we’ll take a look at <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">how BrowserID works</a>
-(you’ll understand <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#going-further">why</a>).</p>
-<h2 id="give-me-the-whole-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code"><span>Give me the whole code!</span></a></h2>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-<span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
-<span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
-<span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
-<span class="hljs-keyword">const</span> Hawk = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hawk&#x27;</span>)
-
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/ds&#x27;</span>)
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
-
-<span class="hljs-keyword">const</span> authServerUrl = <span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>
-<span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
-<span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
-<span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
-
-<span class="hljs-comment">// Derive the Sync key bundle as documented in &lt;https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#sync-key-bundle&gt;</span>
-<span class="hljs-comment">// in order to fetch the collection key bundles.</span>
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">deriveKeys</span> (<span class="hljs-params">syncKey</span>) </span>{
-  <span class="hljs-keyword">const</span> salt = <span class="hljs-string">&#x27;&#x27;</span>
-  <span class="hljs-keyword">const</span> info = <span class="hljs-string">&#x27;identity.mozilla.com/picl/v1/oldsync&#x27;</span>
-  <span class="hljs-keyword">const</span> bundle = Buffer.from(<span class="hljs-keyword">await</span> promisify(crypto.hkdf)(<span class="hljs-string">&#x27;sha256&#x27;</span>, syncKey, salt, info, <span class="hljs-number">64</span>))
-
-  <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">encryptionKey</span>: bundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
-    <span class="hljs-attr">hmacKey</span>: bundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
-  }
-}
-
-<span class="hljs-comment">// Decrypt a BSO (basic storage object) previously known as a WBO (Weave basic</span>
-<span class="hljs-comment">// object) according to &lt;https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#record-encryption&gt;.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">decryptBSO</span> (<span class="hljs-params">keyBundle, bso</span>) </span>{
-  <span class="hljs-keyword">const</span> payload = <span class="hljs-built_in">JSON</span>.parse(bso.payload)
-
-  <span class="hljs-keyword">const</span> hmac = crypto.createHmac(<span class="hljs-string">&#x27;sha256&#x27;</span>, keyBundle.hmacKey)
-    .update(payload.ciphertext)
-    .digest(<span class="hljs-string">&#x27;hex&#x27;</span>)
-
-  <span class="hljs-keyword">if</span> (hmac !== payload.hmac) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;HMAC mismatch&#x27;</span>)
-  }
-
-  <span class="hljs-keyword">const</span> iv = Buffer.from(payload.IV, <span class="hljs-string">&#x27;base64&#x27;</span>)
-  <span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-cbc&#x27;</span>, keyBundle.encryptionKey, iv)
-  <span class="hljs-keyword">const</span> plaintext = decipher.update(payload.ciphertext, <span class="hljs-string">&#x27;base64&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>) + decipher.final(<span class="hljs-string">&#x27;utf8&#x27;</span>)
-  <span class="hljs-keyword">const</span> result = <span class="hljs-built_in">JSON</span>.parse(plaintext)
-
-  <span class="hljs-keyword">if</span> (result.id !== bso.id) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;Record ID mismatch&#x27;</span>)
-  }
-
-  <span class="hljs-keyword">return</span> result
-}
-
-<span class="hljs-comment">// Fetch a URL using Hawk authentication according to</span>
-<span class="hljs-comment">// &lt;https://github.com/mozilla/hawk/blob/main/API.md#usage-example&gt;.</span>
-<span class="hljs-comment">//</span>
-<span class="hljs-comment">// The token is expected to come from a Sync TokenServer response</span>
-<span class="hljs-comment">// as documented in &lt;https://github.com/mozilla-services/tokenserver#response&gt;.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">hawkFetch</span> (<span class="hljs-params">token, path, params = {}</span>) </span>{
-  <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${token.api_endpoint}</span>/<span class="hljs-subst">${path}</span>`</span>
-
-  <span class="hljs-keyword">const</span> hawkOptions = {
-    <span class="hljs-attr">credentials</span>: {
-      <span class="hljs-attr">id</span>: token.id,
-      <span class="hljs-attr">key</span>: token.key,
-      <span class="hljs-attr">algorithm</span>: token.hashalg
-    }
-  }
-
-  <span class="hljs-keyword">if</span> (params.body) {
-    hawkOptions.payload = params.body
-  }
-
-  <span class="hljs-keyword">const</span> authHeader = Hawk.client.header(url, params.method || <span class="hljs-string">&#x27;get&#x27;</span>, hawkOptions)
-
-  <span class="hljs-keyword">return</span> fetch(url, <span class="hljs-built_in">Object</span>.assign({}, params, {
-    <span class="hljs-attr">headers</span>: <span class="hljs-built_in">Object</span>.assign({
-      <span class="hljs-attr">Authorization</span>: authHeader.header
-    }, params.headers)
-  }))
-}
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(authServerUrl)
-
-  <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.signIn(email, pass, {
-    <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
-    <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
-  })
-
-  <span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
-
-  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(jwcrypto.generateKeypair)({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> })
-
-  <span class="hljs-comment">// Also works with RSA.</span>
-  <span class="hljs-comment">// const kp = await promisify(jwcrypto.generateKeypair)({ algorithm: &#x27;RS&#x27;, keysize: 256 })</span>
-
-  <span class="hljs-comment">// Time interval in milliseconds until the certificate will expire, up to a</span>
-  <span class="hljs-comment">// maximum of 24 hours as documented in &lt;https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-32&gt;.</span>
-  <span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>
-
-  <span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
-
-  <span class="hljs-comment">// Generate an &quot;identity assertion&quot; which is a JWT as documented in</span>
-  <span class="hljs-comment">// &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#identity-assertion&gt;.</span>
-  <span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
-    {},
-    {
-      <span class="hljs-attr">audience</span>: tokenServerUrl,
-      <span class="hljs-attr">issuer</span>: authServerUrl,
-      <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
-    },
-    kp.secretKey
-  )
-
-  <span class="hljs-comment">// Certs are separated by a `~` as documented in &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion&gt;.</span>
-  <span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
-
-  <span class="hljs-comment">// See &lt;https://github.com/mozilla-services/tokenserver#using-browserid&gt;.</span>
-  <span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-  <span class="hljs-keyword">const</span> clientState = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(syncKey).digest().slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
-
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
-    <span class="hljs-attr">headers</span>: {
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`BrowserID <span class="hljs-subst">${backedAssertion}</span>`</span>,
-      <span class="hljs-string">&#x27;X-Client-State&#x27;</span>: clientState
-    }
-  })
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-
-  <span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-  <span class="hljs-keyword">const</span> syncKeyBundle = <span class="hljs-keyword">await</span> deriveKeys(syncKey)
-
-  <span class="hljs-comment">// See &lt;https://mozilla-services.readthedocs.io/en/latest/storage/apis-1.5.html&gt;</span>
-  <span class="hljs-comment">// for endpoints and authentication.</span>
-  <span class="hljs-keyword">const</span> cryptoKeys = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/crypto/keys&#x27;</span>)
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-    .then(<span class="hljs-function"><span class="hljs-params">bso</span> =&gt;</span> decryptBSO(syncKeyBundle, bso))
-
-  <span class="hljs-keyword">const</span> encodedKeyBundle = cryptoKeys.collections.passwords || cryptoKeys.default
-
-  <span class="hljs-keyword">const</span> collectionKeyBundle = {
-    <span class="hljs-attr">encryptionKey</span>: Buffer.from(encodedKeyBundle[<span class="hljs-number">0</span>], <span class="hljs-string">&#x27;base64&#x27;</span>),
-    <span class="hljs-attr">hmacKey</span>: Buffer.from(encodedKeyBundle[<span class="hljs-number">1</span>], <span class="hljs-string">&#x27;base64&#x27;</span>)
-  }
-
-  <span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> hawkFetch(token, <span class="hljs-string">&#x27;storage/passwords?full=true&#x27;</span>)
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
-    .then(<span class="hljs-function"><span class="hljs-params">items</span> =&gt;</span> items.map(<span class="hljs-function"><span class="hljs-params">bso</span> =&gt;</span> decryptBSO(collectionKeyBundle, bso)))
-
-  <span class="hljs-built_in">console</span>.log(passwords)
-}
-
-main()
-</code></pre>
-<h2 id="going-further" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#going-further"><span>Going further</span></a></h2>
-<p>This works like a charm, but one thing still bugs me. When running the
-code, I see a deprecation warning in the console.</p>
-<pre><code class="hljs">[DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
-</code></pre>
-<p>This is coming from browserid-crypto, so I made <a href="https://github.com/mozilla/browserid-crypto/pull/123">a PR to fix it</a>,
-and while it got accepted, the maintainer <a href="https://github.com/mozilla/browserid-crypto/pull/123#pullrequestreview-703731665">pointed out to me</a>
-that this library should be considered unmaintained:</p>
-<blockquote>
-<p>FWIW, it would be best to consider this library unmaintained at this
-point, but I’m happy to take small fixes like this all the same.</p>
-</blockquote>
-<p>While there’s nothing wrong with using an unmaintained library as long
-as it works, I was curious to see what it would take to remove the
-browserid-crypto package from my dependencies. In the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">next post</a>,
-we’ll deconstruct BrowserID in order to implement the protocol with just
-native and generic modules. Keep on reading!</p>
-<div class="note">
-<p>Check out the other posts in this series!</p>
-<ol>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
-<li>A journey to scripting Firefox Sync / Lockwise: figuring the protocol</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>

@@ -36,7 +36,6 @@ A blog by a programmer who loves many other things.
 * [Git](git.md) <small>| how I learnt Git</small>
 * [Vim](vim.md) <small>| how I learnt Vim</small>
 * [Simple](simple.md) <small>| why I write boring code</small>
-* [Freelance](freelance.md) <small>| I'll write boring code for you</small>
 
 </div>
 

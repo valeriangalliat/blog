@@ -2,7 +2,7 @@
 
 On this page you'll find the list of all the gear I use! It's mainly
 around my [FunkyVal](https://www.youtube.com/FunkyVal) channel on
-YouTube because that's what requires most of it.
+YouTube because that's what requires most of it, but not limited to. 😉
 
 ## Music
 
@@ -158,5 +158,20 @@ YouTube because that's what requires most of it.
     back then! Same hardware as the HERO5 Black but with some software
     limitations. I give you the settings I use on it in <a
     href="2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.html">this article</a>.</td>
+  </tr>
+</table>
+
+## Coffee
+
+<table>
+  <tr>
+    <td><a href="https://amzn.to/3BTjImS">Baratza Encore</a></td>
+    <td>IMO the best grinder you can get at that price level if you're
+    getting into specialty coffee!</td>
+  </tr>
+  <tr>
+    <td><a href="https://amzn.to/3CVGnR8">Bialetti Moka Express, 6-Cup</a></td>
+    <td>The worldwide reference as far as moka pot is concerned. Classic
+    Italian-style coffee! Watch my <a href="https://youtu.be/zMR8B2yDgaU">video about it</a>!</td>
   </tr>
 </table>

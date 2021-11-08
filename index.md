@@ -9,6 +9,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links posts">
 
+* [ImageMagick crop with percentage like CSS `background-position`](2021/11/imagemagick-crop-percentage-css-background-position.md) <small>November 8, 2021</small>
 * [Elixir: intercepting Phoenix LiveView events in JavaScript](2021/11/elixir-intercepting-phoenix-liveview-events-javascript.md) <small>November 5, 2021</small>
 * [JSDoc: TypeScript inside JavaScript and not the other way around 🤯](2021/10/jsdoc-typescript-inside-javascript.md) <small>October 17, 2021</small>
 * [TypeScript: cannot write file `.d.ts` because it would overwrite input file](2021/10/typescript-cannot-write-file-overwrite-input.md) <small>October 16, 2021</small>
@@ -23,7 +24,6 @@ A blog by a programmer who loves many other things.
 * [Free static hosting with server-side analytics](2021/09/free-static-hosting-server-side-analytics.md) <small>September 21, 2021</small>
 * [Using Vercel without preview deployments](2021/09/vercel-without-preview-deployments.md) <small>September 21, 2021</small>
 * [Tracking the value of an Ethereum or Binance Smart Chain token in real time](2021/08/ethereum-binance-token-real-time-value.md) <small>August 23, 2021</small>
-* [Using your lock screen as login screen on Linux](2021/08/lock-screen-as-login-screen-linux.md) <small>August 22, 2021</small>
 
 [All the posts](posts.md)
 

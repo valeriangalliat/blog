@@ -5,10 +5,68 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-06T00:46:51.729Z</updated>
+  <updated>2021-11-08T23:11:41.395Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>ImageMagick crop with percentage like CSS background-position</title>
+    <link href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html" />
+    <id>https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html</id>
+    <updated>2021-11-08T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Another one of those posts that are probably only useful to me, but who
+knows!</p>
+<p>I’ve been wanting to crop images with ImageMagick in a way that mimics
+what the CSS <code>background-position</code> property does.</p>
+<h2 id="how-does-background-position-behave" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#how-does-background-position-behave"><span>How does <code>background-position</code> behave?</span></a></h2>
+<p>Let’s say I have a picture that I’m making shorter, e.g. a 1:1 picture
+that I want to make 16:9, and I want to make sure to keep it centered
+both horizontally and vertically. I would use the following:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.element</span> {
+  <span class="hljs-attribute">background-position</span>: <span class="hljs-number">50%</span> <span class="hljs-number">50%</span>;
+}
+</code></pre>
+<p>In this particular case, we can easily mimic that with ImageMagick.
+Let’s assume <code>input.jpg</code> is currently a 1080x1080 square picture, and we
+want to scale it down to a 640x360 16:9 landscape:</p>
+<pre><code class="hljs language-sh">convert input.jpg -resize 640x -gravity center -crop 640x360+0+0 output.jpg
+</code></pre>
+<p>But <code>-gravity</code> only allows us to align top (<code>north</code>), center or bottom
+(<code>south</code>). What if we wanted a percentage in between?</p>
+<p>In the case of <code>background-position</code>, 0% would align the picture at the
+top, and 100% at the bottom. Anything in between would allow to navigate
+in that range.</p>
+<h2 id="applying-it-to-imagemagick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#applying-it-to-imagemagick"><span>Applying it to ImageMagick</span></a></h2>
+<p>Let’s pretend we can’t do <code>-gravity south</code> to align the crop at the bottom,
+and convert our 100% offset to a pixels offset. It would be equal to the
+original picture height minus the target crop height, or in the case of
+our example, <code>640 - 360</code>, which is 280 pixels.</p>
+<pre><code class="hljs language-sh">convert input.jpg -resize 640x -crop 640x360+0+280 output.jpg
+</code></pre>
+<p>Similarly, our 75% becomes <code>75 / 100 * (640 - 360)</code>, which is 210.</p>
+<p>But it gets a bit annoying to calculate that manually every time.
+Instead, let me introduce the <code>magick</code> command!</p>
+<h2 id="the-magick-command" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#the-magick-command"><span>The <code>magick</code> command</span></a></h2>
+<p><code>magick</code> behaves very similarly to <code>convert</code>, but supports some extra
+features like the ability to embed calculations directly in the cropping
+options!</p>
+<pre><code class="hljs language-sh">magick input.jpg -resize 640x -crop <span class="hljs-string">&#x27;640x360+0+%[fx:75/100*(h-360)]&#x27;</span> output.jpg
+</code></pre>
+<p>Here, the only variable we have to manually write down is the cropped
+height, which we already need to know to perform the crop in the first
+place.</p>
+<p>With that, it gets easy to adjust the percentage in a way that’s
+consistent with what <code>background-position</code> would otherwise do, without
+having to do the math by hand.</p>
+<p>It was already possible to do this by combining <code>identify</code> and a command
+line calculator like <code>bc</code>, but having the option to do that so easily in
+the <code>-crop</code> option is definitely nicer!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Elixir: intercepting Phoenix LiveView events in JavaScript</title>
     <link href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html" />
@@ -5373,530 +5431,6 @@ permissions that we need instead of full access.</p>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</a></li>
 <li>A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1424462810998886416">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</title>
-    <link href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html" />
-    <id>https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html</id>
-    <updated>2021-08-08T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<div class="note">
-<p>This article is part of a series about scripting Firefox Sync / Lockwise.</p>
-<ol>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
-<li>A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
-</ol>
-</div>
-<p>In the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">previous post</a>
-we <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">made a script</a>
-that is able to fetch and decrypt collections from Firefox Sync,
-including Lockwise passwords. But one thing was still bugging me. When
-running the code, the console was showing a deprecation warning.</p>
-<pre><code class="hljs">[DEP0005] DeprecationWarning: Buffer() is deprecated due to security and usability issues. Please use the Buffer.alloc(), Buffer.allocUnsafe(), or Buffer.from() methods instead.
-</code></pre>
-<p>By running <code>node --trace-warnings</code>, I could see that it was coming from
-the <a href="https://www.npmjs.com/package/browserid-crypto">browserid-crypto</a>
-package. It was trivial to fix by <a href="https://nodejs.org/en/docs/guides/buffer-constructor-deprecation/">migrating</a>
-from the deprecated <code>new Buffer()</code> constructor to <code>Buffer.from()</code>, so I
-<a href="https://github.com/mozilla/browserid-crypto/pull/123">made another PR</a>
-for this.</p>
-<p>Like <a href="https://github.com/mozilla/browserid-crypto/pull/122">the first PR</a>,
-it’s reviewed and approved by <a href="https://github.com/rfk" id="ryan">Ryan</a>
-(who’s name I saw countless times when researching about Firefox
-Accounts and Sync protocols). He also <a href="https://github.com/mozilla/browserid-crypto/pull/123#pullrequestreview-703731665">notes</a>
-that this library is unmaintained:</p>
-<blockquote>
-<p>FWIW, it would be best to consider this library unmaintained at this
-point, but I’m happy to take small fixes like this all the same.</p>
-</blockquote>
-<p>While there’s nothing wrong with using an unmaintained library if it
-gets the job done, I took this as a challenge to implement the protocol
-using only native (or more generic, well-maintained) modules, and this
-is going to be the topic of this blog post!</p>
-<h2 id="isolating-the-browserid-crypto-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#isolating-the-browserid-crypto-code"><span>Isolating the browserid-crypto code</span></a></h2>
-<p>Let’s start from the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">script we previously built</a>
-and extract the part that use the browserid-crypto package.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
-
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(jwcrypto.generateKeypair)({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> })
-
-<span class="hljs-comment">// Also works with RSA.</span>
-<span class="hljs-comment">// const kp = await promisify(jwcrypto.generateKeypair)({ algorithm: &#x27;RS&#x27;, keysize: 256 })</span>
-
-<span class="hljs-comment">// Time interval in milliseconds until the certificate will expire, up to a</span>
-<span class="hljs-comment">// maximum of 24 hours as documented in &lt;https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-32&gt;.</span>
-<span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>
-
-<span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
-
-<span class="hljs-comment">// Generate an &quot;identity assertion&quot; which is a JWT as documented in</span>
-<span class="hljs-comment">// &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#identity-assertion&gt;.</span>
-<span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
-  {},
-  {
-    <span class="hljs-attr">audience</span>: tokenServerUrl,
-    <span class="hljs-attr">issuer</span>: authServerUrl,
-    <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
-  },
-  kp.secretKey
-)
-
-<span class="hljs-comment">// Certs are separated by a `~` as documented in &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion&gt;.</span>
-<span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
-</code></pre>
-<p>There are 3 steps here:</p>
-<ol>
-<li>First, we generate a DSA or RSA keypair, which would be trivial to
-do with the Node.js <code>crypto</code> module.</li>
-<li>Then we encode the public key in a way that is compatible with
-<a href="https://github.com/mozilla/fxa/blob/main/packages/fxa-auth-server/docs/api.md#post-certificatesign">Firefox Accounts’ <code>/certificate/sign</code> endpoint</a>.</li>
-<li>Finally, we sign a JWT using our private key, and bundle it with the
-certificate to make a “backed identity assertion”.</li>
-</ol>
-<h2 id="generating-the-keypair" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#generating-the-keypair"><span>Generating the keypair</span></a></h2>
-<p>This is the easy part. The main difference is that while
-<code>jwcrypto.generateKeyPair</code> takes an internal <code>keysize</code> parameter, which
-they <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L10">map to RSA</a>,
-and <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js#L36">DSA key sizes</a>,
-we need to explicitly give the RSA key size (usually synonymous of the
-modulus length).</p>
-<p>In our case, a BrowserID RSA key of “256” <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L20">corresponds to a 2048-bit RSA key</a> and similarly, a BrowserID DSA key of “256” <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js#L56">corresponds to a 2048-bit DSA key</a>.
-They also both specify SHA-256 as the JWT hash algorithm, which will be
-useful for later.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-comment">// With RSA</span>
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
-  <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
-})
-
-<span class="hljs-comment">// With DSA</span>
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
-  <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>,
-  <span class="hljs-attr">divisorLength</span>: <span class="hljs-number">256</span>
-})
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> for DSA, the BrowserID key has a divisor length of 256 bits
-(the <code>q</code> parameter), and this is especially important as
-browserid-crypto and the TokenServer don’t accept any other divisor
-length for a key size of 2048.</p>
-</div>
-<h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#encoding-the-key"><span>Encoding the key</span></a></h2>
-<p>Where it gets a bit more tricky, especially for DSA, is when we want to
-encode the key as JSON for the Firefox Accounts API to sign:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
-</code></pre>
-<p>The keys from browserid-crypto conveniently include a <code>toSimpleObject</code>
-function that formats the key in the BrowserID JSON format. I couldn’t
-find documentation for it, but from looking at the actual JSON objects,
-it is very similar to (but not compatible with) the <a href="https://datatracker.ietf.org/doc/html/rfc7517"><abbr title="JSON Web Key">JWK</abbr></a>
-format.</p>
-<h3 id="browserid-vs-jwk-and-base-conversion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#browserid-vs-jwk-and-base-conversion"><span>BrowserID vs. JWK and base conversion</span></a></h3>
-<p>BrowserID was <a href="https://hacks.mozilla.org/2011/07/introducing-browserid-easier-and-safer-authentication-on-the-web/">introduced in 2011</a>,
-well before <a href="https://datatracker.ietf.org/doc/html/rfc7517">the JWK specification was proposed</a>
-in 2015. They both encode the low-level key parameters in a JSON object,
-and there is just a couple of differences, especially:</p>
-<ol>
-<li>JWK doesn’t support DSA keys.</li>
-<li>To specify the key type, JWK has a <code>kty</code> property (set to <code>RSA</code> for
-RSA keys),while BrowserID uses an <code>algorithm</code> property that can be
-<code>RS</code> or <code>DS</code>.</li>
-<li>JWK encodes the key parameters as
-<a href="https://base64.guru/standards/base64url">Base64URL</a>,
-while BrowserID <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/rs.js#L68">uses decimal (base 10) for RSA</a>
-and <a href="https://github.com/mozilla/browserid-crypto/blob/69b23d9d70dfbf9bccdf5330545aebb12657c496/lib/algs/ds.js#L141">hexadecimal (base 16) for DSA</a>.</li>
-</ol>
-<h3 id="rsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#rsa"><span>RSA</span></a></h3>
-<p>The <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.1">RSA parameters</a>
-are <code>n</code> (modulus) and <code>e</code> (exponent), as well as <a href="https://datatracker.ietf.org/doc/html/rfc7518#section-6.3.2">a fuckton of other parameters</a>
-for private keys (which we don’t need here). You can see them on an
-existing key with <code>openssl rsa -in rsa-private-key.pem -text -noout</code>.</p>
-<p>We can take the earlier code to generate a RSA keypair, and export the
-public key as a JWK like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
-  <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
-})
-
-<span class="hljs-built_in">console</span>.log(kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> }))
-</code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;RSA&quot;</span>,
-  <span class="hljs-attr">&quot;n&quot;</span>: <span class="hljs-string">&quot;3M852Cy7DIH1wYJVgRxQfDYPa26fC4KR4uYmHeGV7rTtiQ2-IdypkOQd6Clp01-J4L9e28w-3hR06ZWKRMIbfyajcer1bd_9luBKkRiFlYxa-CBNTlOJBmtej7MbouQJdqcxRIHufk7R4HBWYzR8H1WUDzJfIZJLxz2eymTNXu7CPFyDoNZXQ9SRu7tzPzhUsDrkdpNSs2x8tRrllJRiO-BOC2Ce3W5vCE9eB91VFuIOHOuL5y-Fr6K-vCfvpLBzoF2uk399ZGxZ8rLXHk01QDoin3BVXQzGBKNXoVNrNe-tKflp5QJ5wMifvL4tPfCCrps8rrfbE1NDPE2x1QmCfQ&quot;</span>,
-  <span class="hljs-attr">&quot;e&quot;</span>: <span class="hljs-string">&quot;AQAB&quot;</span>
-}
-</code></pre>
-<p>On the other hand, a BrowserID RSA public key looks like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
-
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
-
-jwcrypto.generateKeypair({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;RS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(publicKey.toSimpleObject())
-})
-</code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;algorithm&quot;</span>: <span class="hljs-string">&quot;RS&quot;</span>,
-  <span class="hljs-attr">&quot;n&quot;</span>: <span class="hljs-string">&quot;24561144013955114361783231655761853176741812326893374232205401875943449227620158204608340216900927757193227109312970662811636219675773452185909191206484694392560433664701055247500397746104758184735693308844235833317883872067955852418577691056051019648528118784214798195301896767050575864274186910237901534713406182369363255235410257674380032656581487055343920363852506722639241918085307849979198768941882638020102729524988683333585179817471524571511030397962907590237048329319430881173155778553010801560573247170682531231684185163187096747308113243183139470492492221024173487301503496674419087411376160055924262029047&quot;</span>,
-  <span class="hljs-attr">&quot;e&quot;</span>: <span class="hljs-string">&quot;65537&quot;</span>
-}
-</code></pre>
-<p>It is easy to convert a native JWK to the BrowserID format, as we can
-leverage <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"><code>BigInt</code></a>
-to output a large base 10 string. But the constructor doesn’t accept
-Base64 directly, so we need to do an intermediate conversion through
-hexadecimal.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">base64to10</span> (<span class="hljs-params">data</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + Buffer.from(data, <span class="hljs-string">&#x27;base64&#x27;</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)).toString(<span class="hljs-number">10</span>)
-}
-
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
-  <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
-})
-
-<span class="hljs-keyword">const</span> jwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
-
-<span class="hljs-keyword">const</span> publicKey = {
-  <span class="hljs-attr">algorithm</span>: jwk.algorithm.slice(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>),
-  <span class="hljs-attr">n</span>: base64to10(jwk.n),
-  <span class="hljs-attr">e</span>: base64to10(jwk.e)
-}
-</code></pre>
-<h3 id="dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#dsa"><span>DSA</span></a></h3>
-<p>The <a href="https://mozilla.github.io/id-specs/docs/formats/keys/#parameters-for-dsa-keys">DSA parameters</a>
-are <code>p</code> (larger prime modulus), <code>q</code> (smaller prime modulus), <code>g</code>
-(generator), <code>y</code> (public group element), as well as <code>x</code> (private
-exponent) for private keys.</p>
-<p>Since JWK doesn’t support DSA, we cannot do <code>kp.publicKey.export({ format: 'jwk' })</code>
-with a DSA key generated by the <code>crypto</code> module, as that would fail with
-<code>[ERR_CRYPTO_JWK_UNSUPPORTED_KEY_TYPE]: Unsupported JWK Key Type</code>.</p>
-<p>With browserid-crypto, we can replace <code>RS</code> by <code>DS</code> in the previous
-example to generate the following key, and get a better idea of what
-we’re trying to reproduce:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
-
-<span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
-
-jwcrypto.generateKeypair({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(publicKey.toSimpleObject())
-})
-</code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;algorithm&quot;</span>: <span class="hljs-string">&quot;DS&quot;</span>,
-  <span class="hljs-attr">&quot;y&quot;</span>: <span class="hljs-string">&quot;735b5ddcb95622cb39370efbd0ab4020e7ed5b73f06aecf7ba89ea57f7627ecec5973e1fcb8628125d58d94fed65d65affbfb2722f302085de127fb6fba97e18502da5e1d23d05979ff5a64b587a75b1f0953b4afce05cab74af5b886b059f67889756360d2d41c2312493695d891fad1b2b9cf6169e335f65d573da27b524aa968b9de93d0f0ddf157345917598b630b8937b2c76bedf8fb5ae686d0eddddee2c6cb9829b6d5a19bb07332e7ab3e6116c523198ef699af154b0ea038e92e15ca43ef757f7e854463596346634f759c30730d04cae296d6e663322cb030749c818c922cf2ed51a117bcc17aa603b560159ace99b4aea549c402d1390a1cf1648&quot;</span>,
-  <span class="hljs-attr">&quot;p&quot;</span>: <span class="hljs-string">&quot;d6c4e5045697756c7a312d02c2289c25d40f9954261f7b5876214b6df109c738b76226b199bb7e33f8fc7ac1dcc316e1e7c78973951bfc6ff2e00cc987cd76fcfb0b8c0096b0b460fffac960ca4136c28f4bfb580de47cf7e7934c3985e3b3d943b77f06ef2af3ac3494fc3c6fc49810a63853862a02bb1c824a01b7fc688e4028527a58ad58c9d512922660db5d505bc263af293bc93bcd6d885a157579d7f52952236dd9d06a4fc3bc2247d21f1a70f5848eb0176513537c983f5a36737f01f82b44546e8e7f0fabc457e3de1d9c5dba96965b10a2a0580b0ad0f88179e10066107fb74314a07e6745863bc797b7002ebec0b000a98eb697414709ac17b401&quot;</span>,
-  <span class="hljs-attr">&quot;q&quot;</span>: <span class="hljs-string">&quot;b1e370f6472c8754ccd75e99666ec8ef1fd748b748bbbc08503d82ce8055ab3b&quot;</span>,
-  <span class="hljs-attr">&quot;g&quot;</span>: <span class="hljs-string">&quot;9a8269ab2e3b733a5242179d8f8ddb17ff93297d9eab00376db211a22b19c854dfa80166df2132cbc51fb224b0904abb22da2c7b7850f782124cb575b116f41ea7c4fc75b1d77525204cd7c23a15999004c23cdeb72359ee74e886a1dde7855ae05fe847447d0a68059002c3819a75dc7dcbb30e39efac36e07e2c404b7ca98b263b25fa314ba93c0625718bd489cea6d04ba4b0b7f156eeb4c56c44b50e4fb5bce9d7ae0d55b379225feb0214a04bed72f33e0664d290e7c840df3e2abb5e48189fa4e90646f1867db289c6560476799f7be8420a6dc01d078de437f280fff2d7ddf1248d56e1a54b933a41629d6c252983c58795105802d30d7bcd819cf6ef&quot;</span>
-}
-</code></pre>
-<p>Exporting the key as a JWK was really handy earlier to access the
-low-level key parameters, but we cannot do that with DSA. We can only
-export the key as DER (binary) or PEM (Base64 encoded DER).</p>
-<p>This means that we’ll need to use the OpenSSL CLI to dump the key
-parameters as we saw earlier. Let’s start by generating the PEM private
-key.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
-<span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
-  <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>,
-  <span class="hljs-attr">divisorLength</span>: <span class="hljs-number">256</span>
-})
-
-<span class="hljs-keyword">const</span> privateKey = kp.privateKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>, <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;pkcs8&#x27;</span> })
-</code></pre>
-<p>Then, we can invoke the <code>openssl</code> command, piping it the private key.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;child_process&#x27;</span>)
-
-<span class="hljs-keyword">const</span> sub = cp.spawn(<span class="hljs-string">&#x27;openssl&#x27;</span>, [<span class="hljs-string">&#x27;dsa&#x27;</span>, <span class="hljs-string">&#x27;-in&#x27;</span>, <span class="hljs-string">&#x27;-&#x27;</span>, <span class="hljs-string">&#x27;-text&#x27;</span>, <span class="hljs-string">&#x27;-noout&#x27;</span>])
-
-sub.stdin.write(privateKey)
-</code></pre>
-<p>The child process will now emit <code>data</code> events on the <code>stdout</code> stream and
-we can use that to parse the OpenSSL output. For context, here’s what a
-typical output looks like:</p>
-<details>
-  <summary>Output of <code>openssl dsa -in dsa-private-key.pem -text -noout</code></summary>
-<pre><code class="hljs">Private-Key: (2048 bit)
-priv:
-    4b:66:fe:d5:68:c2:7e:3d:4a:fc:c0:45:10:01:91:
-    fe:d7:83:be:39:0b:79:f3:0f:a1:c3:63:0e:8a:8f:
-    63:db
-pub:
-    7e:50:55:ea:62:b8:70:0f:89:ca:f9:ad:41:21:05:
-    8d:2c:71:e3:14:a5:1c:70:7d:a6:68:97:10:2f:93:
-    f3:82:ee:98:25:7c:6a:42:71:9a:e0:b0:bf:c2:76:
-    18:df:fe:68:63:ba:a8:a0:4d:10:9f:5a:da:c6:e3:
-    c9:94:23:4a:d5:8e:00:ac:6b:f8:40:06:10:d1:6a:
-    09:17:7e:73:8e:10:5b:5a:a0:dc:7a:c7:7d:cb:96:
-    3b:8d:d8:d5:27:05:e0:0f:d8:e3:04:24:c3:ef:49:
-    0d:56:54:54:3a:cd:c8:bf:36:03:2e:e7:8f:21:a2:
-    8e:14:f9:17:57:85:7f:83:73:01:bc:90:aa:01:d1:
-    4b:cb:84:c0:99:ee:2a:d2:3d:d7:30:97:51:89:fd:
-    ef:b8:7a:ea:5e:5f:17:37:53:ce:43:b5:05:64:b9:
-    09:c8:3f:07:eb:c4:9b:77:a5:6b:d2:d3:d0:ed:3e:
-    47:1d:54:7d:f1:a1:ef:66:25:a6:fc:61:1b:cb:ae:
-    60:f9:3b:7d:58:f3:e4:19:3b:09:4d:3f:87:c6:97:
-    95:9b:78:02:55:fc:d8:74:86:06:50:8b:78:23:63:
-    c6:b2:46:96:48:88:93:c6:32:d4:88:33:c7:44:f1:
-    b9:73:b7:1a:72:0c:1e:55:40:7c:f3:cf:7a:fe:06:
-    b7
-P:
-    00:bc:a3:68:a5:2b:1d:b5:c6:8a:4e:70:0d:78:4b:
-    17:83:37:8f:d4:3a:9c:27:e7:08:b5:6d:9a:91:b4:
-    8e:22:81:7e:ee:10:8c:08:45:c3:a1:f5:95:b3:9c:
-    71:83:49:c2:dc:58:67:d3:c4:5c:1a:db:2e:c6:a4:
-    18:4a:8a:15:b8:3b:b8:94:29:b4:43:79:e3:32:11:
-    98:26:6e:65:01:11:f0:b9:cf:a2:e5:dc:4b:f8:4c:
-    31:27:ff:75:cf:b8:b4:13:b0:f5:e8:da:ab:76:7b:
-    ba:7d:ca:9b:fd:c1:29:89:77:6e:ee:95:33:3c:64:
-    94:5e:4d:5b:0b:f4:b8:4f:91:54:8c:40:35:75:11:
-    06:1e:7f:ed:ae:17:9e:ce:9b:8d:e1:79:75:7c:fd:
-    d2:60:3f:89:10:6e:95:04:67:5b:08:31:71:ea:13:
-    76:78:28:cd:cb:03:2b:66:19:3e:39:12:98:86:d3:
-    90:d6:43:72:6e:32:bf:27:c6:76:f4:ab:04:e6:54:
-    f3:41:ca:52:60:7e:74:1c:26:b3:e9:4c:0e:94:88:
-    bd:7d:3e:af:a0:0d:50:58:89:a5:7a:d2:9d:4c:27:
-    0f:2c:c2:6e:98:2e:a8:6d:22:97:19:2a:7c:ae:0c:
-    b8:d3:1e:46:f9:e5:62:b4:91:2c:43:a2:02:1d:30:
-    6f:4f
-Q:
-    00:b0:60:bd:58:73:4e:5a:37:e5:4e:a3:15:2a:a7:
-    d9:dd:e2:b6:c2:f9:3d:37:4b:9d:43:33:9b:25:9c:
-    bc:97:67
-G:
-    02:80:e7:af:91:ef:92:ef:51:67:2e:84:a8:e4:f1:
-    c5:e0:c1:98:c2:c9:59:e0:89:3f:71:3f:99:fd:ee:
-    cf:fa:db:6e:6f:bc:8b:5b:d0:06:35:0d:c2:19:96:
-    c1:be:18:43:ed:76:52:70:4d:d3:8f:71:e2:b4:d0:
-    a6:1e:ed:0d:67:71:24:dd:f1:86:06:99:f4:39:a8:
-    45:d1:ac:5b:55:af:f3:89:0d:44:87:e9:36:ac:02:
-    a6:fc:5d:27:56:96:92:d5:5e:35:a8:62:5f:63:9c:
-    bf:da:ff:8e:c0:a0:28:7a:9c:41:2a:2c:bb:c6:80:
-    7c:7b:86:58:4e:af:95:2c:06:51:5f:15:81:cc:8f:
-    c1:9b:72:fa:82:71:65:81:ee:9e:99:f7:04:f9:1e:
-    90:e4:ea:88:0e:44:b1:78:0e:67:8b:b6:61:7b:94:
-    27:f1:7f:a6:7f:7b:59:21:73:71:92:a6:5f:98:67:
-    a3:b7:e4:b2:dd:e7:55:f3:22:ac:de:44:1a:54:71:
-    e3:33:ce:22:ac:38:93:e1:6b:9b:96:43:ce:4c:8c:
-    87:a3:86:97:a1:1c:b6:7c:cc:d8:ab:7d:82:a2:0f:
-    f5:7a:75:a5:f1:bc:e7:04:94:ae:83:98:98:70:5d:
-    89:b0:54:8b:84:bf:ec:b1:eb:bb:fc:55:98:d0:ca:
-    b4
-</code></pre>
-</details>
-<p>With the following code, we can parse it into an object:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
-
-<span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: sub.stdout })
-
-<span class="hljs-keyword">const</span> params = {}
-<span class="hljs-keyword">let</span> currentParam
-
-rl.on(<span class="hljs-string">&#x27;line&#x27;</span>, <span class="hljs-function"><span class="hljs-params">line</span> =&gt;</span> {
-  <span class="hljs-comment">// Continuation of an existing parameter, append to it.</span>
-  <span class="hljs-keyword">if</span> (line.startsWith(<span class="hljs-string">&#x27; &#x27;</span>) &amp;&amp; currentParam) {
-    params[currentParam] += line.trim()
-    <span class="hljs-keyword">return</span>
-  }
-
-  <span class="hljs-comment">// Definition of a new parameter.</span>
-  <span class="hljs-keyword">const</span> split = line.split(<span class="hljs-string">&#x27;:&#x27;</span>)
-
-  <span class="hljs-keyword">if</span> (split.length &lt; <span class="hljs-number">2</span>) {
-    <span class="hljs-keyword">return</span>
-  }
-
-  currentParam = split[<span class="hljs-number">0</span>]
-  params[currentParam] = split[<span class="hljs-number">1</span>].trim()
-})
-
-<span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-  sub.on(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function"><span class="hljs-params">code</span> =&gt;</span> {
-    <span class="hljs-keyword">if</span> (code &gt; <span class="hljs-number">0</span>) {
-      <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`OpenSSL failed with code <span class="hljs-subst">${code}</span>`</span>))
-    }
-
-    resolve()
-  })
-})
-
-<span class="hljs-built_in">console</span>.log(params)
-</code></pre>
-<p>Conveniently, OpenSSL returns the parameters in hexadecimal form
-already, so we just need to remove the <code>:</code> that it separates each byte
-with, and rename the properties to make a BrowserID JSON key.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> publicKey = {
-  <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>,
-  <span class="hljs-attr">y</span>: params.pub.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">p</span>: params.P.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">q</span>: params.Q.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">g</span>: params.G.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
-}
-</code></pre>
-<h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#signing-the-jwt"><span>Signing the JWT</span></a></h2>
-<p>The last part to refactor is the JWT:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
-  {},
-  {
-    <span class="hljs-attr">audience</span>: tokenServerUrl,
-    <span class="hljs-attr">issuer</span>: authServerUrl,
-    <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
-  },
-  kp.secretKey
-)
-</code></pre>
-<p>It seems that this is a standard JWT, so we can use the <a href="https://www.npmjs.com/package/njwt"><code>njwt</code></a>
-package for this (a simpler and more flexible alternative to
-<a href="https://www.npmjs.com/package/jsonwebtoken"><code>jsonwebtoken</code></a>).</p>
-<div class="note">
-<p><strong>Note:</strong> the main quirk is that Mozilla uses a milliseconds timestamp
-for the <code>exp</code> field, while JWT defines it as a standard timestamp (in
-seconds).</p>
-<p>This means that with both libraries, we need to work around that in
-order to force the <code>exp</code> field to be in milliseconds. For <code>njwt</code>, this
-means doing <code>jwt.setClaim('exp', expiresAt)</code> instead of using
-<code>jwt.setExpiration(expiresAt)</code>, and for <code>jsonwebtoken</code> it means
-including the <code>exp</code> claim as part of the payload instead of using the
-<code>expiresIn</code> parameter that is otherwise expressed as a duration in
-seconds.</p>
-</div>
-<p>As for the private key, while <code>njwt</code> documents it should be a (PEM)
-string or a (DER) buffer, since it just forwards it to Node.js <code>crypto</code>
-module, we can directly give it the <a href="https://nodejs.org/api/crypto.html#crypto_class_keyobject"><code>KeyObject</code></a>
-that’s in <code>kp.privateKey</code>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> njwt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;njwt&#x27;</span>)
-
-<span class="hljs-keyword">const</span> signedObject = njwt.create({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.privateKey, <span class="hljs-string">&#x27;RS256&#x27;</span>)
-  .setClaim(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-built_in">Date</span>.now() + duration)
-  .compact()
-</code></pre>
-<p>Here we specified the <code>RS256</code> algorithm for a RSA key. This works
-perfectly, and with this code, we can effectively generate a BrowserID
-assertion that will be accepted by the TokenServer!</p>
-<h3 id="hacking-around-dsa" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#hacking-around-dsa"><span>Hacking around DSA</span></a></h3>
-<p>But neither <a href="https://github.com/jwtk/njwt#supported-algorithms"><code>njwt</code></a>
-nor <a href="https://github.com/auth0/node-jsonwebtoken#algorithms-supported"><code>jsonwebtoken</code></a>
-support DSA signatures. In fact, it seems that most JWT libraries don’t
-support DSA whatsoever.</p>
-<p>That being said, we can leverage the fact that <code>njwt</code> forwards the
-private key to the <a href="https://nodejs.org/api/crypto.html#crypto_sign_sign_privatekey_outputencoding"><code>crypto.sign</code></a>
-method to make it work with our DSA key. All we need to do is to trick
-it into thinking that it’s signing with the <code>RS256</code> algorithm so that it
-follows the SHA-256 signature code path (which actually works perfectly
-with a DSA key), and force the <code>alg</code> header to be <code>DS256</code> just at the
-time it is encoded in the JWT (otherwise the library will complain that
-the algorithm is unsupported).</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> njwt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;njwt&#x27;</span>)
-
-<span class="hljs-keyword">const</span> jwt = njwt.create({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.privateKey, <span class="hljs-string">&#x27;RS256&#x27;</span>)
-  .setClaim(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-built_in">Date</span>.now() + duration)
-
-jwt.header.compact = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">compact</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> alg = <span class="hljs-built_in">this</span>.alg
-  <span class="hljs-built_in">this</span>.alg = <span class="hljs-string">&#x27;DS256&#x27;</span>
-  <span class="hljs-keyword">const</span> header = njwt.JwtHeader.prototype.compact.call(<span class="hljs-built_in">this</span>)
-  <span class="hljs-built_in">this</span>.alg = alg
-  <span class="hljs-keyword">return</span> header
-}
-
-<span class="hljs-keyword">const</span> signedObject = jwt.compact()
-</code></pre>
-<p>This should work but it does not. I keep getting HTTP 401s with
-<code>invalid-credentials</code> error from the TokenServer. Why? It took some
-trial and error to figure as this was far from obvious.</p>
-<p>It turns out that Node.js <a href="https://nodejs.org/api/crypto.html#crypto_sign_sign_privatekey_outputencoding">defaults the DSA signature encoding to DER</a>,
-and BrowserID only supports the IEEE P1363 format.</p>
-<p>Thankfully, Node.js allows us to wrap the private key in an object to
-specify extra options like a <code>dsaEncoding: 'ieee-p1363'</code>. In the
-previous code this would look like:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwt = njwt.create(
-  { <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl },
-  { <span class="hljs-attr">key</span>: kp.privateKey, <span class="hljs-attr">dsaEncoding</span>: <span class="hljs-string">&#x27;ieee-p1363&#x27;</span> },
-  <span class="hljs-string">&#x27;RS256&#x27;</span>
-)
-</code></pre>
-<p>Congratulations! We now also have a working DSA JWT!</p>
-<h3 id="fully-native-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#fully-native-implementation"><span>Fully native implementation</span></a></h3>
-<p>Now, let’s even remove the <code>njwt</code> dependency, and bake our own JWT
-in-house. Because why not. It’s actually pretty trivial, and to be
-honest, a simpler and cleaner solution for DSA than the hack we just
-made.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-
-<span class="hljs-keyword">const</span> header = { <span class="hljs-attr">alg</span>: <span class="hljs-string">&#x27;DS256&#x27;</span> }
-<span class="hljs-keyword">const</span> payload = { <span class="hljs-attr">exp</span>: <span class="hljs-built_in">Date</span>.now() + duration, <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }
-
-<span class="hljs-keyword">const</span> body = [
-  Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(header)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>),
-  Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(payload)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
-].join(<span class="hljs-string">&#x27;.&#x27;</span>)
-
-<span class="hljs-keyword">const</span> signature = crypto.sign(<span class="hljs-string">&#x27;SHA256&#x27;</span>, body, {
-  <span class="hljs-attr">key</span>: kp.privateKey,
-  <span class="hljs-attr">dsaEncoding</span>: <span class="hljs-string">&#x27;ieee-p1363&#x27;</span>
-}).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
-
-<span class="hljs-keyword">const</span> signedObject = [body, signature].join(<span class="hljs-string">&#x27;.&#x27;</span>)
-</code></pre>
-<p>Believe it or not, this is all it takes to make a valid JWT. Not so bad,
-isn’t it?</p>
-<h2 id="making-the-backed-identity-assertion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#making-the-backed-identity-assertion"><span>Making the backed identity assertion</span></a></h2>
-<p>Since we have a valid <code>cert</code> and <code>signedObject</code> at that point, that part
-stays the same. All we need to do is to <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion">bundle them together</a>
-with the <code>~</code> character (tilde).</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
-</code></pre>
-<p>This is the value we can pass in the <code>Authorization</code> header such as:</p>
-<pre><code class="hljs">Authorization: BrowserID &lt;backedAssertion&gt;
-</code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>And that’s it! We now have a fully working BrowserID implementation,
-with both RSA and DSA support, that only depend on the native <code>crypto</code>
-module!</p>
-<p>There were some incompatibilities with DSA that we needed to work
-around, especially the fact that it is not supported by JWK, forcing us
-to fallback to the OpenSSL CLI to extract the key parameters, and also
-that common JWT libraries don’t support it either, leading us to write
-our own (dead simple) JWT implementation.</p>
-<p>This makes the code a bit simpler if we only use RSA, where it’s barely
-longer than the initial browserid-crypto version, while the DSA version
-is a bit hairier with the code to invoke OpenSSL and parse its output,
-as well as the custom JWT signature.</p>
-<p>Because of that, unlike <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html#give-me-the-whole-code">in the previous post</a>,
-I won’t include the full code here. You should easily be able to put
-together the pieces that you need from this article.</p>
-<p>But this is probably not an exercise you should be interested in
-anyways, because as I later found out, it’s not just browserid-crypto
-that’s unmaintained, but the BrowserID protocol altogether that’s
-deprecated! In the <a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">next stop of this journey</a>,
-we’ll look at the OAuth version, which turned out to be much easier to
-support than it first looked like.</p>
-<div class="note">
-<p>Check out the other posts in this series!</p>
-<ol>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">A journey to scripting Firefox Sync / Lockwise: existing clients</a></li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">A journey to scripting Firefox Sync / Lockwise: figuring the protocol</a></li>
-<li>A journey to scripting Firefox Sync / Lockwise: understanding BrowserID</li>
-<li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">A journey to scripting Firefox Sync / Lockwise: hybrid OAuth</a></li>
 <li><a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">A journey to scripting Firefox Sync / Lockwise: complete OAuth</a></li>
 </ol>
 </div>

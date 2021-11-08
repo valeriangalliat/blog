@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>ImageMagick crop with percentage like CSS background-position</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="ImageMagick crop with percentage like CSS background-position">
+  <meta property="og:description" content="Another one of those posts that are probably only useful to me, but who knows!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>ImageMagick crop with percentage like CSS <code>background-position</code></h1>
+<p class="date">November 8, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Another one of those posts that are probably only useful to me, but who
+knows!</p>
+<p>I’ve been wanting to crop images with ImageMagick in a way that mimics
+what the CSS <code>background-position</code> property does.</p>
+<h2 id="how-does-background-position-behave" tabindex="-1"><a class="header-anchor" href="#how-does-background-position-behave"><span>How does <code>background-position</code> behave?</span></a></h2>
+<p>Let’s say I have a picture that I’m making shorter, e.g. a 1:1 picture
+that I want to make 16:9, and I want to make sure to keep it centered
+both horizontally and vertically. I would use the following:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.element</span> {
+  <span class="hljs-attribute">background-position</span>: <span class="hljs-number">50%</span> <span class="hljs-number">50%</span>;
+}
+</code></pre>
+<p>In this particular case, we can easily mimic that with ImageMagick.
+Let’s assume <code>input.jpg</code> is currently a 1080x1080 square picture, and we
+want to scale it down to a 640x360 16:9 landscape:</p>
+<pre><code class="hljs language-sh">convert input.jpg -resize 640x -gravity center -crop 640x360+0+0 output.jpg
+</code></pre>
+<p>But <code>-gravity</code> only allows us to align top (<code>north</code>), center or bottom
+(<code>south</code>). What if we wanted a percentage in between?</p>
+<p>In the case of <code>background-position</code>, 0% would align the picture at the
+top, and 100% at the bottom. Anything in between would allow to navigate
+in that range.</p>
+<h2 id="applying-it-to-imagemagick" tabindex="-1"><a class="header-anchor" href="#applying-it-to-imagemagick"><span>Applying it to ImageMagick</span></a></h2>
+<p>Let’s pretend we can’t do <code>-gravity south</code> to align the crop at the bottom,
+and convert our 100% offset to a pixels offset. It would be equal to the
+original picture height minus the target crop height, or in the case of
+our example, <code>640 - 360</code>, which is 280 pixels.</p>
+<pre><code class="hljs language-sh">convert input.jpg -resize 640x -crop 640x360+0+280 output.jpg
+</code></pre>
+<p>Similarly, our 75% becomes <code>75 / 100 * (640 - 360)</code>, which is 210.</p>
+<p>But it gets a bit annoying to calculate that manually every time.
+Instead, let me introduce the <code>magick</code> command!</p>
+<h2 id="the-magick-command" tabindex="-1"><a class="header-anchor" href="#the-magick-command"><span>The <code>magick</code> command</span></a></h2>
+<p><code>magick</code> behaves very similarly to <code>convert</code>, but supports some extra
+features like the ability to embed calculations directly in the cropping
+options!</p>
+<pre><code class="hljs language-sh">magick input.jpg -resize 640x -crop <span class="hljs-string">&#x27;640x360+0+%[fx:75/100*(h-360)]&#x27;</span> output.jpg
+</code></pre>
+<p>Here, the only variable we have to manually write down is the cropped
+height, which we already need to know to perform the crop in the first
+place.</p>
+<p>With that, it gets easy to adjust the percentage in a way that’s
+consistent with what <code>background-position</code> would otherwise do, without
+having to do the math by hand.</p>
+<p>It was already possible to do this by combining <code>identify</code> and a command
+line calculator like <code>bc</code>, but having the option to do that so easily in
+the <code>-crop</code> option is definitely nicer!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/11/imagemagick-crop-percentage-css-background-position.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

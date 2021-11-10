@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Standalone userland SSH server](2021/11/standalone-userland-ssh-server.md) <small>November 9, 2021</small>
 * [ImageMagick crop with percentage like CSS `background-position`](2021/11/imagemagick-crop-percentage-css-background-position.md) <small>November 8, 2021</small>
 * [Elixir: intercepting Phoenix LiveView events in JavaScript](2021/11/elixir-intercepting-phoenix-liveview-events-javascript.md) <small>November 5, 2021</small>
 * [JSDoc: TypeScript inside JavaScript and not the other way around 🤯](2021/10/jsdoc-typescript-inside-javascript.md) <small>October 17, 2021</small>

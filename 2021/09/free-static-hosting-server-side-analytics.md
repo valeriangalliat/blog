@@ -51,6 +51,9 @@ But they price that feature at $9 per month per site, which to be honest
 is pretty decent if you have a website that's generating some cash, but
 my blog is not and my current budget is closer to $0.
 
+And sadly, if not interested in the full blown analytics product,
+there's no way to [only get the raw server logs](https://answers.netlify.com/t/download-raw-server-access-logs/6586).
+
 ## Cloudflare
 
 [Cloudflare](https://www.cloudflare.com/) also has a free static hosting

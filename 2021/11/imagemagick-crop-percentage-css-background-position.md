@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1457849255855542279
+---
+
 # ImageMagick crop with percentage like CSS `background-position`
 November 8, 2021
 

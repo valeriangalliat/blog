@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Standalone userland SSH server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Standalone userland SSH server">
+  <meta property="og:description" content="I guess I have pretty unusual software needs sometimes. I’ve been wanting to spawn a one-off SSH server on one of my computers so that I can rsync something to it from another machine.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Standalone userland SSH server</h1>
+<p class="date">November 9, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I guess I have pretty unusual software needs sometimes. I’ve been
+wanting to spawn a one-off SSH server on one of my computers so that I
+can <code>rsync</code> something to it from another machine.</p>
+<p>I didn’t want to enable SSH connections systemwide on this host.
+Ideally, I wanted to start a server from my unprivileged user, that
+would only allow access to that particular user, and only to the
+specific SSH key of my other machine.</p>
+<p>Turns out with a simple <code>sshd_config</code>, <a href="https://sourceware.org/legacy-ml/cygwin/2008-04/msg00363.html">this is possible</a>!</p>
+<p>First, let’s make a directory to contain our server files.</p>
+<pre><code class="hljs language-sh">mkdir standalone-sshd
+<span class="hljs-built_in">cd</span> standalone-sshd
+</code></pre>
+<p>In there, we generate our host RSA key (the <code>-N ''</code> part specifies an
+empty passphrase).</p>
+<pre><code class="hljs language-sh">ssh-keygen -f ssh_host_rsa_key -N <span class="hljs-string">&#x27;&#x27;</span>
+</code></pre>
+<p>Then, add your public key to a <code>authorized_keys</code> file in this same
+directory (same format as a regular <code>~/.ssh/authorized_keys</code>), and add
+the following configuration in a <code>sshd_config</code> file.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">Port</span> <span class="hljs-number">2222</span>
+<span class="hljs-attribute">HostKey</span> /path/to/standalone-sshd/ssh_host_rsa_key
+<span class="hljs-attribute">PidFile</span> /path/to/standalone-sshd/sshd.pid
+
+<span class="hljs-comment"># Don&#x27;t allow interactive authentication.</span>
+<span class="hljs-attribute">KbdInteractiveAuthentication</span> no
+
+<span class="hljs-comment"># Same as above but for older SSH versions.</span>
+<span class="hljs-attribute">ChallengeResponseAuthentication</span> no
+
+<span class="hljs-comment"># Don&#x27;t allow password authentication.</span>
+<span class="hljs-attribute">PasswordAuthentication</span> no
+
+<span class="hljs-comment"># Only allow my own user.</span>
+<span class="hljs-attribute">AllowUsers</span> val
+
+<span class="hljs-comment"># Only allow my own key.</span>
+<span class="hljs-attribute">AuthorizedKeysFile</span> /path/to/standalone-sshd/authorized_keys
+</code></pre>
+<p>Tweak the port, user, and other settings to your liking, but that should
+give you a good base!</p>
+<p>With that, you can run the server with the following command (the <code>-D</code>
+option starts the server in the foreground instead of the default daemon
+mode).</p>
+<pre><code class="hljs language-sh">/usr/sbin/sshd -f sshd_config -D
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/11/standalone-userland-ssh-server.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

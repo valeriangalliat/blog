@@ -108,13 +108,11 @@ I followed [the guide][guide], so as instructed for my specific system, I:
 * formatted a USB drive as Mac OS Extended (HFS+) with a GUID partition
   map (I learnt that from Disk Utility, this automatically creates a
   209.7 MB EFI partition on the drive),
-* ran `sudo /Applications/Install\
-  macOS\Catalina.app/Contents/Resources/createinstallmedia --volume
-  /Volumes/MyVolume` (where `MyVolume` was... my volume) to create the
-  installation media,
-* mounted the EFI partition of the USB key by running `sudo diskutil
-  mount /dev/diskXsY` where `X` was the drive number and `Y` the
-  partition number (found using `diskutil list`),
+* ran `sudo /Applications/Install\ macOS\Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume`
+  (where `MyVolume` was... my volume) to create the installation media,
+* mounted the EFI partition of the USB key by running `sudo diskutil mount /dev/diskXsY`
+  where `X` was the drive number and `Y` the partition number (found
+  using `diskutil list`),
 * copied OpenCore `DEBUG` version to it and removed unneeded files as
   instructed by the guide,
 * added `HfsPlus.efi` from the [`OcBinaryData` repo](https://github.com/acidanthera/OcBinaryData/blob/master/Drivers/HfsPlus.efi),
@@ -148,6 +146,8 @@ which means I:
 * used ProperTree's "OC Clean Snapshot" (<kbd>Command</kbd> +
   <kbd>Shift</kbd> + <kbd>R</kbd>) feature to automatically configure
   all the SSDTs, EFI drivers and kexts I added,
+* in `DeviceProperties/Add/PciRoot(0x0)/Pci(0x2,0x0)`, remove
+  `layout-id`,
 * in `Kernel/Quirks`, set `PanicNoKextDump`, `PowerTimeoutKernelPanic`
   and `XhciPortLimit` to `True`,
 * in `Misc/Debug` set `AppleDebug`, `ApplePanic`, `DisableWatchDog` to
@@ -160,6 +160,8 @@ which means I:
   easier (those were a blessing), and the latter one sets the audio
   layout for AppleALC, which I figured was 11 on my earlier Hackintosh
   setups,
+* also in `NVRAM`, set `prev-lang:kbd` to a blank string to prevent the
+  macOS installer being loaded in Russian,
 * used [GenSMBIOS](https://github.com/corpnewt/GenSMBIOS) to generate
   a `iMac17,1` SMBIOS and configured the matching parameters in
   `PlatformInfo/Generic`.
@@ -377,6 +379,12 @@ boot option by default to get successful updates.
 
 I will upgrade OpenCore and the kexts for the next major release, if I
 don't run into an issue until then.
+
+<div class="note">
+
+**Note:** Monterey was recently released, read my [upgrade notes here](../../2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md)!
+
+</div>
 
 ## Thanks
 

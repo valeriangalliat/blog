@@ -250,7 +250,7 @@ form the EFI partition on the SSD.
 ### Two things I could have done instead
 
 1. Open the laptop and physically unplug the SSD.
-2. Backup the contents of my Arch Linux boot partition, then remove it
+2. Back up the contents of my Arch Linux boot partition, then remove it
    altogether. This way Windows wouldn't have been confused by another
    EFI partition present on another disk. And after installing Windows,
    make the Arch Linux boot partition back with the backup of its

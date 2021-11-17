@@ -241,7 +241,7 @@ way. This comes to the cost of 99 USD though, so unless you really need
 a tool this powerful, you might be better off using BlackHole.
 
 As far as I'm concerned, for my very basic use case, BlackHole does a
-perfect job. It's a low level tool without any bells and whistles, and
+perfect job. It's a low-level tool without any bells and whistles, and
 that's precisely what makes it lightweight and fast, adding virtually no
 latency when capturing the system audio while monitoring a live
 input.

@@ -84,3 +84,14 @@ I set back the profile to "ASUS VP239".
 </figure>
 
 This gives an even better result and is likely more accurate.
+
+<div class="note">
+
+**Note:** an alternative to that which I've adopted recently is to
+edit the `DisplayProductID` file and remove the ` - forced RGB mode (EDID override)`
+part of the `DisplayProductName`.
+
+This fully overrides the original definition meaning that macOS will
+automatically apply its known display profile!
+
+</div>

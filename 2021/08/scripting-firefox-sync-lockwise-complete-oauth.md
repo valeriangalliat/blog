@@ -24,7 +24,7 @@ OK, this grew a bit out of hand. It all started a month ago when I just
 wanted to programmatically access my Firefox Lockwise passwords. This
 brought me on a long journey where I got to play with [legacy clients from 8 years ago](scripting-firefox-sync-lockwise-existing-clients.md),
 [the Firefox Accounts and Firefox Sync APIs](scripting-firefox-sync-lockwise-figuring-the-protocol.md),
-[the low level details of the BrowserID protocol](scripting-firefox-sync-lockwise-understanding-browserid.md)
+[the low-level details of the BrowserID protocol](scripting-firefox-sync-lockwise-understanding-browserid.md)
 and finally [its modern counterpart OAuth](scripting-firefox-sync-lockwise-hybrid-oauth.md).
 
 But as I explained [at the end of the last article](scripting-firefox-sync-lockwise-hybrid-oauth.md#going-further),
@@ -1114,7 +1114,7 @@ responsibilities to Firefox Accounts.
 Generally, we gained a deep understanding of how Firefox Accounts and
 Firefox Sync implement end-to-end encryption for its user data, and how
 they do so in a way that's reviewable, and that we tested by interacting
-at a low level with their APIs and encryption schemes. While I'm not
+at a low-level with their APIs and encryption schemes. While I'm not
 qualified to tell if this is bulletproof for any possible threat model,
 I definitely feel *even more confident* using Lockwise as my password
 manager after reviewing its underlying implementation.

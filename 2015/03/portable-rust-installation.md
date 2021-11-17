@@ -3,8 +3,8 @@ March 15, 2015
 
 The [recommended Rust installation method][install] is to
 curl a `rustup.sh` script and pipe it into `sh`. The script will then
-ask for `root` permissions and install stuff globally. You'll never see
-me pipe unknown stuff from the network into `sh`.
+ask for root permissions and install stuff globally. You'll never see me
+pipe unknown stuff from the network into `sh`.
 
 > I don't get that new `curl foodotcom/setup | sh` trend, do you want to
 > fuck up your OS? Because that's how you fuck up your OS.
@@ -14,11 +14,10 @@ me pipe unknown stuff from the network into `sh`.
 [install]: http://www.rust-lang.org/install.html
 
 And even when manually downloading and extracting the binaries, we still
-need to run a 1000 lines `install.sh` script doing again stuff as
-`root`.
+need to run a 1000 lines `install.sh` script doing again stuff as root.
 
 However, it turns out to be trivial to use Rust without installing
-anything globally, nor running big shell scripts as `root`.
+anything globally, nor running big shell scripts as root.
 
 First, get the binaries according to your system, and the Rust version
 you want. For me (nightly 64-bit Linux binaries) and extract the archive

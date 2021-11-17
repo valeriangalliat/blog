@@ -54,7 +54,7 @@ the full path would be `/System/Library/Displays/Contents/Resources/Overrides/Di
 You can't write in this folder by default at least in recent macOS
 versions like Catalina, and I've seen people suggesting to reboot in
 recovery mode to be able to do it from there, but as far as I'm
-concerned, a simple `mount -uw /` as `root` allowed me to put the file
+concerned, a simple `mount -uw /` as root allowed me to put the file
 there.
 
 <div class="note">

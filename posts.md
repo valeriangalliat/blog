@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
+* [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
 * [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>
 * [Yearly Hackintosh upgrade: macOS Monterey with OpenCore](2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md) <small>November 16, 2021</small>
 * [Standalone userland SSH server](2021/11/standalone-userland-ssh-server.md) <small>November 9, 2021</small>

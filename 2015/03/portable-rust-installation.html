@@ -85,18 +85,17 @@
   <div class="content">
 <p>The <a href="http://www.rust-lang.org/install.html">recommended Rust installation method</a> is to
 curl a <code>rustup.sh</code> script and pipe it into <code>sh</code>. The script will then
-ask for <code>root</code> permissions and install stuff globally. You’ll never see
-me pipe unknown stuff from the network into <code>sh</code>.</p>
+ask for root permissions and install stuff globally. You’ll never see me
+pipe unknown stuff from the network into <code>sh</code>.</p>
 <blockquote>
 <p>I don’t get that new <code>curl foodotcom/setup | sh</code> trend, do you want to
 fuck up your OS? Because that’s how you fuck up your OS.</p>
 <p>— <a href="https://twitter.com/iMilnb">@iMilnb</a>, <a href="https://twitter.com/iMilnb/status/577229798910611456">March 15, 2015</a></p>
 </blockquote>
 <p>And even when manually downloading and extracting the binaries, we still
-need to run a 1000 lines <code>install.sh</code> script doing again stuff as
-<code>root</code>.</p>
+need to run a 1000 lines <code>install.sh</code> script doing again stuff as root.</p>
 <p>However, it turns out to be trivial to use Rust without installing
-anything globally, nor running big shell scripts as <code>root</code>.</p>
+anything globally, nor running big shell scripts as root.</p>
 <p>First, get the binaries according to your system, and the Rust version
 you want. For me (nightly 64-bit Linux binaries) and extract the archive
 (I like to put it in <code>~/opt</code>):</p>

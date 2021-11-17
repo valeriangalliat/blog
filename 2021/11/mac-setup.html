@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How I set up a new Mac</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="How I set up a new Mac">
+  <meta property="og:description" content="As I recently blogged, I just upgraded to macOS Monterey taking it as an opportunity to start from a clean, fresh, pristine system. This means I had to set up everything again, which is not a big deal, but for the sake of remembering it and making it even faster next time, I figured I’d write about it.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>How I set up a new Mac</h1>
+<p class="date">November 17, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>As I <a href="yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">recently blogged</a>,
+I just upgraded to macOS Monterey taking it as an opportunity to start
+from a clean, fresh, pristine system. This means I had to set up
+everything again, which is not a big deal, but for the sake of
+remembering it and making it even faster next time, I figured I’d write
+about it.</p>
+<p>This is the kind of blog post that’s <em>mostly</em> for my personal interest,
+but if you got there somehow, you might take inspiration from my
+settings, who knows!</p>
+<p>But first, let’s ask the following question.</p>
+<h2 id="why-start-fresh" tabindex="-1"><a class="header-anchor" href="#why-start-fresh"><span>Why start fresh?</span></a></h2>
+<p>While I could totally have migrated all my data from Big Sur, I like
+to start from a clean slate every year or two, to get rid of all the
+unnecessary garbage that accumulated over the years.</p>
+<p>Wait, what garbage? Well, let me explain.</p>
+<p>Every time you update a software (including the OS), there’s no
+guarantee that the state you’ll be in after the update would be the
+same as if you installed the new version directly on a fresh system.
+Actually, the opposite is pretty much guaranteed.</p>
+<p>Most of the time this is not a big deal. Maybe you’re stuck with the
+default settings of the version you originally installed instead of
+the ones that would otherwise come with the latest version (i.e. Git
+always defaults to <code>master</code> and you have to explicitly configure it to
+use <code>main</code>, or any small things like this).</p>
+<p>Or maybe some commands or tasks might run slightly slower because of
+accumulated “bloat” related to things you don’t use anymore and forgot
+about (keys, passwords, certificates, trusted IP lists and whatnot
+from stuff you connected to once or at least stopped connecting to
+ages ago, the list of known Wi-Fi networks and <code>~/.ssh/known_hosts</code>
+being a typical example).</p>
+<p>While the above are pretty inoffensive cases, this kind of undefined
+state drifts might cause more sneaky bugs, and “works on that machine”
+kind of answers when you try to figure them out.</p>
+<p>The same is also true when you uninstall a software; there’s no
+guarantee that the state you’ll be in after the removal will match the
+one you would have been in if you didn’t install it in the first place.
+And again, the opposite is pretty much guaranteed.</p>
+<p><a href="https://nixos.org/">NixOS</a> solves some of those issues, but in the real
+world, you’re likely gonna want to use many programs that are not
+designed and packaged to be stateless, deterministic, reproducible and
+purely functional, and using wrappers (or wrapping them yourself) often
+comes at a tremendous cost in time and convenience.</p>
+<p>My tradeoff so far? A fresh reinstall every other year, or whenever I
+feel like I’ve fucked around enough with that system’s state to be worth
+a clean start.</p>
+<h2 id="new-system-setup" tabindex="-1"><a class="header-anchor" href="#new-system-setup"><span>New system setup</span></a></h2>
+<p>Here’s the things I do when I log in the first time on my freshly
+installed system.</p>
+<ul>
+<li>Get rid of all the garbage in the dock. I just leave the Finder and
+the trash, because you can’t really remove them anyways (did you try
+dragging the trash to the trash?), but I happen to use them so that’s
+fine.</li>
+<li>Open Safari to download <strong>Firefox</strong>. Very similar to how one would use
+Internet Explorer (oh wait, Edge) to install a real browser on
+Windows. This comparison might sound like a joke, but Safari
+effectively became the new Internet Explorer regarding how far behind
+they drag web standards, so this is sadly far more accurate than I’d
+like it to be.</li>
+<li>Download and install <strong>iTerm2</strong>.</li>
+</ul>
+<div class="note">
+<p><strong>Note:</strong> I could have installed Firefox and iTerm2 with Homebrew (which
+I add later) but for some reason there’s a few programs I kinda like to
+install on their own. Don’t ask me why.</p>
+<p>But now I think about it, it’s probably because Homebrew became so
+ridiculously slow to update its repository and the installed software
+that I’d rather keep the ones I want to be the most up-to-date separate
+from Homebrew.</p>
+<p>I’ll otherwise update Homebrew once a month or two, or when I need to
+install something new with it, and it forces me to upgrade everything
+else at the same time.</p>
+<p>As a general rule of thumb, everything graphical I tend to install on
+its own, and all the CLI stuff is with Homebrew.</p>
+</div>
+<ul>
+<li>Install <strong>Adobe Creative Cloud</strong> and the apps I use with it (Lightroom
+Classic, Photoshop, Premiere and After Effects). In Creative Cloud
+preferences, turn off file syncing and launch at login.
+<ul>
+<li>On a multi-user system, you’ll need to sign in to Creative Cloud for
+every single user to turn off file syncing and launch at login, even
+the ones who don’t use Creative Cloud apps (because the preferences
+pane is only accessible to logged in users). Now all my users have an
+empty Creative Cloud account just for the sake of disabling it. I
+fucking hate the current state of technology. 🙃</li>
+</ul>
+</li>
+<li>Install <strong>Logic Pro</strong> an download the full sound library. Sadly a fresh
+Logic installation can’t reuse an existing sound library directory (I
+like to keep mine on my hard drive instead of my limited size SSD), so
+we need to download the whole 60 GB from scratch. Did I say I
+hate the current state of technology already?</li>
+<li>Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
+custom screenshot interface, where I can change the <strong>screenshot
+directory</strong> to <code>~/Desktop/Screenshots</code>. I don’t like to clutter my
+desktop with screenshots like it’s the case by default.</li>
+<li>I download and run <a href="https://gist.github.com/adaugherity/7435890"><code>patch-edid.rb</code></a>
+to <a href="https://www.codejam.info/2020/10/too-much-contrast-external-screen-macos-catalina.html">patch the EDID of my screen</a>
+because since Catalina, macOS wants to communicate with it over YCbCr
+instead of RGB and that causes colors and contrast to be fucked up.
+This is extremely specific to my own screen.</li>
+</ul>
+<p>Now I’m ready to configure the <a href="#system-preferences">system preferences</a>,
+<a href="#iterm2-settings">iTerm2 settings</a> and my <a href="#terminal-environment">terminal-environment</a>.</p>
+<h2 id="system-preferences" tabindex="-1"><a class="header-anchor" href="#system-preferences"><span>System preferences</span></a></h2>
+<ul>
+<li>In <strong>keyboard</strong> I set “key repeat” and “delay until repeat” to the
+fastest possible. I like my keyboard to be snappy.</li>
+<li>For the <strong>dock &amp; menu bar</strong>, I leave only <strong>Time Machine</strong> and <strong>fast
+user switching</strong> if I’m on a multi-user system, and I set the
+<strong>clock</strong> to 24 hours format.</li>
+<li>I enable <strong>Time Machine</strong> backups to my usual drive after configuring
+my exclude list (very specific to my data so not included here).</li>
+<li>In <strong>energy saver</strong> I disable <strong>Power Nap</strong> because I don’t need my
+machine to resume from sleep to check emails and run backups (after
+all if I’m not using my machine there’s not much to back up anyways).</li>
+<li>In <strong>displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
+</ul>
+<h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
+<ul>
+<li>In <strong>appearance</strong>, <strong>windows</strong>, tick <strong>hide scrollbars</strong>.</li>
+<li>In <strong>profiles</strong>, <strong>general</strong>, select <strong>reuse previous session’s
+directory</strong> as working directory.</li>
+<li>In <strong>profiles</strong>, <strong>terminal</strong>, tick <strong>silence bell</strong>.</li>
+<li>In <strong>profiles</strong>, <strong>keys</strong>, <strong>key mappings</strong>, load the <strong>natural text
+editing</strong> preset (allow it to remove whatever is already there), and
+remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
+<kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
+between tabs.</li>
+</ul>
+<h2 id="terminal-environment" tabindex="-1"><a class="header-anchor" href="#terminal-environment"><span>Terminal environment</span></a></h2>
+<p>First, install <a href="https://brew.sh/">Homebrew</a> with whatever is the current
+recommended way. Install it in the default place because otherwise it
+won’t be able to leverage many prebuilt binaries that hardcode the
+default prefix in them, and it’s utterly slow to compile everything. I’d
+be running Gentoo if that’s what I wanted FFS. Also if you want to run
+Homebrew on a multi-user system, <a href="homebrew-multi-user.html">read that first</a>.</p>
+<p>Then, make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I usually
+run <code>ssh-keygen</code> either way just to let it create the directory with the
+proper permissions, even if I’ll override the key later.</p>
+<pre><code class="hljs language-sh">ssh-keygen
+</code></pre>
+<p>Clone my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>
+directory and install my Mac preset (mainly my Zsh, Vim and Git
+settings).</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> git@github.com:valeriangalliat/dotfiles.git
+<span class="hljs-built_in">cd</span> dotfiles
+make mac
+<span class="hljs-built_in">cd</span>
+</code></pre>
+<p>Edit my default <code>~/.zshrc</code> and <code>~/.zshenv</code> templates and comment or
+uncomment some of the stuff there that I may need, mainly enabling my
+asdf helper (see below).</p>
+<pre><code class="hljs language-sh">vim ~/.zshrc ~/.zshenv
+</code></pre>
+<p>Install whatever software I pretty much always use with Homebrew.</p>
+<pre><code class="hljs language-sh">brew install gpg ag fzf imagemagick ffmpeg ncdu
+</code></pre>
+<ul>
+<li>GPG is required for the asdf Node.js plugin I’ll add later below.</li>
+<li><a href="https://github.com/ggreer/the_silver_searcher">Ag (The Silver Searcher)</a>
+is my favorite way to search code.</li>
+<li><a href="https://github.com/junegunn/fzf">fzf</a> is an awesome fuzzy finder.</li>
+<li>I probably don’t need to introduce <a href="https://imagemagick.org/">ImageMagick</a>
+and <a href="https://www.ffmpeg.org/">FFmpeg</a>.</li>
+<li><a href="https://dev.yorhel.nl/ncdu">ncdu</a> is a cool tool to monitor disk usage.</li>
+</ul>
+<p>Install the <a href="https://github.com/asdf-vm/asdf">asdf</a> plugins I need
+and whatever version is in my <code>~/.tool-versions</code>. My <code>~/.zshrc</code>
+automatically installs asdf on the first invocation so no need to do
+that manually.</p>
+<pre><code class="hljs language-sh">asdf plugin add nodejs
+<span class="hljs-comment"># asdf plugin add python</span>
+<span class="hljs-comment"># asdf plugin add ruby</span>
+<span class="hljs-comment"># asdf plugin add elixir</span>
+<span class="hljs-comment"># asdf plugin add erlang</span>
+asdf install
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>That’s pretty much the gist! This is a fairly straightforward and not
+very time consuming checklist, and the main things that need to be
+automated (my dotfiles) are.</p>
+<p>I don’t think it’s worth automating my macOS system preferences somehow
+as they might change in future versions anyways. Same thing for iTerm2,
+where I definitely don’t want to copy over my whole configuration file
+from an old installation, I’d rather start from the latest and greatest
+defaults and just tweak what I need on top of it.</p>
+<p>Everything else is very specific to the current machine I’m setting up
+and I leave them to my discretion at the time of installing.</p>
+<p>If you read until there, I hope that you learnt something, or that it
+inspired you to document your base setup in a similar way. Cheers!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/11/mac-setup.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

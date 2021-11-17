@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1459909788041682952
+---
+
 # Desktop power button not responding and random sleep issues
 November 16, 2021
 

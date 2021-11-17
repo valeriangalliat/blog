@@ -165,10 +165,11 @@ did it. And it was much easier than I expected.</p>
 <li>formatted a USB drive as Mac OS Extended (HFS+) with a GUID partition
 map (I learnt that from Disk Utility, this automatically creates a
 209.7 MB EFI partition on the drive),</li>
-<li>ran <code>sudo /Applications/Install\ macOS\Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume</code> (where <code>MyVolume</code> was… my volume) to create the
-installation media,</li>
-<li>mounted the EFI partition of the USB key by running <code>sudo diskutil mount /dev/diskXsY</code> where <code>X</code> was the drive number and <code>Y</code> the
-partition number (found using <code>diskutil list</code>),</li>
+<li>ran <code>sudo /Applications/Install\ macOS\Catalina.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume</code>
+(where <code>MyVolume</code> was… my volume) to create the installation media,</li>
+<li>mounted the EFI partition of the USB key by running <code>sudo diskutil mount /dev/diskXsY</code>
+where <code>X</code> was the drive number and <code>Y</code> the partition number (found
+using <code>diskutil list</code>),</li>
 <li>copied OpenCore <code>DEBUG</code> version to it and removed unneeded files as
 instructed by the guide,</li>
 <li>added <code>HfsPlus.efi</code> from the <a href="https://github.com/acidanthera/OcBinaryData/blob/master/Drivers/HfsPlus.efi"><code>OcBinaryData</code> repo</a>,</li>
@@ -197,6 +198,8 @@ which means I:</p>
 <li>used ProperTree’s “OC Clean Snapshot” (<kbd>Command</kbd> +
 <kbd>Shift</kbd> + <kbd>R</kbd>) feature to automatically configure
 all the SSDTs, EFI drivers and kexts I added,</li>
+<li>in <code>DeviceProperties/Add/PciRoot(0x0)/Pci(0x2,0x0)</code>, remove
+<code>layout-id</code>,</li>
 <li>in <code>Kernel/Quirks</code>, set <code>PanicNoKextDump</code>, <code>PowerTimeoutKernelPanic</code>
 and <code>XhciPortLimit</code> to <code>True</code>,</li>
 <li>in <code>Misc/Debug</code> set <code>AppleDebug</code>, <code>ApplePanic</code>, <code>DisableWatchDog</code> to
@@ -209,6 +212,8 @@ the 3 first arguments being to get detailed logs to make debugging
 easier (those were a blessing), and the latter one sets the audio
 layout for AppleALC, which I figured was 11 on my earlier Hackintosh
 setups,</li>
+<li>also in <code>NVRAM</code>, set <code>prev-lang:kbd</code> to a blank string to prevent the
+macOS installer being loaded in Russian,</li>
 <li>used <a href="https://github.com/corpnewt/GenSMBIOS">GenSMBIOS</a> to generate
 a <code>iMac17,1</code> SMBIOS and configured the matching parameters in
 <code>PlatformInfo/Generic</code>.</li>
@@ -372,6 +377,9 @@ it do its thing, it reboots a couple of times and always pick the right
 boot option by default to get successful updates.</p>
 <p>I will upgrade OpenCore and the kexts for the next major release, if I
 don’t run into an issue until then.</p>
+<div class="note">
+<p><strong>Note:</strong> Monterey was recently released, read my <a href="../../2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">upgrade notes here</a>!</p>
+</div>
 <h2 id="thanks" tabindex="-1"><a class="header-anchor" href="#thanks"><span>Thanks</span></a></h2>
 <p>I would also like to thank the Dortania team for their fabulous guide. I
 learnt so much while installing Big Sur with OpenCore and I’m still

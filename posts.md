@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>
+* [Yearly Hackintosh upgrade: macOS Monterey with OpenCore](2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md) <small>November 16, 2021</small>
 * [Standalone userland SSH server](2021/11/standalone-userland-ssh-server.md) <small>November 9, 2021</small>
 * [ImageMagick crop with percentage like CSS `background-position`](2021/11/imagemagick-crop-percentage-css-background-position.md) <small>November 8, 2021</small>
 * [Elixir: intercepting Phoenix LiveView events in JavaScript](2021/11/elixir-intercepting-phoenix-liveview-events-javascript.md) <small>November 5, 2021</small>

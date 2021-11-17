@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Yearly Hackintosh upgrade: macOS Monterey with OpenCore</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="data:," data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Yearly Hackintosh upgrade: macOS Monterey with OpenCore">
+  <meta property="og:description" content="Exactly a year ago, I migrated my Hackintosh from Catalina to Big Sur, and from Clover to OpenCore. Apple recently released Monterey, so it’s the first time for me doing a major upgrade since I’m using OpenCore.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.linkedin.com/in/valeriangalliat/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>LinkedIn</title>
+            <use href="/img/icons/458-linkedin.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Yearly Hackintosh upgrade: macOS Monterey with OpenCore</h1>
+<p class="date">November 16, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Exactly a year ago, I <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">migrated my Hackintosh from Catalina to Big Sur,
+and from Clover to OpenCore</a>. Apple recently released
+Monterey, so it’s the first time for me doing a major upgrade since I’m
+using OpenCore.</p>
+<p>So far, OpenCore has been a breeze to work with. I’m not sure if it’s
+because it’s a really high quality piece of software and ecosystem in
+general, or if it’s because it forced me to learn a lot of low-level
+details in order to have a working Hackintosh, but both probably have a
+lot to do with this.</p>
+<p>I’ve been upgrading seamlessly all year long through Big Sur updates
+as smoothly as if I was using a “real Mac”. Upgrading to Monterey might
+have been as easy (with the addition of upgrading OpenCore and all kexts
+to their latest version, which I should probably do on minor updates
+even though I’ve been getting away perfectly fine by ignoring that all
+year long), but I like to take a new major version as an opportunity to
+reinstall my system from scratch and start from a clean slate.</p>
+<h2 id="my-paranoid-upgrade-procedure" tabindex="-1"><a class="header-anchor" href="#my-paranoid-upgrade-procedure"><span>My paranoid upgrade procedure</span></a></h2>
+<p>I don’t do cowboy-style upgrades or installations anymore, because I’ve
+bricked my system too many times and while I’ve always managed to fix it
+more or less gracefully, it’s always been a somewhat stressful,
+uncomfortable and time-consuming experience.</p>
+<p>I’m also constantly scared of losing critical data by mistake, so
+I tend to back up everything more often than not. Here’s the procedure I
+follow to upgrade my system making sure I always have a bootable machine
+and without risking data loss.</p>
+<ul>
+<li>I make space for an empty partition on one of my drives to test the
+new system.</li>
+<li>I make sure that my current system has a full up-to-date backup on an
+external drive <em>that I keep unplugged</em> until I’m back in a fully
+stable state.</li>
+<li>Because I make the above backup with Time Machine and I don’t trust
+myself (nor macOS) to 100% reliably set up Time Machine on the new
+system without fucking up the previous backups, I also do a second
+(manual) backup on another drive. That step is probably unnecessary.</li>
+<li>I install the new system to the test partition, tweaking the OpenCore
+configuration, drivers and kexts as necessary.</li>
+<li>Once the test system is installed and running, I check that everything
+I need works as expected (display, audio, network, sleep) or otherwise
+find how to fix it, documenting everything along the way especially
+for fixes that live outside the EFI directory.</li>
+<li>When all is well, I reboot and perform the install on my main
+partition.</li>
+<li>After the install, I restore whatever I need from my previous backup.
+I still keep the rest of the backup (or at least parts of it) for 6
+months or so just in case. That came handy a couple of times in the
+past. I also wipe the temporary test installation.</li>
+<li>Finally, I write a blog post. 😄</li>
+</ul>
+<p>This is a bit more time-consuming than straight up performing the
+installation, and some of those steps might be a bit overkill, but I
+like going the extra length to make sure everything is backed up and
+redundant to prevent any unexpected issue and minimize the impact of a
+program or human error.</p>
+<h2 id="upgrade-log" tabindex="-1"><a class="header-anchor" href="#upgrade-log"><span>Upgrade log</span></a></h2>
+<p>I’ll list all the steps I took in that upgrade, which are very similar
+to my <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">Big Sur post</a>, but I’ll note here the differences.
+Here’s the relevant details of my machine:</p>
+<dl>
+<dt>Motherboard</dt>
+<dd><a href="https://www.newegg.ca/p/N82E16813130924">MSI H110M PRO-D</a> (RTL8111H Ethernet chipset,  Realtek ALC887 audio chipset)</dd>
+<dt>CPU</dt>
+<dd><a href="https://www.newegg.ca/p/N82E16819117563">Intel Core i5-6500 Skylake</a></dd>
+<dt>GPU</dt>
+<dd><a href="https://www.newegg.ca/p/N82E16814932247">GIGABYTE Radeon RX 580</a></dd>
+</dl>
+<p>Still following <a href="https://dortania.github.io/OpenCore-Install-Guide/">the OpenCore guide</a>,
+I:</p>
+<ul>
+<li>downloaded the latest <a href="https://github.com/acidanthera/OpenCorePkg/releases"><code>OpenCorePkg</code></a>
+(0.7.5 in my case),</li>
+<li>downloaded <a href="https://github.com/corpnewt/ProperTree">ProperTree</a> to edit <code>.plist</code> files,</li>
+<li>downloaded Monterey from the App Store,</li>
+<li>formatted a USB drive as Mac OS Extended (HFS+) with a GUID partition
+map,</li>
+<li>ran <code>sudo /Applications/Install\ macOS\ Monterey.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume</code>
+(where <code>MyVolume</code> was… my volume) to create the installation media,</li>
+<li>mounted the EFI partition of the USB key by running <code>sudo diskutil mount /dev/diskXsY</code>
+where <code>X</code> was the drive number and <code>Y</code> the partition number (found
+using <code>diskutil list</code>),</li>
+<li>copied OpenCore <code>DEBUG</code> version to it and removed unneeded files as
+instructed by the guide,</li>
+<li>added <code>HfsPlus.efi</code> from the <a href="https://github.com/acidanthera/OcBinaryData/blob/master/Drivers/HfsPlus.efi"><code>OcBinaryData</code> repo</a>,</li>
+<li>added <a href="https://github.com/acidanthera/VirtualSMC/releases">VirtualSMC</a>,
+<a href="https://github.com/acidanthera/Lilu/releases">Lilu</a>,
+<a href="https://github.com/acidanthera/WhateverGreen/releases">WhateverGreen</a>,
+<a href="https://github.com/acidanthera/AppleALC/releases">AppleALC</a> and
+<a href="https://github.com/Mieze/RTL8111_driver_for_OS_X/releases">RealtekRTL8111</a>
+kexts.</li>
+</ul>
+<p>Now here’s what got easier than my first OpenCore installation.</p>
+<h3 id="ssdts" tabindex="-1"><a class="header-anchor" href="#ssdts"><span>SSDTs</span></a></h3>
+<p>I just had to copy <code>SSDT-PLUG.aml</code>, <code>SSDT-EC.aml</code> and <code>SSDT-USBX.aml</code>
+from the <code>ACPI</code> directory of my <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">previous installation</a>,
+the <a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/plug.html">first</a>
+<a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/ec-fix.html">two</a>
+which I had built back then with
+<a href="https://github.com/corpnewt/SSDTTime">SSDTTime</a>, and the latter being
+the <a href="https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml">prebuilt one</a>
+that didn’t need to be updated.</p>
+<h3 id="usb-map" tabindex="-1"><a class="header-anchor" href="#usb-map"><span>USB map</span></a></h3>
+<p>I could just copy <code>USBMap.kext</code> <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#generating-the-usb-map">from my previous installation</a>
+to have my USB ports supported right away without having to generate it
+again or to deal with <code>XhciPortLimit</code> and USBInjectAll. Sweet.</p>
+<h3 id="making-the-config-plist" tabindex="-1"><a class="header-anchor" href="#making-the-config-plist"><span>Making the <code>config.plist</code></span></a></h3>
+<p>I started again from OpenCore’s <code>Sample.plist</code> and applied the same
+tweaks from the <a href="https://dortania.github.io/OpenCore-Install-Guide/config.plist/skylake.html#deviceproperties">Skylake</a>
+guide. I’m not sure if I could have reused my previous <code>config.plist</code> or
+not, but I wanted to start fresh and up-to-date.</p>
+<p>Everything was the same as <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">my previous installation</a>
+so I won’t include it here.</p>
+<p>The only difference was that I left <code>XhciPortLimit</code> to <code>False</code> as the
+guide mentions to disable it if running macOS 11.3 or newer, plus I
+already have my USB map so it shouldn’t be needed either way.</p>
+<p>I also had <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#booting-on-macos-installer-just-reboots-into-recovery">an issue last time</a>
+where I needed to set <code>SecureBootModel</code> to <code>Disabled</code> instead of the
+<code>Default</code> mentioned in the guide, but just to check, I left it to
+<code>Default</code> this time and didn’t have any issue, meaning I can now benefit
+from Apple Secure Boot!</p>
+<h3 id="removing-previous-fixes" tabindex="-1"><a class="header-anchor" href="#removing-previous-fixes"><span>Removing previous fixes</span></a></h3>
+<p>For Big Sur, I <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#no-wi-fi-on-big-sur">needed to add</a>
+<code>IO80211HighSierra.kext</code> to get my Wi-Fi to work but I’m now connected
+over Ethernet so I didn’t need to include it. It’s a good thing because
+<a href="https://github.com/khronokernel/IO80211-Patches/issues/4">it doesn’t work on Monterey</a>
+(at least for now, I tried and had the same issue).</p>
+<p>Also I’ve had <a href="../..2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#can-t-find-my-sata-drives-in-the-macos-installer">an issue last time</a>
+that required a <code>CtlnaAHCIPort.kext</code> in order to see my SATA drives in
+the installer, but that wasn’t required anymore so I left it alone (it
+actually prevented the installer to boot if it was there).</p>
+<h3 id="finalizing" tabindex="-1"><a class="header-anchor" href="#finalizing"><span>Finalizing</span></a></h3>
+<p>Once everything was working, I copied OpenCore to my SSD’s EFI directory,
+and applied the <a href="../../2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#cosmetic-tweaks">cosmetic tweaks</a>
+including putting the files from the OpenCore <code>RELEASE</code> version,
+removing the debug and verbose settings, and adding <code>OpenCanopy.efi</code> for
+a nice UI.</p>
+<p>I still needed to <a href="../../2020/10/too-much-contrast-external-screen-macos-catalina.html">patch the EDID of my screen to force it in RBG mode</a>,
+and the <a href="https://gist.github.com/adaugherity/7435890"><code>patch-edid.rb</code></a>
+method still works!</p>
+<p>After that, I didn’t need to do <em>any</em> tweak at the system configuration
+level, everything works out of the box including CPU power management
+and sleep. Power Nap also works like a charm but I turned it off just
+because it’s not useful to me.</p>
+<p>Since my system drive was named the same as my previous installation,
+Time Machine was able to continue the existing backup and I kept my full
+Time Machine history! Had I renamed the drive, it seems that I could
+have used <code>tmutil inheritbackup</code> and <code>tmutil associatedisk</code> to help with
+that.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>If it wasn’t for a <a href="computer-sleep-issues-power-button-not-responding.html">totally unrelated hardware issue</a> that happened
+around the same time I performed the upgrade, migrating to Monterey with
+OpenCore was a straightforward and painless procedure and I didn’t
+encounter any hiccup.</p>
+<p>If you too are upgrading your Hackintosh to Monterey, I hope it went as
+smooth for you as it did for me!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

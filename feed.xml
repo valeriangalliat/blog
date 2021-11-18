@@ -5,10 +5,368 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-17T00:06:11.935Z</updated>
+  <updated>2021-11-18T01:28:51.384Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Using Homebrew on a multi-user system (don’t)</title>
+    <link href="https://www.codejam.info/2021/11/homebrew-multi-user.html" />
+    <id>https://www.codejam.info/2021/11/homebrew-multi-user.html</id>
+    <updated>2021-11-17T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I’ve recently <a href="https://twitter.com/valeriangalliat/status/1460337357094326275">started working at a new company</a>,
+where I’ve got the freedom to use my own rig, which is especially nice
+if I want to work while travelling without having to bring two laptops
+with me.</p>
+<p>But setting up a work environment on my personal computer actually
+brings a number of concerns, mainly about:</p>
+<ul>
+<li>Environment variables.</li>
+<li>Development tools and configurations.</li>
+<li>Shell history.</li>
+</ul>
+<p>Whether it’s my personal Google Cloud context leaking in my work
+environment, work SSH keys being available in my personal projects,
+various unrelated developer tokens and credentials cohabiting in the
+same environment, and work-specific commands popping in my personal
+shell history and making me press the up arrow even more than I already
+do, it quickly feels like poor hygiene to keep everything under the same
+user.</p>
+<p>And while some of those tools allow to authenticate with multiple
+accounts and offer ways to configure them individually and switch
+between contexts, I’ve seen enough mistakes happen by juggling between
+staging and production environments in the same session that adding my
+personal credentials to the mix sounds like a recipe for disaster.</p>
+<p>So after realizing that merging my personal projects with my
+professional environment was a bad idea, I decided to create a dedicated
+user for work, this way everything would be neatly contained. Meet the
+multi-user system.</p>
+<h2 id="sharing-a-homebrew-is-nice-but-brew-not-so-much" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#sharing-a-homebrew-is-nice-but-brew-not-so-much"><span>Sharing a homebrew is nice 🍺, but <code>brew</code> not so much</span></a></h2>
+<p>The main issue I ran doing that was about running <a href="https://brew.sh/">Homebrew</a>,
+the tool I install macOS packages with, and which I happen to use both
+personally and for work.</p>
+<p>Out of the box, if you install it from one user, it’ll just fail to do
+anything when run from another user because of permission issues.</p>
+<h3 id="the-evil-shared-group-writable-permissions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-evil-shared-group-writable-permissions"><span>The evil: shared group writable permissions</span></a></h3>
+<p>Turns out I’m
+<a href="https://medium.com/@leifhanack/homebrew-multi-user-setup-e10cb5849d59">not</a>
+<a href="https://stackoverflow.com/questions/41840479/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">the</a>
+<a href="https://gist.github.com/jaibeee/9a4ea6aa9d428bc77925">only</a>
+<a href="https://newbedev.com/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">one</a>
+to try to do this, a simple search for this yields a fuckton of results!
+And they all mostly share the same “tip” which is some variant of:</p>
+<pre><code class="hljs language-sh">chgrp -R admin /usr/<span class="hljs-built_in">local</span>/*
+chmod -R g+w /usr/<span class="hljs-built_in">local</span>/*
+</code></pre>
+<p>Some variants use <code>brew --prefix</code> instead of hardcoding <code>/usr/local</code>,
+some use a custom group instead of <code>admin</code>. Either way, it’s all the
+same, and it appears to work at first, until it doesn’t.</p>
+<p>The problem is that Homebrew is <em>not</em> designed to be used by multiple
+Unix users. A given Homebrew installation is only meant to be used by a
+single non-root user.</p>
+<p>By giving write access to a given group (in the above example, <code>admin</code>),
+that is shared by all the users you want to call <code>brew</code> from, you get
+the illusion that you allowed <code>brew</code> to be used by multiple users.</p>
+<p>But the issue is that the default <a href="https://en.wikipedia.org/wiki/Umask"><code>umask</code></a>
+that <code>brew</code> uses doesn’t add group write access, meaning that as you
+use <code>brew</code>, more and more parts of the state will not be writable by the
+other users in your group.</p>
+<p>For example if after running the earlier hack, you run <code>brew install some-package</code> as user <code>foo</code>, then you won’t be able to <code>brew uninstall some-package</code> or <code>brew update some-package</code> as user <code>bar</code>, because the
+permission for the newly created files won’t have group write access.</p>
+<p>This means that if you instal packages from different users, <code>brew update</code> will very quickly fail to run on <em>any</em> of those users because
+none have access to <em>everything</em> anymore. Sure, you can solve that by
+running the <code>chmod</code> hack again, but that’s flaky and won’t event prevent
+every edge cases.</p>
+<p>You see setups as crazy as running the <code>chmod</code> command in <code>~/.zshrc</code> or
+similar to prevent this, which will still fall apart if you don’t open a
+new terminal session every time right before running <code>brew</code>, on top of
+being a performance nightmare!</p>
+<h3 id="the-bad-separate-homebrew-installations" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-bad-separate-homebrew-installations"><span>The bad: separate Homebrew installations</span></a></h3>
+<p>Another approach that’s <a href="https://stackoverflow.com/a/55021458/4324668">not</a>
+<a href="https://docs.brew.sh/Installation#alternative-installs">as</a>
+<a href="https://code.roygreenfeld.com/cookbook/homebrew-multi-user-setup.html">widespread</a>
+as the first one is to maintain a separate <code>brew</code> installation per user,
+e.g. somewhere under the home directory as opposed to the default global
+location.</p>
+<p>That sounds like a great idea and would be my favorite way if it wasn’t
+for the fact that <strong>pretty much every package I wanted to install needed
+to be compiled from source because the prebuilt binaries only works with
+the default global prefix</strong>!</p>
+<p>This makes <code>brew</code> effectively unusable as it can take ages to compile
+complete dependency trees that way.</p>
+<p>On top of that you can read the following in the <a href="https://docs.brew.sh/Installation#alternative-installs">official documentation</a>
+which definitely doesn’t make me want to go that way:</p>
+<blockquote>
+<p>However do yourself a favour and use the installer to install to the
+default prefix. Some things may not build when installed elsewhere.
+One of the reasons Homebrew just works relative to the competition is
+<strong>because</strong> we recommend installing here. <em>Pick another prefix at your
+peril!</em></p>
+</blockquote>
+<p>This confirms my first feeling about this method: Homebrew is <em>not</em>
+designed to be installed outside of its default prefix and you’ll run
+into all sort of issues if you do. I don’t like spending my time fixing
+issues like these so I’ll pass.</p>
+<h3 id="the-good-dedicate-a-single-user-account-to-homebrew" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-good-dedicate-a-single-user-account-to-homebrew"><span>The good: dedicate a single user account to Homebrew</span></a></h3>
+<p>This is what’s recommended for multi-user systems
+<a href="https://docs.brew.sh/FAQ#why-does-homebrew-say-sudo-is-bad">in the Homebrew FAQ</a>.
+Sadly this page is not well ranked when looking for how to to use
+Homebrew in a multi-user system (unlike the previous hacks) and I only
+found it write writing this post. The fun thing is that it’s also the
+approach that I decided to use for myself and was about to document
+here!</p>
+<blockquote>
+<p>If you need to run Homebrew in a multi-user environment, consider
+creating a separate user account especially for use of Homebrew.</p>
+</blockquote>
+<p>So while I’m in fact not inventing anything new here, hopefully I can
+help this solution to be better ranked and prevent people from running
+into the issues that are guaranteed to happen with the earlier hacks!</p>
+<p>The solution is simple. Because <strong>Homebrew is not designed to be used by
+multiple users</strong>, and it’s <strong>not designed to be installed anywhere else than
+the default location</strong>, what you want to do instead is to install
+Homebrew in its <strong>default location</strong> with a <strong>dedicated user</strong> that you
+switch to in order to use it.</p>
+<p>Sounds annoying? Just use <code>sudo</code>! While Homebrew
+<a href="https://docs.brew.sh/FAQ#why-does-homebrew-say-sudo-is-bad">documents</a>
+that it &quot;refuses to work using <code>sudo</code>&quot;, this is not exactly true.
+Homebrew refuses to work as root, but you can still use <code>sudo</code> to use it
+as another, non-root user!</p>
+<p>Typically, if you installed Homebrew in its default location from the
+user <code>foo</code>, and now you’re user <code>bar</code> and want to run <code>brew update</code>:</p>
+<pre><code class="hljs language-sh">sudo -Hu foo brew update
+</code></pre>
+<ul>
+<li>The <code>-H</code> option will make sure that the <code>HOME</code> directory is set
+to that of the impersonated user (here <code>foo</code>) instead of the
+<em>impersonating user</em> (here <code>bar</code>), so that Homebrew can maintain its
+cache and other local state in the proper user’s home.</li>
+<li>The <code>-u</code> option allows to specify the user to impersonate instead of
+the default of <code>root</code>.</li>
+</ul>
+<p>This will effectively run <code>brew update</code> like if you had switched to user
+<code>foo</code> prior to running it, but without going through the hassle of
+actually switching users every single time.</p>
+<p>And for what it’s worth, you don’t need to create a new, dedicated user
+for <code>brew</code>. In my case, since both my users are effectively, me, I
+simply installed Homebrew from my personal user and use <code>sudo</code> to run
+<code>brew</code> commands from my work user.</p>
+<p>To make things even nicer, you can even add an alias in the <code>~/.zshrc</code>
+of the user that needs to use <code>sudo</code>:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">alias</span> brew=<span class="hljs-string">&#x27;sudo -Hu foo brew&#x27;</span>
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>That’s all for today. I hope this helped you figure your bug-free,
+multi-user Homebrew situation! Peace. ✌</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136995544096773">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>How I set up a new Mac</title>
+    <link href="https://www.codejam.info/2021/11/mac-setup.html" />
+    <id>https://www.codejam.info/2021/11/mac-setup.html</id>
+    <updated>2021-11-17T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>As I <a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">recently blogged</a>,
+I just upgraded to macOS Monterey taking it as an opportunity to start
+from a clean, fresh, pristine system. This means I had to set up
+everything again, which is not a big deal, but for the sake of
+remembering it and making it even faster next time, I figured I’d write
+about it.</p>
+<p>This is the kind of blog post that’s <em>mostly</em> for my personal interest,
+but if you got there somehow, you might take inspiration from my
+settings, who knows!</p>
+<p>But first, let’s ask the following question.</p>
+<h2 id="why-start-fresh" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#why-start-fresh"><span>Why start fresh?</span></a></h2>
+<p>While I could totally have migrated all my data from Big Sur, I like
+to start from a clean slate every year or two, to get rid of all the
+unnecessary garbage that accumulated over the years.</p>
+<p>Wait, what garbage? Well, let me explain.</p>
+<p>Every time you update a software (including the OS), there’s no
+guarantee that the state you’ll be in after the update would be the
+same as if you installed the new version directly on a fresh system.
+Actually, the opposite is pretty much guaranteed.</p>
+<p>Most of the time this is not a big deal. Maybe you’re stuck with the
+default settings of the version you originally installed instead of
+the ones that would otherwise come with the latest version (i.e. Git
+always defaults to <code>master</code> and you have to explicitly configure it to
+use <code>main</code>, or any small things like this).</p>
+<p>Or maybe some commands or tasks might run slightly slower because of
+accumulated “bloat” related to things you don’t use anymore and forgot
+about (keys, passwords, certificates, trusted IP lists and whatnot
+from stuff you connected to once or at least stopped connecting to
+ages ago, the list of known Wi-Fi networks and <code>~/.ssh/known_hosts</code>
+being a typical example).</p>
+<p>While the above are pretty inoffensive cases, this kind of undefined
+state drifts might cause more sneaky bugs, and “works on that machine”
+kind of answers when you try to figure them out.</p>
+<p>The same is also true when you uninstall a software; there’s no
+guarantee that the state you’ll be in after the removal will match the
+one you would have been in if you didn’t install it in the first place.
+And again, the opposite is pretty much guaranteed.</p>
+<p><a href="https://nixos.org/">NixOS</a> solves some of those issues, but in the real
+world, you’re likely gonna want to use many programs that are not
+designed and packaged to be stateless, deterministic, reproducible and
+purely functional, and using wrappers (or wrapping them yourself) often
+comes at a tremendous cost in time and convenience.</p>
+<p>My tradeoff so far? A fresh reinstall every other year, or whenever I
+feel like I’ve fucked around enough with that system’s state to be worth
+a clean start.</p>
+<h2 id="new-system-setup" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#new-system-setup"><span>New system setup</span></a></h2>
+<p>Here’s the things I do when I log in the first time on my freshly
+installed system.</p>
+<ul>
+<li>Get rid of all the garbage in the dock. I just leave the Finder and
+the trash, because you can’t really remove them anyways (did you try
+dragging the trash to the trash?), but I happen to use them so that’s
+fine.</li>
+<li>Open Safari to download <strong>Firefox</strong>. Very similar to how one would use
+Internet Explorer (oh wait, Edge) to install a real browser on
+Windows. This comparison might sound like a joke, but Safari
+effectively became the new Internet Explorer regarding how far behind
+they drag web standards, so this is sadly far more accurate than I’d
+like it to be.</li>
+<li>Download and install <strong>iTerm2</strong>.</li>
+</ul>
+<div class="note">
+<p><strong>Note:</strong> I could have installed Firefox and iTerm2 with Homebrew (which
+I add later) but for some reason there’s a few programs I kinda like to
+install on their own. Don’t ask me why.</p>
+<p>But now I think about it, it’s probably because Homebrew became so
+ridiculously slow to update its repository and the installed software
+that I’d rather keep the ones I want to be the most up-to-date separate
+from Homebrew.</p>
+<p>I’ll otherwise update Homebrew once a month or two, or when I need to
+install something new with it, and it forces me to upgrade everything
+else at the same time.</p>
+<p>As a general rule of thumb, everything graphical I tend to install on
+its own, and all the CLI stuff is with Homebrew.</p>
+</div>
+<ul>
+<li>Install <strong>Adobe Creative Cloud</strong> and the apps I use with it (Lightroom
+Classic, Photoshop, Premiere and After Effects). In Creative Cloud
+preferences, turn off file syncing and launch at login.
+<ul>
+<li>On a multi-user system, you’ll need to sign in to Creative Cloud for
+every single user to turn off file syncing and launch at login, even
+the ones who don’t use Creative Cloud apps (because the preferences
+pane is only accessible to logged in users). Now all my users have an
+empty Creative Cloud account just for the sake of disabling it. I
+fucking hate the current state of technology. 🙃</li>
+</ul>
+</li>
+<li>Install <strong>Logic Pro</strong> an download the full sound library. Sadly a fresh
+Logic installation can’t reuse an existing sound library directory (I
+like to keep mine on my hard drive instead of my limited size SSD), so
+we need to download the whole 60 GB from scratch. Did I say I
+hate the current state of technology already?</li>
+<li>Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
+custom screenshot interface, where I can change the <strong>screenshot
+directory</strong> to <code>~/Desktop/Screenshots</code>. I don’t like to clutter my
+desktop with screenshots like it’s the case by default.</li>
+<li>I download and run <a href="https://gist.github.com/adaugherity/7435890"><code>patch-edid.rb</code></a>
+to <a href="https://www.codejam.info/2020/10/too-much-contrast-external-screen-macos-catalina.html">patch the EDID of my screen</a>
+because since Catalina, macOS wants to communicate with it over YCbCr
+instead of RGB and that causes colors and contrast to be fucked up.
+This is extremely specific to my own screen.</li>
+</ul>
+<p>Now I’m ready to configure the <a href="https://www.codejam.info/2021/11/mac-setup.html#system-preferences">system preferences</a>,
+<a href="https://www.codejam.info/2021/11/mac-setup.html#iterm2-settings">iTerm2 settings</a> and my <a href="https://www.codejam.info/2021/11/mac-setup.html#terminal-environment">terminal-environment</a>.</p>
+<h2 id="system-preferences" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#system-preferences"><span>System preferences</span></a></h2>
+<ul>
+<li>In <strong>keyboard</strong> I set “key repeat” and “delay until repeat” to the
+fastest possible. I like my keyboard to be snappy.</li>
+<li>For the <strong>dock &amp; menu bar</strong>, I leave only <strong>Time Machine</strong> and <strong>fast
+user switching</strong> if I’m on a multi-user system, and I set the
+<strong>clock</strong> to 24 hours format.</li>
+<li>I enable <strong>Time Machine</strong> backups to my usual drive after configuring
+my exclude list (very specific to my data so not included here).</li>
+<li>In <strong>energy saver</strong> I disable <strong>Power Nap</strong> because I don’t need my
+machine to resume from sleep to check emails and run backups (after
+all if I’m not using my machine there’s not much to back up anyways).</li>
+<li>In <strong>displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
+</ul>
+<h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
+<ul>
+<li>In <strong>appearance</strong>, <strong>windows</strong>, tick <strong>hide scrollbars</strong>.</li>
+<li>In <strong>profiles</strong>, <strong>general</strong>, select <strong>reuse previous session’s
+directory</strong> as working directory.</li>
+<li>In <strong>profiles</strong>, <strong>terminal</strong>, tick <strong>silence bell</strong>.</li>
+<li>In <strong>profiles</strong>, <strong>keys</strong>, <strong>key mappings</strong>, load the <strong>natural text
+editing</strong> preset (allow it to remove whatever is already there), and
+remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
+<kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
+between tabs.</li>
+</ul>
+<h2 id="terminal-environment" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#terminal-environment"><span>Terminal environment</span></a></h2>
+<p>First, install <a href="https://brew.sh/">Homebrew</a> with whatever is the current
+recommended way. Install it in the default place because otherwise it
+won’t be able to leverage many prebuilt binaries that hardcode the
+default prefix in them, and it’s utterly slow to compile everything. I’d
+be running Gentoo if that’s what I wanted FFS. Also if you want to run
+Homebrew on a multi-user system, <a href="https://www.codejam.info/2021/11/homebrew-multi-user.html">read that first</a>.</p>
+<p>Then, make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I usually
+run <code>ssh-keygen</code> either way just to let it create the directory with the
+proper permissions, even if I’ll override the key later.</p>
+<pre><code class="hljs language-sh">ssh-keygen
+</code></pre>
+<p>Clone my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>
+directory and install my Mac preset (mainly my Zsh, Vim and Git
+settings).</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> git@github.com:valeriangalliat/dotfiles.git
+<span class="hljs-built_in">cd</span> dotfiles
+make mac
+<span class="hljs-built_in">cd</span>
+</code></pre>
+<p>Edit my default <code>~/.zshrc</code> and <code>~/.zshenv</code> templates and comment or
+uncomment some of the stuff there that I may need, mainly enabling my
+asdf helper (see below).</p>
+<pre><code class="hljs language-sh">vim ~/.zshrc ~/.zshenv
+</code></pre>
+<p>Install whatever software I pretty much always use with Homebrew.</p>
+<pre><code class="hljs language-sh">brew install gpg ag fzf imagemagick ffmpeg ncdu
+</code></pre>
+<ul>
+<li>GPG is required for the asdf Node.js plugin I’ll add later below.</li>
+<li><a href="https://github.com/ggreer/the_silver_searcher">Ag (The Silver Searcher)</a>
+is my favorite way to search code.</li>
+<li><a href="https://github.com/junegunn/fzf">fzf</a> is an awesome fuzzy finder.</li>
+<li>I probably don’t need to introduce <a href="https://imagemagick.org/">ImageMagick</a>
+and <a href="https://www.ffmpeg.org/">FFmpeg</a>.</li>
+<li><a href="https://dev.yorhel.nl/ncdu">ncdu</a> is a cool tool to monitor disk usage.</li>
+</ul>
+<p>Install the <a href="https://github.com/asdf-vm/asdf">asdf</a> plugins I need
+and whatever version is in my <code>~/.tool-versions</code>. My <code>~/.zshrc</code>
+automatically installs asdf on the first invocation so no need to do
+that manually.</p>
+<pre><code class="hljs language-sh">asdf plugin add nodejs
+<span class="hljs-comment"># asdf plugin add python</span>
+<span class="hljs-comment"># asdf plugin add ruby</span>
+<span class="hljs-comment"># asdf plugin add elixir</span>
+<span class="hljs-comment"># asdf plugin add erlang</span>
+asdf install
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/mac-setup.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>That’s pretty much the gist! This is a fairly straightforward and not
+very time consuming checklist, and the main things that need to be
+automated (my dotfiles) are.</p>
+<p>I don’t think it’s worth automating my macOS system preferences somehow
+as they might change in future versions anyways. Same thing for iTerm2,
+where I definitely don’t want to copy over my whole configuration file
+from an old installation, I’d rather start from the latest and greatest
+defaults and just tweak what I need on top of it.</p>
+<p>Everything else is very specific to the current machine I’m setting up
+and I leave them to my discretion at the time of installing.</p>
+<p>If you read until there, I hope that you learnt something, or that it
+inspired you to document your base setup in a similar way. Cheers!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136814400577537">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Desktop power button not responding and random sleep issues</title>
     <link href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html" />
@@ -165,7 +523,7 @@ that have a better idea, please <a href="https://www.codejam.info/val.html#conta
 similar issue, that helped you sort this problem out as well!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1459909788041682952">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
 </section>
 ]]></content>
   </entry>
@@ -3303,7 +3661,8 @@ show you how.</p>
 so they didn’t really consider the use case where you would want to
 remove them.</p>
 <p>But if you go in your project settings, under the Git section, you can
-configure a “ignored build step” command.</p>
+<a href="https://vercel.com/support/articles/how-do-i-use-the-ignored-build-step-field-on-vercel">configure</a>
+a “ignored build step” command.</p>
 <figure class="center">
   <img alt="Ignored build step" src="https://www.codejam.info/img/2021/09/vercel-ignored-build-step.png">
 </figure>
@@ -3741,264 +4100,6 @@ value of a token. I hope it made things a bit easier for you. Cheers!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1429921911509819395">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using your lock screen as login screen on Linux</title>
-    <link href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html" />
-    <id>https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html</id>
-    <updated>2021-08-22T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>For a very long time I wasn’t using a <a href="https://wiki.archlinux.org/title/Display_manager">display manager</a>
-(also known as login manager). I just had <a href="https://github.com/valeriangalliat/dotfiles/blob/master/zsh/zshrc.home#L6">this line</a>
-in my <code>~/.zshrc</code> to automatically start a X session after logging in on
-TTY1, effectively using the TTY login prompt as my login manager:</p>
-<pre><code class="hljs language-sh"><span class="hljs-comment"># Start X on login on TTY1</span>
-<span class="hljs-keyword">if</span> [ -z <span class="hljs-string">&quot;<span class="hljs-variable">$DISPLAY</span>&quot;</span> ] &amp;&amp; [ <span class="hljs-string">&quot;<span class="hljs-variable">$XDG_VTNR</span>&quot;</span> -eq 1 ]; <span class="hljs-keyword">then</span>
-    <span class="hljs-built_in">exec</span> startx
-<span class="hljs-keyword">fi</span>
-</code></pre>
-<p>The only drawback to this was that I had to type my username, which is
-redundant as this is a single-user system, and more importantly, that
-the X session was considered to be a TTY session by logind, because
-there’s no way to upgrade a TTY session to a graphical session.</p>
-<p>This affects a number of semantics, especially the way logind deals with
-<a href="https://github.com/systemd/systemd/issues/14053#issuecomment-564138746">detecting idle</a>,
-which is an issue if we want to use logind’s <code>IdleAction</code> for example to
-suspend the system after a period of inactivity.</p>
-<p>Using a display manager makes sure to register the session as graphical
-and fixes that issue, but I didn’t like to introduce another graphical
-interface that’s not consistent with the rest of my system, and I’d
-rather not get into configuring it extensively and theming it.</p>
-<h2 id="logging-in-to-a-lock-screen" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html#logging-in-to-a-lock-screen"><span>Logging in to a lock screen?</span></a></h2>
-<p>Since I’m the only user of my laptop, I don’t need a fancy interface to
-select among a list of users and such, and it felt like my lock screen
-would be a perfect fit as a login screen. I use i3lock which I configure
-to just show a background and let me type my password to unlock the
-screen.</p>
-<p>While i3lock itself is not meant to be used like this, you can achieve
-this with a combination of LightDM autologin feature, and starting
-i3lock first thing in your <code>~/.xprofile</code>:</p>
-<pre><code class="hljs language-sh"><span class="hljs-comment"># Lock screen before actually starting, to be used with autologin</span>
-i3lock -n
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> I use the <code>-n</code> (<code>--nofork</code>) option here so that i3lock blocks
-the start script until it’s unlocked.</p>
-</div>
-<p>And the following in <code>/etc/lightdm/lightdm.conf</code> (where <code>foo</code> is your
-username):</p>
-<pre><code class="hljs language-conf">[Seat:*]
-autologin-user=foo
-</code></pre>
-<p>This results in LightDM acting as a totally transparent display manager,
-allowing the logind session to be considered graphical, and i3lock being
-started first thing in the session, blocking until it’s unlocked to
-start the actual window manager.</p>
-<p>It’s so far the lightest way I’ve found to start a graphical session
-without it being considered a TTY by logind, while still being prompted
-for my password. I hope you find this useful!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪</title>
-    <link href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html" />
-    <id>https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html</id>
-    <updated>2021-08-22T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#tldr"><span>TLDR</span></a></h2>
-<p>To get dmenu to work with emojis, you need to compile it from source
-against <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> (from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>),
-after removing the <code>iscol</code> check in <code>drw.c</code> that prevents colored fonts
-to be used, and configuring a colored font in <code>config.h</code> or
-<code>config.def.h</code> (see patches below).</p>
-<p>Go check out <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
-that does all that work for you!</p>
-<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#the-story"><span>The story</span></a></h2>
-<p>A couple weeks ago, during my daily procrastination routine (I like to
-procrastinate in the mornings right after meditating and taking a cold
-shower), I figured it would be nice to have some kind of emoji picker on
-my Arch Linux rig.</p>
-<p>I quickly found <a href="https://askubuntu.com/questions/1045915/how-to-insert-an-emoji-into-a-text-in-ubuntu-18-04-and-later">this thread</a>,
-sadly a lot of the solutions there are specific to particular desktop
-environments, and I’m not using any. Although <a href="https://github.com/tom-james-watson/Emote">Emote</a>
-looks promising, and has an <a href="https://aur.archlinux.org/packages/emote">AUR package</a>,
-it <a href="https://github.com/tom-james-watson/Emote/issues/44">fails to paste in terminals</a>.
-Since I spend most of my time in terminals so this is not an option.</p>
-<p>That’s when I find about <a href="https://github.com/fdw/rofimoji"><code>rofimoji</code></a>
-which is even already packaged on Arch, and it’s definitely an awesome
-piece of software, but I’m a dmenu user and I would rather keep things
-consistent.</p>
-<p>Since I like the idea of a dmenu-based emoji picker, I start looking
-specifically for that and find <a href="https://github.com/porras/dmenu-emoji">dmenu-emoji</a>,
-which despite the name, is actually meant to be used with Rofi, but also
-claims to work with dmenu. But when I try it with plain dmenu, the
-emojis only show up as empty squares. Not ideal.</p>
-<h2 id="making-dmenu-show-emojis" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#making-dmenu-show-emojis"><span>Making dmenu show emojis</span></a></h2>
-<p>Trying to figure that issue, I stumble upon <a href="https://youtu.be/0QkByBugq_4">this video</a>
-which explains that you need to compile dmenu from source against
-<a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a>, a patched version of libXft from <a href="https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1">this PR</a>
-that adds support for colored (BGRA) glyphs, all of that after patching
-dmenu itself to remove a workaround that they added to prevent crashes
-with libXft’s lack of support for BGRA glyphs, that dropped support for
-colored fonts in the first place.</p>
-<p>Typically this is done on Arch by installing <a href="https://aur.archlinux.org/packages/libxft-bgra/">libxft-bgra</a> from the AUR,
-and applying the following patch to the dmenu source, as explained in
-the video.</p>
-<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/drw.c b/drw.c</span>
-<span class="hljs-comment">index 4cdbcbe..c1c265c 100644</span>
-<span class="hljs-comment">--- a/drw.c</span>
-<span class="hljs-comment">+++ b/drw.c</span>
-<span class="hljs-meta">@@ -133,19 +133,6 @@</span> xfont_create(Drw *drw, const char *fontname, FcPattern *fontpattern)
- 		die(&quot;no font specified.&quot;);
- 	}
- 
-<span class="hljs-deletion">-	/* Do not allow using color fonts. This is a workaround for a BadLength</span>
-<span class="hljs-deletion">-	 * error from Xft with color glyphs. Modelled on the Xterm workaround. See</span>
-<span class="hljs-deletion">-	 * https://bugzilla.redhat.com/show_bug.cgi?id=1498269</span>
-<span class="hljs-deletion">-	 * https://lists.suckless.org/dev/1701/30932.html</span>
-<span class="hljs-deletion">-	 * https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=916349</span>
-<span class="hljs-deletion">-	 * and lots more all over the internet.</span>
-<span class="hljs-deletion">-	 */</span>
-<span class="hljs-deletion">-	FcBool iscol;</span>
-<span class="hljs-deletion">-	if(FcPatternGetBool(xfont-&gt;pattern, FC_COLOR, 0, &amp;iscol) == FcResultMatch &amp;&amp; iscol) {</span>
-<span class="hljs-deletion">-		XftFontClose(drw-&gt;dpy, xfont);</span>
-<span class="hljs-deletion">-		return NULL;</span>
-<span class="hljs-deletion">-	}</span>
-<span class="hljs-deletion">-</span>
- 	font = ecalloc(1, sizeof(Fnt));
- 	font-&gt;xfont = xfont;
- 	font-&gt;pattern = pattern;
-</code></pre>
-<p>I tried all of that, but still had the same issue! One important detail
-that was missing from that video was that dmenu doesn’t support
-<a href="https://github.com/valeriangalliat/dotfiles/blob/47506803600b0e5b194e35c56a835b54aae72f32/x11/fonts.conf">fontconfig’s fallback fonts</a>,
-and you need to <a href="https://bbs.archlinux.org/viewtopic.php?id=255799">explicitly configure</a>
-an emoji font in dmenu’s source, as you can see in <a href="https://github.com/LukeSmithxyz/dmenu/blob/3a6bc67fbd6df190b002d33f600a6465cad9cfb8/config.h#L8">Luke’s dmenu</a>.</p>
-<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.def.h b/config.def.h</span>
-<span class="hljs-comment">index 1edb647..b55c45c 100644</span>
-<span class="hljs-comment">--- a/config.def.h</span>
-<span class="hljs-comment">+++ b/config.def.h</span>
-<span class="hljs-meta">@@ -4,7 +4,8 @@</span>
- static int topbar = 1;                      /* -b  option; if 0, dmenu appears at bottom     */
- /* -fn option overrides fonts[0]; default X11 font or font set */
- static const char *fonts[] = {
-<span class="hljs-deletion">-	&quot;monospace:size=10&quot;</span>
-<span class="hljs-addition">+	&quot;monospace:size=10&quot;,</span>
-<span class="hljs-addition">+	&quot;emoji:size=10&quot;</span>
- };
- static const char *prompt      = NULL;      /* -p  option; prompt to the left of input field */
- static const char *colors[SchemeLast][2] = {
-</code></pre>
-<p>After doing so, the emojis did show up! 🎉</p>
-<h2 id="automating-the-build" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#automating-the-build"><span>Automating the build</span></a></h2>
-<p>This is great, but it still takes a lot of manual steps, and needs root
-access to install libxft-bgra globally. I think this is unnecessary, and
-I figured it would be cool to compile dmenu <em>statically</em> against the
-patched libXft instead, without touching to the system.</p>
-<p>This is something that can be done easily with the following patch,
-assuming that the libxft-bgra source is in <code>../libxft</code> relative do the
-dmenu source.</p>
-<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.mk b/config.mk</span>
-<span class="hljs-comment">index 05d5a3e..05300a6 100644</span>
-<span class="hljs-comment">--- a/config.mk</span>
-<span class="hljs-comment">+++ b/config.mk</span>
-<span class="hljs-meta">@@ -13,8 +13,8 @@</span> XINERAMALIBS  = -lXinerama
- XINERAMAFLAGS = -DXINERAMA
- 
- # freetype
-<span class="hljs-deletion">-FREETYPELIBS = -lfontconfig -lXft</span>
-<span class="hljs-deletion">-FREETYPEINC = /usr/include/freetype2</span>
-<span class="hljs-addition">+FREETYPELIBS = -lfontconfig -lfreetype -lXrender -lX11 -L../libxft/src/.libs -l:libXft.a</span>
-<span class="hljs-addition">+FREETYPEINC = /usr/include/freetype2 -I$(PWD)/../libxft/include</span>
- # OpenBSD (uncomment)
- #FREETYPEINC = $(X11INC)/freetype2
- 
-</code></pre>
-<p>Then libXft can be compiled with:</p>
-<pre><code class="hljs language-sh">./autogen.sh
-make
-</code></pre>
-<p>And dmenu with:</p>
-<pre><code class="hljs language-sh">make
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> libXft needs <code>xorg-util-macros</code> to be installed in order to
-generate the man pages. Since I don’t really need that, I added a
-further <a href="https://github.com/valeriangalliat/dmenumoji/blob/master/libxft.patch">patch</a>
-that removes the check for this library, and build with <code>make SUBDIRS=src</code>
-to ignore the <code>man</code> directory.</p>
-</div>
-<p>This leaves us with a statically linked version of dmenu against
-libxft-bgra with proper support for colored glyphs. 🥳</p>
-<figure class="center">
-  <img alt="dmenumoji in action" src="https://raw.githubusercontent.com/valeriangalliat/dmenumoji/master/preview.png">
-  <figcaption>dmenumoji in action</figcaption>
-</figure>
-<p>Now, all we need is to combine all the earlier patches to a
-<code>dmenu.patch</code>, and make a neat <a href="https://github.com/valeriangalliat/dmenumoji/blob/master/Makefile">makefile</a>
-to do all that work for us, including cloning the dmenu and libXft
-repositories, applying the BGRA patch as well as our dmenu patch, and
-compiling everything.</p>
-<pre><code class="hljs language-makefile"><span class="hljs-section">all: dmenu/dmenu</span>
-
-<span class="hljs-section">dmenu/dmenu: dmenu libxft/src/.libs/libXft.a</span>
-	make -C <span class="hljs-variable">$&lt;</span>
-
-<span class="hljs-section">dmenu:</span>
-	git clone --branch 5.0 https://git.suckless.org/dmenu
-	patch -d <span class="hljs-variable">$@</span> &lt; dmenu.patch
-
-<span class="hljs-section">libxft/src/.libs/libXft.a: libxft</span>
-	cd <span class="hljs-variable">$&lt;</span> &amp;&amp; ./autogen.sh &amp;&amp; make SUBDIRS=src
-
-<span class="hljs-section">libxft: libxft-bgra.patch</span>
-	git clone https://gitlab.freedesktop.org/xorg/lib/libxft.git
-	@<span class="hljs-comment"># Remove check for xorg-util-macros that&#x27;s only used to add `.1` at the</span>
-	@<span class="hljs-comment"># end of a man page we&#x27;re not gonna use.</span>
-	patch -d <span class="hljs-variable">$@</span> &lt; libxft.patch
-	patch -d <span class="hljs-variable">$@</span> -p1 &lt; <span class="hljs-variable">$&lt;</span>
-
-<span class="hljs-section">libxft-bgra.patch:</span>
-	curl -o <span class="hljs-variable">$@</span> https://gitlab.freedesktop.org/xorg/lib/libxft/-/merge_requests/1.patch
-</code></pre>
-<p>With that, a simple <code>make</code> command gives us a fully working dmenu with
-emoji support. You can find all of that (and more) in the <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a>
-repo I created to bundle everything together!</p>
-<h2 id="bonus-dynamically-linked-against-a-custom-location" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/dmenu-libxft-bgra-emoji-support.html#bonus-dynamically-linked-against-a-custom-location"><span>Bonus: dynamically linked against a custom location</span></a></h2>
-<p>Out of curiosity, I wanted to see what it would take, to dynamically
-link to our patched version of libXft without installing it in the
-standard library path (e.g. <code>/usr/lib</code>).</p>
-<p>It turns out that you can pass linker options to the compiler through
-the <code>-Wl</code> option, which allows us to use <code>-rpath</code> to append our custom
-libXft directory (specifically the <code>src/.libs</code> path which is where
-libXft builds the shared libraries) to the runtime library search path
-of the executable.</p>
-<pre><code class="hljs language-diff"><span class="hljs-comment">diff --git a/config.mk b/config.mk</span>
-<span class="hljs-comment">index 05d5a3e..d3b05c5 100644</span>
-<span class="hljs-comment">--- a/config.mk</span>
-<span class="hljs-comment">+++ b/config.mk</span>
-<span class="hljs-meta">@@ -13,8 +13,8 @@</span> XINERAMALIBS  = -lXinerama
- XINERAMAFLAGS = -DXINERAMA
- 
- # freetype
-<span class="hljs-deletion">-FREETYPELIBS = -lfontconfig -lXft</span>
-<span class="hljs-deletion">-FREETYPEINC = /usr/include/freetype2</span>
-<span class="hljs-addition">+FREETYPELIBS = -lfontconfig -lXft -Wl,-rpath $(PWD)/../libxft/src/.libs</span>
-<span class="hljs-addition">+FREETYPEINC = /usr/include/freetype2 -I$(PWD)/../libxft/include</span>
- # OpenBSD (uncomment)
- #FREETYPEINC = $(X11INC)/freetype2
- 
-</code></pre>
-<p>With that, our dmenu executable will know at runtime to dynamically load
-our locally built libXft that has BGRA support, as long as we don’t move
-it from the nonstandard path we hardcoded there.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1429543626640592898">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
 </section>
 ]]></content>
   </entry>

@@ -104,6 +104,9 @@ dist/img/icons/gmail.png:
 dist/img/icons/linkedin.png:
 	curl 'https://static-exp1.licdn.com/sc/h/eahiplrwoq61f4uan012ia17i' | convert - -resize 16x $@
 
+dist/img/icons/ko-fi.png:
+	curl 'https://ko-fi.com/favicon.png' | convert - -resize 16x $@
+
 css/colors.css:
 	echo ':root {' > $@
 	curl -s 'https://raw.githubusercontent.com/cdnjs/cdnjs/master/ajax/libs/Primer/17.4.0/base.css' \

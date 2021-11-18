@@ -189,13 +189,16 @@ process.stdout.write('\n')
 
 if (bodyClass === 'post') {
   process.stdout.write('<section class="post-footer">\n  <h3>Want to leave a comment?</h3>\n')
+  process.stdout.write('  <p>\n')
 
   if (meta.tweet) {
-    process.stdout.write(`  <p>Join the discussion on <a href="${escape(meta.tweet)}">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌\n`)
+    process.stdout.write(`    Join the discussion on <a href="${escape(meta.tweet)}">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n`)
   } else {
-    process.stdout.write(`  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌\n`)
+    process.stdout.write(`    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n`)
   }
 
+  process.stdout.write(`    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻\n`)
+  process.stdout.write('  </p>\n')
   process.stdout.write('</section>\n')
 }
 

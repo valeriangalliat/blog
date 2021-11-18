@@ -81,7 +81,8 @@ so they didn't really consider the use case where you would want to
 remove them.
 
 But if you go in your project settings, under the Git section, you can
-configure a "ignored build step" command.
+[configure](https://vercel.com/support/articles/how-do-i-use-the-ignored-build-step-field-on-vercel)
+a "ignored build step" command.
 
 <figure class="center">
   <img alt="Ignored build step" src="../../img/2021/09/vercel-ignored-build-step.png">

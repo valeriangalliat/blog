@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1461136995544096773
+---
+
 # Using Homebrew on a multi-user system (don't)
 November 17, 2021
 

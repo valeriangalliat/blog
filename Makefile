@@ -1,6 +1,6 @@
 MD = $(shell find . -name '*.md' ! -path './node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
-ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/458-linkedin.svg dist/img/icons/412-rss.svg
+ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/219-heart.svg dist/img/icons/412-rss.svg
 ASSETS = dist/css/normalize.css dist/css/github.css dist/css/main-20211017.css dist/js/emojicon.js dist/js/main-20210719.js $(ICONS)
 FEED = dist/feed.xml
 

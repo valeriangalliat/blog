@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
 * [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
 * [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector">
+  <meta property="og:description" content="Are you wondering why some specific emoji are sometimes displayed as black and white symbols instead of a colored glyph? And even more confusing, you notice it happens on one device but looks perfect on another? Look no further, you’ll find all the answers in this article!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector</h1>
+<p class="date">November 19, 2021</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Are you wondering why some specific emoji are sometimes displayed as
+black and white symbols instead of a colored glyph? And even more
+confusing, you notice it happens on one device but looks perfect on
+another? Look no further, you’ll find all the answers in this article!</p>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<p>Some symbols can be displayed either as text (black and white glyph) or
+as a color emoji. Using Unicode <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selectors</a>,
+we can hint at whether to use one or the other, but when no variation
+selector is specified, it’s up to the system to decide which one to
+pick, introducing inconsistencies.</p>
+<p>Most emoji pickers will include the emoji variation selector to symbols
+that would otherwise be ambiguous, but others won’t and that’s probably
+how you ended up here.</p>
+<p>If you want to make sure your emoji are always displayed in their color
+version, the default macOS emoji picker does just that, otherwise
+copy/pasting from <a href="https://emojipedia.org/">Emojipedia</a> also works, as
+they both don’t leave room for ambiguity.</p>
+<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="#the-story"><span>The story</span></a></h2>
+<p>I initially noticed that some emoji that I added from my Linux machine
+using <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a> or <a href="https://github.com/fdw/rofimoji"><code>rofimoji</code></a>
+were displayed as black and white symbols on macOS and Android.</p>
+<p>For a while I just fixed them by inserting them again from another
+device, or copy/pasting them from <a href="https://emojipedia.org/">Emojipedia</a>,
+but I eventually got tired of this and decided to understand why this
+was happening in the first place.</p>
+<h2 id="what-i-learnt" tabindex="-1"><a class="header-anchor" href="#what-i-learnt"><span>What I learnt</span></a></h2>
+<p>Unicode defines two <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selector characters</a>,
+<a href="https://codepoints.net/U+FE0E">U+FE0E</a> and <a href="https://codepoints.net/U+FE0F">U+FE0F</a>,
+also respectively known as VS15 and VS16.</p>
+<p>When VS15 is appended to a symbol, it forces it to be displayed as text
+(black and white glyph). Contrarily, when VS16 is appended, it forces
+the color version to be displayed (emoji).</p>
+<p>Now here’s the fun part. What happens when a symbol has both a text and
+a color variant, and no variant selector is specified?
+<a href="https://en.wikipedia.org/wiki/Emoticons_(Unicode_block)#Variant_forms">According to Wikipedia</a>,
+the emoji variant is selected:</p>
+<blockquote>
+<p>If there is no variation selector appended, the default is the
+emoji-style.</p>
+</blockquote>
+<p>But <a href="#concrete-tests">in reality</a>, it appears that macOS and Android
+will in fact default to the text symbol if there’s one available! So
+should we just append the VS16 code point on every single emoji? From
+<a href="https://emojipedia.org/variation-selector-16/">its Emojipedia page</a>:</p>
+<blockquote>
+<p>[VS16 is] an invisible code point which specifies that the preceding
+character should be displayed with emoji presentation. Only required
+if the preceding character defaults to text presentation.</p>
+</blockquote>
+<p>Alright. But we just saw that this is system-specific. Still, how do we
+know which character <em>can</em> default to a text presentation? An
+interesting hint is in the <a href="https://unicode.org/faq/vs.html">unicode.org FAQ</a>.</p>
+<blockquote>
+<p><strong>What variation sequences are valid?</strong></p>
+<p>Only those listed in <a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>StandardizedVariants.txt</code></a>,
+<a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>emoji-variation-sequences.txt</code></a>,
+or the registered sequences listed in the <a href="http://www.unicode.org/ivd/">Ideographic Variation Database (IVD)</a>.</p>
+</blockquote>
+<p>Here, we specifically care about <a href="http://www.unicode.org/Public/emoji/5.0/emoji-variation-sequences.txt"><code>emoji-variation-sequences.txt</code></a>,
+the other sources not being related emoji. This file lists all the
+symbols that have both a monochrome glyph and a color emoji available.</p>
+<p>It’s only for those symbols that we need to append the VS16 code point
+to make sure that they’re displayed consistently on every system. And it
+looks like that’s precisely what the macOS and Android emoji pickers
+seem to be doing!</p>
+<h2 id="concrete-tests" tabindex="-1"><a class="header-anchor" href="#concrete-tests"><span>Concrete tests</span></a></h2>
+<p>Let’s look at a few concrete examples to highlight the inconsistencies.</p>
+<table>
+<thead>
+<tr>
+<th>Unicode code points</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U+1F60A</td>
+<td><code>printf '\U0001f60A'</code></td>
+<td>😊</td>
+</tr>
+<tr>
+<td>U+1F60A, U+FE0E</td>
+<td><code>printf '\U0001f60A\ufe0e'</code></td>
+<td>😊︎</td>
+</tr>
+<tr>
+<td>U+1F60A, U+FE0F</td>
+<td><code>printf '\U0001f60A\ufe0f'</code></td>
+<td>😊️</td>
+</tr>
+<tr>
+<td>U+1F610</td>
+<td><code>printf '\U0001f610'</code></td>
+<td>😐</td>
+</tr>
+<tr>
+<td>U+1F610, U+FE0E</td>
+<td><code>printf '\U0001f610\ufe0e'</code></td>
+<td>😐︎</td>
+</tr>
+<tr>
+<td>U+1F610, U+FE0F</td>
+<td><code>printf '\U0001f610'\ufe0f</code></td>
+<td>😐️</td>
+</tr>
+<tr>
+<td>U+2639</td>
+<td><code>printf '\u2639'</code></td>
+<td>☹</td>
+</tr>
+<tr>
+<td>U+2639, U+FE0E</td>
+<td><code>printf '\u2639\ufe0e'</code></td>
+<td>☹︎</td>
+</tr>
+<tr>
+<td>U+2639, U+FE0F</td>
+<td><code>printf '\u2639\ufe0f'</code></td>
+<td>☹️</td>
+</tr>
+<tr>
+<td>U+270D</td>
+<td><code>printf '\u270d'</code></td>
+<td>✍</td>
+</tr>
+<tr>
+<td>U+270D, U+FE0E</td>
+<td><code>printf '\u270d\ufe0e'</code></td>
+<td>✍︎</td>
+</tr>
+<tr>
+<td>U+270D, U+FE0F</td>
+<td><code>printf '\u270d\ufe0f'</code></td>
+<td>✍️</td>
+</tr>
+</tbody>
+</table>
+<p>Or put another way:</p>
+<table>
+<thead>
+<tr>
+<th>Default</th>
+<th>Text</th>
+<th>Emoji</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>😊</td>
+<td>😊︎</td>
+<td>😊️</td>
+</tr>
+<tr>
+<td>😐</td>
+<td>😐︎</td>
+<td>😐️</td>
+</tr>
+<tr>
+<td>☹</td>
+<td>☹︎</td>
+<td>☹️</td>
+</tr>
+<tr>
+<td>✍</td>
+<td>✍︎</td>
+<td>✍️</td>
+</tr>
+</tbody>
+</table>
+<p>Your mileage may vary, but when I compare that table on my different
+devices, while they all display the emoji variant properly, there’s a
+few inconsistencies for the default (no variant) and explicit text
+variant.</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Emoji</th>
+<th>Default</th>
+<th>Text</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>☹️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>✍️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>☹️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>✍️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>☹️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>✍️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+</tbody>
+</table>
+<p>While the font on my Linux machine doesn’t have a text representation of
+the blush emoji, it does for all the other ones. Regardless, when no
+variant is specified, it always shows an emoji.</p>
+<p>On the other hand, macOS and Android always default to the text variant,
+but they appear to not have one available for the blush and neutral face
+emoji.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>In today’s article, we looked more closely at the Unicode standard and
+the emoji specification to understand how to deal with symbols that have
+both a text and emoji style available. We learnt about the VS15 and VS16
+code points to select a specific variant, instead of leaving it for the
+system to decide. Finally, we found out what symbols need an explicit
+variant to be specified in order to avoid being rendered inconsistently.</p>
+<p>I hope you now have everything you need to understand why you might be
+noticing those inconsistencies, and how to fix them. Cheers! ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2021/11/emoji-variation-selector.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

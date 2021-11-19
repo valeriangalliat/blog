@@ -5,10 +5,297 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-18T01:28:51.384Z</updated>
+  <updated>2021-11-20T00:35:45.212Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector</title>
+    <link href="https://www.codejam.info/2021/11/emoji-variation-selector.html" />
+    <id>https://www.codejam.info/2021/11/emoji-variation-selector.html</id>
+    <updated>2021-11-19T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Are you wondering why some specific emoji are sometimes displayed as
+black and white symbols instead of a colored glyph? And even more
+confusing, you notice it happens on one device but looks perfect on
+another? Look no further, you’ll find all the answers in this article!</p>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#tldr"><span>TLDR</span></a></h2>
+<p>Some symbols can be displayed either as text (black and white glyph) or
+as a color emoji. Using Unicode <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selectors</a>,
+we can hint at whether to use one or the other, but when no variation
+selector is specified, it’s up to the system to decide which one to
+pick, introducing inconsistencies.</p>
+<p>Most emoji pickers will include the emoji variation selector to symbols
+that would otherwise be ambiguous, but others won’t and that’s probably
+how you ended up here.</p>
+<p>If you want to make sure your emoji are always displayed in their color
+version, the default macOS emoji picker does just that, otherwise
+copy/pasting from <a href="https://emojipedia.org/">Emojipedia</a> also works, as
+they both don’t leave room for ambiguity.</p>
+<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#the-story"><span>The story</span></a></h2>
+<p>I initially noticed that some emoji that I added from my Linux machine
+using <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a> or <a href="https://github.com/fdw/rofimoji"><code>rofimoji</code></a>
+were displayed as black and white symbols on macOS and Android.</p>
+<p>For a while I just fixed them by inserting them again from another
+device, or copy/pasting them from <a href="https://emojipedia.org/">Emojipedia</a>,
+but I eventually got tired of this and decided to understand why this
+was happening in the first place.</p>
+<h2 id="what-i-learnt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#what-i-learnt"><span>What I learnt</span></a></h2>
+<p>Unicode defines two <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selector characters</a>,
+<a href="https://codepoints.net/U+FE0E">U+FE0E</a> and <a href="https://codepoints.net/U+FE0F">U+FE0F</a>,
+also respectively known as VS15 and VS16.</p>
+<p>When VS15 is appended to a symbol, it forces it to be displayed as text
+(black and white glyph). Contrarily, when VS16 is appended, it forces
+the color version to be displayed (emoji).</p>
+<p>Now here’s the fun part. What happens when a symbol has both a text and
+a color variant, and no variant selector is specified?
+<a href="https://en.wikipedia.org/wiki/Emoticons_(Unicode_block)#Variant_forms">According to Wikipedia</a>,
+the emoji variant is selected:</p>
+<blockquote>
+<p>If there is no variation selector appended, the default is the
+emoji-style.</p>
+</blockquote>
+<p>But <a href="https://www.codejam.info/2021/11/emoji-variation-selector.html#concrete-tests">in reality</a>, it appears that macOS and Android
+will in fact default to the text symbol if there’s one available! So
+should we just append the VS16 code point on every single emoji? From
+<a href="https://emojipedia.org/variation-selector-16/">its Emojipedia page</a>:</p>
+<blockquote>
+<p>[VS16 is] an invisible code point which specifies that the preceding
+character should be displayed with emoji presentation. Only required
+if the preceding character defaults to text presentation.</p>
+</blockquote>
+<p>Alright. But we just saw that this is system-specific. Still, how do we
+know which character <em>can</em> default to a text presentation? An
+interesting hint is in the <a href="https://unicode.org/faq/vs.html">unicode.org FAQ</a>.</p>
+<blockquote>
+<p><strong>What variation sequences are valid?</strong></p>
+<p>Only those listed in <a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>StandardizedVariants.txt</code></a>,
+<a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>emoji-variation-sequences.txt</code></a>,
+or the registered sequences listed in the <a href="http://www.unicode.org/ivd/">Ideographic Variation Database (IVD)</a>.</p>
+</blockquote>
+<p>Here, we specifically care about <a href="http://www.unicode.org/Public/emoji/5.0/emoji-variation-sequences.txt"><code>emoji-variation-sequences.txt</code></a>,
+the other sources not being related emoji. This file lists all the
+symbols that have both a monochrome glyph and a color emoji available.</p>
+<p>It’s only for those symbols that we need to append the VS16 code point
+to make sure that they’re displayed consistently on every system. And it
+looks like that’s precisely what the macOS and Android emoji pickers
+seem to be doing!</p>
+<h2 id="concrete-tests" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#concrete-tests"><span>Concrete tests</span></a></h2>
+<p>Let’s look at a few concrete examples to highlight the inconsistencies.</p>
+<table>
+<thead>
+<tr>
+<th>Unicode code points</th>
+<th>Command</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>U+1F60A</td>
+<td><code>printf '\U0001f60A'</code></td>
+<td>😊</td>
+</tr>
+<tr>
+<td>U+1F60A, U+FE0E</td>
+<td><code>printf '\U0001f60A\ufe0e'</code></td>
+<td>😊︎</td>
+</tr>
+<tr>
+<td>U+1F60A, U+FE0F</td>
+<td><code>printf '\U0001f60A\ufe0f'</code></td>
+<td>😊️</td>
+</tr>
+<tr>
+<td>U+1F610</td>
+<td><code>printf '\U0001f610'</code></td>
+<td>😐</td>
+</tr>
+<tr>
+<td>U+1F610, U+FE0E</td>
+<td><code>printf '\U0001f610\ufe0e'</code></td>
+<td>😐︎</td>
+</tr>
+<tr>
+<td>U+1F610, U+FE0F</td>
+<td><code>printf '\U0001f610'\ufe0f</code></td>
+<td>😐️</td>
+</tr>
+<tr>
+<td>U+2639</td>
+<td><code>printf '\u2639'</code></td>
+<td>☹</td>
+</tr>
+<tr>
+<td>U+2639, U+FE0E</td>
+<td><code>printf '\u2639\ufe0e'</code></td>
+<td>☹︎</td>
+</tr>
+<tr>
+<td>U+2639, U+FE0F</td>
+<td><code>printf '\u2639\ufe0f'</code></td>
+<td>☹️</td>
+</tr>
+<tr>
+<td>U+270D</td>
+<td><code>printf '\u270d'</code></td>
+<td>✍</td>
+</tr>
+<tr>
+<td>U+270D, U+FE0E</td>
+<td><code>printf '\u270d\ufe0e'</code></td>
+<td>✍︎</td>
+</tr>
+<tr>
+<td>U+270D, U+FE0F</td>
+<td><code>printf '\u270d\ufe0f'</code></td>
+<td>✍️</td>
+</tr>
+</tbody>
+</table>
+<p>Or put another way:</p>
+<table>
+<thead>
+<tr>
+<th>Default</th>
+<th>Text</th>
+<th>Emoji</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>😊</td>
+<td>😊︎</td>
+<td>😊️</td>
+</tr>
+<tr>
+<td>😐</td>
+<td>😐︎</td>
+<td>😐️</td>
+</tr>
+<tr>
+<td>☹</td>
+<td>☹︎</td>
+<td>☹️</td>
+</tr>
+<tr>
+<td>✍</td>
+<td>✍︎</td>
+<td>✍️</td>
+</tr>
+</tbody>
+</table>
+<p>Your mileage may vary, but when I compare that table on my different
+devices, while they all display the emoji variant properly, there’s a
+few inconsistencies for the default (no variant) and explicit text
+variant.</p>
+<table>
+<thead>
+<tr>
+<th>System</th>
+<th>Emoji</th>
+<th>Default</th>
+<th>Text</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Linux</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>☹️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Linux</td>
+<td>✍️</td>
+<td>Emoji</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>☹️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td>✍️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>😊️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>😐️</td>
+<td>Emoji</td>
+<td>Emoji</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>☹️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+<tr>
+<td>Android</td>
+<td>✍️</td>
+<td>Text</td>
+<td>Text</td>
+</tr>
+</tbody>
+</table>
+<p>While the font on my Linux machine doesn’t have a text representation of
+the blush emoji, it does for all the other ones. Regardless, when no
+variant is specified, it always shows an emoji.</p>
+<p>On the other hand, macOS and Android always default to the text variant,
+but they appear to not have one available for the blush and neutral face
+emoji.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#conclusion"><span>Conclusion</span></a></h2>
+<p>In today’s article, we looked more closely at the Unicode standard and
+the emoji specification to understand how to deal with symbols that have
+both a text and emoji style available. We learnt about the VS15 and VS16
+code points to select a specific variant, instead of leaving it for the
+system to decide. Finally, we found out what symbols need an explicit
+variant to be specified in order to avoid being rendered inconsistently.</p>
+<p>I hope you now have everything you need to understand why you might be
+noticing those inconsistencies, and how to fix them. Cheers! ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Using Homebrew on a multi-user system (don’t)</title>
     <link href="https://www.codejam.info/2021/11/homebrew-multi-user.html" />
@@ -160,7 +447,10 @@ of the user that needs to use <code>sudo</code>:</p>
 multi-user Homebrew situation! Peace. ✌</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136995544096773">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136995544096773">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -363,7 +653,10 @@ and I leave them to my discretion at the time of installing.</p>
 inspired you to document your base setup in a similar way. Cheers!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136814400577537">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136814400577537">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -523,7 +816,10 @@ that have a better idea, please <a href="https://www.codejam.info/val.html#conta
 similar issue, that helped you sort this problem out as well!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1459909788041682952">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1459909788041682952">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -688,7 +984,10 @@ encounter any hiccup.</p>
 smooth for you as it did for me!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -744,7 +1043,10 @@ mode).</p>
 </code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1458282446659653634">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1458282446659653634">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -802,7 +1104,10 @@ line calculator like <code>bc</code>, but having the option to do that so easily
 the <code>-crop</code> option is definitely nicer!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1457849255855542279">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1457849255855542279">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -961,7 +1266,10 @@ solution wasn’t flexible enough for you, this one surely will!</li>
 </ul>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1456786062039261187">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1456786062039261187">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -1294,7 +1602,10 @@ this make you want to type your projects this way? Feel free to <a href="https:/
 and let me know. And as usual, keep hacking! ✨</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1449783928970256394">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1449783928970256394">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -1446,7 +1757,10 @@ imports don’t seem to be part of the happy path either. If you found a
 better way, please <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -1566,7 +1880,10 @@ love to know about it!</p>
 <p>And as usual, keep hacking. 😜</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1448722067638177795">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1448722067638177795">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -1672,7 +1989,10 @@ equipment react to rough situations.</p>
 </figure>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -1964,7 +2284,10 @@ and I’ll be happy to help you with that. ✌️</p>
 </div>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442826926545121284">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442826926545121284">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -2185,7 +2508,10 @@ behind it in this blog post? Don’t hesitate to let me know and <a href="https:
 <p>Until next time, keep hacking! 🐿</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442937054854221828">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442937054854221828">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -2294,7 +2620,10 @@ warnings with Elixir and Erlang in general, I hoped that it was useful
 to you. Have a wonderful day!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441563191557849090">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441563191557849090">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -2608,7 +2937,10 @@ Happy recording!</p>
 </figure>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441462405700145154">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441462405700145154">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -3171,7 +3503,10 @@ I’ll be happy to help you with that. ✌️</p>
 </div>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440704576059961362">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440704576059961362">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -3480,7 +3815,10 @@ happy to help you with that. ✌️</p>
 </div>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401250927857668">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401250927857668">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -3597,7 +3935,10 @@ up Vercel with a custom integration to forward logs to a Google Cloud VM
 (or the log drain of your choice). See you there!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401245991170048">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401245991170048">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>
@@ -3735,371 +4076,10 @@ something that fits me better.</p>
 <p>If you’re in a similar situation, I hope you found this post useful!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401242522406912">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Tracking the value of an Ethereum or Binance Smart Chain token in real time</title>
-    <link href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html" />
-    <id>https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html</id>
-    <updated>2021-08-23T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If you want to programmatically track the value of a crypto token on
-Ethereum or the Binance Smart Chain, you’re in the right place, because
-I recently wanted to do that as well.</p>
-<p>There was very little beginner content about this online and it was
-pretty hard to figure out without any prior cryptocurrency knowledge,
-but it turned out to be technically pretty trivial, so I figured I would
-write a quick blog post about this.</p>
-<p>For the example I’ll use the <a href="https://www.binance.org/en/smartChain">Binance Smart Chain</a>
-with <a href="https://pancakeswap.info/token/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">CheCoin</a>,
-a token that’s exchanged through a <a href="https://pancakeswap.finance/">PancakeSwap</a>
-pool, but my understanding is that this should be applicable with pretty
-much the same code to <a href="https://ethereum.org/en/">Ethereum</a> and
-<a href="https://uniswap.org/">Uniswap</a>.</p>
-<h2 id="first-attempt-trying-to-scrape-existing-sites" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-attempt-trying-to-scrape-existing-sites"><span>First attempt: trying to scrape existing sites</span></a></h2>
-<p>Sites like <a href="https://poocoin.app/tokens/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">PooCoin</a>
-and <a href="https://www.dextools.io/app/pancakeswap/pair-explorer/0x194850932e48753cbeedf0af85022152148addc6">DEXTools</a>
-show a live graph of the token transactions, which is exactly the kind
-of data we’d need to see the real-time value.</p>
-<p>At the time I didn’t know about DEXTools which seems actually pretty
-easy to scrape. On PooCoin though, all the data seems to come from
-<code>https://bsc-dataseed1.defibit.io/</code>, with a JSON-wrapped binary format
-for requests and responses that’s totally obscure.</p>
-<p>Googling that domain leads me to Binance’s <a href="https://docs.binance.org/smart-chain/developer/rpc.html">JSON-RPC</a>
-documentation, but it’s not instantly clear from this page or the linked
-resources how to concretely encode and decode the binary protocol.</p>
-<h2 id="filling-the-gap" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#filling-the-gap"><span>Filling the gap</span></a></h2>
-<p>I grab a beer with my friend <a href="https://www.damiengonot.com/">Damien</a>
-who’s much more knowledgable than me about cryptocurrencies, and he
-instantly recognizes the <a href="https://ethereum.org/en/developers/docs/apis/json-rpc/">Ethereum JSON-RPC API</a>,
-which is actually well documented and comes with a number of clients for
-different languages (<a href="https://web3js.readthedocs.io/">web3.js</a> being a
-popular JavaScript one). Sweet.</p>
-<p>Since the Binance Smart Chain is forked off Ethereum, they share a lot
-of similarities, meaning we can use web3.js to connect to the JSON-RPC
-API of a Binance node. My understanding is that most nodes don’t expose
-the API publicly but Binance conveniently provides a list of
-<a href="https://docs.binance.org/smart-chain/developer/rpc.html">public nodes</a>
-to access it.</p>
-<p>With that, there’s a number of ways we can determine the value of a
-token, and we’ll explore two below: dividing the pool balances, and
-polling the latest transactions.</p>
-<h2 id="first-method-dividing-the-pool-balances" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#first-method-dividing-the-pool-balances"><span>First method: dividing the pool balances</span></a></h2>
-<p>The token I’m interested in is exchanged with PancakeSwap, a fork of
-Uniswap for the Binance Smart Chain. Uniswap and PancakeSwap allow
-trading (swapping) between two tokens with smart contracts through a
-<a href="https://youtu.be/cizLhxSKrAc">liquidity pool</a>.</p>
-<p>The main exchange for CheCoin is <a href="https://pancakeswap.info/pool/0x194850932e48753cbeedf0af85022152148addc6">a pool</a>
-that holds both CheCoin and <a href="https://www.binance.org/en/blog/what-is-wbnb/">wrapped BNB</a>,
-allowing to easily trade between the two tokens.</p>
-<p>Because Uniswap follows the <a href="https://decrypt.co/resources/what-is-uniswap">constant product market maker model</a>,
-the value of the tokens in the pool is directly related to the reserves
-of each token. This means that by dividing the reserve of wBNB in the pool
-by the reserve of CheCoin, we can get the value of CheCoin in wBNB at
-that point in time.</p>
-<p>We can then poll the pool balance to get the value of CheCoin in real
-time. Giving a USD value is then a matter of fetching the current wBNB
-value in USD (which I won’t cover here but should be easier) and
-applying that to the CheCoin value.</p>
-<p>Now, this is great, but how to do that concretely? Let’s start by doing
-it from Etherscan (for Ethereum) or BscScan (Etherscan fork for the
-Binance Smart Chain) and then port that logic to web3.js.</p>
-<h3 id="doing-the-operation-manually-on-bscscan" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#doing-the-operation-manually-on-bscscan"><span>Doing the operation manually on BscScan</span></a></h3>
-<p>While the PancakeSwap UI conveniently gives us the address of the
-CheCoin / wBNB pool, let’s figure it as if we only knew the address of
-the CheCoin token contract: <code>0x54626300818e5c5b44db0fcf45ba4943ca89a9e2</code>.</p>
-<p>By <a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">browsing that address on BscScan</a>,
-we can see that we’re in the presence of a BEP-20 token. By going in the
-“contract” tab, we get the Solidity code behind that smart contract,
-as well as the contract JSON <abbr title="Application binary interface">ABI</abbr>,
-which will be useful for later.</p>
-<p>Then by opening “read contract”, we can see the read-only functions
-exposed by the CheCoin smart contract. The read-only functions don’t
-require a gas fee, so we can query them right from the interface.
-BscScan makes it especially convenient by automatically calling the
-functions that don’t take any parameter and showing directly the value.</p>
-<p><code>uniswapV2Pair</code> is one of those functions without arguments, that return
-an address: <code>0x194850932e48753cbeedf0af85022152148addc6</code>. This is the
-address of the main exchange liquidity pool for that token.</p>
-<p>Following <a href="https://bscscan.com/address/0x194850932e48753cbeedf0af85022152148addc6">that address</a>
-on BscScan leads us to the contract for the liquidity pool. We can see
-it’s a <code>PancakePair</code> contract. In its read contract, we find a
-<code>getReserves</code> function that returns 3 values: <code>_reserve0</code>, <code>_reserve1</code>
-and <code>_blockTimestampLast</code>.</p>
-<p>A bit further, we can read <code>token0</code> which contains the address of the
-CheCoin token, and <code>token1</code> which is the address of the wBNB token.</p>
-<p>With that we know that <code>_reserve0</code> is the CheCoin balance and
-<code>_reserve1</code> the wBNB balance. By dividing the wBNB balance by the
-CheCoin balance, we get the current CheCoin price in wBNB. At the time
-of writing:</p>
-<pre><code class="hljs">898088729263450811395 / 19062285402212133851022386471 = 0.000000047113381754
-</code></pre>
-<h3 id="a-note-about-token-decimals" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-token-decimals"><span>A note about token decimals</span></a></h3>
-<p>This works here because it happens that both CheCoin and wBNB tokens use
-18 decimals internally. There is <a href="https://ethereum.stackexchange.com/questions/99747/what-unit-are-the-uniswap-pancakeswap-router-functions-expecting">no guarantee</a>
-that the tokens will use 18 decimals, even though it seems to be pretty
-common. For example, the <a href="https://pancakeswap.info/token/0xb27adaffb9fea1801459a1a81b17218288c097cc">PooCoin</a>
-token uses 8 decimals only, meaning that the above formula doesn’t give
-us the proper price of PooCoin.</p>
-<p>You can find the number of decimals in the <code>decimals</code> function of the
-read contract of the token. For example for <a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2#readContract">CheCoin</a>,
-<a href="https://bscscan.com/address/0xb27adaffb9fea1801459a1a81b17218288c097cc#readContract">PooCoin</a>
-and <a href="https://bscscan.com/address/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c#readContract">wBNB</a>.</p>
-<p>If we take the current balances of the PooCoin / wBNB pool, this gives
-us:</p>
-<pre><code class="hljs">(4450271521514080442547 / 1e18) / (59678440268618 / 1e8) = 0.007457084168894177
-
-</code></pre>
-<p>Which is an accurate reading for the current price of PooCoin in wBNB.</p>
-<h3 id="a-note-about-the-pair-address" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#a-note-about-the-pair-address"><span>A note about the pair address</span></a></h3>
-<p>We saw earlier that the CheCoin token included a <code>uniswapV2Pair</code>
-function to get the pair address, but it’s not the case of every token,
-for example PooCoin doesn’t have any.</p>
-<p>Instead, Uniswap provides a neat “factory” contract that we can call
-with two tokens to retrieve the pair address. In my case, I’ll look at
-the PancakeSwap version, where the factory address <a href="https://docs.pancakeswap.finance/code/smart-contracts/pancakeswap-exchange/factory-v2">is documented</a>
-to be <code>0xca143ce32fe78f1f7019d7d551a6402fc5350c73</code>.</p>
-<p>Visiting that address on BscScan and going in the read contract, we can
-call the <code>getPair</code> function, for example with the addresses of PooCoin (<code>0xb27adaffb9fea1801459a1a81b17218288c097cc</code>) and
-wBNB (<code>0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c</code>). It returns
-<code>0x0c5da0f07962dd0256c079248633f2b43cad6f62</code>, which is effectively
-the address of the <a href="https://pancakeswap.info/pool/0x0c5da0f07962dd0256c079248633f2b43cad6f62">PooCoin / wBNB pool</a>.</p>
-<p>Now we know how to calculate the price of the token we want, let’s
-script this with web3.js.</p>
-<h3 id="getting-the-contracts-abi" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#getting-the-contracts-abi"><span>Getting the contracts ABI</span></a></h3>
-<p>The first important thing here is that to be able to call methods on a
-smart contract, you need to know the contract <abbr title="Application binary interface">ABI</abbr>.</p>
-<p>This is typically a JSON file, that BscScan shows at the bottom of the <a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2">contract tab</a>.</p>
-<p>While <a href="https://ethereum.stackexchange.com/questions/26648/how-to-find-solidity-code-for-a-contract-address/26654">there is no obligation</a>
-to publish the source code and ABI of a contract on the blockchain, it
-seems to be <a href="https://docs.binance.org/smart-chain/developer/deploy/verify.html">common practice</a>
-to publish it to Etherscan / BscScan for discoverability and
-verifiability, so we can usually grab it from there.</p>
-<p>In our case, we’ll need the ABI for the
-<a href="https://bscscan.com/address/0x54626300818e5c5b44db0fcf45ba4943ca89a9e2#code">CheCoin</a>,
-<a href="https://bscscan.com/address/0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c#code">wBNB</a>,
-<a href="https://bscscan.com/address/0x194850932e48753cbeedf0af85022152148addc6#code"><code>PancakePair</code></a>
-and <a href="https://bscscan.com/address/0xca143ce32fe78f1f7019d7d551a6402fc5350c73#code"><code>PancakeFactory</code></a>
-contracts. Copy the ABI JSON and put them respectively in
-<code>checoin.json</code>, <code>wbnb.json</code> and <code>pair.json</code> and <code>factory.json</code>.</p>
-<p>I you need to do that programmatically, you can check out the <a href="https://docs.bscscan.com/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">BscScan API</a>
-or <a href="https://docs.etherscan.io/api-endpoints/contracts#get-contract-abi-for-verified-contract-source-codes">Etherscan API</a>
-that feature an endpoint to fetch a given contract ABI.</p>
-<h3 id="calling-the-smart-contracts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#calling-the-smart-contracts"><span>Calling the smart contracts</span></a></h3>
-<p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
-<p>If you read everything I wrote until now, the code should be
-self-explanatory.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> Web3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;web3&#x27;</span>)
-
-<span class="hljs-keyword">const</span> checoinAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./checoin&#x27;</span>)
-<span class="hljs-keyword">const</span> wbnbAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./wbnb&#x27;</span>)
-<span class="hljs-keyword">const</span> pairAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./pair&#x27;</span>)
-<span class="hljs-keyword">const</span> factoryAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./factory&#x27;</span>)
-
-<span class="hljs-comment">// See &lt;https://docs.pancakeswap.finance/code/smart-contracts/pancakeswap-exchange/factory-v2&gt;.</span>
-<span class="hljs-keyword">const</span> factoryAddress = <span class="hljs-string">&#x27;0xca143ce32fe78f1f7019d7d551a6402fc5350c73&#x27;</span>
-
-<span class="hljs-keyword">const</span> checoinAddress = <span class="hljs-string">&#x27;0x54626300818e5c5b44db0fcf45ba4943ca89a9e2&#x27;</span>
-<span class="hljs-keyword">const</span> wbnbAddress = <span class="hljs-string">&#x27;0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c&#x27;</span>
-
-<span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
-<span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> web3 = <span class="hljs-keyword">new</span> Web3(rpcEndpoint)
-
-  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> web3.eth.Contract(checoinAbi, checoinAddress)
-  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> web3.eth.Contract(wbnbAbi, wbnbAddress)
-  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> web3.eth.Contract(factoryAbi, factoryAddress)
-
-  <span class="hljs-comment">// If token provides `uniswapV2Pair`.</span>
-  <span class="hljs-comment">// const pairAddress = await checoinContract.methods.uniswapV2Pair().call()</span>
-
-  <span class="hljs-comment">// Generic method.</span>
-  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.methods.getPair(checoinAddress, wbnbAddress).call()
-
-  <span class="hljs-keyword">const</span> pairContract = <span class="hljs-keyword">new</span> web3.eth.Contract(pairAbi, pairAddress)
-
-  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.methods.decimals().call()
-  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.methods.decimals().call()
-  <span class="hljs-keyword">const</span> reserves = <span class="hljs-keyword">await</span> pairContract.methods.getReserves().call()
-
-  <span class="hljs-keyword">const</span> checoin = reserves[<span class="hljs-number">0</span>] / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-  <span class="hljs-keyword">const</span> wbnb = reserves[<span class="hljs-number">1</span>] / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-  <span class="hljs-keyword">const</span> timestamp = reserves[<span class="hljs-number">2</span>]
-
-  <span class="hljs-built_in">console</span>.log(timestamp, checoin, wbnb, (wbnb / checoin).toFixed(<span class="hljs-number">18</span>), (checoin / wbnb).toFixed(<span class="hljs-number">18</span>))
-}
-
-main()
-</code></pre>
-<p>This displays the latest block timestamp, the current CheCoin balance,
-wBNB balance, then the price of CheCoin in wBNB, and the price of wBNB
-in CheCoin.</p>
-<h2 id="second-method-polling-the-latest-transactions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#second-method-polling-the-latest-transactions"><span>Second method: polling the latest transactions</span></a></h2>
-<p>The pool balances method works well, and while the value we get matches
-exactly the one displayed by PancakeSwap on the pool view, it can differ
-a bit from the one we see on PooCoin, because the latter uses the price
-of the last transaction as token price instead of dealing with the
-balances.</p>
-<p>Let’s do the same thing with our script. Because it’s <a href="https://ethereum.stackexchange.com/questions/1381/how-do-i-parse-the-transaction-receipt-log-with-web3-js">a bit of a pain in the ass</a>
-to parse binary transaction logs with web3.js, we’ll use
-<a href="https://docs.ethers.io/">Ethers.js</a> which makes things much easier for
-us on that aspect.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { ethers } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;ethers&#x27;</span>)
-
-<span class="hljs-keyword">const</span> checoinAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./checoin&#x27;</span>)
-<span class="hljs-keyword">const</span> wbnbAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./wbnb&#x27;</span>)
-<span class="hljs-keyword">const</span> pairAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./pair&#x27;</span>)
-<span class="hljs-keyword">const</span> factoryAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./factory&#x27;</span>)
-
-<span class="hljs-comment">// See &lt;https://docs.pancakeswap.finance/code/smart-contracts/pancakeswap-exchange/factory-v2&gt;.</span>
-<span class="hljs-keyword">const</span> factoryAddress = <span class="hljs-string">&#x27;0xca143ce32fe78f1f7019d7d551a6402fc5350c73&#x27;</span>
-
-<span class="hljs-keyword">const</span> checoinAddress = <span class="hljs-string">&#x27;0x54626300818e5c5b44db0fcf45ba4943ca89a9e2&#x27;</span>
-<span class="hljs-comment">// const checoinAddress = &#x27;0xb27adaffb9fea1801459a1a81b17218288c097cc&#x27; //poocoin</span>
-<span class="hljs-keyword">const</span> wbnbAddress = <span class="hljs-string">&#x27;0xbb4cdb9cbd36b01bd1cbaebf2de08d9173bc095c&#x27;</span>
-
-<span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
-<span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> ethers.providers.JsonRpcProvider(rpcEndpoint)
-
-  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> ethers.Contract(checoinAddress, checoinAbi, provider)
-  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> ethers.Contract(wbnbAddress, wbnbAbi, provider)
-  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> ethers.Contract(factoryAddress, factoryAbi, provider)
-
-  <span class="hljs-comment">// If token provides `uniswapV2Pair`.</span>
-  <span class="hljs-comment">// const pairAddress = await checoinContract.uniswapV2Pair()</span>
-
-  <span class="hljs-comment">// Generic method.</span>
-  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.getPair(checoinAddress, wbnbAddress)
-
-  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.decimals()
-  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.decimals()
-
-  <span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.utils.Interface(pairAbi)
-
-  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress })
-
-  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
-    <span class="hljs-keyword">const</span> parsed = pairInterface.parseLog(log)
-
-    <span class="hljs-keyword">if</span> (parsed.name !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
-      <span class="hljs-keyword">continue</span>
-    }
-
-    <span class="hljs-keyword">let</span> type, che, bnb
-
-    <span class="hljs-keyword">if</span> (parsed.args.amount1Out.isZero()) {
-      type = <span class="hljs-string">&#x27;buy&#x27;</span>
-      bnb = parsed.args.amount1In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-      che = parsed.args.amount0Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-    } <span class="hljs-keyword">else</span> {
-      type = <span class="hljs-string">&#x27;sell&#x27;</span>
-      che = parsed.args.amount0In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-      bnb = parsed.args.amount1Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-    }
-
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
-  }
-}
-
-main()
-</code></pre>
-<p>Everything until defining <code>wbnbDecimals</code> is the same as the previous
-example, but with Ethers.js instead of web3.js.</p>
-<p>Then, Ethers.js conveniently provides us with an <code>Interface</code> class that
-lets us decode binary logs from a given ABI. Very nice.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.utils.Interface(pairAbi)
-</code></pre>
-<p>We call the <code>getLogs</code> function on the <code>pairAddress</code>, getting all logs
-from the latest block.</p>
-<div class="note">
-<p><strong>Note:</strong> for testing purpose, feel free to check the last few blocks of
-the pair on Etherscan or BscScan, and request logs from an older block
-so that you get some data more consistently:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress, <span class="hljs-attr">fromBlock</span>: <span class="hljs-number">10289051</span> })
-</code></pre>
-</div>
-<p>For each log, the interface we instantiated earlier from the ABI allows
-us to parse the log. We get back an object with the transaction name
-(here, we care about <code>Swap</code> transactions) as well as the transaction
-arguments.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
-  <span class="hljs-keyword">const</span> parsed = pairInterface.parseLog(log)
-
-  <span class="hljs-keyword">if</span> (parsed.name !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
-    <span class="hljs-keyword">continue</span>
-  }
-
-  <span class="hljs-built_in">console</span>.log(parsed.args)
-}
-</code></pre>
-<p>With Uniswap / PancakeSwap, there are 4 arguments to a swap:
-<code>amount0In</code>, <code>amount1In</code>, <code>amount0Out</code>, <code>amount1Out</code>, where <code>amount0</code>
-are the values for <code>token0</code> of the pair, and <code>amount1</code> the values for
-<code>token1</code> of the pair.</p>
-<p>While it appears that a swap can sometimes take two inputs (and I have
-yet to understand why), it seems somewhat reliable to check if
-<code>amount1Out</code> is zero to tell if this transaction is a buy or a sell of
-<code>token0</code>.</p>
-<p>Then, we just need to do the decimals conversion dance like we did
-before in order to display accurate values. Here I log the transaction
-type (buy or sell), CheCoin amount, wBNB amount, as well as the
-transaction hash and block number.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">let</span> type, che, bnb
-
-<span class="hljs-keyword">if</span> (parsed.args.amount1Out.isZero()) {
-  type = <span class="hljs-string">&#x27;buy&#x27;</span>
-  bnb = parsed.args.amount1In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-  che = parsed.args.amount0Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-} <span class="hljs-keyword">else</span> {
-  type = <span class="hljs-string">&#x27;sell&#x27;</span>
-  che = parsed.args.amount0In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-  bnb = parsed.args.amount1Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-}
-
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
-</code></pre>
-<h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#actually-polling"><span>Actually polling</span></a></h3>
-<p>The previous script will only log the latest transaction once, then
-exit. If you want to poll in real time the latest transactions and log
-them to the console, it’s easily done with an infinite loop.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">let</span> fromBlock = <span class="hljs-string">&#x27;latest&#x27;</span>
-
-<span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
-  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress, fromBlock })
-
-  <span class="hljs-keyword">if</span> (logs.length) {
-    <span class="hljs-comment">// `fromBlock` is inclusive so poll from next block.</span>
-    fromBlock = logs[logs.length - <span class="hljs-number">1</span>].blockNumber + <span class="hljs-number">1</span>
-  }
-
-  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
-    <span class="hljs-comment">// Previous code goes here.</span>
-  }
-
-  <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> <span class="hljs-built_in">setTimeout</span>(resolve, <span class="hljs-number">1000</span>))
-}
-</code></pre>
-<p>Here, we poll every second (adjust to something reasonable for the
-current volume of transactions of the token you’re watching), making
-sure to request the next block in the next poll to avoid duplicates
-(because the <code>fromBlock</code> parameter is otherwise inclusive).</p>
-<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/08/ethereum-binance-token-real-time-value.html#final-word"><span>Final word</span></a></h2>
-<p>While everything looked pretty complex and obscure at first sight, with
-no cryptocurrency background, it turned out to be fairly simple after
-understanding a couple concepts like liquidity pools and how to navigate
-and invoke smart contracts.</p>
-<p>As a cryptocurrency noob, this blog post if what I wish I found when I
-first started looking at how to programmatically determine the live
-value of a token. I hope it made things a bit easier for you. Cheers!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1429921911509819395">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401242522406912">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
 </section>
 ]]></content>
   </entry>

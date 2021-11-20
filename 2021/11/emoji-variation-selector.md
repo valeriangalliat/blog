@@ -140,6 +140,23 @@ On the other hand, macOS and Android always default to the text variant,
 but they appear to not have one available for the blush and neutral face
 emoji.
 
+<div class="note">
+
+**Note:** those results are the ones I observed, but you might see
+something different on your side! I've got a report from someone also
+on a fresh macOS Monterey who gets different results from me, with the
+frowning face showing as text even when explicitly requested as emoji,
+and only for this site! And their default writing hand is an emoji even
+though the text one is supported.
+
+This might be due to differences in rendering betweem Chrome and
+Firefox, so know that the browser can also affect this kind of things.
+
+[Let me know](https://twitter.com/valeriangalliat/status/1461856790602264579)
+if you observe something even different, I'm curious! 😁
+
+</div>
+
 ## Conclusion
 
 In today's article, we looked more closely at the Unicode standard and

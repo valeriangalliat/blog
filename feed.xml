@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-20T00:35:45.212Z</updated>
+  <updated>2021-11-20T05:28:56.559Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -278,6 +278,18 @@ variant is specified, it always shows an emoji.</p>
 <p>On the other hand, macOS and Android always default to the text variant,
 but they appear to not have one available for the blush and neutral face
 emoji.</p>
+<div class="note">
+<p><strong>Note:</strong> those results are the ones I observed, but you might see
+something different on your side! I’ve got a report from someone also
+on a fresh macOS Monterey who gets different results from me, with the
+frowning face showing as text even when explicitly requested as emoji,
+and only for this site! And their default writing hand is an emoji even
+though the text one is supported.</p>
+<p>This might be due to differences in rendering betweem Chrome and
+Firefox, so know that the browser can also affect this kind of things.</p>
+<p><a href="https://twitter.com/valeriangalliat/status/1461856790602264579">Let me know</a>
+if you observe something even different, I’m curious! 😁</p>
+</div>
 <h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#conclusion"><span>Conclusion</span></a></h2>
 <p>In today’s article, we looked more closely at the Unicode standard and
 the emoji specification to understand how to deal with symbols that have
@@ -290,7 +302,7 @@ noticing those inconsistencies, and how to fix them. Cheers! ✌️</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461856790602264579">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

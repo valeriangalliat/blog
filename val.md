@@ -45,7 +45,7 @@ and before that, [Busbud].
 
 ## Contact
 
-<table>
+<table class="contact-table">
   <tr>
     <th><a href="mailto:val@codejam.info"><sub><img src="/img/icons/gmail.png" width="16"></sub> Email</a></th>
     <th><a href="https://twitter.com/valeriangalliat"><sub><img src="/img/icons/twitter.png" width="16"></sub> Twitter</a></th>

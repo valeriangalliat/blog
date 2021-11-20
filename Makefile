@@ -65,6 +65,7 @@ dist/css/main-20211017.css: \
 	css/colors.css \
 	css/base.css \
 	css/components/anchor.css \
+	css/components/contact.css \
 	css/components/figure.css \
 	css/components/footer.css \
 	css/components/footnotes.css \

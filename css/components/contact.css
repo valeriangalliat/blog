@@ -1,0 +1,11 @@
+@media not (min-width: 42em) {
+    .contact-table tr {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contact-table th:not(:first-child),
+    .contact-table td:not(:first-child) {
+        border-top: 0;
+    }
+}

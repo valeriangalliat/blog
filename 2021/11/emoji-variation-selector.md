@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1461856790602264579
+---
+
 # Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector
 November 19, 2021
 

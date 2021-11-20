@@ -309,6 +309,17 @@ button:hover {
     width: 0;
     height: 0;
 }
+@media not (min-width: 42em) {
+    .contact-table tr {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contact-table th:not(:first-child),
+    .contact-table td:not(:first-child) {
+        border-top: 0;
+    }
+}
 figure {
     /* Ensures eventual `figcaption`'s width is at most the image width. */
     display: grid;

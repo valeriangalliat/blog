@@ -76,7 +76,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
     on YouTube!</td>
   </tr>
   <tr>
-    <td>Korg microKORG S</td>
+    <td><a href="https://amzn.to/3cyJUJv">Korg microKORG S</a></td>
     <td>Great synthesizer that can also act as a MIDI controller. I
     got it because the fact I can easily use it with my talk box (see
     below) unlike with a MIDI-only keyboard that would require to go
@@ -153,7 +153,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
     fancy. 😂</td>
   </tr>
   <tr>
-    <td><a href="https://amzn.to/3CMrQXL">GoPro HERO 2018</a></td>
+    <td><a href="https://amzn.to/3CMrQXL">GoPro HERO (2018)</a></td>
     <td>That's probably one of the cheapest GoPro that I could buy new
     back then! Same hardware as the HERO5 Black but with some software
     limitations. I give you the settings I use on it in <a

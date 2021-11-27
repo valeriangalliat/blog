@@ -217,3 +217,32 @@ Finally, sliding after the Protune menu, we can find a "Manual Audio
 Control" panel, that I enabled, and ticked "Stereo Only", which should
 be the same as setting "Wind" to "Off" on more recent GoPro (like in the
 video I mentioned in the beginning of this article).
+
+### Bonus: Protune on a GoPro Session
+
+It seems that lately you can't adjust Protune settings for a GoPro
+Session from the app anymore. Luckily, there's still a few ways to
+configure it e.g. to use a flat profile and fixed white balance like I like
+to, using the trick from [this Reddit post](https://www.reddit.com/r/gopro/comments/m2a8h5/hero_5_session_protune_settings/).
+
+Simply put a `cal.txt` file at the root of the SD card with the
+following content:
+
+```
+_tapp protune on
+_tapp protune_color flat
+_tapp protune_white_balance 5500K
+```
+
+According to [this document](https://github.com/hypoxic/hero4-session/blob/master/t_app.txt)
+which also lists many other options, the available Protune options are
+the following:
+
+```
+protune [on|off]
+protune_color [gopro|flat]
+protune_sharpness [high|medium|low]
+protune_white_balance [auto|3000K|5500K|6500K|native]
+protune_iso_limit [400|1600]
+protune_ev_comp <ev> (-2.0 <= ev <= +2.0)
+```

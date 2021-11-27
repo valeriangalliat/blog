@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2021
 
+* [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
 * [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
 * [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>

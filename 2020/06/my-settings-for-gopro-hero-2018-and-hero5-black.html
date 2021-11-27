@@ -241,6 +241,27 @@ improves the quality or can help remove unwanted noises.</p>
 Control” panel, that I enabled, and ticked “Stereo Only”, which should
 be the same as setting “Wind” to “Off” on more recent GoPro (like in the
 video I mentioned in the beginning of this article).</p>
+<h3 id="bonus-protune-on-a-gopro-session" tabindex="-1"><a class="header-anchor" href="#bonus-protune-on-a-gopro-session"><span>Bonus: Protune on a GoPro Session</span></a></h3>
+<p>It seems that lately you can’t adjust Protune settings for a GoPro
+Session from the app anymore. Luckily, there’s still a few ways to
+configure it e.g. to use a flat profile and fixed white balance like I like
+to, using the trick from <a href="https://www.reddit.com/r/gopro/comments/m2a8h5/hero_5_session_protune_settings/">this Reddit post</a>.</p>
+<p>Simply put a <code>cal.txt</code> file at the root of the SD card with the
+following content:</p>
+<pre><code class="hljs">_tapp protune on
+_tapp protune_color flat
+_tapp protune_white_balance 5500K
+</code></pre>
+<p>According to <a href="https://github.com/hypoxic/hero4-session/blob/master/t_app.txt">this document</a>
+which also lists many other options, the available Protune options are
+the following:</p>
+<pre><code class="hljs">protune [on|off]
+protune_color [gopro|flat]
+protune_sharpness [high|medium|low]
+protune_white_balance [auto|3000K|5500K|6500K|native]
+protune_iso_limit [400|1600]
+protune_ev_comp &lt;ev&gt; (-2.0 &lt;= ev &lt;= +2.0)
+</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

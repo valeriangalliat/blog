@@ -5,10 +5,41 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-20T05:28:56.559Z</updated>
+  <updated>2021-11-27T04:26:46.777Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Static DHCP server on Arch Linux in 2021, two ways</title>
+    <link href="https://www.codejam.info/2021/11/static-dhcp-server-arch-linux.html" />
+    <id>https://www.codejam.info/2021/11/static-dhcp-server-arch-linux.html</id>
+    <updated>2021-11-26T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Turns out it’s 2021 and configuring a static server on at least some
+Linux flavours isn’t as easy as editing <code>/etc/resolv.conf</code> anymore, at
+least if you want it to persist across reboots.</p>
+<p>Depending on your network stack, I’ll suggest two ways, one might work
+for you, both work in my case.</p>
+<p>In <code>/etc/resolvconf.conf</code>, add the following:</p>
+<pre><code class="hljs">name_servers=&quot;1.1.1.1 1.0.0.1&quot;
+</code></pre>
+<p>Or in <code>/etc/dhcpcd.conf</code>, add the following:</p>
+<pre><code class="hljs">static domain_name_servers=1.1.1.1 1.0.0.1
+</code></pre>
+<p>Obviously replace <code>1.1.1.1</code> and <code>1.0.0.1</code> by the DNS servers of you
+choosing.</p>
+<p>But that being said, as far as I’m concerned, I went with the third
+option which is to configure it at the router level! This way every
+device that connects to it benefits from this configuration if they
+don’t override it.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector</title>
     <link href="https://www.codejam.info/2021/11/emoji-variation-selector.html" />
@@ -3949,147 +3980,6 @@ up Vercel with a custom integration to forward logs to a Google Cloud VM
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401245991170048">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using Vercel without preview deployments</title>
-    <link href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html" />
-    <id>https://www.codejam.info/2021/09/vercel-without-preview-deployments.html</id>
-    <updated>2021-09-21T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p><a href="https://vercel.com/">Vercel</a> is a cool hosting service and is my go-to
-for free static hosting. Why? While I prefer the experience of
-<a href="https://pages.github.com/">GitHub Pages</a>, <a href="https://www.netlify.com/">Netlify</a>
-and <a href="https://render.com/">Render</a>, Vercel <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html">is the only one</a>
-to allow raw access to HTTP logs for free. GitHub Pages and Render don’t
-have this feature and Netlify charges a premium fee for it that’s over
-my budget for a small website.</p>
-<p>And while I don’t use client-side analytics scripts (because they
-technically cannot be reliable), I like to have a sense of my website
-traffic through HTTP logs (the only proper source of truth).</p>
-<div class="note">
-<p><strong>Note:</strong> if you’re interested in this topic, I specifically wrote an
-article on <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">how to get access to raw HTTP logs on a Vercel website</a>.
-Check it out!</p>
-</div>
-<h2 id="the-problem-with-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#the-problem-with-vercel"><span>The problem with Vercel</span></a></h2>
-<p>Vercel works. It works well. But it doesn’t fit my workflow at all.</p>
-<p>I like to keep things simple and minimal, and have the least amount of
-noise possible. Vercel likes to make things complicated, over-engineered
-(relative to what I’m doing with it), and noisy.</p>
-<p>Let’s take the example of this very blog, if I wanted to host it on
-Vercel. The <a href="https://github.com/valeriangalliat/blog">source</a> is on
-GitHub, I keep my Markdown files neatly in the <code>master</code> branch, I
-render them to HTML using a <a href="https://github.com/valeriangalliat/blog/blob/03a140f7c02e540b4bf97c470261d23e3a156fad/Makefile#L49">dependency-based incremental build system</a>
-(also known as makefile) in the <code>gh-pages</code> branch (could be called
-anything else but hey, it was once hosted on GitHub Pages after all).</p>
-<p>I don’t <em>need</em> to re-render the whole site every time I deploy, which is
-why I commit the HTML files on a separate branch, instead of asking
-Vercel or any other hosting platform to compile everything from <code>master</code>
-on every deploy. This keeps things <em>fast as fuck</em> and low energy.</p>
-<h3 id="preview-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#preview-deployments"><span>Preview deployments</span></a></h3>
-<p>By default, Vercel expects every branch to be deployable, and they have
-that cool feature of automatically deploying every single commit to a
-random URL (preview deployments). I don’t need preview deployments for
-my blog, but there’s no way to turn them off.</p>
-<h3 id="very-verbose-vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#very-verbose-vercel"><span>Very verbose Vercel</span></a></h3>
-<p>They also have the annoying habit of posting a comment on every GitHub
-PR and commit with the deployment URL by default. I hate noise and this
-is pure noise for me. Luckily there’s a non-intuitive way of turning it
-off and I’ll show you how.</p>
-<h3 id="managing-garbage" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#managing-garbage"><span>Managing garbage</span></a></h3>
-<p>Finally, because each PR and commit is going to trigger a deployment
-with a not-so-temporary URL. This creates a lot of old, unused, garbage
-deployments, and Vercel doesn’t know when you don’t need them anymore
-and consider them garbage (for me, like, instantly, for anything that’s
-not the latest production build).</p>
-<p>You can either remove them manually (sad), or you can periodically run a
-command that does just that for you (also sad, but less sad), and I’ll
-show you how.</p>
-<p>Let’s get into it.</p>
-<h2 id="turning-off-preview-deployments-kinda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#turning-off-preview-deployments-kinda"><span>Turning off preview deployments (kinda)</span></a></h2>
-<p>I guess that the whole point of Vercel is to offer preview deployments,
-so they didn’t really consider the use case where you would want to
-remove them.</p>
-<p>But if you go in your project settings, under the Git section, you can
-<a href="https://vercel.com/support/articles/how-do-i-use-the-ignored-build-step-field-on-vercel">configure</a>
-a “ignored build step” command.</p>
-<figure class="center">
-  <img alt="Ignored build step" src="https://www.codejam.info/img/2021/09/vercel-ignored-build-step.png">
-</figure>
-<p>It’s a command whose exit code will determine whether Vercel will
-actually deploy the branch. When the command errors out (exits with a
-nonzero code), a new build will be triggered, but if the commands
-succeeds (exits with 0), this build will be ignored.</p>
-<p>You can <a href="https://vercel.com/docs/projects/overview#ignored-build-step">run Git commands there</a>,
-but I like to keep it simple and just rely on the <code>VERCEL_ENV</code>
-environment variable to only allow builds on the production branch
-(<code>gh-pages</code> in my case) as defined in “production branch”.</p>
-<figure class="center">
-  <img alt="Production branch" src="https://www.codejam.info/img/2021/09/vercel-production-branch.png">
-</figure>
-<p>By using the following command, I can effectively ignore all builds that
-are not in the production branch.</p>
-<pre><code class="hljs language-sh">[ <span class="hljs-string">&quot;<span class="hljs-variable">$VERCEL_ENV</span>&quot;</span> != production ]
-</code></pre>
-<p>This uses the
-<a href="https://man7.org/linux/man-pages/man1/test.1.html"><code>test(1)</code></a> command
-(commonly aliased to <code>[</code>) to exit with an error when we’re on the
-production branch, in order to trigger a build.</p>
-<p>The ignored build will still show up in your deployments list as
-“cancelled” deployments, and there’s no way around that, but I show you
-below <a href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#garbage-collecting-dangling-deployments">how to garbage collect them</a>.</p>
-<h2 id="getting-rid-of-bot-comments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#getting-rid-of-bot-comments"><span>Getting rid of bot comments</span></a></h2>
-<p>By default Vercel will comment on every PR and commit with the link to
-the deployment.</p>
-<p>To avoid that, create a <code>vercel.json</code> file in every branch where you
-want to turn this off, with the following content:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;github&quot;</span>: {
-    <span class="hljs-attr">&quot;silent&quot;</span>: <span class="hljs-literal">true</span>
-  }
-}
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> if you used the previous trick to only run builds in the
-production branch, you only need to add this configuration there.</p>
-</div>
-<h2 id="garbage-collecting-dangling-deployments" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#garbage-collecting-dangling-deployments"><span>Garbage collecting dangling deployments</span></a></h2>
-<p>Vercel knows to create preview deployments, but doesn’t know when to
-delete them. This means that you need to more or less manually delete
-the old preview deployments that are not needed anymore.</p>
-<p>It usually doesn’t cause any harm to have hundreds of older versions of
-your website available on random public URLs that most likely only your
-team knows about. I just don’t like them being <em>there</em> in the first
-place.</p>
-<figure class="center">
-  <img alt="Dangling deployments" src="https://www.codejam.info/img/2021/09/vercel-dangling-deployments.png">
-  <figcaption>I don't know about you, but that makes me anxious.</figcaption>
-</figure>
-<p>With the <a href="https://vercel.com/docs/cli">Vercel CLI</a>, which you can
-install with <code>npm install -g vercel</code>, you can use the <a href="https://vercel.com/docs/cli#commands/remove"><code>vercel remove</code></a>
-command to remove deployments.</p>
-<p>Specifically, to remove everything but deployments with an active production or preview URL, run:</p>
-<pre><code class="hljs language-sh">vercel remove &lt;project&gt; --safe
-</code></pre>
-<figure class="center">
-  <img alt="Clean deployments" src="https://www.codejam.info/img/2021/09/vercel-clean-deployments.png">
-  <figcaption>Now this is better!</figcaption>
-</figure>
-<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html#final-thoughts"><span>Final thoughts</span></a></h2>
-<p>I’m not blaming Vercel for all of this, I’m happy they provide this
-service for free and <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html">they’re the only ones</a>
-to include HTTP logs access in the free offer.</p>
-<p>Sadly their approach to deploying websites if very far from mine, and
-this requires me to work around those default behaviors to have
-something that fits me better.</p>
-<p>If you’re in a similar situation, I hope you found this post useful!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401242522406912">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

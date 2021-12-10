@@ -192,7 +192,7 @@ vim ~/.zshrc ~/.zshenv
 Install whatever software I pretty much always use with Homebrew.
 
 ```sh
-brew install gpg ag fzf imagemagick ffmpeg ncdu
+brew install gpg ag fzf imagemagick ffmpeg ncdu htop
 ```
 
 * GPG is required for the asdf Node.js plugin I'll add later below.
@@ -202,6 +202,7 @@ brew install gpg ag fzf imagemagick ffmpeg ncdu
 * I probably don't need to introduce [ImageMagick](https://imagemagick.org/)
   and [FFmpeg](https://www.ffmpeg.org/).
 * [ncdu](https://dev.yorhel.nl/ncdu) is a cool tool to monitor disk usage.
+* [htop](https://htop.dev/) is an awesome process viewer.
 
 Install the [asdf](https://github.com/asdf-vm/asdf) plugins I need
 and whatever version is in my `~/.tool-versions`. My `~/.zshrc`

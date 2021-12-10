@@ -16,6 +16,13 @@ specific SSH key of my other machine.
 
 Turns out with a simple `sshd_config`, [this is possible](https://sourceware.org/legacy-ml/cygwin/2008-04/msg00363.html)!
 
+<div class="note">
+
+**Edit:** this is now automated in a easy to use Git repository,
+[go check it out](https://github.com/valeriangalliat/sshd-on-the-go)!
+
+</div>
+
 First, let's make a directory to contain our server files.
 
 ```sh

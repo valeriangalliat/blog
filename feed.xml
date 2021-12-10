@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-11-27T04:26:46.777Z</updated>
+  <updated>2021-12-10T21:34:34.965Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -659,7 +659,7 @@ asdf helper (see below).</p>
 <pre><code class="hljs language-sh">vim ~/.zshrc ~/.zshenv
 </code></pre>
 <p>Install whatever software I pretty much always use with Homebrew.</p>
-<pre><code class="hljs language-sh">brew install gpg ag fzf imagemagick ffmpeg ncdu
+<pre><code class="hljs language-sh">brew install gpg ag fzf imagemagick ffmpeg ncdu htop
 </code></pre>
 <ul>
 <li>GPG is required for the asdf Node.js plugin I’ll add later below.</li>
@@ -669,6 +669,7 @@ is my favorite way to search code.</li>
 <li>I probably don’t need to introduce <a href="https://imagemagick.org/">ImageMagick</a>
 and <a href="https://www.ffmpeg.org/">FFmpeg</a>.</li>
 <li><a href="https://dev.yorhel.nl/ncdu">ncdu</a> is a cool tool to monitor disk usage.</li>
+<li><a href="https://htop.dev/">htop</a> is an awesome process viewer.</li>
 </ul>
 <p>Install the <a href="https://github.com/asdf-vm/asdf">asdf</a> plugins I need
 and whatever version is in my <code>~/.tool-versions</code>. My <code>~/.zshrc</code>
@@ -1047,6 +1048,10 @@ Ideally, I wanted to start a server from my unprivileged user, that
 would only allow access to that particular user, and only to the
 specific SSH key of my other machine.</p>
 <p>Turns out with a simple <code>sshd_config</code>, <a href="https://sourceware.org/legacy-ml/cygwin/2008-04/msg00363.html">this is possible</a>!</p>
+<div class="note">
+<p><strong>Edit:</strong> this is now automated in a easy to use Git repository,
+<a href="https://github.com/valeriangalliat/sshd-on-the-go">go check it out</a>!</p>
+</div>
 <p>First, let’s make a directory to contain our server files.</p>
 <pre><code class="hljs language-sh">mkdir standalone-sshd
 <span class="hljs-built_in">cd</span> standalone-sshd

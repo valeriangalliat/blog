@@ -91,6 +91,10 @@ Ideally, I wanted to start a server from my unprivileged user, that
 would only allow access to that particular user, and only to the
 specific SSH key of my other machine.</p>
 <p>Turns out with a simple <code>sshd_config</code>, <a href="https://sourceware.org/legacy-ml/cygwin/2008-04/msg00363.html">this is possible</a>!</p>
+<div class="note">
+<p><strong>Edit:</strong> this is now automated in a easy to use Git repository,
+<a href="https://github.com/valeriangalliat/sshd-on-the-go">go check it out</a>!</p>
+</div>
 <p>First, let’s make a directory to contain our server files.</p>
 <pre><code class="hljs language-sh">mkdir standalone-sshd
 <span class="hljs-built_in">cd</span> standalone-sshd

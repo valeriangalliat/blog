@@ -8,7 +8,7 @@ tweet: https://twitter.com/valeriangalliat/status/1441462405700145154
 Everything I wish I knew when I got my H2n  
 September 24, 2021
 
-The [Zoom H2n](https://amzn.to/2XRD6mk) is an awesome portable
+The [Zoom H2n](https://amzn.to/3GwRCAL) is an awesome portable
 microphone with a long battery life. It's very versatile and delivers a
 solid sound.
 
@@ -32,7 +32,7 @@ This is how [Royal Jordanian](https://www.youtube.com/c/royaljordanianR),
 a famous motorcycle YouTuber, [uses his H2n](#record-motorcycle-sound-rj-style),
 and his results are remarkable.
 
-I used to have a [Zoom H4n](https://amzn.to/2ZraaCh) because I liked
+I used to have a [Zoom H4n](https://amzn.to/3DR0D68) because I liked
 that it could act as an external sound card where I could plug XLR
 microphones and jack instruments as well, but it was too big to fit in
 my motorcycle jacket, which turned out to be what allowed me to get the
@@ -183,12 +183,12 @@ Because I often record [YouTube videos](https://www.youtube.com/FunkyVal),
 I like to mount my H2n on top of my camera to get high quality audio in
 my videos.
 
-I know most YouTubers use the [Rode VideoMic](https://amzn.to/3ADspSM)
+I know most YouTubers use the [Rode VideoMicPro](https://amzn.to/3dL7cMA)
 or one of its declinations, but since I already had the H2n, I didn't
 want to bother buying a new mic for video.
 
 It turns out the H2n can easily be mounted on top of a camera as well,
-with the help of a cheap [hot shoe](https://amzn.to/3kEML8k) [adapter](https://amzn.to/2XPrIY4)!
+with the help of a cheap [hot shoe adapter](https://amzn.to/3EMi6xK)!
 
 <figure class="center">
   <img alt="Hot shoe mount" src="../../img/2021/09/h2n/hot-shoe-mount.jpg">
@@ -204,13 +204,13 @@ To avoid that, make sure to **remove the camera strap before you
 record**, if you usually have one attached!
 
 On my camera it's a bit annoying to do, but definitely worth it to have
-a clean sound. I'm looking forward to buying the [Leash by Peak Design](https://amzn.to/39G7uCp),
+a clean sound. I'm looking forward to buying the [Leash by Peak Design](https://amzn.to/31SMN5z),
 even though it's a bit more expensive than what I'd like to pay for a
 camera strap, it's super simple to attach and detach and that would make
 my life much easier.
 
 **Edit:** I ended up buying a simple (and much cheaper) [quick release
-connector](https://amzn.to/3BEqFrS) from Amazon which does wonders with
+connector](https://amzn.to/3GBVUqn) from Amazon which does wonders with
 the original strap from my camera.
 
 </div>
@@ -218,7 +218,7 @@ the original strap from my camera.
 ## Wind muff
 
 A wind muff is a must for outdoor recording especially if it's a bit
-windy. This is [the one I use](https://amzn.to/3lYlpcQ), it's for the
+windy. This is [the one I use](https://amzn.to/3yeiwdE), it's for the
 H4n but works perfectly on the H2n as well!
 
 <figure class="center">
@@ -232,24 +232,24 @@ Fur" variations and don't know which one to pick, keep in mind that
 it's "H4n" and "H4n Pro" furs, not a "Pro Fur™". 😂
 
 <figure class="grid">
-  <a href="https://amzn.to/2WaddgX">
+  <a href="https://amzn.to/3IHywJU">
     <img alt="H4n Fur" src="../../img/2021/09/h2n/h4n-fur.png">
   </a>
-  <a href="https://amzn.to/2WaddgX">
+  <a href="https://amzn.to/3IHywJU">
     <img alt="H4n Pro Fur" src="../../img/2021/09/h2n/h4n-pro-fur.png">
   </a>
 </figure>
 
 </div>
 
-Zoom also provides one as part of their [H2n accessory pack](https://amzn.to/3i0GnqA),
+Zoom also provides one as part of their [H2n accessory pack](https://amzn.to/3dIhtcs),
 and if you're going to buy a few of the items that are part of it, it
 might be cheaper to just get the pack!
 
 ## Mic stand adapter
 
-Another thing that's part of the [accessory pack](https://amzn.to/3i0GnqA)
-that I didn't get but probably should have, is the [mic stand adapter](https://amzn.to/39G0mWF).
+Another thing that's part of the [accessory pack](https://amzn.to/3dIhtcs)
+that I didn't get but probably should have, is the [mic stand adapter](https://amzn.to/31MZzmD).
 
 <figure class="center">
   <img alt="Mic stand adapter" src="../../img/2021/09/h2n/mic-stand-adapter.jpg">
@@ -268,16 +268,16 @@ recording acoustic instruments.
 This is the stack that I personally use for this kind of work and I'm
 super happy with it:
 
-* [Mic stand](https://amzn.to/3i3E3yQ), this one is a bit on the cheap
+* [Mic stand](https://amzn.to/31QFlbt), this one is a bit on the cheap
   side but gets the job done. You can even put two mics on it!
-* [Shock mount](https://amzn.to/3AEMnMV), key element to avoid noise in
+* [Shock mount](https://amzn.to/3ES5KUY), key element to avoid noise in
   the recording from vibrations around the mic. This one specifically is
-  compatible with the [H2n mic stand adapter](https://amzn.to/39G0mWF).
+  compatible with the [H2n mic stand adapter](https://amzn.to/31MZzmD).
   Double-check the diameter if you get another one.
-* [Pop filter](https://amzn.to/3zEDPnG), to remove artifacts or
+* [Pop filter](https://amzn.to/3GygpV1), to remove artifacts or
   distortion from pronouncing letters like P, T, K and S very close to
   the mic.
-* And obviously the [mic stand adapter](https://amzn.to/39G0mWF) to
+* And obviously the [mic stand adapter](https://amzn.to/31MZzmD) to
   mount the Zoom on the whole thing.
 
 Here's an awesome article on [why a shock mount and pop filter are important](https://www.lewitt-audio.com/blog/do-i-need-a-shock-mount-and-a-pop-filter-for-my-microphone)
@@ -298,9 +298,9 @@ They don't seem to mention it anywhere though but keep in mind that you
 specifically need a Mini-B USB connector on the H2n side (which is not
 that common).
 
-Again, [this is the cable I use](https://amzn.to/3AFKC22), but if like
+Again, [this is the cable I use](https://amzn.to/30gb2KN), but if like
 me you're gonna need so many accessories that turn out to be part of the
-[H2n accessory pack](https://amzn.to/3i0GnqA), you might as well
+[H2n accessory pack](https://amzn.to/3dIhtcs), you might as well
 get that in the first place. That being said the cable I bought is
 significantly longer than the one they provide in the pack and that
 comes in handy to have a bit more moving freedom during studio sessions.
@@ -313,7 +313,7 @@ Logic:
 </figure>
 
 But if you want to use another audio interface to record instruments, MIDI, and
-other mics at the same time (I personally have a [Steinberg UR22mkII](https://amzn.to/2XLrCQU)
+other mics at the same time (I personally have a [Steinberg UR22mkII](https://amzn.to/3ICsjiD)
 for that), you can't just switch input device in your DAW like this.
 
 Instead, on macOS, I recommend in *Audio MIDI Setup* to configure an

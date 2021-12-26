@@ -125,7 +125,7 @@ It seems that my only option here is to configure the SSL connection
 specifically for my Ecto repository to have a log level of `:error`:
 
 ```elixir
-config :myapp, MyApp.Repo
+config :myapp, MyApp.Repo,
   ssl_opts: [log_level: :error]
 ```
 

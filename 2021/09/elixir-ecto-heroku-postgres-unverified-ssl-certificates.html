@@ -172,7 +172,7 @@ and Ecto doesn’t seem to alter it by default. Also the default
 which is why we’re seeing that warning.</p>
 <p>It seems that my only option here is to configure the SSL connection
 specifically for my Ecto repository to have a log level of <code>:error</code>:</p>
-<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, MyApp.Repo
+<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, MyApp.Repo,
   <span class="hljs-symbol">ssl_opts:</span> [<span class="hljs-symbol">log_level:</span> <span class="hljs-symbol">:error</span>]
 </code></pre>
 <p>It took more hours than I’m willing to admit to come up with this patch

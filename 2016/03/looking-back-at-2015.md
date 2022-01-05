@@ -245,7 +245,7 @@ biking, and hiking a little later. I was not in a good shape since I
 spent the past years basically daylong behind a computer without any
 physical activity, it was terribly demanding, and I could barely bike
 for 4 kilometers, being super exhausted and thirsty at the end. But
-by training nearly everyday, I quickly got better and could bike more
+by training nearly every day, I quickly got better and could bike more
 and more kilometers while being less and tired and needing less water.
 
 Soon enough I could bike for 20, 40, even 80 kilometers straight! This
@@ -411,7 +411,7 @@ since ever. Let's [play that funky music][funk]!
 
 ### November 19
 
-I got a bit annoyed to walk 20 minutes to work everyday while I felt
+I got a bit annoyed to walk 20 minutes to work every day while I felt
 like it would take 5 minutes in bike. Same for getting kinda anywhere in
 Montreal, while there are buses and metros, everything seems so close in
 bike and you don't have to wait nor pay anything!

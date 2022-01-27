@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1486539328373374977
+---
+
 # A second `.gitignore` that ignores itself 🤯
 January 26, 2022
 

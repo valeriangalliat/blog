@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>A second .gitignore that ignores itself 🤯</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="A second .gitignore that ignores itself 🤯">
+  <meta property="og:description" content="When collaborating on a project, it’s quite frequent that I create extra scratch files to fiddle locally. This is your ad hoc test.js and alike.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>A second <code>.gitignore</code> that ignores itself 🤯</h1>
+<p class="date">January 26, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>When collaborating on a project, it’s quite frequent that I create extra
+scratch files to fiddle locally. This is your ad hoc <code>test.js</code> and alike.</p>
+<p>I usually don’t want to commit those files, and I don’t necessarily want
+to add them to the project’s <code>.gitignore</code> either, because they’re only
+a product of my local workflow and that shouldn’t leak in the shared
+repository. What I wanted was like <strong>a second <code>.gitignore</code> file</strong>, but
+that wouldn’t be committed to the repository, essentially <em>ignoring
+itself</em> (and my scratch files).</p>
+<p>For a long time I’ve just let those files unstaged, carefully avoiding
+them every time I make a commit (never using <code>git add .</code> and such). But
+there is actually a better way.</p>
+<h2 id="all-the-ways-to-ignore-files-in-git" tabindex="-1"><a class="header-anchor" href="#all-the-ways-to-ignore-files-in-git"><span>All the ways to ignore files in Git</span></a></h2>
+<p>As mentioned in the <a href="https://git-scm.com/docs/gitignore"><code>.gitignore</code> man page</a>,
+there’s actually multiple layers for Git to ignore files in a repository:</p>
+<ul>
+<li>Patterns passed as command line arguments.</li>
+<li>Patterns from the <code>.gitignore</code> file (most common way).</li>
+<li>Patterns from <code>.git/info/exclude</code>.</li>
+<li>Patterns from the file configured in <code>core.excludesFile</code>, and
+defaulting to <code>~/.config/git/ignore</code>.</li>
+</ul>
+<h2 id="introducing-git-info-exclude" tabindex="-1"><a class="header-anchor" href="#introducing-git-info-exclude"><span>Introducing <code>.git/info/exclude</code></span></a></h2>
+<p>I didn’t know it existed, but it was there that whole time! Every Git
+repo have an empty <code>.git/info/exclude</code> file, which works exactly like a
+<code>.gitignore</code> file, except it’s not committed, and it’s only local to
+the current copy of the repository.</p>
+<p>That’s exactly what I wanted! I can add my scratch files to it and I
+don’t have to worry about accidentally committing them anymore, and I
+can finally <code>git add .</code> again!</p>
+<h2 id="the-original-trick-with-core-excludesfiles" tabindex="-1"><a class="header-anchor" href="#the-original-trick-with-core-excludesfiles"><span>The original trick with <code>core.excludesFiles</code></span></a></h2>
+<p>The fun thing is that I only learnt about <code>.git/info/exclude</code> while
+writing this article, I actually didn’t go that far in my prior
+research. I first discovered the <code>core.excludesFile</code> option, which
+allowed me to solved my problem, so I stopped at that. It’s only when I
+started to write about it that I noticed there was an even better
+option. This is yet another example of the power of writing, and the
+reason why I like to share every little bit of knowledge like this.</p>
+<p>Anyways, my original trick was to use the <code>core.excludesFile</code> option. As
+we saw, we can configure it to an additional <code>.gitignore</code> file that can
+live anywhere on the system. If set in the global Git config
+(<code>git config --global core.excludesFile</code>, targeting <code>~/.gitconfig</code>),
+it’ll affect every repository, but if set in the local Git config (<code>git config core.excludesFile</code>, targeting <code>.git/config</code>) in a specific repo,
+we can add a second <code>.gitignore</code> file only for that repo!</p>
+<p>So what I did was:</p>
+<pre><code class="hljs language-sh">git config core.excludesFile .valignore
+</code></pre>
+<p>And I added a new file, <code>.valignore</code>, with the following content:</p>
+<pre><code class="hljs language-gitignore">/.valignore
+/test.js
+</code></pre>
+<p>Effectively ignoring itself, as well as my scratch file!</p>
+<p>The downside is there can only be a single <code>core.excludesFile</code>, meaning
+this is potentially shadowing a global <code>core.excludesFile</code>. If you rely
+on that, e.g. you use <code>~/.config/git/ignore</code>, you would have to
+duplicate its content in the <code>.valignore</code> or whatever you called it.</p>
+<p>But as I mentioned earlier, <code>.git/info/exclude</code> is an even better
+solution for this problem, so you can actually have it all!</p>
+<p>Happy hacking, and keep learning! 😜</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/01/a-second-gitignore-that-ignores-itself.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

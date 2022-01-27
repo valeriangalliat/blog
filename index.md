@@ -9,6 +9,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links posts">
 
+* [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
 * [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
@@ -23,7 +24,6 @@ A blog by a programmer who loves many other things.
 * [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
 * [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
 * [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
-* [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>
 
 [All the posts](posts.md)
 

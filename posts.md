@@ -6,6 +6,10 @@ excerpt: All the posts I've written so far.
 
 <div class="links posts">
 
+## 2022
+
+* [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
+
 ## 2021
 
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>

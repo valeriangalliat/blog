@@ -192,11 +192,10 @@ vim ~/.zshrc ~/.zshenv
 Install whatever software I pretty much always use with Homebrew.
 
 ```sh
-brew install gpg ag fzf imagemagick ffmpeg ncdu htop
+brew install rg fzf imagemagick ffmpeg ncdu htop
 ```
 
-* GPG is required for the asdf Node.js plugin I'll add later below.
-* [Ag (The Silver Searcher)](https://github.com/ggreer/the_silver_searcher)
+* [ripgrep](https://github.com/BurntSushi/ripgrep)
   is my favorite way to search code.
 * [fzf](https://github.com/junegunn/fzf) is an awesome fuzzy finder.
 * I probably don't need to introduce [ImageMagick](https://imagemagick.org/)

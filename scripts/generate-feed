@@ -16,6 +16,11 @@ function absolufy (base, html) {
 
 async function * parsePostImpl (line) {
   const path = line.split('"')[1]
+
+  if (path.startsWith('https://')) {
+    return null
+  }
+
   const url = `https://www.codejam.info/${path}`
   const rl = readline.createInterface({ input: fs.createReadStream(`dist/${path}`) })
   let step = 'title'
@@ -95,7 +100,7 @@ async function main () {
   }
 
   const latestPosts = await Promise.all(latestPostsPromises)
-  const entries = latestPosts.join('')
+  const entries = latestPosts.filter(post => post !== null).join('')
 
   process.stdout.write(
     feed

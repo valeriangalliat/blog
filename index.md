@@ -9,6 +9,7 @@ A blog by a programmer who loves many other things.
 
 <div class="links posts">
 
+* [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
 * [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
@@ -23,7 +24,6 @@ A blog by a programmer who loves many other things.
 * [TypeScript: cannot write file `.d.ts` because it would overwrite input file](2021/10/typescript-cannot-write-file-overwrite-input.md) <small>October 16, 2021</small>
 * [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
 * [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
-* [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
 
 [All the posts](posts.md)
 

@@ -5,10 +5,82 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2021-12-10T21:34:34.965Z</updated>
+  <updated>2022-02-23T20:31:19.972Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>A second .gitignore that ignores itself 🤯</title>
+    <link href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html" />
+    <id>https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html</id>
+    <updated>2022-01-26T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>When collaborating on a project, it’s quite frequent that I create extra
+scratch files to fiddle locally. This is your ad hoc <code>test.js</code> and alike.</p>
+<p>I usually don’t want to commit those files, and I don’t necessarily want
+to add them to the project’s <code>.gitignore</code> either, because they’re only
+a product of my local workflow and that shouldn’t leak in the shared
+repository. What I wanted was like <strong>a second <code>.gitignore</code> file</strong>, but
+that wouldn’t be committed to the repository, essentially <em>ignoring
+itself</em> (and my scratch files).</p>
+<p>For a long time I’ve just let those files unstaged, carefully avoiding
+them every time I make a commit (never using <code>git add .</code> and such). But
+there is actually a better way.</p>
+<h2 id="all-the-ways-to-ignore-files-in-git" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#all-the-ways-to-ignore-files-in-git"><span>All the ways to ignore files in Git</span></a></h2>
+<p>As mentioned in the <a href="https://git-scm.com/docs/gitignore"><code>.gitignore</code> man page</a>,
+there’s actually multiple layers for Git to ignore files in a repository:</p>
+<ul>
+<li>Patterns passed as command line arguments.</li>
+<li>Patterns from the <code>.gitignore</code> file (most common way).</li>
+<li>Patterns from <code>.git/info/exclude</code>.</li>
+<li>Patterns from the file configured in <code>core.excludesFile</code>, and
+defaulting to <code>~/.config/git/ignore</code>.</li>
+</ul>
+<h2 id="introducing-git-info-exclude" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#introducing-git-info-exclude"><span>Introducing <code>.git/info/exclude</code></span></a></h2>
+<p>I didn’t know it existed, but it was there that whole time! Every Git
+repo have an empty <code>.git/info/exclude</code> file, which works exactly like a
+<code>.gitignore</code> file, except it’s not committed, and it’s only local to
+the current copy of the repository.</p>
+<p>That’s exactly what I wanted! I can add my scratch files to it and I
+don’t have to worry about accidentally committing them anymore, and I
+can finally <code>git add .</code> again!</p>
+<h2 id="the-original-trick-with-core-excludesfiles" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#the-original-trick-with-core-excludesfiles"><span>The original trick with <code>core.excludesFiles</code></span></a></h2>
+<p>The fun thing is that I only learnt about <code>.git/info/exclude</code> while
+writing this article, I actually didn’t go that far in my prior
+research. I first discovered the <code>core.excludesFile</code> option, which
+allowed me to solved my problem, so I stopped at that. It’s only when I
+started to write about it that I noticed there was an even better
+option. This is yet another example of the power of writing, and the
+reason why I like to share every little bit of knowledge like this.</p>
+<p>Anyways, my original trick was to use the <code>core.excludesFile</code> option. As
+we saw, we can configure it to an additional <code>.gitignore</code> file that can
+live anywhere on the system. If set in the global Git config
+(<code>git config --global core.excludesFile</code>, targeting <code>~/.gitconfig</code>),
+it’ll affect every repository, but if set in the local Git config (<code>git config core.excludesFile</code>, targeting <code>.git/config</code>) in a specific repo,
+we can add a second <code>.gitignore</code> file only for that repo!</p>
+<p>So what I did was:</p>
+<pre><code class="hljs language-sh">git config core.excludesFile .valignore
+</code></pre>
+<p>And I added a new file, <code>.valignore</code>, with the following content:</p>
+<pre><code class="hljs language-gitignore">/.valignore
+/test.js
+</code></pre>
+<p>Effectively ignoring itself, as well as my scratch file!</p>
+<p>The downside is there can only be a single <code>core.excludesFile</code>, meaning
+this is potentially shadowing a global <code>core.excludesFile</code>. If you rely
+on that, e.g. you use <code>~/.config/git/ignore</code>, you would have to
+duplicate its content in the <code>.valignore</code> or whatever you called it.</p>
+<p>But as I mentioned earlier, <code>.git/info/exclude</code> is an even better
+solution for this problem, so you can actually have it all!</p>
+<p>Happy hacking, and keep learning! 😜</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1486539328373374977">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Static DHCP server on Arch Linux in 2021, two ways</title>
     <link href="https://www.codejam.info/2021/11/static-dhcp-server-arch-linux.html" />
@@ -659,11 +731,10 @@ asdf helper (see below).</p>
 <pre><code class="hljs language-sh">vim ~/.zshrc ~/.zshenv
 </code></pre>
 <p>Install whatever software I pretty much always use with Homebrew.</p>
-<pre><code class="hljs language-sh">brew install gpg ag fzf imagemagick ffmpeg ncdu htop
+<pre><code class="hljs language-sh">brew install rg fzf imagemagick ffmpeg ncdu htop
 </code></pre>
 <ul>
-<li>GPG is required for the asdf Node.js plugin I’ll add later below.</li>
-<li><a href="https://github.com/ggreer/the_silver_searcher">Ag (The Silver Searcher)</a>
+<li><a href="https://github.com/BurntSushi/ripgrep">ripgrep</a>
 is my favorite way to search code.</li>
 <li><a href="https://github.com/junegunn/fzf">fzf</a> is an awesome fuzzy finder.</li>
 <li>I probably don’t need to introduce <a href="https://imagemagick.org/">ImageMagick</a>
@@ -2656,7 +2727,7 @@ and Ecto doesn’t seem to alter it by default. Also the default
 which is why we’re seeing that warning.</p>
 <p>It seems that my only option here is to configure the SSL connection
 specifically for my Ecto repository to have a log level of <code>:error</code>:</p>
-<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, MyApp.Repo
+<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, MyApp.Repo,
   <span class="hljs-symbol">ssl_opts:</span> [<span class="hljs-symbol">log_level:</span> <span class="hljs-symbol">:error</span>]
 </code></pre>
 <p>It took more hours than I’m willing to admit to come up with this patch
@@ -2680,7 +2751,7 @@ to you. Have a wonderful day!</p>
     <link href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html" />
     <id>https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html</id>
     <updated>2021-09-24T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>The <a href="https://amzn.to/2XRD6mk">Zoom H2n</a> is an awesome portable
+    <content type="html"><![CDATA[<p>The <a href="https://amzn.to/3GwRCAL">Zoom H2n</a> is an awesome portable
 microphone with a long battery life. It’s very versatile and delivers a
 solid sound.</p>
 <p>In this post, I’ll give you all of the tips and tricks that I discovered
@@ -2698,7 +2769,7 @@ jacket while I ride to record clean engine sound for my
 This is how <a href="https://www.youtube.com/c/royaljordanianR">Royal Jordanian</a>,
 a famous motorcycle YouTuber, <a href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#record-motorcycle-sound-rj-style">uses his H2n</a>,
 and his results are remarkable.</p>
-<p>I used to have a <a href="https://amzn.to/2ZraaCh">Zoom H4n</a> because I liked
+<p>I used to have a <a href="https://amzn.to/3DR0D68">Zoom H4n</a> because I liked
 that it could act as an external sound card where I could plug XLR
 microphones and jack instruments as well, but it was too big to fit in
 my motorcycle jacket, which turned out to be what allowed me to get the
@@ -2814,11 +2885,11 @@ instead.</p>
 <p>Because I often record <a href="https://www.youtube.com/FunkyVal">YouTube videos</a>,
 I like to mount my H2n on top of my camera to get high quality audio in
 my videos.</p>
-<p>I know most YouTubers use the <a href="https://amzn.to/3ADspSM">Rode VideoMic</a>
+<p>I know most YouTubers use the <a href="https://amzn.to/3dL7cMA">Rode VideoMicPro</a>
 or one of its declinations, but since I already had the H2n, I didn’t
 want to bother buying a new mic for video.</p>
 <p>It turns out the H2n can easily be mounted on top of a camera as well,
-with the help of a cheap <a href="https://amzn.to/3kEML8k">hot shoe</a> <a href="https://amzn.to/2XPrIY4">adapter</a>!</p>
+with the help of a cheap <a href="https://amzn.to/3EMi6xK">hot shoe adapter</a>!</p>
 <figure class="center">
   <img alt="Hot shoe mount" src="https://www.codejam.info/img/2021/09/h2n/hot-shoe-mount.jpg">
 </figure>
@@ -2829,17 +2900,17 @@ moving around, e.g. when vlogging.</p>
 <p>To avoid that, make sure to <strong>remove the camera strap before you
 record</strong>, if you usually have one attached!</p>
 <p>On my camera it’s a bit annoying to do, but definitely worth it to have
-a clean sound. I’m looking forward to buying the <a href="https://amzn.to/39G7uCp">Leash by Peak Design</a>,
+a clean sound. I’m looking forward to buying the <a href="https://amzn.to/31SMN5z">Leash by Peak Design</a>,
 even though it’s a bit more expensive than what I’d like to pay for a
 camera strap, it’s super simple to attach and detach and that would make
 my life much easier.</p>
-<p><strong>Edit:</strong> I ended up buying a simple (and much cheaper) <a href="https://amzn.to/3BEqFrS">quick release
+<p><strong>Edit:</strong> I ended up buying a simple (and much cheaper) <a href="https://amzn.to/3GBVUqn">quick release
 connector</a> from Amazon which does wonders with
 the original strap from my camera.</p>
 </div>
 <h2 id="wind-muff" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#wind-muff"><span>Wind muff</span></a></h2>
 <p>A wind muff is a must for outdoor recording especially if it’s a bit
-windy. This is <a href="https://amzn.to/3lYlpcQ">the one I use</a>, it’s for the
+windy. This is <a href="https://amzn.to/3yeiwdE">the one I use</a>, it’s for the
 H4n but works perfectly on the H2n as well!</p>
 <figure class="center">
   <img alt="Wind muff" src="https://www.codejam.info/img/2021/09/h2n/wind-muff.jpg">
@@ -2849,20 +2920,20 @@ H4n but works perfectly on the H2n as well!</p>
 Fur” variations and don’t know which one to pick, keep in mind that
 it’s “H4n” and “H4n Pro” furs, not a “Pro Fur™”. 😂</p>
 <figure class="grid">
-  <a href="https://amzn.to/2WaddgX">
+  <a href="https://amzn.to/3IHywJU">
     <img alt="H4n Fur" src="https://www.codejam.info/img/2021/09/h2n/h4n-fur.png">
   </a>
-  <a href="https://amzn.to/2WaddgX">
+  <a href="https://amzn.to/3IHywJU">
     <img alt="H4n Pro Fur" src="https://www.codejam.info/img/2021/09/h2n/h4n-pro-fur.png">
   </a>
 </figure>
 </div>
-<p>Zoom also provides one as part of their <a href="https://amzn.to/3i0GnqA">H2n accessory pack</a>,
+<p>Zoom also provides one as part of their <a href="https://amzn.to/3dIhtcs">H2n accessory pack</a>,
 and if you’re going to buy a few of the items that are part of it, it
 might be cheaper to just get the pack!</p>
 <h2 id="mic-stand-adapter" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/zoom-h2n-pro-tips-and-tricks.html#mic-stand-adapter"><span>Mic stand adapter</span></a></h2>
-<p>Another thing that’s part of the <a href="https://amzn.to/3i0GnqA">accessory pack</a>
-that I didn’t get but probably should have, is the <a href="https://amzn.to/39G0mWF">mic stand adapter</a>.</p>
+<p>Another thing that’s part of the <a href="https://amzn.to/3dIhtcs">accessory pack</a>
+that I didn’t get but probably should have, is the <a href="https://amzn.to/31MZzmD">mic stand adapter</a>.</p>
 <figure class="center">
   <img alt="Mic stand adapter" src="https://www.codejam.info/img/2021/09/h2n/mic-stand-adapter.jpg">
 </figure>
@@ -2877,16 +2948,16 @@ recording acoustic instruments.</p>
 <p>This is the stack that I personally use for this kind of work and I’m
 super happy with it:</p>
 <ul>
-<li><a href="https://amzn.to/3i3E3yQ">Mic stand</a>, this one is a bit on the cheap
+<li><a href="https://amzn.to/31QFlbt">Mic stand</a>, this one is a bit on the cheap
 side but gets the job done. You can even put two mics on it!</li>
-<li><a href="https://amzn.to/3AEMnMV">Shock mount</a>, key element to avoid noise in
+<li><a href="https://amzn.to/3ES5KUY">Shock mount</a>, key element to avoid noise in
 the recording from vibrations around the mic. This one specifically is
-compatible with the <a href="https://amzn.to/39G0mWF">H2n mic stand adapter</a>.
+compatible with the <a href="https://amzn.to/31MZzmD">H2n mic stand adapter</a>.
 Double-check the diameter if you get another one.</li>
-<li><a href="https://amzn.to/3zEDPnG">Pop filter</a>, to remove artifacts or
+<li><a href="https://amzn.to/3GygpV1">Pop filter</a>, to remove artifacts or
 distortion from pronouncing letters like P, T, K and S very close to
 the mic.</li>
-<li>And obviously the <a href="https://amzn.to/39G0mWF">mic stand adapter</a> to
+<li>And obviously the <a href="https://amzn.to/31MZzmD">mic stand adapter</a> to
 mount the Zoom on the whole thing.</li>
 </ul>
 <p>Here’s an awesome article on <a href="https://www.lewitt-audio.com/blog/do-i-need-a-shock-mount-and-a-pop-filter-for-my-microphone">why a shock mount and pop filter are important</a>
@@ -2902,9 +2973,9 @@ sound from it directly from a screen recording or from your
 <p>They don’t seem to mention it anywhere though but keep in mind that you
 specifically need a Mini-B USB connector on the H2n side (which is not
 that common).</p>
-<p>Again, <a href="https://amzn.to/3AFKC22">this is the cable I use</a>, but if like
+<p>Again, <a href="https://amzn.to/30gb2KN">this is the cable I use</a>, but if like
 me you’re gonna need so many accessories that turn out to be part of the
-<a href="https://amzn.to/3i0GnqA">H2n accessory pack</a>, you might as well
+<a href="https://amzn.to/3dIhtcs">H2n accessory pack</a>, you might as well
 get that in the first place. That being said the cable I bought is
 significantly longer than the one they provide in the pack and that
 comes in handy to have a bit more moving freedom during studio sessions.</p>
@@ -2914,7 +2985,7 @@ Logic:</p>
   <img alt="H2n as input interface in Logic" src="https://www.codejam.info/img/2021/09/h2n/logic-interface.png">
 </figure>
 <p>But if you want to use another audio interface to record instruments, MIDI, and
-other mics at the same time (I personally have a <a href="https://amzn.to/2XLrCQU">Steinberg UR22mkII</a>
+other mics at the same time (I personally have a <a href="https://amzn.to/3ICsjiD">Steinberg UR22mkII</a>
 for that), you can’t just switch input device in your DAW like this.</p>
 <p>Instead, on macOS, I recommend in <em>Audio MIDI Setup</em> to configure an
 aggregate device that includes both your sound card and the H2n. This
@@ -3553,438 +3624,6 @@ I’ll be happy to help you with that. ✌️</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440704576059961362">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Vercel custom log drain (dump HTTP traffic for free on a Vercel app)</title>
-    <link href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html" />
-    <id>https://www.codejam.info/2021/09/vercel-custom-log-drain.html</id>
-    <updated>2021-09-21T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>In the <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html">previous post</a>, we
-compared the different services providing free static website hosting,
-and their options to access server-side web analytics or raw HTTP logs.</p>
-<p><a href="https://vercel.com/">Vercel</a> was the only one to allow accessing
-traffic data for free, but it’s not the easiest thing to do. In this
-article, I’ll show you how.</p>
-<div class="note">
-<p><strong>Note:</strong> if you’re in a rush, go straight to the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain">GitHub repo</a>
-which contains the full code for a working integration that allows you
-to manage arbitrary log drains!</p>
-<p>I also give you the link to the <a href="https://vercel.com/integrations/custom-log-drain">live integration that I use for myself</a>,
-and you can use it too!</p>
-<p>Otherwise, if you’re interested in the underlying implementation, read
-on.</p>
-</div>
-<p>I’ll assume that you already have an account with Vercel and deployed
-your app there. This shouldn’t be too bad, but if you like to keep
-things simple, you might want to read a few tips of mine about <a href="https://www.codejam.info/2021/09/vercel-without-preview-deployments.html">keeping Vercel clean and silent</a>.</p>
-<p>Neither of Vercel’s UI, CLI and API directly allow to manage log drains.
-While <a href="https://vercel.com/docs/rest-api#integrations/log-drains">the API has endpoints to manage log drains</a>,
-those are only available to Vercel integrations, and are denied when
-called with a <a href="https://vercel.com/account/tokens">regular user token</a>
-like the ones the CLI and web app use.</p>
-<p>This means that we’ll need to create our own Vercel integration in order
-to have an integration token that will let us call the log drains API.</p>
-<h2 id="how-does-a-vercel-integration-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#how-does-a-vercel-integration-work"><span>How does a Vercel integration work</span></a></h2>
-<ul>
-<li>A Vercel integration is a web app hosted on your own domain, which
-needs to respond to a “Vercel callback” page.</li>
-<li>Vercel will redirect the user to that page when they try to install
-your integration, providing a <code>code</code> and <code>next</code> query parameters.</li>
-<li>You can exchange the <code>code</code> parameter for a Vercel API OAuth access token.</li>
-<li>You’re expected to redirect to the URL provided in the <code>next</code>
-parameter once the installation is complete.</li>
-</ul>
-<p>Most integrations will store the OAuth access token and refresh token
-that are exchanged during that process to be able to query the API on
-behalf of the user later on, but for cost and time reasons, <strong>I want to
-keep my integration stateless</strong>. This means that I’ll perform the log
-drain operations only during the installation process, and <strong>will
-instantly forget the token</strong>.</p>
-<p>Because of that, we’ll have to remove the integration and add it again
-if we want to configure a new log drain. Log drains are specific to an
-integration, meaning that when you remove the integration, the log
-drains are removed with it too.</p>
-<p>I could have built a stateful application where I allow to fully manage
-log drains, but then I would need to charge for it to pay for the
-hosting and development costs, and at that point I believe that most
-users who are willing to pay will be happy to pay for Logtrail,
-Sematext, Datadog, LogDNA and others that already have an official
-Vercel integration.</p>
-<div class="note">
-<p><strong>Note:</strong> if I’m wrong with that assumption, and you would pay a monthly
-fee for a service that allows you to fully manage your Vercel log drains
-with arbitrary URLs, <a href="https://www.codejam.info/val.html#contact">let me know</a>. If there’s enough
-demand I’ll consider building something!</p>
-</div>
-<h2 id="creating-our-own-vercel-integration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#creating-our-own-vercel-integration"><span>Creating our own Vercel integration</span></a></h2>
-<p>For this, head to the <a href="https://vercel.com/dashboard/integrations/console">Vercel integrations console</a>,
-which lists you all the integrations that you have created, and allows
-you to create new ones.</p>
-<p>Click the “create” button. In that form, you need to fill a bunch of
-details about your integration that should be pretty obvious.</p>
-<p>You’ll need to include the redirect URL. If you want to use <a href="https://github.com/valeriangalliat/vercel-custom-log-drain">the repo I mentioned earlier</a>,
-it’s going to be on the <code>/vercel/callback</code> path, on the domain you’re
-going to host it on.</p>
-<p>You can ignore the webhook and configuration URLs unless you want to
-build a stateful version that allows editing the log drains after
-installation (then you’d need the configuration URL specifically).</p>
-<h3 id="making-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-the-form"><span>Making the form</span></a></h3>
-<p>We’ll go for a very basic HTML form that allows selecting between
-<code>json</code>, <code>ndjson</code> and <code>syslog</code> as the log drain type, which are the only
-formats supported by Vercel as of writing, as well as the URL to the log
-drain we want to add.</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">method</span>=<span class="hljs-string">&quot;post&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">select</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;type&quot;</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;json&quot;</span>&gt;</span>json<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;ndjson&quot;</span>&gt;</span>ndjson<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">option</span> <span class="hljs-attr">value</span>=<span class="hljs-string">&quot;syslog&quot;</span>&gt;</span>syslog<span class="hljs-tag">&lt;/<span class="hljs-name">option</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">select</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;url&quot;</span> <span class="hljs-attr">placeholder</span>=<span class="hljs-string">&quot;URL&quot;</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">button</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;submit&quot;</span>&gt;</span>Submit<span class="hljs-tag">&lt;/<span class="hljs-name">button</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
-</code></pre>
-<p>See the <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/form.html">full HTML</a>
-with a tiny layer of CSS.</p>
-<h3 id="serving-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#serving-the-form"><span>Serving the form</span></a></h3>
-<p>I’ll use <a href="https://www.fastify.io/">Fastify</a> to handle the HTTP requests,
-but <a href="https://expressjs.com/">Express</a> would have worked just fine for
-this too.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>)
-<span class="hljs-keyword">const</span> fastify = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify&#x27;</span>)
-
-<span class="hljs-keyword">const</span> form = fs.readFileSync(<span class="hljs-string">&#x27;form.html&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>)
-
-<span class="hljs-keyword">const</span> app = fastify({ <span class="hljs-attr">logger</span>: <span class="hljs-literal">true</span> })
-
-app.get(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next) {
-    <span class="hljs-keyword">return</span> res.type(<span class="hljs-string">&#x27;text/plain&#x27;</span>).send(<span class="hljs-string">&#x27;Hello!&#x27;</span>)
-  }
-
-  res.type(<span class="hljs-string">&#x27;text/html&#x27;</span>).send(form)
-})
-
-
-app.listen(process.env.PORT || <span class="hljs-number">8080</span>, <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
-  <span class="hljs-keyword">if</span> (err) {
-    app.log.error(err)
-    process.exit(<span class="hljs-number">1</span>)
-  }
-})
-</code></pre>
-<p>This gets us running with a simple app that serves the form we just
-built on <code>/vercel/callback</code>.</p>
-<p>If called without <code>code</code> and <code>next</code> parameters, it means we’re not being
-redirected from Vercel integration installation, and we just show a
-simple message to say hello, because the form wouldn’t be useful when
-it’s not called from Vercel.</p>
-<h3 id="handling-the-form" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#handling-the-form"><span>Handling the form</span></a></h3>
-<p>First, we’ll need to trade the <code>code</code> parameter for a Vercel OAuth
-access token. We can do that by calling the <code>https://api.vercel.com/v2/oauth/access_token</code>.</p>
-<p>This requires us to configure the OAuth client ID and client secret that
-were provided to you at the end of the <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#creating-our-own-vercel-integration">integration creation</a>,
-as well as the redirect URL that we defined during creation.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> qs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;querystring&#x27;</span>)
-<span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
-<span class="hljs-keyword">const</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./config&#x27;</span>)
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getToken</span> (<span class="hljs-params">code</span>) </span>{
-  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v2/oauth/access_token&#x27;</span>
-
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
-    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
-    <span class="hljs-attr">headers</span>: {
-      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/x-www-form-urlencoded&#x27;</span>
-    },
-    <span class="hljs-attr">body</span>: qs.stringify({
-      <span class="hljs-attr">client_id</span>: config.clientId,
-      <span class="hljs-attr">client_secret</span>: config.clientSecret,
-      code,
-      <span class="hljs-attr">redirect_uri</span>: config.redirectUri
-    })
-  })
-
-  <span class="hljs-keyword">if</span> (!res.ok) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
-  }
-
-  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> res.json()
-
-  <span class="hljs-keyword">return</span> json.access_token
-}
-</code></pre>
-<p>With that token, we can call the log drains endpoint to create a new log
-drain.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createLogDrain</span> (<span class="hljs-params">token, body</span>) </span>{
-  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v1/integrations/log-drains&#x27;</span>
-
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
-    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
-    <span class="hljs-attr">headers</span>: {
-      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
-    },
-    <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify(body)
-  })
-
-  <span class="hljs-keyword">if</span> (!res.ok) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
-  }
-}
-</code></pre>
-<p>Now, we can put those together when handling the <code>POST</code> form submission,
-as well as redirecting to the <code>next</code> URL at the end.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> formBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify-formbody&#x27;</span>)
-
-app.register(formBody)
-
-app.post(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-keyword">async</span> (req, res) =&gt; {
-  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next || !req.body.type || !req.body.url) {
-    <span class="hljs-keyword">return</span> res.code(<span class="hljs-number">400</span>)
-  }
-
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> getToken(req.query.code)
-
-  <span class="hljs-keyword">await</span> createLogDrain(token, {
-    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;custom-log-drain&#x27;</span>,
-    <span class="hljs-attr">type</span>: req.body.type,
-    <span class="hljs-attr">url</span>: req.body.url
-  })
-
-  res.redirect(req.query.next)
-})
-</code></pre>
-<p>You can see <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/index.js">the full code on GitHub</a>.</p>
-<p>After deploying that code, you should be able to use your custom
-integration from the integration marketplace to configure any log drain
-you want for your Vercel apps.</p>
-<p>You can hack on this code if you want to allow setting up the log drain
-only on certain apps and not globally (see other <a href="https://vercel.com/docs/rest-api#integrations/log-drains/create-a-log-drain/request-parameters">request parameters</a>),
-or make it stateful with the option to edit and remove existing log
-drains without having to reinstall the integration.</p>
-<h2 id="making-a-simple-log-drain-with-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#making-a-simple-log-drain-with-nginx"><span>Making a simple log drain with nginx</span></a></h2>
-<p>Now, we only solved half of the problem. We can configure any URL as a
-log drain on our Vercel apps, but we don’t have a URL to put there yet!
-Most of the logging software as a service apps already have
-<a href="https://vercel.com/integrations#logging">an integration on the marketplace</a>.</p>
-<p>Instead, we want to provide our own URL to handle the logs, in a way
-that’s the cheapest as possible, or ideally free.</p>
-<p>For that, we’re going to leverage the Google Cloud free tier, which
-includes one <code>e2-micro</code> instance for free per billing account.</p>
-<p>It should be easy to get one running and to install nginx on it.</p>
-<div class="note">
-<p><strong>Note:</strong> if you’re interested in how I do the initial configuration of
-a Debian Google Cloud VM, I’ll have an article about that very soon.
-Stay tuned!</p>
-</div>
-<p>Then, we’re going to use a cool “hack” that allows us to configure nginx
-to append the <code>POST</code> body of an endpoint directly to the file of our
-choice. This is essentially the definition of a simple HTTP log
-drain.</p>
-<p>First, we’ll define a <code>postdata</code> log format that logs the plain
-unescaped request body to the log file:</p>
-<pre><code class="hljs language-nginx"><span class="hljs-section">http</span> {
-    <span class="hljs-attribute">log_format</span> postdata escape=<span class="hljs-literal">none</span> $request_body;
-}
-</code></pre>
-<p>But we can’t just us it like this. By default, nginx won’t bother
-reading the request body if it’s not doing anything with it, which means
-it won’t be included in the log variables.</p>
-<p>There’s two ways to force nginx to read the request body. One is with the
-<a href="https://github.com/openresty/echo-nginx-module">nginx <code>echo</code> module</a>,
-and the other one (fully native) leverages a hack with the <code>proxy_pass</code>
-directive.</p>
-<p>In both cases, you’ll be able to configure <code>https://your.domain/vercel/drain</code>
-as a Vercel log drain. I find that NDJSON works best with this format.</p>
-<h3 id="with-echo-read-request-body" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-echo-read-request-body"><span>With <code>echo_read_request_body</code></span></a></h3>
-<pre><code class="hljs language-nginx"><span class="hljs-comment"># Make sure this is loaded, method may vary depending on your setup.</span>
-<span class="hljs-attribute">load_module</span> modules/ngx_http_echo_module.so;
-
-<span class="hljs-section">server</span> {
-    <span class="hljs-attribute">location</span> /vercel/drain {
-        <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
-
-        <span class="hljs-attribute">if</span> ($request_method = POST) {
-            <span class="hljs-comment"># Wherever you want to store your logs.</span>
-            <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
-
-            <span class="hljs-comment"># Required to force nginx to read the request body,</span>
-            <span class="hljs-comment"># otherwise it won&#x27;t log anything.</span>
-            echo_read_request_body;
-        }
-    }
-}
-</code></pre>
-<h3 id="with-proxy-pass-hack" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#with-proxy-pass-hack"><span>With <code>proxy_pass</code> hack</span></a></h3>
-<p>If you don’t want to load <code>ngx_http_echo_module</code>, you can instead use
-the native <code>proxy_pass</code> directive to force nginx to read the request
-body.</p>
-<p>Since <code>proxy_pass</code> needs to proxy to <em>something</em>, the trick consists
-into defining a “black hole” endpoint to proxy to. Because <code>proxy_pass</code>
-will need to read the whole HTTP body in order to forward it, it will
-become accessible to our log format.</p>
-<pre><code class="hljs language-nginx"><span class="hljs-section">server</span> {
-    <span class="hljs-attribute">location</span> /vercel/empty {
-      <span class="hljs-attribute">return</span> <span class="hljs-number">204</span>;
-    }
-
-    <span class="hljs-attribute">location</span> /vercel/drain {
-        <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
-
-        <span class="hljs-attribute">if</span> ($request_method = POST) {
-            <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
-
-            <span class="hljs-comment"># Adapt this to whatever your server responds to, or</span>
-            <span class="hljs-comment"># feel free to use `$scheme`, `$server_name`, `$host`,</span>
-            <span class="hljs-comment"># `$server_port` and so on.</span>
-            <span class="hljs-attribute">proxy_pass</span> http://localhost/vercel/empty;
-        }
-    }
-}
-</code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>You should now have everything you need to store your Vercel logs in
-plain text files on a Google Cloud free tier VM (or wherever else you
-wanted to)!</p>
-<p>You’re now free to <code>grep</code> through them or do whatever magic you want
-with the data to get all the stats and insights that you want. And all
-of that for free (or nearly).</p>
-<div class="note">
-<p><strong>Note:</strong> if you need to forward your Vercel logs to a custom endpoint
-but this article was too technical for you, feel free to <a href="https://www.codejam.info/val.html#contact">contact me</a>,
-I’m available for <a href="https://www.codejam.info/freelance.html">freelance work</a> and I’ll be
-happy to help you with that. ✌️</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401250927857668">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Free static hosting with server-side analytics</title>
-    <link href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html" />
-    <id>https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html</id>
-    <updated>2021-09-21T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>This blog has been hosted on <a href="https://pages.github.com/">GitHub Pages</a>
-for a while, but I was getting frustrated of not having any idea of the
-traffic it was getting, and I was really curious to find out.</p>
-<p>The only way to get traffic insights on GitHub pages is through
-client-side analytics scripts, which is technically very unreliable, and
-I’d rather not get any data than getting data that I cannot trust, and
-which on top of that negatively impacts the performance of my site.</p>
-<p>What I want is raw access to HTTP logs, which is the only proper source
-of truth for this.</p>
-<p>In the first part of this series, I’ll compare different free static
-hosting services and their options to get access to server-side
-analytics or logs. Then, I’ll show you <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">in the second part</a>
-how to retrieve logs on a Vercel app, which is the only service I found
-to provide HTTP logs as part of their free offer!</p>
-<h2 id="github-pages" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#github-pages"><span>GitHub Pages</span></a></h2>
-<p><a href="https://pages.github.com/">GitHub Pages</a> is the easiest option to host
-a static website for free, especially if you’re already working with
-GitHub, but it doesn’t have an option to access HTTP logs.</p>
-<p>The only method they document is using Google Analytics or a similar
-script, but that’s not an acceptable solution to me. Let’s move on.</p>
-<h2 id="netlify" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#netlify"><span>Netlify</span></a></h2>
-<p><a href="https://www.netlify.com/">Netlify</a> is my next favorite way to deploy a
-static website. They also have a <a href="https://www.netlify.com/products/analytics/">Netlify Analytics</a>,
-product, an analytics platform based on server logs, which is exactly
-what I want!</p>
-<p>As they point out in their marketing page, it’s “data right from the
-source of truth”, it’s got “better performance”, “more accurate
-numbers”, “better privacy” and gives you access to extra metrics you can
-only get on the server side.</p>
-<p>To me this the only proper way to get traffic analytics on the web.</p>
-<p>But they price that feature at $9 per month per site, which to be honest
-is pretty decent if you have a website that’s generating some cash, but
-my blog is not and my current budget is closer to $0.</p>
-<p>And sadly, if not interested in the full blown analytics product,
-there’s no way to <a href="https://answers.netlify.com/t/download-raw-server-access-logs/6586">only get the raw server logs</a>.</p>
-<h2 id="cloudflare" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#cloudflare"><span>Cloudflare</span></a></h2>
-<p><a href="https://www.cloudflare.com/">Cloudflare</a> also has a free static hosting
-offer. They’ve got a <a href="https://www.cloudflare.com/web-analytics/">Cloudflare Analytics</a>
-product, but the free version is only powered by a client-side script,
-which as we saw earlier, is useless.</p>
-<p>Otherwise, the option to have analytics based on server logs starts with
-the “pro” plan that’s $20 per month. Too much for me.</p>
-<p>They also offer <a href="https://www.cloudflare.com/products/cloudflare-logs/">Cloudflare Logs</a>
-which seems like it would at least give access to raw HTTP logs, but the
-pricing is not mentioned and you need to contact their sales department
-to maybe get access to it. Doesn’t look good.</p>
-<h2 id="render" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#render"><span>Render</span></a></h2>
-<p><a href="https://render.com/">Render</a> is another service with free static
-hosting, and a it’s a very well built product. Simple and efficient. Out
-of all the websites in this list, it’s the one with my favorite UI so
-far. Gets shit done, no bullshit. 😍</p>
-<p>I especially love the fact that they allow to configure any public Git
-URL to pull from, without forcing you to connect with GitHub or another
-hosted Git provider through OAuth like it’s the case with <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#vercel">Vercel</a>.</p>
-<p>Sadly, while you can <a href="https://render.com/docs/log-streams">configure a syslog drain</a>,
-it only forward application logs and doesn’t include edge load balancer
-HTTP logs, which is the only thing I care about.</p>
-<h2 id="google-cloud-free-tier-vm" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#google-cloud-free-tier-vm"><span>Google Cloud free tier VM</span></a></h2>
-<p>While it’s very different from the other managed services I mention in
-this list, <a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">Google Cloud</a>
-allows you to run a <code>e2-micro</code> instance constantly for free.</p>
-<p>The <code>e2-micro</code> instance has access to 0.25 vCPU and can burst up to 2
-vCPUs. It’s got 1 GB of RAM, and you’re allowed up to 30 GB of storage
-for free. You can even assign it a static IP that will stay free as long
-as it’s in use.</p>
-<p>It’s a pretty underpowered machine but will be way fine for serving
-static websites, for example with nginx, as long as it doesn’t have a
-ridiculous amount of traffic.</p>
-<p>The only caveat is that you still have to <a href="https://cloud.google.com/vpc/network-pricing">pay for traffic</a>.</p>
-<p>Ingress traffic is free (data going in the VM), but you’ll have to pay
-for egress traffic (data going out of the VM). In other words, this
-means that someone uploading a large file to your VM will be nearly
-free, but serving a large file to someone will impact your billing.</p>
-<p>Typically this is low enough to be negligible, but Google will be happy
-to charge your credit card for $0.03 every month.</p>
-<p>And because <em>you’re the server</em>, you can do whatever the fuck you want,
-like logging HTTP traffic to <code>/var/log</code>.</p>
-<p>This solution requires a bit of system administration knowledge, but if
-like me, you find it to be exciting and a lot of fun, it’s definitely a
-good solution. That being said you’ll also be responsible of managing
-the VM, keeping it up-to-date, and fixing any issue that might happen
-with it, otherwise you website might get some downtime.</p>
-<h2 id="vercel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#vercel"><span>Vercel</span></a></h2>
-<p>Finally, <a href="https://vercel.com/">Vercel</a> also has free static hosting. Yay!</p>
-<p>They even have a <a href="https://vercel.com/analytics">Vercel Analytics</a>
-product, but it’s mostly focused on performance, and the data is
-captured on the client side. Makes sense for performance data, but not
-what I want.</p>
-<p>They also have <a href="https://vercel.com/docs/deployments/logs">logs</a>, which
-can even be <a href="https://vercel.com/docs/deployments/logs#persistence">persisted</a>,
-through <a href="https://vercel.com/integrations#logging">logging integrations</a>.</p>
-<p>This is great, but the whole point I’m doing this comparison is because
-I want a <em>free</em> hosting with logs. If I’m not willing to pay for
-hosting, I’m not going to pay for Logtrail, Sematext, Datadog or LogDNA. 😆</p>
-<p>The good news is that the logging integrations are built on top of <a href="https://vercel.com/docs/rest-api#integrations/log-drains">log
-drains</a>, and
-Vercel allows to <a href="https://vercel.com/docs/integrations">create custom integrations</a>.
-This means that we can create our own custom integration, and for
-example, configure a log drain that forwards the logs to… a <a href="https://www.codejam.info/2021/09/free-static-hosting-server-side-analytics.html#google-cloud-free-tier-vm">Google Cloud free tier VM</a>!</p>
-<p>This is the best of both words, because Google Cloud won’t charge for
-ingress (and sending data to it is indeed ingress), so we’ll only pay
-for the egress of our SSH session where we query the log files, but
-that’s going to be negligible.</p>
-<p>In <a href="https://www.codejam.info/2021/09/vercel-custom-log-drain.html">the next post</a>, I’ll show you how to set
-up Vercel with a custom integration to forward logs to a Google Cloud VM
-(or the log drain of your choice). See you there!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440401245991170048">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

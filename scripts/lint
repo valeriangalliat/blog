@@ -24,6 +24,11 @@ process() {
         fi
 
         path=$(echo "$line" | sed 's/^.*](//;s/).*//')
+
+        if ! [ -f "$path" ]; then
+            continue
+        fi
+
         head=$(grep -A4 '^# ' "$path")
         title=$(echo "$head" | head -1 | sed 's/^# //')
         date=$(echo "$head" | grep -B1 '^$' | head -1)

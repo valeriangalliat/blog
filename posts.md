@@ -8,7 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
-* [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
+* [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 
 ## 2021

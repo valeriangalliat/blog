@@ -1,3 +1,9 @@
+---
+hero: https://photography.codejam.info/photos/hd/P2680620-Pano.jpg
+heroCredit: Val
+heroCreditUrl: https://photography.codejam.info/photos/P2680620-Pano.html
+---
+
 # 3 months of poison ivy, a story 🌿
 February 25, 2022
 

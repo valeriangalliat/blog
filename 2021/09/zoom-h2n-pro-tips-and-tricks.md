@@ -139,7 +139,7 @@ This is fine with me, but every time I empty the SD card, the file
 resets to `ZOOM0001.WAV`! There's no persistent internal counter like
 with my camera.
 
-This is annoying because I end up with conflicting file names, and I
+This is annoying because I end up with conflicting filenames, and I
 can't uniquely identify a specific Zoom recording by its name. Not
 great.
 

@@ -1,9 +1,9 @@
 ---
-excerpt: A blog by a programmer who loves many other things.
+excerpt: A blog about tech, programming and other things.
 ---
 
 # CodeJam <small>by Val</small>
-A blog by a programmer who loves many other things.
+A blog about tech, programming and other things.
 
 ## Posts
 

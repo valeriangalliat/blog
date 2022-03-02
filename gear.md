@@ -94,7 +94,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
   </tr>
 </table>
 
-## Photo
+## Photography
 
 ![Val taking a picture on top of a mountain](https://photography.codejam.info/img/val-4.jpg)
 

@@ -33,13 +33,14 @@ You’ll often see me riding bikes, whether it's [with][motorcycle] or
 I'm addicted to music, and when I'm not listening to some, it's more
 likely because I'm [playing][channel].
 
-I also happen to be an independent software developer, specialized in
-backend and infrastructure. Previously, I was working at [Sportlogiq],
-and before that, [Busbud].
+I also happen to be a software developer, specialized in
+backend and infrastructure. Currently working at [Hookdeck] and
+previously [Sportlogiq], and [Busbud].
 
 [bike]: https://www.codejam.info/img/2020/06/gopro.jpg
 [motorcycle]: https://photography.codejam.info/photos/P2570525.html
 [channel]: https://www.youtube.com/FunkyVal
+[Hookdeck]: https://hookdeck.com/about
 [Sportlogiq]: https://sportlogiq.com/en/about-us
 [Busbud]: https://www.busbud.com/en/about
 
@@ -51,7 +52,6 @@ and before that, [Busbud].
     <th><a href="https://twitter.com/valeriangalliat"><sub><img src="/img/icons/twitter.png" width="16"></sub> Twitter</a></th>
     <th><a href="https://www.instagram.com/funkyval_/"><sub><img src="/img/icons/instagram.png" width="16"></sub> Instagram</a></th>
     <th><a href="https://www.linkedin.com/in/valeriangalliat/"><sub><img src="/img/icons/linkedin.png" width="16"></sub> LinkedIn</a></th>
-    <th><a href="https://ko-fi.com/funkyval"><sub><img src="/img/icons/ko-fi.png" width="16"></sub> Buy me a coffee!</a></th>
   </tr>
 </table>
 
@@ -62,16 +62,16 @@ touch!
 
 <div class="links">
 
-* [Blog](https://www.codejam.info/) <small>| 90% programming, 10% content creation</small>
-* [Photography](https://photography.codejam.info/) <small>| my photos</small>
-* [Instagram](https://www.instagram.com/funkyval_/) <small>| my square photos</small>
-* [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
-* [Twitter](https://twitter.com/valeriangalliat) <small>| 50% jokes, 50% tips, 100% tech</small>
-* [GitHub](https://github.com/valeriangalliat) <small>| my projects</small>
-* [Ko-fi](https://ko-fi.com/funkyval) <small>| buy me a coffee</small>
-* [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| connect with me</small>
-* [SoundCloud](https://soundcloud.com/funkyval) <small>| my music</small>
-* [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>
-* [Email](mailto:val@codejam.info) <small>| `val@codejam.info`</small>
+* ✍️ [Blog](https://www.codejam.info/) <small>| 90% programming, 10% content creation</small>
+* 📸 [Photography](https://photography.codejam.info/) <small>| my photos</small>
+* 🌈 [Instagram](https://www.instagram.com/funkyval_/) <small>| my square photos</small>
+* 🎬 [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
+* 🐦 [Twitter](https://twitter.com/valeriangalliat) <small>| 50% jokes, 50% tips, 100% tech</small>
+* 🧑‍💻 [GitHub](https://github.com/valeriangalliat) <small>| my projects</small>
+* 💸 [Ko-fi](https://ko-fi.com/funkyval) <small>| buy me a coffee</small>
+* 🦄 [LinkedIn](https://www.linkedin.com/in/valeriangalliat/) <small>| connect with me</small>
+* 🎸 [SoundCloud](https://soundcloud.com/funkyval) <small>| my music</small>
+* 📝 [Resume](https://valeriangalliat.github.io/cv/cv.en.pdf) <small>| also in [French](https://valeriangalliat.github.io/cv/cv.fr.pdf) and [LaTeX](https://github.com/valeriangalliat/cv)</small>
+* 📩 [Email](mailto:val@codejam.info) <small>| `val@codejam.info`</small>
 
 </div>

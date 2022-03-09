@@ -5,10 +5,82 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-02-25T23:26:49.442Z</updated>
+  <updated>2022-03-09T01:29:46.089Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Delete ghost volume from Time Machine snapshot</title>
+    <link href="https://www.codejam.info/2022/03/delete-ghost-volume-from-time-machine-snapshot.html" />
+    <id>https://www.codejam.info/2022/03/delete-ghost-volume-from-time-machine-snapshot.html</id>
+    <updated>2022-03-08T05:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>This is the blog post version of
+<a href="https://apple.stackexchange.com/a/438077/452681">my answer to this Stack Exchange question</a>.</p>
+<h2 id="why-i-needed-to-remove-a-volume-backup" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/03/delete-ghost-volume-from-time-machine-snapshot.html#why-i-needed-to-remove-a-volume-backup"><span>Why I needed to remove a volume backup</span></a></h2>
+<p>Recently, the external hard drive where I kept some of my video footage
+<a href="https://twitter.com/valeriangalliat/status/1491106467310489604">died</a>.</p>
+<p>But as I’m a good citizen and I have a backup (and restore) strategy,
+all the data was also mirrored on my Time Machine drive! Yay!</p>
+<p>So I proceeded to restore it to another internal drive where I had
+enough room.</p>
+<p>This could be the end of the story. But Time Machine kept persisting the
+backups of that old external drive in all further snapshots.</p>
+<p>This is a nice feature, for example if your external drive is unplugged
+for a few days, you don’t want Time Machine to remove it from your
+backup history. But in my case, that drive was actually <em>dead</em> and now I
+restored it, I didn’t need this redundant “phantom” backup.</p>
+<p>It turns out you can’t easily delete arbitrary directories in a Time
+Machine backup, and the <code>tmutil delete</code> command <a href="https://apple.stackexchange.com/q/333767/452681">doesn’t let you</a>
+delete granular parts of a backup. It’s either <a href="https://apple.stackexchange.com/a/357114/452681">a whole snapshot, machine directory or backup store</a>.</p>
+<p>Luckily, by messing around with the <code>tmutil</code> command, and because I
+<a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#finalizing">already played a bit with it</a>,
+in the past I figured a way to hack it to remove a specific ghost volume
+from a backup!</p>
+<h2 id="the-theory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/03/delete-ghost-volume-from-time-machine-snapshot.html#the-theory"><span>The theory</span></a></h2>
+<p>Time Machine has in its state a directory <code>Video</code> (in my case) in the
+backup snapshots, which it associates with <code>/Volumes/Video</code>, or more
+specifically, the original disk UUID behind this mount point. Because
+that disk is dead, this UUID is never to be seen again. But Time Machine
+can’t know that. From its perspective, it’s just like this external
+drive is unplugged, and it’s a good thing that it doesn’t remove it form
+backups!</p>
+<p>So, if we tell Time Machine that the <code>Video</code> backup directory is now
+associated with <em>another</em> disk (that actually exists), it will
+effectively put the new backup in it, instead of carrying over the
+backup of the dead disk.</p>
+<p>And even better, if we associate a disk that is <em>excluded</em> from Time
+Machine backups, it will delete the <code>Video</code> directory altogether from
+new snapshots!</p>
+<h2 id="removing-the-ghost-backup-directory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/03/delete-ghost-volume-from-time-machine-snapshot.html#removing-the-ghost-backup-directory"><span>Removing the ghost backup directory</span></a></h2>
+<p>First, we need to identify a volume that’s already excluded from Time
+Machine. Go in the Time Machine preferences, and in <kbd>Options…</kbd>, see if
+you have an excluded volume. It could be an internal drive that you
+explicitly excluded from backups, or an external drive that you never
+explicitly included in backups.</p>
+<p>If you don’t have any excluded disk (it needs to be a disk, not a
+subdirectory), you can plug a random USB stick or SD card or something
+similar.</p>
+<p>Let’s pretend that your excluded disk is a USB stick, in <code>/Volumes/USB</code>,
+and I’m trying to get rid of the <code>Video</code> directory inside my future backup
+snapshots:</p>
+<pre><code class="hljs language-sh">sudo tmutil associatedisk /Volumes/USB <span class="hljs-string">&quot;/Volumes/{TimeMachineDrive}/Backups.backupdb/{MachineDirectory}/Latest/Video&quot;</span>
+</code></pre>
+<p>Now Time Machine thinks that the <code>Video</code> directory is associated with
+<code>/Volumes/USB</code>, which is excluded, and so, it will exclude it from
+future backups!</p>
+<p>The history of the dead <code>Video</code> drive will still be present in the older
+snapshots, but Time Machine will be able to reclaim the space from it in
+the future because that “ghost” volume is not being referenced anymore
+in the newer backups.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>3 months of poison ivy, a story 🌿</title>
     <link href="https://www.codejam.info/2022/02/3-months-of-poison-ivy-a-story.html" />
@@ -2999,7 +3071,7 @@ number for every new file.</p>
 <p>This is fine with me, but every time I empty the SD card, the file
 resets to <code>ZOOM0001.WAV</code>! There’s no persistent internal counter like
 with my camera.</p>
-<p>This is annoying because I end up with conflicting file names, and I
+<p>This is annoying because I end up with conflicting filenames, and I
 can’t uniquely identify a specific Zoom recording by its name. Not
 great.</p>
 <p>If you want to keep incrementing the number after wiping your SD card
@@ -3204,572 +3276,6 @@ Happy recording!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441462405700145154">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How I set up a minimalist Debian host with nginx and Let’s Encrypt</title>
-    <link href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html" />
-    <id>https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html</id>
-    <updated>2021-09-22T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>It’s something I’ve had to do more than once this year so I think it’s
-about time to write a blog post.</p>
-<div class="note">
-<p><strong>Note:</strong> in this post (including the title), I use “Let’s Encrypt”
-because it’s the term most people know and will look up, but what I mean
-is technically the <abbr title="Automatic certificate management environment">ACME</abbr>
-protocol with any compatible certificate authority.</p>
-<p><a href="https://letsencrypt.org/">Let’s Encrypt</a> is one of those certificate
-authorities, but I personally use <a href="https://zerossl.com/">ZeroSSL</a> which
-is another ACME-compatible authority to provide free certificates.</p>
-</div>
-<h2 id="why-do-i-spawn-debian-vms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-spawn-debian-vms"><span>Why do I spawn Debian VMs?</span></a></h2>
-<p>Let’s start with the why I’m doing that. See, Google Cloud has
-<a href="https://cloud.google.com/free/docs/gcp-free-tier/#compute">a cool thing</a>
-where they allow you to run a <code>e2-micro</code> instance for free per billing
-account, with up to 30 GB of storage, and as long as you pay for egress
-(outgoing) traffic.</p>
-<p>This is one of the cheapest ways that I know of to host a proof of
-concept, <abbr title="Minimum viable product">MVP</abbr> or a very small
-or lightweight project like this blog.</p>
-<p>Google Cloud defaults their VM image to latest stable Debian, which I
-find to be a good base for a server when you don’t want to spend a lot
-of time setting things up and don’t want to think too much about it.</p>
-<h2 id="why-do-i-install-nginx-and-let-s-encrypt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#why-do-i-install-nginx-and-let-s-encrypt"><span>Why do I install nginx and Let’s Encrypt?</span></a></h2>
-<p>Most of the time I spawn such a VM, it’s to run some kind of web
-service over HTTPS. nginx is my favorite web server, and ACME is my
-favorite way to manage TLS certificates (see note above about my usage
-of the term “Let’s Encrypt”).</p>
-<h2 id="what-about-infrastructure-as-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#what-about-infrastructure-as-code"><span>What about infrastructure as code?</span></a></h2>
-<p>I won’t go into this topic in this blog post because there’s a fuckton
-of ways you could want to code your infrastructure and provision your
-servers depending on your needs.</p>
-<p>This is out of scope for this article, but feel free to adapt it to
-whatever tools you use! Personally, my favorite provisioning tool is
-<code>/bin/sh</code> and this post is a breakdown of my script with detailed
-explanations about everything it’s doing.</p>
-<p>Now the context is set, let’s get into how I set up everything in a
-minimalistic way (I like to keep things simple).</p>
-<h2 id="preventing-the-bloat-on-debian" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preventing-the-bloat-on-debian"><span>Preventing the bloat on Debian</span></a></h2>
-<p>First things first, I start every of my Debian installations by adding
-this <code>apt.conf</code> I shared on this blog over 7 years ago, to <a href="https://www.codejam.info/2014/09/keeping-debian-clean-and-minimal.html">keep Debian clean and minimal</a>.</p>
-<p>The gist of it is that by default Debian packages can come with
-“recommended packages” and “suggested packages”, and APT automatically
-installs the recommended ones by default.</p>
-<div class="note">
-<p><strong>Note:</strong> APT also used to install the suggested packages by default,
-which is how we ended up with <code>imagemagick</code> on the system after
-installing <code>nmap</code> like mentioned in the article above.</p>
-<p>It looks like I wasn’t the only one to be bugged by this and this
-behavior is no longer the default.</p>
-</div>
-<p>I like to explicitly install every package that’s not a hard dependency,
-so I use the following config to make sure nothing extra is installed by
-default.</p>
-<pre><code class="hljs language-sh">cat &lt;&lt; <span class="hljs-string">EOF &gt; /etc/apt/apt.conf
-APT::Install-Recommends false;
-APT::Install-Suggests false;
-APT::AutoRemove::RecommendsImportant false;
-APT::AutoRemove::SuggestsImportant false;
-EOF</span>
-</code></pre>
-<p>It also configures APT to consider previously installed recommendations
-and suggestions unimportant, meaning that they’ll be wiped in the next
-<code>apt autoremove</code>. This won’t do anything on most fresh installations,
-but if installing this configuration in an existing system, you might
-want to double-check that list before removing the packages marked as
-“no longer necessary”.</p>
-<p>After that, APT will only install what’s strictly required by default,
-and on top of the “suggested packages” list, it’ll also display a
-“recommended packages” informational list, instead of automatically
-installing them. Neat.</p>
-<p>Also note that <code>apt autoremove</code>, like <code>apt remove</code>, will keep the
-configuration files of the removed packages on the system, and there’s
-no equivalent of <code>apt purge</code> like <code>apt autopurge</code>.</p>
-<div class="note">
-<p><strong>Note:</strong> I just tried out of curiosity and even though undocumented, it
-looks like <a href="https://github.com/Debian/apt/blob/766b24b7f7484751950c76bc66d3d6cdeaf949a5/apt-private/private-install.cc#L608"><code>apt autopurge</code> exists</a>
-and does exactly what you would expect!</p>
-<p>So I would recommend running <code>apt autopurge</code> instead of <code>apt autoremove</code>
-so that it also removes the configuration files of the packages it
-removes.</p>
-</div>
-<p>Finally, if you used <code>apt remove</code> or <code>apt autoremove</code>, you can still
-purge the dangling configuration files with the <a href="https://askubuntu.com/a/279432">following command</a>:</p>
-<pre><code class="hljs language-sh">apt purge $(dpkg --get-selections | grep deinstall | cut -f1)
-</code></pre>
-<p>This will purge the configuration files of all packages that were ever
-deinstalled and left with existing configuration files in place.</p>
-<h2 id="installing-the-essentials" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-essentials"><span>Installing the essentials</span></a></h2>
-<p>In most Unix systems that I use, I’ll install the following packages:</p>
-<pre><code class="hljs language-sh">apt install tmux vim git htop ca-certificates
-</code></pre>
-<p>On top of that, on Debian I like to add the <code>build-essential</code> package if
-I need to compile anything, as it depends on the most common tools that
-are necessary to build software from source.</p>
-<h2 id="my-minimalist-nginx-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#my-minimalist-nginx-configuration"><span>My minimalist nginx configuration</span></a></h2>
-<p>Let’s start with installing nginx.</p>
-<pre><code class="hljs language-sh">apt install nginx
-</code></pre>
-<p>This will put the default Debian nginx configuration in <code>/etc/nginx</code>.</p>
-<p>The default configuration is too much for me. I like to write my nginx
-configuration from scratch. The only file I want to keep is the
-<a href="https://github.com/nginx/nginx/blob/master/conf/mime.types">default <code>mime.types</code> file</a>.</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cd</span> /etc
-mkdir nginx2
-cp nginx/mime.types nginx2
-rm -rf nginx
-mv nginx2 nginx
-</code></pre>
-<p>This wipes all the default nginx configuration and only keeps the
-<code>mime.types</code> file which I’ll include in my custom configuration.</p>
-<h3 id="trimmed-down-debian-configuration" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#trimmed-down-debian-configuration"><span>Trimmed-down Debian configuration</span></a></h3>
-<p>Speaking about my custom configuration, here’s the base. Everything
-there is the parts of the default <code>nginx.conf</code> on Debian that I kept.
-I’ll post my custom additions after.</p>
-<pre><code class="hljs language-nginx"><span class="hljs-comment">#</span>
-<span class="hljs-comment"># /etc/nginx/nginx.conf</span>
-<span class="hljs-comment">#</span>
-<span class="hljs-comment"># Based on a simplified Debian default.</span>
-<span class="hljs-comment">#</span>
-
-<span class="hljs-attribute">user</span> www-data;
-<span class="hljs-attribute">worker_processes</span> auto;
-<span class="hljs-attribute">pid</span> /run/nginx.pid;
-
-<span class="hljs-section">events</span> {
-    <span class="hljs-attribute">worker_connections</span> <span class="hljs-number">768</span>;
-    <span class="hljs-comment"># multi_accept on;</span>
-}
-
-<span class="hljs-section">http</span> {
-    <span class="hljs-attribute">sendfile</span> <span class="hljs-literal">on</span>;
-    <span class="hljs-attribute">tcp_nopush</span> <span class="hljs-literal">on</span>;
-    <span class="hljs-attribute">types_hash_max_size</span> <span class="hljs-number">2048</span>;
-    <span class="hljs-comment"># server_tokens off;</span>
-
-    <span class="hljs-attribute">include</span> /etc/nginx/mime.types;
-    <span class="hljs-attribute">default_type</span> application/octet-stream;
-
-    <span class="hljs-attribute">access_log</span> /var/log/nginx/access.log;
-    <span class="hljs-attribute">error_log</span> /var/log/nginx/error.log;
-
-    <span class="hljs-attribute">gzip</span> <span class="hljs-literal">on</span>;
-}
-</code></pre>
-<h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#val-s-essential-tweaks"><span>Val’s essential tweaks</span></a></h3>
-<p>From there, I tweak a few things.</p>
-<pre><code class="hljs language-diff">     sendfile on;
-     tcp_nopush on;
-     types_hash_max_size 2048;
-<span class="hljs-deletion">-    # server_tokens off;</span>
-<span class="hljs-addition">+    server_tokens off;</span>
-
-     include /etc/nginx/mime.types;
-     default_type application/octet-stream;
-
-<span class="hljs-deletion">-    access_log /var/log/nginx/access.log;</span>
-<span class="hljs-addition">+    access_log off;</span>
-     error_log /var/log/nginx/error.log;
-
-     gzip on;
-<span class="hljs-addition">+    gzip_vary on;</span>
-<span class="hljs-addition">+</span>
-<span class="hljs-addition">+    # Custom list based on Debian&#x27;s `/etc/nginx/mime.types`.</span>
-<span class="hljs-addition">+    gzip_types text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;</span>
-<span class="hljs-addition">+</span>
-<span class="hljs-addition">+    charset utf-8;</span>
- }
-</code></pre>
-<ul>
-<li>I turn <code>server_tokens</code> off to remove the <code>Server</code> HTTP response header.</li>
-<li>I turn off the default access log because I like to specify it per
-virtual host and I don’t care about requests that didn’t hit a virtual
-host.</li>
-<li>I enable <code>gzip_vary</code> to have the <code>Vary: Accept-Encoding</code> header in the
-responses. This is especially important when used with a caching
-server in front, because it instructs it to not mix responses with
-different <code>Accept-Encoding</code> together, preventing for example to serve
-a gzip response to a client that can only handle plain text.</li>
-<li>I configure more <code>gzip_types</code> than the default of just <code>text/html</code>, so
-that we automatically compress most web resources. Feel free to add
-more that makes sense to you here.</li>
-<li>I set <code>charset</code> to <code>utf-8</code> so that <code>charset=utf-8</code> is added to the
-<code>Content-Type</code> response header, e.g. <code>Content-Type: text/html; charset=utf-8</code>.</li>
-</ul>
-<p>But we’re still missing a very important part. The TLS configuration!</p>
-<h3 id="tls-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#tls-settings"><span>TLS settings</span></a></h3>
-<p>I use <a href="https://ssl-config.mozilla.org/">Mozilla’s SSL configuration generator</a>
-for that, with the intermediate setting, which gives me the following
-(comments removed):</p>
-<pre><code class="hljs language-nginx"><span class="hljs-attribute">ssl_certificate</span> /path/to/signed_cert_plus_intermediates;
-<span class="hljs-attribute">ssl_certificate_key</span> /path/to/private_key;
-<span class="hljs-attribute">ssl_session_timeout</span> <span class="hljs-number">1d</span>;
-<span class="hljs-attribute">ssl_session_cache</span> shared:MozSSL:<span class="hljs-number">10m</span>;
-<span class="hljs-attribute">ssl_session_tickets</span> <span class="hljs-literal">off</span>;
-<span class="hljs-attribute">ssl_dhparam</span> /path/to/dhparam;
-<span class="hljs-attribute">ssl_protocols</span> TLSv1.<span class="hljs-number">2</span> TLSv1.<span class="hljs-number">3</span>;
-<span class="hljs-attribute">ssl_ciphers</span> ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
-<span class="hljs-attribute">ssl_prefer_server_ciphers</span> <span class="hljs-literal">off</span>;
-<span class="hljs-attribute">add_header</span> Strict-Transport-Security <span class="hljs-string">&quot;max-age=63072000&quot;</span> always;
-<span class="hljs-attribute">ssl_stapling</span> <span class="hljs-literal">on</span>;
-<span class="hljs-attribute">ssl_stapling_verify</span> <span class="hljs-literal">on</span>;
-<span class="hljs-attribute">ssl_trusted_certificate</span> /path/to/root_CA_cert_plus_intermediates;
-</code></pre>
-<p>I like to include it in the <code>http</code> block, after the <code>default_type</code>
-directive.</p>
-<p>But we don’t yet have the certificates and key files that we reference
-there. We still need to generate them with Let’s Encrypt. We’ll do that
-a bit later, but until then, we need to comment those parts otherwise
-the nginx config won’t validate and nginx won’t be able to start (or
-reload).</p>
-<pre><code class="hljs language-diff"><span class="hljs-deletion">-ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-deletion">-ssl_certificate_key /path/to/private_key;</span>
-<span class="hljs-addition">+# ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-addition">+# ssl_certificate_key /path/to/private_key;</span>
- ssl_session_timeout 1d;
- ssl_session_cache shared:MozSSL:10m;
- ssl_session_tickets off;
-<span class="hljs-deletion">-ssl_dhparam /path/to/dhparam;</span>
-<span class="hljs-addition">+# ssl_dhparam /path/to/dhparam;</span>
- ssl_protocols TLSv1.2 TLSv1.3;
- ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
- ssl_prefer_server_ciphers off;
- add_header Strict-Transport-Security &quot;max-age=63072000&quot; always;
- ssl_stapling on;
- ssl_stapling_verify on;
-<span class="hljs-deletion">-ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
-<span class="hljs-addition">+# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
-</code></pre>
-<h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#default-server-with-https-and-www-redirect"><span>Default server with HTTPS and <code>www</code> redirect</span></a></h3>
-<p>I like <code><strong>http://</strong>www.codejam.info/</code> to redirect to
-<code><strong>https://</strong>www.codejam.info/</code>, and also
-<code>https://codejam.info/</code> to redirect to <code>https://<strong>www.</strong>codejam.info/</code>.
-As a bonus, I like when <code><strong>http://</strong>codejam.info/</code>
-redirects to <code><strong>https://www.</strong>codejam.info/</code> in
-a single step. 😏</p>
-<p>We’ll also take this as an opportunity to configure the Let’s Encrypt
-webroot challenge path, so that our ACME client can automatically
-generate and renew certificates.</p>
-<div class="note">
-<p><strong>Note:</strong> it appears that the most common way people run ACME clients is
-by letting it automatically modify their web server configuration file
-to handle the ACME challenge endpoint <code>/.well-known/acme-challenge</code>
-during the issuing or renewal.</p>
-<p>Alternatively, the “webroot” method lets you configure the
-<code>/.well-known/acme-challenge</code> path yourself on your web server to serve
-an existing directory on the system. The ACME client will then just put
-files in that directory to have them served by your web server, without
-altering its configuration. This is a much simpler and more reliable
-solution.</p>
-<p>While common ACME clients like <a href="https://certbot.eff.org/">Certbot</a> and
-<a href="https://github.com/acmesh-official/acme.sh">acme.sh</a> can handle a
-variety of web server configurations, I hate the idea of a tool
-modifying my <code>nginx.conf</code> which is why I use the webroot mode instead.</p>
-</div>
-<p>The following <code>server</code> blocks will do all of that. They live inside the
-main <code>http</code> block which I won’t include again here.</p>
-<pre><code class="hljs language-nginx"><span class="hljs-section">server</span> {
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">80</span> default_server;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">80</span> default_server;
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">443</span> ssl http2 default_server;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">443</span> ssl http2 default_server;
-
-    <span class="hljs-attribute">location</span> / {
-        <span class="hljs-attribute">return</span> <span class="hljs-number">404</span>;
-    }
-}
-
-<span class="hljs-section">server</span> {
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">80</span>;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">80</span>;
-
-    <span class="hljs-attribute">server_name</span> www.codejam.<span class="hljs-literal">info</span>;
-
-    <span class="hljs-attribute">location</span> / {
-        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://$host$request_uri;
-    }
-
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
-        <span class="hljs-attribute">root</span> /var/www/challenges;
-    }
-}
-
-<span class="hljs-section">server</span> {
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">80</span>;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">80</span>;
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">443</span> ssl http2;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">443</span> ssl http2;
-
-    <span class="hljs-attribute">server_name</span> codejam.<span class="hljs-literal">info</span>;
-
-    <span class="hljs-attribute">location</span> / {
-        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://www.$host$request_uri;
-    }
-
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
-        <span class="hljs-attribute">root</span> /var/www/challenges;
-    }
-}
-
-<span class="hljs-section">server</span> {
-    <span class="hljs-attribute">listen</span> <span class="hljs-number">443</span> ssl http2;
-    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">443</span> ssl http2;
-
-    <span class="hljs-attribute">server_name</span> www.codejam.<span class="hljs-literal">info</span>;
-
-    <span class="hljs-attribute">access_log</span> /var/log/nginx/www.codejam.<span class="hljs-literal">info</span>.access.log;
-    <span class="hljs-attribute">error_log</span> /var/log/nginx/www.codejam.<span class="hljs-literal">info</span>.<span class="hljs-literal">error</span>.log;
-
-    <span class="hljs-attribute">root</span> /var/www/www.codejam.<span class="hljs-literal">info</span>;
-    <span class="hljs-attribute">index</span> index.html;
-
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
-        <span class="hljs-attribute">root</span> /var/www/challenges;
-    }
-}
-</code></pre>
-<p>The first block with <code>default_server</code> makes sure that nginx returns a
-404 for every requests it sees for a domain that it doesn’t know about.</p>
-<p>The rest should be self-explanatory.</p>
-<div class="note">
-<p><strong>Note:</strong> this will be good for production but because we don’t have the
-certificate files yet, nginx will not accept our SSL servers. So comment
-those out in the meantime, and just add the following server that will
-let us generate our initial certificates:</p>
-<pre><code class="hljs language-conf">server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
-
-    location / {
-        return 404;
-    }
-
-    location /.well-known/acme-challenge {
-        root /var/www/challenges;
-    }
-}
-</code></pre>
-</div>
-<h3 id="enabling-starting-or-reloading-nginx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#enabling-starting-or-reloading-nginx"><span>Enabling, starting or reloading nginx</span></a></h3>
-<p>First, let’s test the configuration:</p>
-<pre><code class="hljs language-sh">nginx -t
-</code></pre>
-<p>If successful, we can enable the nginx service if it’s not already:</p>
-<pre><code class="hljs language-sh">systemctl <span class="hljs-built_in">enable</span> nginx
-</code></pre>
-<p>Then start it:</p>
-<pre><code class="hljs language-sh">systemctl start nginx
-</code></pre>
-<p>Or reload its configuration if it was already running</p>
-<pre><code class="hljs language-sh">systemctl reload nginx
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> by default when installing a package that comes with a service
-like nginx, Debian automatically enables it and starts it, so you
-probably only need the reload command above at that point.</p>
-<p>Use <code>systemctl status nginx</code> to see if it’s currently enabled and
-running.</p>
-</div>
-<p>While in this state we don’t have proper TLS certificates to handle
-HTTPS just yet, we have everything we need to automatically generate and
-renew TLS certificates with the ACME protocol.</p>
-<h2 id="managing-tls-certificates-with-acme-sh" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#managing-tls-certificates-with-acme-sh"><span>Managing TLS certificates with acme.sh</span></a></h2>
-<p><abbr title="Automatic certificate management environment">ACME</abbr>
-is the protocol behind Let’s Encrypt. <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
-is an ACME client written in pure Unix shell. It’s simple and
-lightweight, unlike <a href="https://certbot.eff.org/">Certbot</a>, which is the
-client that Let’s Encrypt recommends to use.</p>
-<p>acme.sh is the most simple client that I found, but their default usage
-instructions still do some magic that I would rather avoid, so I’ll
-present here my modified installation method, which doesn’t have any
-magic and where you’re fully in control of every step.</p>
-<h3 id="setting-up-a-restricted-user" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#setting-up-a-restricted-user"><span>Setting up a restricted user</span></a></h3>
-<p>We’ll do a custom installation of <a href="https://github.com/acmesh-official/acme.sh">acme.sh</a>
-so that it runs <strong>with its own restricted user</strong> based on <a href="https://gist.github.com/lachesis/943769f3fac740d5848352752ac08741">this Gist</a>,
-because running it as root like they show out of the box is
-irresponsible.</p>
-<p>First we create a <code>acme</code> user with home directory set to <code>/var/lib/acme</code>
-(it’ll be created automatically because we specified <code>-m</code>) and
-<code>/usr/sbin/nologin</code> as login shell to deny login access to this account.</p>
-<pre><code class="hljs language-sh">useradd -m -d /var/lib/acme -s /usr/sbin/nologin acme
-</code></pre>
-<p>We also make sure this home directory is only accessible by the <code>acme</code>
-user itself.</p>
-<pre><code class="hljs language-sh">chmod 700 /var/lib/acme
-</code></pre>
-<p>Then we prepare the webroot challenge directory that we configured
-earlier in <code>nginx.conf</code>. We make sure that it’s owned by the <code>acme</code> user
-and group so that it can write to this directory. The default permission
-for the directory is full access for the user and read and execute
-access for everyone else which is fine here.</p>
-<pre><code class="hljs language-sh">mkdir /var/www/challenges
-chown acme:acme /var/www/challenges
-</code></pre>
-<p>Next, we prepare the directory where we’ll install the certificates.
-This directory needs to be writable by the <code>acme</code> user but nginx (who
-runs under the <code>www-data</code> user and group) needs to be able to read from
-it, so we set the group to <code>www-data</code>.</p>
-<p>This allows us to set the <code>710</code> permission which means full access for
-the user, execute access for the group (on a directory that means it can
-access files in this directory according to the files permissions but
-cannot list the contents of the directory), and no permissions for
-everyone else.</p>
-<pre><code class="hljs language-sh">mkdir /etc/acme
-chown acme:www-data /etc/acme
-chmod 710 /etc/acme
-</code></pre>
-<p>Finally we give <code>sudo</code> access to the <code>acme</code> user, allowing it to only
-run the <code>/bin/systemctl reload nginx</code> command without being prompted for
-a password. Run <code>visudo</code> to safely edit the <code>/etc/sudoers</code> file and add
-the following line:</p>
-<pre><code class="hljs language-sh">acme	ALL=(ALL:ALL) NOPASSWD: /bin/systemctl reload nginx
-</code></pre>
-<p>We can now open a shell as the <code>acme</code> user to set up acme.sh there. Here
-we explicitly precise <code>/bin/bash</code> as shell because we set the default
-one to <code>/usr/sbin/nologin</code> for this user earlier to deny shell access.
-We make sure to run a login shell using <code>-</code>.</p>
-<pre><code class="hljs language-sh">su -s /bin/bash - acme
-</code></pre>
-<p>We’ll end up in the home directory which we set earlier to <code>/var/lib/acme</code>.</p>
-<h3 id="installation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installation"><span>Installation</span></a></h3>
-<p>We can now follow the official <a href="https://github.com/acmesh-official/acme.sh#2-or-install-from-git">install from Git instructions</a>
-because piping scripts from the web into <code>sh</code> is a terrible idea.</p>
-<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/acmesh-official/acme.sh
-<span class="hljs-built_in">cd</span> acme.sh
-</code></pre>
-<p>That’s where my method starts to differ. They recommend running
-<code>./acme.sh --install -m my@example.com</code> which will do a number of
-things:</p>
-<ol>
-<li>Register to <a href="https://zerossl.com/">ZeroSSL</a> with the given email address.</li>
-<li>Copy the contents of the repo to <code>~/.acme.sh</code>, doing a few shebang
-modifications.</li>
-<li>Create a default <code>account.conf</code> and <code>acme.sh.env</code> files that we won’t
-need here.</li>
-<li>Generate a cron entry to renew certificates, which we can generate
-later on with a more specific command.</li>
-</ol>
-<p>I like to keep the source code separate from the configuration and some
-of those steps are unnecessary for me.</p>
-<p>Instead, I don’t “install” acme.sh and I just run it from its Git repo,
-which will make it much easier to update the code in the future. Because
-by default it stores all the configuration in <code>~/.acme.sh</code>, this has the
-nice side effect of keeping the code and the configuration separate. The
-code from the repo is directly usable, and all the extra state will be
-put in <code>~/.acme.sh</code>.</p>
-<p>We still need to explicitly register to ZeroSSL (or any of the other
-<a href="https://github.com/acmesh-official/acme.sh#supported-ca">supported certificate authorities</a>):</p>
-<pre><code class="hljs language-sh">./acme.sh --register-account -m y@example.com
-</code></pre>
-<p>We also need to set up the cron entry:</p>
-<pre><code class="hljs language-sh">LE_WORKING_DIR=<span class="hljs-variable">$PWD</span> ./acme.sh --install-cronjob
-</code></pre>
-<p>You can check what acme.sh did by running <code>crontab -l</code>. You could also
-manually configure an entry like:</p>
-<pre><code class="hljs language-crontab">42 0 * * * /path/to/.acme.sh/acme.sh --cron --home /path/to/.acme.sh &gt; /dev/null
-</code></pre>
-<p>This would run the acme.sh cron task every day at 00:42. But their
-<code>--install-cronjob</code> script generates a random minute to run the job so
-that the certificate authority doesn’t get a huge burst of requests at
-the same second every day, which I think is a good practice to keep.</p>
-<p>From there, the commands we’ll run are the same as the recommended ones
-in the acme.sh readme.</p>
-<h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#preparing-the-certificates-directory-and-dh-parameters"><span>Preparing the certificates directory and DH parameters</span></a></h2>
-<p>I like to install my certificates in <code>/etc/acme</code> which we created
-earlier, with a directory per domain, but this is totally arbitrary.</p>
-<pre><code class="hljs language-sh">mkdir /etc/acme/codejam.info
-</code></pre>
-<p>We also get the <abbr title="Diffie-Hellman">DH</abbr> parameters as
-recommended by <a href="https://ssl-config.mozilla.org/">Mozilla’s SSL configuration generator</a>.</p>
-<pre><code class="hljs language-sh">curl https://ssl-config.mozilla.org/ffdhe2048.txt &gt; /etc/acme/ssl-dhparams.pem
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> long story short, generating strong DH parameters is not that
-easy and it’s actually <a href="https://security.stackexchange.com/a/149818">considered more secure</a>
-to use ones that are proven to be strong despite being public like those
-provided by Mozilla, unless the key size is considered short (1024 bits
-or less as of today’s standards), then using shared DH parameters could
-introduce more security risks than it would prevent.</p>
-</div>
-<h3 id="generating-our-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#generating-our-certificate"><span>Generating our certificate</span></a></h3>
-<pre><code class="hljs language-sh">./acme.sh --issue -d codejam.info -d www.codejam.info -w /var/www/challenges
-</code></pre>
-<p>This will issue a certificate for <code>codejam.info</code> with <code>www.codejam.info</code>
-as alternate name (you can put as many alternate names as you want with
-subsequent <code>-d</code> parameters), meaning that the certificate will be valid
-for all of those domains. You can also generate a wildcard certificate
-but this requires going through automated DNS validation which I won’t
-cover in this blog post.</p>
-<h3 id="installing-the-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#installing-the-certificate"><span>Installing the certificate</span></a></h3>
-<p>In the previous step, acme.sh generated the key and certificate files in
-its own state directory, but it’s not recommended to hardcode those
-paths. That’s why we configure certificate installation paths as well as
-a reload command:</p>
-<pre><code class="hljs language-sh">./acme.sh --install-cert -d codejam.info \
-    --key-file /etc/acme/codejam.info/privkey.pem \
-    --cert-file /etc/acme/codejam.info/cert.pem \
-    --fullchain-file /etc/acme/codejam.info/fullchain.pem \
-    --ca-file /etc/acme/codejam.info/chain.pem \
-    --reloadcmd <span class="hljs-string">&#x27;sudo systemctl reload nginx&#x27;</span>
-</code></pre>
-<p>This will not only install the files in the specified locations and run
-the reload command, but will also save those to your domain
-configuration so that acme.sh knows knows where to install the
-certificates and how to reload the server during the cron job.</p>
-<p>But we commented out the certificate files in <code>nginx.conf</code> earlier
-because they didn’t exist yet. We can now edit the config (as root) to
-reference those files we just installed.</p>
-<pre><code class="hljs language-diff"><span class="hljs-deletion">-# ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-deletion">-# ssl_certificate_key /path/to/private_key;</span>
-<span class="hljs-addition">+ssl_certificate /etc/acme/codejam.info/fullchain.pem;</span>
-<span class="hljs-addition">+ssl_certificate_key /etc/acme/codejam.info/privkey.pem;</span>
- ssl_session_timeout 1d;
- ssl_session_cache shared:MozSSL:10m;
- ssl_session_tickets off;
-<span class="hljs-deletion">-# ssl_dhparam /path/to/dhparam;</span>
-<span class="hljs-addition">+ssl_dhparam /etc/acme/ssl-dhparams.pem;</span>
- ssl_protocols TLSv1.2 TLSv1.3;
- ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
- ssl_prefer_server_ciphers off;
- add_header Strict-Transport-Security &quot;max-age=63072000&quot; always;
- ssl_stapling on;
- ssl_stapling_verify on;
-<span class="hljs-deletion">-# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
-<span class="hljs-addition">+ssl_trusted_certificate /etc/acme/codejam.info/chain.pem;</span>
-</code></pre>
-<p>Verify the config is valid with <code>nginx -t</code> and run a final <code>systemctl reload nginx</code> to apply the changes.</p>
-<h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#bonus-http-basic-authentication"><span>Bonus: HTTP basic authentication</span></a></h2>
-<p>You don’t want your website to be public just yet but still want to test
-it from there? Add basic authentication to it!</p>
-<pre><code class="hljs language-sh">apt install apache2-utils
-htpasswd -c /etc/nginx/htpasswd &lt;user&gt;
-</code></pre>
-<p>Then in <code>nginx.conf</code>, add the following to the <code>server</code> block you want
-to add authentication to:</p>
-<pre><code class="hljs language-nginx"><span class="hljs-attribute">location</span> / {
-    <span class="hljs-attribute">auth_basic</span> <span class="hljs-string">&quot;Private&quot;</span>;
-    <span class="hljs-attribute">auth_basic_user_file</span> /etc/nginx/htpasswd;
-}
-</code></pre>
-<p>Here, “private” is the <a href="https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/WWW-Authenticate#directives">basic authentication <code>realm</code> parameter</a>
-and could be literally anything. It doesn’t even seem to be shown in
-browser UIs anymore so it doesn’t really matter.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/minimalist-debian-nginx-let-s-encrypt.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>At that point, you should have a working HTTPS server with auto-renewed
-certificates. I hope this post was useful to you!</p>
-<div class="note">
-<p><strong>Note:</strong> if you’re looking to integrate Let’s Encrypt or similar on
-your server but this post was too technical for you, <a href="https://www.codejam.info/val.html#contact">let me know</a>,
-I’m available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects and
-I’ll be happy to help you with that. ✌️</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1440704576059961362">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

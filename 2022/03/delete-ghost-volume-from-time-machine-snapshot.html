@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Delete ghost volume from Time Machine snapshot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Delete ghost volume from Time Machine snapshot">
+  <meta property="og:description" content="This is the blog post version of my answer to this Stack Exchange question.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Delete ghost volume from Time Machine snapshot</h1>
+<p class="date">March 8, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This is the blog post version of
+<a href="https://apple.stackexchange.com/a/438077/452681">my answer to this Stack Exchange question</a>.</p>
+<h2 id="why-i-needed-to-remove-a-volume-backup" tabindex="-1"><a class="header-anchor" href="#why-i-needed-to-remove-a-volume-backup"><span>Why I needed to remove a volume backup</span></a></h2>
+<p>Recently, the external hard drive where I kept some of my video footage
+<a href="https://twitter.com/valeriangalliat/status/1491106467310489604">died</a>.</p>
+<p>But as I’m a good citizen and I have a backup (and restore) strategy,
+all the data was also mirrored on my Time Machine drive! Yay!</p>
+<p>So I proceeded to restore it to another internal drive where I had
+enough room.</p>
+<p>This could be the end of the story. But Time Machine kept persisting the
+backups of that old external drive in all further snapshots.</p>
+<p>This is a nice feature, for example if your external drive is unplugged
+for a few days, you don’t want Time Machine to remove it from your
+backup history. But in my case, that drive was actually <em>dead</em> and now I
+restored it, I didn’t need this redundant “phantom” backup.</p>
+<p>It turns out you can’t easily delete arbitrary directories in a Time
+Machine backup, and the <code>tmutil delete</code> command <a href="https://apple.stackexchange.com/q/333767/452681">doesn’t let you</a>
+delete granular parts of a backup. It’s either <a href="https://apple.stackexchange.com/a/357114/452681">a whole snapshot, machine directory or backup store</a>.</p>
+<p>Luckily, by messing around with the <code>tmutil</code> command, and because I
+<a href="../../2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#finalizing">already played a bit with it</a>,
+in the past I figured a way to hack it to remove a specific ghost volume
+from a backup!</p>
+<h2 id="the-theory" tabindex="-1"><a class="header-anchor" href="#the-theory"><span>The theory</span></a></h2>
+<p>Time Machine has in its state a directory <code>Video</code> (in my case) in the
+backup snapshots, which it associates with <code>/Volumes/Video</code>, or more
+specifically, the original disk UUID behind this mount point. Because
+that disk is dead, this UUID is never to be seen again. But Time Machine
+can’t know that. From its perspective, it’s just like this external
+drive is unplugged, and it’s a good thing that it doesn’t remove it form
+backups!</p>
+<p>So, if we tell Time Machine that the <code>Video</code> backup directory is now
+associated with <em>another</em> disk (that actually exists), it will
+effectively put the new backup in it, instead of carrying over the
+backup of the dead disk.</p>
+<p>And even better, if we associate a disk that is <em>excluded</em> from Time
+Machine backups, it will delete the <code>Video</code> directory altogether from
+new snapshots!</p>
+<h2 id="removing-the-ghost-backup-directory" tabindex="-1"><a class="header-anchor" href="#removing-the-ghost-backup-directory"><span>Removing the ghost backup directory</span></a></h2>
+<p>First, we need to identify a volume that’s already excluded from Time
+Machine. Go in the Time Machine preferences, and in <kbd>Options…</kbd>, see if
+you have an excluded volume. It could be an internal drive that you
+explicitly excluded from backups, or an external drive that you never
+explicitly included in backups.</p>
+<p>If you don’t have any excluded disk (it needs to be a disk, not a
+subdirectory), you can plug a random USB stick or SD card or something
+similar.</p>
+<p>Let’s pretend that your excluded disk is a USB stick, in <code>/Volumes/USB</code>,
+and I’m trying to get rid of the <code>Video</code> directory inside my future backup
+snapshots:</p>
+<pre><code class="hljs language-sh">sudo tmutil associatedisk /Volumes/USB <span class="hljs-string">&quot;/Volumes/{TimeMachineDrive}/Backups.backupdb/{MachineDirectory}/Latest/Video&quot;</span>
+</code></pre>
+<p>Now Time Machine thinks that the <code>Video</code> directory is associated with
+<code>/Volumes/USB</code>, which is excluded, and so, it will exclude it from
+future backups!</p>
+<p>The history of the dead <code>Video</code> drive will still be present in the older
+snapshots, but Time Machine will be able to reclaim the space from it in
+the future because that “ghost” volume is not being referenced anymore
+in the newer backups.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/03/delete-ghost-volume-from-time-machine-snapshot.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

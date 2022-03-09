@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1501544474081640456
+---
+
 # Delete ghost volume from Time Machine snapshot
 March 8, 2022
 

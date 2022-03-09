@@ -98,7 +98,7 @@ actual_table
 ```
 
 This doesn't require creating a copy of the file that you want to
-query it despite it being locked by another active connection!
+query despite it being locked by another active connection!
 
 The only caveat is because SQLite doesn't expect that file to be
 updated, changes wont be reflected in that immutable connexion, so it's

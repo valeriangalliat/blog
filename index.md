@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
@@ -22,7 +23,6 @@ A blog about tech, programming and other things.
 * [Elixir: intercepting Phoenix LiveView events in JavaScript](2021/11/elixir-intercepting-phoenix-liveview-events-javascript.md) <small>November 5, 2021</small>
 * [JSDoc: TypeScript inside JavaScript and not the other way around 🤯](2021/10/jsdoc-typescript-inside-javascript.md) <small>October 17, 2021</small>
 * [TypeScript: cannot write file `.d.ts` because it would overwrite input file](2021/10/typescript-cannot-write-file-overwrite-input.md) <small>October 16, 2021</small>
-* [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
 
 [All the posts](posts.md)
 

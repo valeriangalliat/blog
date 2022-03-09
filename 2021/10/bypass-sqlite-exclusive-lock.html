@@ -159,7 +159,7 @@ $ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.table
 actual_table
 </code></pre>
 <p>This doesn’t require creating a copy of the file that you want to
-query it despite it being locked by another active connection!</p>
+query despite it being locked by another active connection!</p>
 <p>The only caveat is because SQLite doesn’t expect that file to be
 updated, changes wont be reflected in that immutable connexion, so it’s
 still like you’re querying a snapshot, it’s just that you don’t have to

@@ -319,6 +319,26 @@ hell where I was stuck in my bed pretty much the whole time and could do
 absolutely nothing productive, the pain disappeared as fast as it came
 and I was back to living a nearly normal life again.
 
+<div class="note">
+
+**Note:** my guess is that because I tried to eat solid foods too soon,
+that made the bandage fall off earlier than it should, and that's why I
+was in such pain. If I managed to preserve the plaster just a few more
+days I probably wouldn't have noticed any pain whatsoever.
+
+I also noticed that it was pretty tempting to fiddle with the palate
+bandage with my tongue, and that likely made it fall off sooner too.
+
+</div>
+
+
+It seems that the palate bandage plays a critical role in pain
+management during the weeks following the surgery. **My biggest advice
+would be to take great care of this bandage and try to keep it as long
+as possible.** Eat only liquid or really soft foods for the first 10
+days to make sure the plaster is less likely to fall, and don't fiddle
+with it with your tongue either!
+
 ### Working 💻
 
 I had the graft done in the morning, and I was pretty much useless the
@@ -351,8 +371,8 @@ French started to be somewhat OK, but I still had trouble articulating
 in English and it was quickly tiring and a bit painful after saying more
 than a few sentences.
 
-After two weeks, I was comfortable speaking again for extended periods
-of time.
+**After two weeks, I was comfortable speaking again for extended periods
+of time.**
 
 ### Eating 🥕
 
@@ -368,13 +388,37 @@ If I was to give an advice to my past self, **it would definitely be to
 buy a blender and/or juicer**, to make smoothies and juices out of fruit
 and vegetables to keep a healthier diet.
 
+<div class="note">
+
+**Edit:** definitely, eating whole bananas was not only long and painful
+but this kind of thing made my palate plaster fall off too early and
+resulted in high pain.
+
+Put the damn banana in a blender, add any kind of vegetables, other
+fruits, milk or plant milk, and a sweetener like honey or maple syrup if
+you want. Tweak it with basil, ginger, cocoa powder or whatever else you
+feel like! Don't be afraid to add water to the mix if you want to make
+it more liquid so that it's even easier to drink.
+
+I got into making smoothies/juices later on and here's a list of what I
+liked to put (not all at the same time obviously, but mix and match as
+you please):
+
+* **Milk:** milk, almond milk, oat milk, soy milk
+* **Fruits:** banana, apple, avocado, grape, kiwi, lemon, peach
+* **Vegetables:** zucchini, spinach, cucumber, lettuce, carrots, broccoli
+* **Sweeteners:** honey, maple syrup, coco cream, jam
+* **Others:** basil, ginger, cayenne pepper, cocoa powder, yogourt, nuts
+
+</div>
+
 I lost 4 to 5 kg over this period, and I'm pretty skinny in the first
 place so that's no good. I normally weigh around 68 or 69 kg and I'm 185
 cm tall. I got down to 64 kg.
 
-This put me very close to a <abbr title="Body mass index">BMI</abbr>
-that starts to be concerning form a health perspective, and I surely
-felt really week, low energy, and empty.
+This put me close to a <abbr title="Body mass index">BMI</abbr> that
+starts to be concerning form a health perspective, and I surely felt
+really week, low energy, and empty.
 
 For the first 4 days my palate wound was covered which made it easier to
 eat, I just had to avoid the graft zone which was covered by a thick
@@ -401,6 +445,18 @@ since my grafted tooth is in the front and I need not use it. This means
 I can't have sandwiches or burgers, and I basically need to cut
 everything I eat in small pieces that I chew only with my back teeth on
 only one side. Sad.
+
+<div class="note">
+
+**Edit:** after a month I was eating pizza happily without needing a
+fork and knife 😋 and after 2 or 3 months I was back to biting in fat
+nasty burgers. 💪
+
+<figure class="center">
+  <img alt="Burger" src="../../img/2021/04/burger-IMG_20210625_133225-cropped.jpg">
+</figure>
+
+</div>
 
 ### Drinking 🍺
 
@@ -438,12 +494,13 @@ definitely didn't have as much in me as I used to, after losing nearly
 
 ### Kissing 😘
 
-After the surgery I asked my dentist how one should go about kissing.
-She told me I could do it as soon as I felt like it, which made a lot of
-sense later when I realized I really did not want to be kissing anyone
-with the amount of pain and discomfort I had in my mouth!
+After the surgery I asked my dentist how I should go about kissing my
+girlfriend. She told me I could do it as soon as I felt like it, which
+made a lot of sense later when I realized I really did not want to be
+kissing anyone with the amount of pain and discomfort I had in my mouth!
 
-That also applies to anything else you would want to do with your mouth.
+That also applies to anything else you would want to do with your mouth,
+really. 😏
 
 ## Follow up appointment
 
@@ -456,33 +513,47 @@ I was then scheduled another appointment for 6 weeks later which I have
 yet to attend. I will update this article then if I find out anything
 else worth writing.
 
+<div class="note">
+
+**Update:** that appointment went very quick, my dentist just looked at
+my graft and confirmed that it wasn't very successful and I'll likely
+have to do another one next year.
+
+I hope that your graft has a better result than mine!
+
+</div>
+
 ## Wrapping up
 
-The surgery itself is not painful whatsoever.
-
-Taking gum from the palate leaves an open wound there that can reach
-fairly high levels of pain during parts of the first 10 days despite
-high doses of painkillers.
-
-Because of the palate pain plus the fact that you can't use the teeth
-from your grafted area (those are not painful though), eating is
-challenging, even soft foods. Drinking can be painful too, even water.
-
-This lead me to very poor nutrition for the first 10 days or so (I lost
-5 kg) and I believe that this negatively affected the chances of success
-of the graft, because it heavily depends on a rich nutriment supply to
-the gum tissue at the graft site.
-
-Taking gum from a pig is an option that comes to an extra cost, and
-while pig gum has lower chances of being accepted by the human body, I
-like to believe that the fact this would make it easier to maintain a
-healthy diet after the surgery could make it worthwhile. I will need to
-discuss that with my dentist as this is a totally unfounded opinion for
-now.
-
-Either way, I wish I bought a blender and/or a juicer before the surgery
-as this would have made it easier for me to get the nutriments that I
-otherwise lacked.
+* The surgery itself is not painful whatsoever.
+* Taking gum from the palate leaves an open wound there, that the
+  dentist usually covers with a bandage. This bandage can fall off by
+  itself, but in my case this resulted resulted in fairly high levels of
+  pain (despite high doses of painkillers) from the moment it fell off
+  until roughly 10 days after the surgery. **Try to keep that plaster as
+  long as possible, it's helping a great deal!**
+* Because of the palate pain and not being able to use the teeth from
+  the grafted area (those are not painful though), eating was
+  challenging, even soft foods. After the palate plaster fell off,
+  drinking was painful too, even water.
+* This lead me to very poor nutrition for the first 10 days or so and I
+  believe that this negatively affected the chances of success of the
+  graft, because it heavily depends on a rich nutriment supply to
+  the gum tissue at the graft site.
+* Taking gum from a pig is an option that comes to an extra cost, and
+  while pig gum has lower chances of being accepted by the human body, I
+  like to believe that the fact it would make it easier to maintain a
+  healthy diet after the surgery could make it worthwhile. I will need
+  to discuss that with my dentist as this is a totally unfounded opinion
+  for now.
+* Either way, **I wish I bought a blender** (and why not a juicer too)
+  before the surgery. This would have made it easier for me to get the
+  nutriments that I otherwise lacked. A blender opens you to a vast
+  world of tasty and exciting liquid meals. Get one if you don't have
+  one already, and don't be afraid to get creative with it! By having a
+  large variety of liquid foods available, you won't be as tempted to
+  eat solid foods too early like I did and make the damn palate plaster
+  fall off. 😬
 
 I wish that your graft doesn't get too painful, and that you have
 successful results!

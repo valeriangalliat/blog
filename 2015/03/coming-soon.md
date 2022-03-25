@@ -26,8 +26,12 @@ computing in general.
 Meanwhile, I kept these ideas as text files in my `todo` directory,
 because:
 
+<div class="float-inner">
+
 1. I need them for myself ("how did I do this already?").
 1. I planned to share them in the future.
+
+</div>
 
 According to `ls todo/blog | wc -l`, I currently have 102 items in
 there. Nearly one year of accumulated stuff, mostly really small

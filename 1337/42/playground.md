@@ -79,28 +79,82 @@ I'll need [another page](playground-hero.md) to show you that.
 
 ## Floats
 
+<div class="float-wrapper">
+
 <figure class="left">
   <img alt="I should write a blog" src="../../img/2015/03/i-should-write-a-blog.jpg">
 </figure>
+
+<div class="float-inner">
 
 Sometimes I float an image on the left and write some garbage on the
 right. So here I'm doing just that to make sure I don't accidentally
 break it while playing with CSS.
 
-<div style="clear: both"></div>
+1. Also sometimes you want a list.
+
+1. On the side of a float.
+
+   1. And it can even be nested.
+
+   1. With paragraphs.
+
+   1. This is challenging.
+
+</div>
+
+</div>
 
 I guess a lot of content should go there to wrap
-around that image but I'll just use a `<div style="clear: both">`
+around that image but I'll just use my `<div class="float-wrapper">`
 instead.
+
+<div class="float-wrapper">
 
 <figure class="left">
   <object data="https://media2.giphy.com/media/13FrpeVH09Zrb2/giphy.gif" type="image/gif"></object>
 </figure>
 
+<div class="float-inner">
+
 Actually, sometimes I do the same thing with a GIF that I hotlink from
 somewhere else because I'm an asshole, so let's try that too.
 
-<div style="clear: both"></div>
+> The `<div class="float-inner">` hack allows to put stuff inside like
+> quotes or lists that would otherwise be fucked...
+
+</div>
+
+</div>
+
+I put a paragraph here because I don't want to even try styling two
+consecutive floats. Fuck this shit.
+
+<div class="float-wrapper">
+
+<figure class="left">
+  <img alt="I should write a blog" src="../../img/2015/03/i-should-write-a-blog.jpg">
+</figure>
+
+<div class="float-inner">
+
+1. It should also work when the list is the first thing in the float,
+   it's a bit trickier...
+
+1. And with a nested list.
+
+   1. As the last element.
+
+   1. Good luck.
+
+</div>
+
+This is not part of the float inner, it just flows naturally.
+
+This currently doesn't look well because I commented the hack to make
+this work, because I don't actually need it.
+
+</div>
 
 ## Images and videos
 

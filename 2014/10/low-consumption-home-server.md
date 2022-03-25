@@ -91,6 +91,8 @@ this for €79! This was **exactly** what I needed.
 
 ## Putting it all together
 
+<div class="float-wrapper">
+
 <figure class="left">
   <a href="../../img/2014/10/codejam.jpg">
     <img alt="CodeJam server image" src="../../img/2014/10/codejam.thumb.jpg">
@@ -108,3 +110,5 @@ most of the time, and after a week monitoring, I could see a peak to 35
 W, but no higher than that. Pretty satisfying!
 
 [electronic wattmeter]: http://en.wikipedia.org/wiki/Wattmeter#Electronic_wattmeter
+
+</div>

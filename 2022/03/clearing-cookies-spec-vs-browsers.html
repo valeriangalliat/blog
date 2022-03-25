@@ -116,9 +116,9 @@ res.clearCookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
 </code></pre>
 <p>That was quite a gotcha moment for me because I’ve been dealing with
 cookies all my career as a web developer and I had no idea about that.
-I’m also pretty I’ve been using <code>HttpOnly</code>,  <code>Secure</code> and <code>SameSite</code>
-when setting cookies in the past, and don’t remember having issues when
-clearing them without those flags.</p>
+I’m also pretty sure I’ve been using <code>HttpOnly</code>,  <code>Secure</code> and
+<code>SameSite</code> when setting cookies in the past, and don’t remember having
+issues when clearing them without those flags.</p>
 <h2 id="the-express-documentation" tabindex="-1"><a class="header-anchor" href="#the-express-documentation"><span>The Express documentation</span></a></h2>
 <p>The first step is to look at the <a href="https://expressjs.com/en/api.html#res.clearCookie"><code>res.clearCookie</code> documentation</a>.</p>
 <p>Indeed, there’s a warning box with the following message:</p>

@@ -273,6 +273,8 @@ cookie.</p>
   <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">make_tuple</span>(partition_key_, name_, domain_, path_);
 }
 </code></pre>
+<p>Chrome also uses the <code>host</code> (<code>domain</code>), <code>path</code> and <code>name</code> to identify a
+cookie.</p>
 <p>Interestingly, they mention that “it seems like it would make sense to
 take <code>secure</code>, <code>httpOnly</code>, and <code>sameSite</code> into account, but the RFC
 doesn’t specify this”.</p>
@@ -281,7 +283,7 @@ doesn’t specify this”.</p>
 site, you can have multiple cookies with the same <code>name</code> if their
 <code>domain</code> or <code>path</code> differ.</p>
 <p>This means that at the time of expiring a cookie, the <code>name</code>
-(obviously) as well as <code>domain</code> and <code>path</code> much be the same as when the
+(obviously) as well as <code>domain</code> and <code>path</code> must be the same as when the
 cookie was originally set, otherwise it will be treated as a different
 cookie and won’t result in the intended cookie being cleared.</p>
 <p>Other attributes like <code>secure</code>, <code>httpOnly</code> and <code>sameSite</code> are not used

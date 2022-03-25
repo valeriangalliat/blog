@@ -217,6 +217,9 @@ UniqueCookieKey UniqueKey() const {
 }
 ```
 
+Chrome also uses the `host` (`domain`), `path` and `name` to identify a
+cookie.
+
 Interestingly, they mention that "it seems like it would make sense to
 take `secure`, `httpOnly`, and `sameSite` into account, but the RFC
 doesn't specify this".
@@ -228,7 +231,7 @@ site, you can have multiple cookies with the same `name` if their
 `domain` or `path` differ.
 
 This means that at the time of expiring a cookie, the `name`
-(obviously) as well as `domain` and `path` much be the same as when the
+(obviously) as well as `domain` and `path` must be the same as when the
 cookie was originally set, otherwise it will be treated as a different
 cookie and won't result in the intended cookie being cleared.
 

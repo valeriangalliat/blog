@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Clearing cookies: the spec vs. the browser implementations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20211017.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Clearing cookies: the spec vs. the browser implementations">
+  <meta property="og:description" content="I was watching the awesome Stanford CS 253 course about web security by Feross, that he graciously made available for free on YouTube, and in lecture 4, at 35:32, one thing bugged me about clearing cookies.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Clearing cookies: the spec vs. the browser implementations</h1>
+<p class="date">March 25, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I was watching the awesome
+<a href="https://www.youtube.com/playlist?list=PL1y1iaEtjSYiiSGVlL1cHsXN_kvJOOhu-">Stanford CS 253 course about web security</a>
+by <a href="https://feross.org/">Feross</a>, that he graciously made available for
+free on YouTube, and in <a href="https://youtu.be/0-q69vAYSwo?t=2132">lecture 4, at 35:32</a>,
+one thing bugged me about <strong>clearing cookies</strong>.</p>
+<blockquote>
+<p>When you actually go to clear the cookies […], you got to make sure
+that all the other attributes are also exactly the same than when it
+was set.</p>
+<p>It’s a little bit jinky, because if you don’t do this, the browser
+thinks that it’s actually a separate cookie with the same name.</p>
+</blockquote>
+<p>In code, using Node.js and Express, this looks like this:</p>
+<pre><code class="hljs language-js">res.cookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, sessionId, {
+  <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
+  <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> <span class="hljs-comment">// 30 days</span>
+})
+
+res.clearCookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
+  <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
+})
+</code></pre>
+<p>Or on plain HTTP:</p>
+<pre><code class="hljs language-http"><span class="hljs-attribute">Set-Cookie</span><span class="hljs-punctuation">: </span>sessionId=...; MaxAge=...; Path=/; HttpOnly; Secure; SameSite=Lax
+
+<span class="hljs-attribute">Set-Cookie</span><span class="hljs-punctuation">: </span>sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly; Secure; SameSite=Lax
+</code></pre>
+<p>That was quite a gotcha moment for me because I’ve been dealing with
+cookies all my career as a web developer and I had no idea about that.
+I’m also pretty I’ve been using <code>HttpOnly</code>,  <code>Secure</code> and <code>SameSite</code>
+when setting cookies in the past, and don’t remember having issues when
+clearing them without those flags.</p>
+<h2 id="the-express-documentation" tabindex="-1"><a class="header-anchor" href="#the-express-documentation"><span>The Express documentation</span></a></h2>
+<p>The first step is to look at the <a href="https://expressjs.com/en/api.html#res.clearCookie"><code>res.clearCookie</code> documentation</a>.</p>
+<p>Indeed, there’s a warning box with the following message:</p>
+<blockquote>
+<p>Web browsers and other compliant clients will only clear the cookie if
+the given <code>options</code> is identical to those given to <code>res.cookie()</code>,
+excluding <code>expires</code> and <code>maxAge</code>.</p>
+</blockquote>
+<p>There’s no source for what “compliant clients” means here though.</p>
+<h2 id="the-spec" tabindex="-1"><a class="header-anchor" href="#the-spec"><span>The spec</span></a></h2>
+<p>By digging a bit, we find <a href="https://github.com/expressjs/express/issues/3874">this issue</a>
+on the Express repo, from someone else that was apparently bugged by
+this same warning a few years ago.</p>
+<p>An Express maintainer jumps in with a link to the <a href="https://tools.ietf.org/search/rfc6265">HTTP cookies RFC</a>, in
+particular the <a href="https://tools.ietf.org/search/rfc6265#section-5.3">storage model</a>
+part:</p>
+<blockquote>
+<p>Ah, here is the specifics: <a href="https://tools.ietf.org/search/rfc6265#section-5.3">https://tools.ietf.org/search/rfc6265#section-5.3</a>.</p>
+<p>I hope that helps! It’s the specification of exactly how clients are
+supposed to set cookies, and outlines the algorithm of how to set the
+cookie even when a given cookie already exists. It notes the following
+have to match: <code>domain</code>, <code>path</code>, <code>httpOnly</code> if the <code>name</code> already
+exists in the store (see step 11). The list of attributes in that spec
+is not comprehensive, as additional attributes were added by other
+specs, which I suspect define their own behaviors.</p>
+</blockquote>
+<p>And here’s the part 11 of the spec that was referred to here:</p>
+<blockquote>
+<ol start="11">
+<li>
+<p>If the cookie store contains a cookie with the same name,
+domain, and path as the newly created cookie:</p>
+<ol>
+<li>
+<p>Let old-cookie be the existing cookie with the same name,
+domain, and path as the newly created cookie.  (Notice that
+this algorithm maintains the invariant that there is at most
+one such cookie.)</p>
+</li>
+<li>
+<p>If the newly created cookie was received from a “non-HTTP”
+API and the old-cookie’s http-only-flag is set, abort these
+steps and ignore the newly created cookie entirely.</p>
+</li>
+<li>
+<p>Update the creation-time of the newly created cookie to
+match the creation-time of the old-cookie.</p>
+</li>
+<li>
+<p>Remove the old-cookie from the cookie store.</p>
+</li>
+</ol>
+</li>
+</ol>
+</blockquote>
+<p>My understanding of the spec is that indeed <code>name</code>, <code>domain</code> and <code>path</code>
+are all used to identify a specific cookie, so a cookie with the same
+<code>name</code> but different <code>domain</code> or <code>path</code> won’t match. For <code>httpOnly</code> though,
+it only mentions that if a non-HTTP API tries to expire an existing
+<code>httpOnly</code> cookie (e.g. by doing <code>document.cookie = '...'</code>), this call
+will be ignored, which makes sense.</p>
+<p>But <code>httpOnly</code> is not used to match a cookie otherwise. A HTTP response
+can expire a <code>httpOnly</code> cookie without setting <code>httpOnly</code> in the
+<code>Set-Cookie</code> options, as long as the <code>name</code>, <code>domain</code> and <code>path</code> match.</p>
+<p>As for additional attributes by newer specs like <code>secure</code> and
+<code>sameSite</code>, no behavior seem to be documented but in practice they don’t
+seem to matter, like <code>httpOnly</code>.</p>
+<h2 id="real-life-example" tabindex="-1"><a class="header-anchor" href="#real-life-example"><span>Real-life example</span></a></h2>
+<p>Let’s build a server with an endpoint that sets a cookie with <code>secure</code>,
+<code>httpOnly</code> and <code>sameSite</code>, and another endpoint that clears the cookie
+without passing any option.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;express&#x27;</span>)
+<span class="hljs-keyword">const</span> cookieParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;cookie-parser&#x27;</span>)
+
+<span class="hljs-keyword">const</span> app = express()
+
+app.use(cookieParser())
+
+app.get(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.json(req.cookies)
+})
+
+app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+    <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
+    <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
+  })
+
+  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+})
+
+app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+})
+
+app.listen(<span class="hljs-number">9999</span>)
+</code></pre>
+<p>Interestingly, it appears that both Chrome and Firefox allow cookies
+with the <code>secure</code> attribute to be set on <code>http://localhost</code>, which is
+convenient to test this feature. Note that on a “real” domain, you
+would need to use HTTPS for <code>secure</code> cookies to be accepted.</p>
+<p>If you browse to <code>http://localhost:9999</code> with Chrome or Firefox, you’ll
+see an empty JSON object (or whatever cookies already existed on
+<code>localhost</code>).</p>
+<p>By going to <code>/set</code>, a cookie will be set with
+<code>foo=bar; MaxAge=...; Path=/; HttpOnly; Secure; SameSite=Lax</code>, and
+redirect to <code>/</code>, showing that the cookie is set.</p>
+<p>By going to <code>/clear</code>, the cookie will be cleared with <code>foo=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT</code>, then redirect to <code>/</code>. We can see
+there that the cookie was effectively deleted, without needing to
+specify other options.</p>
+<p>If we repeat the test this time with a different domain or path, we can
+see that they indeed need to match with the cookie that was previously
+set in order to clear it.</p>
+<h2 id="the-browsers-source-code" tabindex="-1"><a class="header-anchor" href="#the-browsers-source-code"><span>The browsers source code</span></a></h2>
+<p>We can confirm what we experienced by looking at the source code of
+Chrome and Firefox.</p>
+<p>Here’s the <a href="https://github.com/julienw/mozilla-central/blob/04464210145f8f7921447380d76efe0757243610/netwerk/cookie/nsCookieService.cpp#L5167">Firefox code that identifies a cookie from its
+attributes</a>:</p>
+<pre><code class="hljs language-cpp"><span class="hljs-keyword">if</span> (aHost.<span class="hljs-built_in">Equals</span>(cookie-&gt;<span class="hljs-built_in">Host</span>()) &amp;&amp;
+    aPath.<span class="hljs-built_in">Equals</span>(cookie-&gt;<span class="hljs-built_in">Path</span>()) &amp;&amp;
+    aName.<span class="hljs-built_in">Equals</span>(cookie-&gt;<span class="hljs-built_in">Name</span>())) {
+  aIter = <span class="hljs-built_in">nsListIter</span>(entry, i);
+  <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span>;
+}
+</code></pre>
+<p>As we can see, it only uses the <code>host</code>, <code>path</code> and <code>name</code> to identify a
+cookie.</p>
+<p>On the Chrome side, <a href="https://source.chromium.org/chromium/chromium/src/+/main:net/cookies/canonical_cookie.h;drc=379f47d8daef415d929fe269e35e2bd432e1adb4;l=226">the code to test cookie equivalence</a>:</p>
+<pre><code class="hljs language-cpp"><span class="hljs-comment">// Are the cookies considered equivalent in the eyes of RFC 2965.</span>
+<span class="hljs-comment">// The RFC says that name must match (case-sensitive), domain must</span>
+<span class="hljs-comment">// match (case insensitive), and path must match (case sensitive).</span>
+<span class="hljs-comment">// For the case insensitive domain compare, we rely on the domain</span>
+<span class="hljs-comment">// having been canonicalized (in</span>
+<span class="hljs-comment">// GetCookieDomainWithString-&gt;CanonicalizeHost).</span>
+<span class="hljs-comment">// If partitioned cookies are enabled, then we check the cookies have the same</span>
+<span class="hljs-comment">// partition key in addition to the checks in RFC 2965.</span>
+<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">IsEquivalent</span><span class="hljs-params">(<span class="hljs-keyword">const</span> CanonicalCookie&amp; ecc)</span> <span class="hljs-keyword">const</span> </span>{
+  <span class="hljs-comment">// It seems like it would make sense to take secure, httponly, and samesite</span>
+  <span class="hljs-comment">// into account, but the RFC doesn&#x27;t specify this.</span>
+  <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> Keep this logic in-sync with TrimDuplicateCookiesForKey().</span>
+  <span class="hljs-keyword">return</span> <span class="hljs-built_in">UniqueKey</span>() == ecc.<span class="hljs-built_in">UniqueKey</span>();
+}
+
+<span class="hljs-comment">// Returns a key such that two cookies with the same UniqueKey() are</span>
+<span class="hljs-comment">// guaranteed to be equivalent in the sense of IsEquivalent().</span>
+<span class="hljs-comment">// The `partition_key_` field will always be nullopt when partitioned cookies</span>
+<span class="hljs-comment">// are not enabled.</span>
+<span class="hljs-function">UniqueCookieKey <span class="hljs-title">UniqueKey</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span> </span>{
+  <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">make_tuple</span>(partition_key_, name_, domain_, path_);
+}
+</code></pre>
+<p>Interestingly, they mention that “it seems like it would make sense to
+take <code>secure</code>, <code>httpOnly</code>, and <code>sameSite</code> into account, but the RFC
+doesn’t specify this”.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Cookies are identified by their <code>name</code>, <code>domain</code> and <code>path</code>. On a single
+site, you can have multiple cookies with the same <code>name</code> if their
+<code>domain</code> or <code>path</code> differ.</p>
+<p>This means that at the time of expiring a cookie, the <code>name</code>
+(obviously) as well as <code>domain</code> and <code>path</code> much be the same as when the
+cookie was originally set, otherwise it will be treated as a different
+cookie and won’t result in the intended cookie being cleared.</p>
+<p>Other attributes like <code>secure</code>, <code>httpOnly</code> and <code>sameSite</code> are not used
+to distinguish cookies. They are only <em>attributes</em> of an existing cookie
+(addressed by its <code>name</code>, <code>domain</code> and <code>path</code> as we just saw) and you
+don’t need to specify them when clearing a cookie (although it doesn’t
+hurt to include them, but they don’t have to match either). Both Chrome
+and Firefox are currently consistent in that implementation.</p>
+<p>That being said, it seems that the Chrome team believes that it would
+make sense to also use <code>secure</code>, <code>httpOnly</code> and <code>sameSite</code> to address
+cookies, even though they don’t currently implement it that way, since
+the RFC doesn’t specify this. If this was to change in the future, and
+because specifying those attributes when clearing a cookie doesn’t cause
+issues with the current implementation, <strong>I would advise to specify all
+the attributes when clearing the cookie</strong> just to be on the safe side.</p>
+<p>In my example code earlier, I would recommend to rewrite it as:</p>
+<pre><code class="hljs language-js">app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+    <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
+    <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
+  })
+
+  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+})
+
+app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>, {
+    <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
+  })
+
+  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+})
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/03/clearing-cookies-spec-vs-browsers.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

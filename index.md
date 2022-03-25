@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
 * [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
@@ -22,7 +23,6 @@ A blog about tech, programming and other things.
 * [ImageMagick crop with percentage like CSS `background-position`](2021/11/imagemagick-crop-percentage-css-background-position.md) <small>November 8, 2021</small>
 * [Elixir: intercepting Phoenix LiveView events in JavaScript](2021/11/elixir-intercepting-phoenix-liveview-events-javascript.md) <small>November 5, 2021</small>
 * [JSDoc: TypeScript inside JavaScript and not the other way around 🤯](2021/10/jsdoc-typescript-inside-javascript.md) <small>October 17, 2021</small>
-* [TypeScript: cannot write file `.d.ts` because it would overwrite input file](2021/10/typescript-cannot-write-file-overwrite-input.md) <small>October 16, 2021</small>
 
 [All the posts](posts.md)
 

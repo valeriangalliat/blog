@@ -41,9 +41,9 @@ Set-Cookie: sessionId=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT; HttpOnly;
 
 That was quite a gotcha moment for me because I've been dealing with
 cookies all my career as a web developer and I had no idea about that.
-I'm also pretty I've been using `HttpOnly`,  `Secure` and `SameSite`
-when setting cookies in the past, and don't remember having issues when
-clearing them without those flags.
+I'm also pretty sure I've been using `HttpOnly`,  `Secure` and
+`SameSite` when setting cookies in the past, and don't remember having
+issues when clearing them without those flags.
 
 ## The Express documentation
 

@@ -1,5 +1,5 @@
 html {
-    font: 1.25em/1.5 "Times New Roman", serif;
+    font: 1.25em/1.5 "Georgia", serif;
     background: var(--white);
     color: var(--black);
 }
@@ -89,7 +89,7 @@ dt {
 
 code, kbd, samp {
     font-family: "Courier New", monospace;
-    font-size: .75em;
+    font-size: .8em;
     background: var(--gray-1);
     padding: .25em .5em;
 }
@@ -99,7 +99,7 @@ code, kbd, samp {
 }
 
 kbd {
-    font-size: .6em;
+    font-size: .7em;
     border: 1px solid var(--gray-2);
     border-bottom: 2px solid var(--gray-2);
     border-radius: .75em;
@@ -149,7 +149,7 @@ button, input, optgroup, select, textarea {
     background: transparent;
     color: var(--black);
     font-family: "Helvetica Neue", sans-serif;
-    font-size: .75em;
+    font-size: .8em;
     line-height: normal;
     padding: .5em 1em;
     border: 1px solid var(--gray-3);

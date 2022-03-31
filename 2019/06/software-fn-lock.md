@@ -9,7 +9,7 @@ However, my laptop (ASUS VivoBook, X510UA-BB51-CB) does not have any way
 to lock the function keys, forcing me to press the `Fn` key every time I
 want to, for instance, change the screen brightness or the audio volume.
 
-Since I use those much more than the <kbd>F1</kbd> to <kbd>F12<kbd>
+Since I use those much more than the <kbd>F1</kbd> to <kbd>F12</kbd>
 keys, I had to find a software way to invert the function of those keys.
 
 While I couldn't come up with a perfect automatic solution, I resorted

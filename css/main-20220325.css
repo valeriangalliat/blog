@@ -345,6 +345,8 @@ figure {
 }
 
 figcaption {
+    width: 100%;
+    box-sizing: border-box;
     text-align: center;
     margin-top: .25rem;
     font-family: "Helvetica Neue", sans-serif;
@@ -405,9 +407,6 @@ figure.center, figure.grid {
     }
 
     figure.grid figcaption {
-        /* Make this a full size row. */
-        width: 100%;
-
         /* Already handled by the gap. */
         margin-top: 0;
     }

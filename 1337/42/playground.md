@@ -210,8 +210,8 @@ case you didn't notice.
 ### Centered grid
 
 <figure class="grid">
-  <img alt="H4n Fur" src="../../img/2021/09/h4n-fur.png">
-  <img alt="H4n Pro Fur" src="../../img/2021/09/h4n-pro-fur.png">
+  <img alt="H4n Fur" src="../../img/2021/09/h2n/h4n-fur.png">
+  <img alt="H4n Pro Fur" src="../../img/2021/09/h2n/h4n-pro-fur.png">
 </figure>
 
 ### Uneven grid

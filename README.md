@@ -1,4 +1,4 @@
-# ✍ Blog
+# ✍️ Blog
 
 > My personal blog.
 

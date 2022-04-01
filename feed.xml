@@ -5,10 +5,60 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-03-25T19:50:25.488Z</updated>
+  <updated>2022-04-01T21:30:28.443Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Google Apps Script: sorry, unable to open the file at this time</title>
+    <link href="https://www.codejam.info/2022/04/google-apps-script-unable-to-open-the-file.html" />
+    <id>https://www.codejam.info/2022/04/google-apps-script-unable-to-open-the-file.html</id>
+    <updated>2022-04-01T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I was casually trying to open Google Apps Script on a spreadsheet of
+mine:</p>
+<figure class="center">
+  <img alt="Google Apps Script opening from Google Sheets" src="https://www.codejam.info/img/2022/04/google-apps-script-open.png">
+</figure>
+<p>When I ran in the following error:</p>
+<figure class="center">
+  <img alt="Sorry, unable to open the file at this time, please check the address and try again" src="https://www.codejam.info/img/2022/04/google-apps-script-sorry.png">
+</figure>
+<p>Definitely not getting stuff done with Google Drive today. 🤦‍♀️</p>
+<p>A quick search for this error leads to <a href="https://support.google.com/docs/thread/99474963">this support thread</a>
+where people report encountering the same problem and say it magically
+goes away after a while without knowing why.</p>
+<p>The thread was eventually locked without a reliable solution. Not good.</p>
+<h2 id="the-reliable-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/google-apps-script-unable-to-open-the-file.html#the-reliable-solution"><span>The reliable solution</span></a></h2>
+<p>Turns out the cause of the problem (in my case) was that I was logged in
+multiple Google accounts in this browser. Google Apps Script was working
+well for the default Google account, but trying to open it in any of my
+other Google accounts would result in this error.</p>
+<figure class="center">
+  <img alt="Multiple Google accounts" src="https://www.codejam.info/img/2022/04/google-multiple-accounts.png">
+  <figcaption>Not my actual emails obviously</figcaption>
+</figure>
+<p>I didn’t find a way to properly associate a new spreadsheet with a
+Google Apps Script on a Google account that’s not the default one, so
+the solution is to <strong>log in to that Google account in a private window
+(or another browser) so that it’s the default account, and use Google
+Apps Script from there</strong>.</p>
+<p>After you associated a new Google Apps Scripts project to the
+spreadsheet of your choice, you can come back to your main browser and
+open <a href="https://script.google.com/">Google Apps Scripts</a> directly there.
+Using the user switcher on the top right you can connect to the proper
+account and manage your project from there. Note that the Google Apps
+Scripts UI doesn’t handle multiple users very well and might return you
+at any time to the default user.</p>
+<p>I know, not a fantastic solution, but now you know!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Clearing cookies: the spec vs. the browser implementations</title>
     <link href="https://www.codejam.info/2022/03/clearing-cookies-spec-vs-browsers.html" />
@@ -3099,118 +3149,6 @@ behind it in this blog post? Don’t hesitate to let me know and <a href="https:
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442937054854221828">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Elixir, Ecto and Heroku Postgres: unverified SSL certificates</title>
-    <link href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html" />
-    <id>https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html</id>
-    <updated>2021-09-24T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>This one took me a bit of time to sort out so I figured I’d write a blog
-post about it in case it can help someone else.</p>
-<p>I have a Phoenix Elixir application that I recently deployed on one of
-my servers. While it’s running smooth, I was bugged by the following
-warning that was showing only in production when starting the app:</p>
-<pre><code class="hljs language-elixir">[warn] <span class="hljs-symbol">Description:</span> <span class="hljs-string">&#x27;Authenticity is not established by certificate path validation&#x27;</span>
-     <span class="hljs-symbol">Reason:</span> <span class="hljs-string">&#x27;Option {verify, verify_peer} and cacertfile/cacerts is missing&#x27;</span>
-</code></pre>
-<p>This message was repeated 10 times during boot. Spoiler, 10 is also my
-Ecto <code>:pool_size</code>, but I didn’t think about that right away.</p>
-<p>There was no context around that, and since the app interacts with quite
-a few things over SSL, it could have come from a lot of places.</p>
-<h2 id="tracing-warnings-in-elixir-investigation-and-delusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#tracing-warnings-in-elixir-investigation-and-delusion"><span>Tracing warnings in Elixir: investigation and delusion</span></a></h2>
-<p>My first reflex was to look for something similar to
-<a href="https://nodejs.org/api/cli.html#cli_trace_warnings">Node.js’ <code>--trace-warnings</code> option</a>.
-This will add a stack trace to all warnings, making it very easy to
-track where they’re from and address them.</p>
-<p>Sadly, I couldn’t find anything similar with Elixir and Erlang. I
-resorted to <a href="https://elixirforum.com/t/tracing-runtime-warnings/42576">asking on Elixir Forum</a>,
-only to get confirmation that this wasn’t possible.</p>
-<h2 id="compiling-erlang" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#compiling-erlang"><span>Compiling Erlang?</span></a></h2>
-<p><a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl.erl#L2833">The line that logged that warning</a>
-was easy to find in the Erlang <code>ssl</code> module, but that didn’t help me
-identifying what code path triggers it.</p>
-<p>I thought about compiling Erlang with a patch that raises an exception
-instead of logging a warning there. While that wouldn’t be the quickest
-solution, it would definitely make it obvious what’s triggering that
-peer validation warning.</p>
-<p>What was bugging me was that I was seeing this warning only in
-production, not on my development machine. And I didn’t really like the
-idea of compiling my patched Erlang in production to debug in
-production…</p>
-<div class="note">
-<p><strong>Note:</strong> I didn’t end up compiling Erlang to trace the warning that
-way, because I was lucky to find after some trial and error what was
-causing it.</p>
-<p>That being said, if you run into the same kind of issue and don’t find
-any alternative, this is guaranteed to give you an answer, so it’s
-probably worth the effort at that point!</p>
-</div>
-<h2 id="going-for-a-walk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#going-for-a-walk"><span>Going for a walk</span></a></h2>
-<p>I didn’t actually go for a walk, but that’s the kind of thoughts that
-usually happen when you take a walk, or when you’re under the shower, so
-I would have probably gotten that idea earlier if I did.</p>
-<blockquote>
-<p>If it’s happening only in production, it’s probably coming from one of
-the production environment variables!</p>
-</blockquote>
-<p>For some reason, until then, I was focused on finding if there was
-something odd about my Erlang build in production, or the CA
-certificates configuration on the server, and while it could have come
-from there, environment variables were an easy one to test.</p>
-<p>So I configure my local machine with the production environment
-variables, and bingo! I can repro the warning.</p>
-<p>At that point it becomes very obvious to me that my database connection
-is the culprit, because it’s the only thing in the environment that’s
-related to SSL in a way or another.</p>
-<h2 id="heroku-postgres-and-ssl-certificate-verification" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#heroku-postgres-and-ssl-certificate-verification"><span>Heroku Postgres and SSL certificate verification</span></a></h2>
-<p>Now that I found the offender, it’s easier to look for a specific
-solution. The first result on Google for <code>heroku postgres ssl verify</code> is
-<a href="https://help.heroku.com/3DELT3RK/why-can-t-my-third-party-utility-connect-to-heroku-postgres-with-ssl">this page on the Heroku support website</a>.</p>
-<p>Since for some reason it requires to be logged in with an Heroku account
-to view it, I’ll just quote the relevant part here:</p>
-<blockquote>
-<p>Heroku Postgres does not currently support verifiable certificates.
-Our certificates will change when the underlying hardware has issues
-and we move your database away from it.</p>
-</blockquote>
-<p>Sweet. So it’s actually “intended” that I get a SSL verification warning
-when connecting to my Heroku Postgres database over SSL.</p>
-<p>But knowing that is not enough for me. Now I identified that this
-warning was acceptable and doesn’t need to be fixed per se, I need to
-mute it, so that it doesn’t adds noise to the logs.</p>
-<p><strong>This is particularly important</strong> because otherwise, I would hardly
-notice a new SSL verification warning that would appears in another
-potentially <strong>more critical part of the codebase</strong>, leaving me with
-vulnerabilities.</p>
-<h2 id="muting-this-particular-warning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.html#muting-this-particular-warning"><span>Muting this particular warning</span></a></h2>
-<p><a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl.erl#L2833">As we saw earlier</a>,
-for that warning to show up, we need the SSL connection’s <code>verify</code> to
-be set to <code>verify_none</code>, and the <code>ssl_logger</code>'s level to be configured
-to show warnings.</p>
-<p>The default value of <code>verify</code> in the <code>ssl</code> module <a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl_internal.hrl#L195">is indeed <code>verify_none</code></a>,
-and Ecto doesn’t seem to alter it by default. Also the default
-<code>log_level</code> of the <code>ssl_logger</code> <a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl_internal.hrl#L160">is set to <code>notice</code></a>,
-which is why we’re seeing that warning.</p>
-<p>It seems that my only option here is to configure the SSL connection
-specifically for my Ecto repository to have a log level of <code>:error</code>:</p>
-<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, MyApp.Repo,
-  <span class="hljs-symbol">ssl_opts:</span> [<span class="hljs-symbol">log_level:</span> <span class="hljs-symbol">:error</span>]
-</code></pre>
-<p>It took more hours than I’m willing to admit to come up with this patch
-that turns out to be trivial. So I’m trying to feel better about myself
-by spending even more hours writing a blog post about it to explain all
-the details and subtleties. 😅</p>
-<p>If you’re here to try and solve an unverified warning issue, or trace
-warnings with Elixir and Erlang in general, I hoped that it was useful
-to you. Have a wonderful day!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1441563191557849090">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

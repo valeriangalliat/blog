@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Google Apps Script: sorry, unable to open the file at this time</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220325.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Google Apps Script: sorry, unable to open the file at this time">
+  <meta property="og:description" content="I was casually trying to open Google Apps Script on a spreadsheet of mine:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Google Apps Script: sorry, unable to open the file at this time</h1>
+<p class="date">April 1, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I was casually trying to open Google Apps Script on a spreadsheet of
+mine:</p>
+<figure class="center">
+  <img alt="Google Apps Script opening from Google Sheets" src="../../img/2022/04/google-apps-script-open.png">
+</figure>
+<p>When I ran in the following error:</p>
+<figure class="center">
+  <img alt="Sorry, unable to open the file at this time, please check the address and try again" src="../../img/2022/04/google-apps-script-sorry.png">
+</figure>
+<p>Definitely not getting stuff done with Google Drive today. 🤦‍♀️</p>
+<p>A quick search for this error leads to <a href="https://support.google.com/docs/thread/99474963">this support thread</a>
+where people report encountering the same problem and say it magically
+goes away after a while without knowing why.</p>
+<p>The thread was eventually locked without a reliable solution. Not good.</p>
+<h2 id="the-reliable-solution" tabindex="-1"><a class="header-anchor" href="#the-reliable-solution"><span>The reliable solution</span></a></h2>
+<p>Turns out the cause of the problem (in my case) was that I was logged in
+multiple Google accounts in this browser. Google Apps Script was working
+well for the default Google account, but trying to open it in any of my
+other Google accounts would result in this error.</p>
+<figure class="center">
+  <img alt="Multiple Google accounts" src="../../img/2022/04/google-multiple-accounts.png">
+  <figcaption>Not my actual emails obviously</figcaption>
+</figure>
+<p>I didn’t find a way to properly associate a new spreadsheet with a
+Google Apps Script on a Google account that’s not the default one, so
+the solution is to <strong>log in to that Google account in a private window
+(or another browser) so that it’s the default account, and use Google
+Apps Script from there</strong>.</p>
+<p>After you associated a new Google Apps Scripts project to the
+spreadsheet of your choice, you can come back to your main browser and
+open <a href="https://script.google.com/">Google Apps Scripts</a> directly there.
+Using the user switcher on the top right you can connect to the proper
+account and manage your project from there. Note that the Google Apps
+Scripts UI doesn’t handle multiple users very well and might return you
+at any time to the default user.</p>
+<p>I know, not a fantastic solution, but now you know!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/google-apps-script-unable-to-open-the-file.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

@@ -186,4 +186,4 @@ alias brew='sudo -Hu foo brew'
 ## Wrapping up
 
 That's all for today. I hope this helped you figure your bug-free,
-multi-user Homebrew situation! Peace. ✌
+multi-user Homebrew situation! Peace. ✌️

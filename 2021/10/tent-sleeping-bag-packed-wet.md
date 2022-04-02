@@ -4,7 +4,7 @@ heroCredit: Val
 heroCreditUrl: https://photography.codejam.info/photos/P1000160.html
 ---
 
-# How long can you keep a tent and sleeping bag packed wet? 🏕
+# How long can you keep a tent and sleeping bag packed wet? 🏕️
 October 5, 2021
 
 Camping is not always going as planned. You might hit unexpected rain,

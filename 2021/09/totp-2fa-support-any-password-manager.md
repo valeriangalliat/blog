@@ -285,4 +285,4 @@ And this is it! You know everything that's behind [totp.vercel.app](https://totp
 Did you find this useful? Did you like that I explained some of the code
 behind it in this blog post? Don't hesitate to let me know and [ping me on Twitter](https://twitter.com/valeriangalliat)!
 
-Until next time, keep hacking! 🐿
+Until next time, keep hacking! 🐿️

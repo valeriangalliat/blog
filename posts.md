@@ -28,7 +28,7 @@ excerpt: All the posts I've written so far.
 * [JSDoc: TypeScript inside JavaScript and not the other way around 🤯](2021/10/jsdoc-typescript-inside-javascript.md) <small>October 17, 2021</small>
 * [TypeScript: cannot write file `.d.ts` because it would overwrite input file](2021/10/typescript-cannot-write-file-overwrite-input.md) <small>October 16, 2021</small>
 * [Bypass SQLite exclusive lock 🔐](2021/10/bypass-sqlite-exclusive-lock.md) <small>October 14, 2021</small>
-* [How long can you keep a tent and sleeping bag packed wet? 🏕](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
+* [How long can you keep a tent and sleeping bag packed wet? 🏕️](2021/10/tent-sleeping-bag-packed-wet.md) <small>October 5, 2021</small>
 * [Authy: reversed 🔐](2021/09/authy-reversed.md) <small>September 28, 2021</small>
 * [TOTP/2FA support with ANY password manager (you read that right)](2021/09/totp-2fa-support-any-password-manager.md) <small>September 28, 2021</small>
 * [Elixir, Ecto and Heroku Postgres: unverified SSL certificates](2021/09/elixir-ecto-heroku-postgres-unverified-ssl-certificates.md) <small>September 24, 2021</small>

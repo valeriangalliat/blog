@@ -60,7 +60,7 @@ their extra layer of functionality in between.
 ```
 Audio interface (input) 🎸
 |
-Logic 🎚
+Logic 🎚️
 |
 Background Music 🎱
 |
@@ -93,9 +93,9 @@ wouldn't delay the signal that goes to my speakers.
 ```
 Audio interface (input) 🎸
 |
-Logic 🎚
+Logic 🎚️
 |
-Multi-output device 🎛
+Multi-output device 🎛️
 |
 Audio interface (output) 🔊 | Background Music 🎱        
 ```
@@ -121,9 +121,9 @@ So in reality it needs to be like this:
 ```
 Audio interface (input) 🎸
 |
-Logic 🎚
+Logic 🎚️
 |
-Multi-output device 🎛
+Multi-output device 🎛️
 |
 Audio interface (output) 🔊 | Background Music 🎱        
                     |
@@ -167,9 +167,9 @@ This gives us a layout like this:
 ```
 Audio interface (input) 🎸
 |
-Logic 🎚
+Logic 🎚️
 |
-Multi-output device 🎛
+Multi-output device 🎛️
 |
 Audio interface (output) 🔊 | BlackHole 🌌               
 ```

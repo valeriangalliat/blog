@@ -76,7 +76,7 @@ interesting hint is in the [unicode.org FAQ](https://unicode.org/faq/vs.html).
 > or the registered sequences listed in the [Ideographic Variation Database (IVD)](http://www.unicode.org/ivd/).
 
 Here, we specifically care about [`emoji-variation-sequences.txt`](http://www.unicode.org/Public/emoji/5.0/emoji-variation-sequences.txt),
-the other sources not being related emoji. This file lists all the
+the other sources not being related to emoji. This file lists all the
 symbols that have both a monochrome glyph and a color emoji available.
 
 It's only for those symbols that we need to append the VS16 code point

@@ -5,10 +5,264 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-01T21:30:28.443Z</updated>
+  <updated>2022-04-06T02:42:22.963Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>xfce4-terminal vs. foot</title>
+    <link href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html" />
+    <id>https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html</id>
+    <updated>2022-04-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>This is going to be a pretty personal piece, but I figured I’d share
+either way. 🤷</p>
+<p>I’ve been using <a href="https://docs.xfce.org/apps/terminal/start">xfce4-terminal</a>
+as my terminal emulator on Linux for quite a while now, and I like it.
+It’s lightweight, supports emojis and has transparency, and it just
+works for me.</p>
+<p>Recently I switched to Wayland, and saw that <a href="https://swaywm.org/">Sway</a>
+(the Wayland alternative to <a href="https://i3wm.org/">i3</a>) was using
+<a href="https://codeberg.org/dnkl/foot">foot</a> as their default terminal
+emulator. I didn’t know about it, but it’s described as “a fast,
+lightweight and minimalistic Wayland terminal emulator”, which sounds
+like music to my ears, so I decided to try it!</p>
+<p>Here’s my feedback after using it for a couple of weeks, in particular
+the issues I encountered and the fixes I found.</p>
+<h2 id="incompatibility-with-vim-for-some-ctrl-key-combinations" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html#incompatibility-with-vim-for-some-ctrl-key-combinations"><span>Incompatibility with Vim for some <kbd>Ctrl</kbd> key combinations</span></a></h2>
+<p>The (deep) details are explained in <a href="https://github.com/vim/vim/issues/9014">this issue on Vim</a>,
+<a href="https://codeberg.org/dnkl/foot/issues/849">this issue on foot</a>, and the
+solution is documented <a href="https://codeberg.org/dnkl/foot/wiki#user-content-ctrl-key-breaks-input-in-vim">in foot’s wiki</a>.</p>
+<p>Basically, doing some <kbd>Ctrl</kbd> key combinations can break other
+<kbd>Ctrl</kbd> key mappings when using Vim inside foot.</p>
+<p>This is due to the fact that <a href="https://github.com/vim/vim/issues/9014#issuecomment-965187794">foot uses CSI 27 escape sequences</a>
+for some key combinations but keeps using “legacy” escape sequences for
+others.</p>
+<p><a href="https://invisible-island.net/xterm/manpage/xterm.html">xterm defines a feature <code>modifyOtherKeys</code></a>
+defining 2 behaviors for dealing with escape sequences (level 1 and
+level 2).</p>
+<p>foot implements the level 1 but after seeing a CSI 27 escape sequence,
+<a href="https://github.com/vim/vim/issues/9014#issuecomment-965388693">Vim assumes level 2</a>,
+resulting in this incompatibility.</p>
+<p>As mentioned <a href="https://codeberg.org/dnkl/foot/wiki#user-content-ctrl-key-breaks-input-in-vim">in foot’s wiki</a>,
+I added the following to my <code>vimrc</code> to fix it:</p>
+<pre><code class="hljs language-vim"><span class="hljs-comment">&quot;</span>
+<span class="hljs-comment">&quot; Make Vim and foot collaborate.</span>
+<span class="hljs-comment">&quot;</span>
+<span class="hljs-comment">&quot; See &lt;https://codeberg.org/dnkl/foot/wiki#ctrl-key-breaks-input-in-vim&gt;</span>
+<span class="hljs-comment">&quot; and &lt;https://github.com/vim/vim/issues/9014&gt;.</span>
+<span class="hljs-comment">&quot;</span>
+<span class="hljs-keyword">let</span> &amp;t_TI = <span class="hljs-string">&quot;\&lt;Esc&gt;[&gt;4;2m&quot;</span>
+<span class="hljs-keyword">let</span> &amp;t_TE = <span class="hljs-string">&quot;\&lt;Esc&gt;[&gt;4m&quot;</span>
+</code></pre>
+<p>If you’re curious about <code>t_TI</code> and <code>t_TE</code>, you can read more about it
+<a href="https://vi.stackexchange.com/a/27400">here</a>.</p>
+<h2 id="bracketed-paste" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html#bracketed-paste"><span>Bracketed paste</span></a></h2>
+<p><a href="https://cirw.in/blog/bracketed-paste">Bracketed paste</a> allows terminal
+emulator to communicate through escape sequences that content is being
+pasted as opposed of being typed, allowing programs to handle the
+content differently.</p>
+<p>This is especially useful inside Vim to paste text without having to
+care about turning on and off <code>paste</code> mode (for example to avoid messed
+up indent when pasting code).</p>
+<p>Vim doesn’t know that foot supports bracketed paste so it doesn’t work
+by default. But as shown in <code>:help xterm-bracketed-paste</code>, we can hint
+at it by adding this to our <code>vimrc</code>:</p>
+<pre><code class="hljs language-vim"><span class="hljs-keyword">if</span> &amp;term =~ <span class="hljs-string">&quot;foot&quot;</span>
+    <span class="hljs-keyword">let</span> &amp;t_BE = <span class="hljs-string">&quot;\e[?2004h&quot;</span>
+    <span class="hljs-keyword">let</span> &amp;t_BD = <span class="hljs-string">&quot;\e[?2004l&quot;</span>
+    exec <span class="hljs-string">&quot;set t_PS=\e[200~&quot;</span>
+    exec <span class="hljs-string">&quot;set t_PE=\e[201~&quot;</span>
+<span class="hljs-keyword">endif</span>
+</code></pre>
+<p>Not too bad!</p>
+<p>This is for Vim specifically, but <a href="https://codeberg.org/dnkl/foot/issues/305">from looking at this issue</a>,
+it looks like there might be other bracketed paste support issues with
+other software that need to be addressed individually. Not a problem for
+me for now…</p>
+<h2 id="clicking-urls" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html#clicking-urls"><span>Clicking URLs</span></a></h2>
+<p>I took for granted to be able to <kbd>Ctrl</kbd> + click links in
+terminal emulators. <a href="https://codeberg.org/dnkl/foot#user-content-urls">foot took a different approach</a>
+to this with a keyboard-driven URL mode:</p>
+<blockquote>
+<p>Pressing <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>U</kbd> enters “URL
+mode”, where all currently visible URLs are underlined, and is
+associated with a “jump-label”. The jump-label indicates the key
+sequence (e.g. “AF”) to use to activate the URL.</p>
+</blockquote>
+<p>I love the ability to be <em>able</em> to navigate URLs using my keyboard only,
+but I also like to have the <em>option</em> to click those links.</p>
+<p>Sometimes the cost of pressing <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>U</kbd>, identify the “jump-label” and typing it, feels higher than
+the cost of switching to my trackpad and <kbd>Ctrl</kbd> + clicking the
+URL I’m already looking at.</p>
+<p>I probably would get used to it after a while if I <em>only</em> used foot, but
+I also use iTerm2 on macOS where I <kbd>Command</kbd> + click the links,
+and I like to keep shortcuts and habits somewhat consistent between all
+the systems I use.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html#conclusion"><span>Conclusion</span></a></h2>
+<p>foot is indeed fast and lightweight, and it’s a great Wayland terminal
+emulator.</p>
+<p>Because it sets <code>TERM=foot</code> in the environment, many programs (like Vim)
+don’t have built-in support for it (e.g. knowing how foot handles escape
+sequences and bracketed paste), meaning that you might need to add extra
+configuration to all the programs where you need this to add foot
+support.</p>
+<p>xfce4-terminal, for better or for worse, sets <code>TERM=xterm-256color</code>,
+which means most programs know out of the box how to deal with it (as
+long as it maintains proper xterm compatibility). In practice, that’s
+probably why xfce4-terminal “just works” for me.</p>
+<p>Because of that, and the fact I personally see clicking links as a “must
+have” and a keyboard mode to open links a “nice to have”, and not the
+other way around, I’m moving back to xfce4-terminal.</p>
+<p>I like lightweight and minimalist programs, but I like convenience as
+well. xfce4-terminal is the perfect balance for me, and it’s pretty
+strongly on the lightweight side already!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Migrating .xmodmaprc to Wayland: remap arbitrary keys</title>
+    <link href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html" />
+    <id>https://www.codejam.info/2022/04/xmodmaprc-wayland.html</id>
+    <updated>2022-04-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I recently moved from X11 to Wayland, and one of my challenges that came with it was to find an alternative for my <code>.xmodmaprc</code>, that I used for
+two purposes:</p>
+<ol>
+<li><a href="https://github.com/valeriangalliat/dotfiles/blob/1d2098a7da513dab195554997efaac22a0d77a02/x11/xmodmaprc">Invert the left <kbd>Alt</kbd> and <kbd>Ctrl</kbd> keys</a>.</li>
+<li><a href="https://www.codejam.info/2019/06/software-fn-lock.html">Invert the behavior of the function keys</a>,
+(to emulate <kbd>Fn Lock</kbd> which is not supported on my laptop).</li>
+</ol>
+<p>Since <code>xmodmap</code> is a X11 thing, I needed to find a Wayland alternative
+to this.</p>
+<p>It seems that the common answer is to directly modify the XKB database
+in <code>/usr/share/X11/xkb</code>, but according to <a href="https://unix.stackexchange.com/a/698044/521108">this Stack Exchange post</a>
+(referencing the <a href="https://xkbcommon.org/doc/current/md_doc_user_configuration.html">XKB docs</a>),
+we learn that we can customize XKB symbols in
+<code>~/.config/xkb/symbols/&lt;name&gt;</code> and XKB rules in
+<code>~/.config/xkb/rules/evdev</code>. Great.</p>
+<h2 id="inverting-alt-and-ctrl" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html#inverting-alt-and-ctrl"><span>Inverting <kbd>Alt</kbd> and <kbd>Ctrl</kbd></span></a></h2>
+<p>This is something commonly done with <code>xmodmap</code>, and there’s very little
+documentation of alternative solutions, but I found <a href="https://askubuntu.com/a/885047">this answer</a>
+showing how to achieve that by modifying the XKB symbols in
+<code>/usr/share/X11/xkb/symbols/ctrl</code>:</p>
+<pre><code class="hljs language-conf">xkb_symbols &quot;swap_ralt_rctl&quot; {
+    replace key &lt;RALT&gt; { [ Control_R, Control_R ] };
+    replace key &lt;RCTL&gt; { [ Alt_R, Meta_R ] };
+};
+</code></pre>
+<p>Because I just learnt I could modify stuff in <code>~/.config/xkb/symbols</code>
+instead, I added this code to <code>~/.config/xkb/symbols/ctrl</code>.</p>
+<p>Then in my Sway config (this will vary depending on your window manager
+or desktop environment), I enabled the <code>ctrl:swap_ralt_rctl</code> option for
+my keyboard:</p>
+<pre><code class="hljs language-conf">input type:keyboard {
+    xkb_options ctrl:swap_lalt_lctl
+}
+</code></pre>
+<p>And this worked! <strong>But it shouldn’t have.</strong> I realized later (when
+adding another option with a different name) that it is <strong>required</strong> to
+also add a matching entry to the <code>xkb/rules/evdev</code> file. So why did it
+work?</p>
+<p>It turns out that there was already a native XKB option with that exact
+name (in <code>/usr/share/X11/xkb/symbols/ctrl</code> and
+<code>/usr/share/X11/xkb/rules/evdev</code>), and that’s why the name was
+recognized. And unsurprisingly, that native option does exactly what I
+want, so I could get rid of that <code>~/.config/xkb/symbols/ctrl</code> file
+altogether and just use <code>ctrl:swap_lalt_lctl</code> in my Sway config. 😆</p>
+<h2 id="emulating-fn-lock" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html#emulating-fn-lock"><span>Emulating <kbd>Fn Lock</kbd></span></a></h2>
+<p>Now on to the hardest part. My <code>~/.xmodmaprc</code> used to look like this,
+essentially, mapping <kbd>F5</kbd> to what <kbd>Fn</kbd> + <kbd>F5</kbd>
+would do, and inversely, and so on for a number of function keys that I
+use.</p>
+<pre><code class="hljs language-xmodmap">keycode 71  = XF86MonBrightnessDown
+keycode 232 = F5
+keycode 72  = XF86MonBrightnessUp
+keycode 233 = F6
+keycode 73  = XF86ScreenSaver
+keycode 160 = F7
+keycode 76  = XF86AudioMute
+keycode 121 = F10
+keycode 95  = XF86AudioLowerVolume
+keycode 122 = F11
+keycode 96  = XF86AudioRaiseVolume
+keycode 123 = F12
+</code></pre>
+<p>With a bit of trial and error, and looking at the
+<code>/usr/share/X11/xkb/keycodes/evdev</code> file, I could figure what were the
+corresponding XKB keys for the codes above:</p>
+<pre><code class="hljs">&lt;FK01&gt; = 67;
+&lt;FK02&gt; = 68;
+&lt;FK03&gt; = 69;
+&lt;FK04&gt; = 70;
+&lt;FK05&gt; = 71;
+&lt;FK06&gt; = 72;
+&lt;FK07&gt; = 73;
+&lt;FK08&gt; = 74;
+&lt;FK09&gt; = 75;
+&lt;FK10&gt; = 76;
+&lt;FK11&gt; = 95;
+&lt;FK12&gt; = 96;
+...
+&lt;MUTE&gt; = 121;
+&lt;VOL-&gt; = 122;
+&lt;VOL+&gt; = 123;
+...
+alias &lt;I121&gt; = &lt;MUTE&gt;;	// #define KEY_MUTE                113
+alias &lt;I122&gt; = &lt;VOL-&gt;;	// #define KEY_VOLUMEDOWN          114
+alias &lt;I123&gt; = &lt;VOL+&gt;;	// #define KEY_VOLUMEUP            115
+...
+&lt;I160&gt; = 160;		// #define KEY_COFFEE              152
+&lt;I232&gt; = 232;		// #define KEY_BRIGHTNESSDOWN      224
+&lt;I233&gt; = 233;		// #define KEY_BRIGHTNESSUP        225
+</code></pre>
+<p>Leading me to the write following <code>~/.config/xkb/symbols/ctrl</code>:</p>
+<pre><code class="hljs language-conf">partial modifier_keys
+xkb_symbols &quot;swap_fn_keys&quot; {
+    replace key &lt;FK05&gt; { [ XF86MonBrightnessDown ] };
+    replace key &lt;FK06&gt; { [ XF86MonBrightnessUp ] };
+    replace key &lt;FK07&gt; { [ XF86ScreenSaver ] };
+    replace key &lt;FK09&gt; { [ XF86TouchpadToggle ] };
+    replace key &lt;FK10&gt; { [ XF86AudioMute ] };
+    replace key &lt;FK11&gt; { [ XF86AudioLowerVolume ] };
+    replace key &lt;FK12&gt; { [ XF86AudioRaiseVolume ] };
+    replace key &lt;I232&gt; { [ F5 ] };
+    replace key &lt;I233&gt; { [ F6 ] };
+    replace key &lt;I160&gt; { [ F7 ] };
+    replace key &lt;I199&gt; { [ F9 ] };
+    replace key &lt;I121&gt; { [ F10 ] };
+    replace key &lt;I122&gt; { [ F11 ] };
+    replace key &lt;I123&gt; { [ F12 ] };
+};
+</code></pre>
+<p>And this time because <code>swap_fn_keys</code> is a new entry, I did need to add
+it to <code>~/.config/xkb/rules/evdev</code>. According to the
+<a href="https://xkbcommon.org/doc/current/md_doc_user_configuration.html#autotoc_md17">XKB docs</a>,
+this is done with the following pattern:</p>
+<pre><code class="hljs language-conf">! option = symbols
+  ctrl:swap_fn_keys = +ctrl(swap_fn_keys)
+
+! include %S/evdev
+</code></pre>
+<p>And I can finally include it to my Sway keyboard options:</p>
+<pre><code class="hljs language-conf">input type:keyboard {
+    xkb_options ctrl:swap_lalt_lctl,ctrl:swap_fn_keys
+}
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Google Apps Script: sorry, unable to open the file at this time</title>
     <link href="https://www.codejam.info/2022/04/google-apps-script-unable-to-open-the-file.html" />
@@ -696,7 +950,7 @@ interesting hint is in the <a href="https://unicode.org/faq/vs.html">unicode.org
 or the registered sequences listed in the <a href="http://www.unicode.org/ivd/">Ideographic Variation Database (IVD)</a>.</p>
 </blockquote>
 <p>Here, we specifically care about <a href="http://www.unicode.org/Public/emoji/5.0/emoji-variation-sequences.txt"><code>emoji-variation-sequences.txt</code></a>,
-the other sources not being related emoji. This file lists all the
+the other sources not being related to emoji. This file lists all the
 symbols that have both a monochrome glyph and a color emoji available.</p>
 <p>It’s only for those symbols that we need to append the VS16 code point
 to make sure that they’re displayed consistently on every system. And it
@@ -1079,7 +1333,7 @@ of the user that needs to use <code>sudo</code>:</p>
 </code></pre>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>That’s all for today. I hope this helped you figure your bug-free,
-multi-user Homebrew situation! Peace. ✌</p>
+multi-user Homebrew situation! Peace. ✌️</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
@@ -2527,7 +2781,7 @@ love to know about it!</p>
 ]]></content>
   </entry>
   <entry>
-    <title>How long can you keep a tent and sleeping bag packed wet? 🏕</title>
+    <title>How long can you keep a tent and sleeping bag packed wet? 🏕️</title>
     <link href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html" />
     <id>https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html</id>
     <updated>2021-10-05T04:00:00.000Z</updated>
@@ -2630,525 +2884,6 @@ equipment react to rough situations.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Authy: reversed 🔐</title>
-    <link href="https://www.codejam.info/2021/09/authy-reversed.html" />
-    <id>https://www.codejam.info/2021/09/authy-reversed.html</id>
-    <updated>2021-09-28T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I recently signed up for SendGrid for a new business. It seems like a
-nice tool to send my transactional emails.</p>
-<p>One thing with SendGrid though is that they enforce 2FA. You can’t
-access your account without enabling 2FA first. That’s great, except one
-thing:</p>
-<p><strong>They only offer two options for 2FA: Authy and SMS.</strong></p>
-<p>That’s somewhat understandable, because SendGrid belongs to Twilio, who
-also owns Authy. By forcing SendGrid users on Authy, and making sure
-that they can’t easily use any of the competitor 2FA apps, they boost
-their Authy adoption metrics, and that will certainly make investors
-happy. Users? Not so much.</p>
-<p>But I’m not a Authy user, and I don’t plan to be. I definitely will not
-install the Authy app just for this. “Use the alternative SMS 2FA
-method” you’ll say? But that’s less secure on top of having a poor user
-experience. I’d rather <a href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html">use my existing password manager for this</a>
-which is much faster and more convenient.</p>
-<div class="note">
-<p><strong>Note:</strong> if you don’t care about the technical details and just want to
-transfer your Authy secrets to another authenticator, check out
-<a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
-<p>Otherwise, keep reading, I’ll give you all the details about it! ✌️</p>
-</div>
-<h2 id="here-we-go-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#here-we-go-again"><span>Here we go again</span></a></h2>
-<p>Every time I face a situation like this, I reverse.
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-existing-clients.html">I love</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-figuring-the-protocol.html">reversing</a>
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-understanding-browserid.html">things</a>,
-especially when it helps me make my life better. I’ll spend
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-hybrid-oauth.html">days</a>,
-even
-<a href="https://www.codejam.info/2021/08/scripting-firefox-sync-lockwise-complete-oauth.html">weeks</a>
-doing what’s necessary to achieve what I want.</p>
-<p>Maybe that means decompiling apps and running them through a debugger,
-or patching APKs to wipe certificate pinning mechanism in order to
-<a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html">intercept the TLS traffic through a logging proxy</a>.</p>
-<p>Often though, things are even easier. In the case of Authy, they have a
-<a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>
-that we can easily debug to understand how the protocol work. The best
-thing about it? Someone already did a lot of the work and <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">documented it</a>.
-Sweet.</p>
-<div class="note">
-<p><strong>Note:</strong> I noticed later that <a href="https://github.com/alexzorin/authy">someone wrote a similar program in Go</a>.</p>
-<p>The main difference is that it’s intended to be used alongside an
-existing Authy app and account, instead of replacing it completely, but
-a lot of the code is the same. If Go is more your jam, check it out!</p>
-</div>
-<h2 id="understanding-the-implementation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#understanding-the-implementation"><span>Understanding the implementation</span></a></h2>
-<p>That article <a href="https://randomoracle.wordpress.com/2017/02/15/extracting-otp-seeds-from-authy/">I linked earlier</a>
-gives us a good starting point:</p>
-<ol>
-<li>Authy uses TOTP in the background.</li>
-<li>They generate TOTP using SHA-1, 7 digits, and a period of 10 seconds
-(whereas most implementations are SHA-1, 6 digits and 30 seconds).</li>
-<li>They check the codes against the neighbouring periods, not only the
-current one, which is how they allow codes to be valid for 20 seconds
-even if the underlying implementation uses 10 seconds periods.</li>
-<li>By debugging the <a href="https://chrome.google.com/webstore/detail/authy/gaedmjdfmmahhbjefcbgaolhhanlaolb">Chrome app</a>,
-you can easily extract your Authy secrets and import them in your
-favorite authenticator app or password manager.</li>
-</ol>
-<p>That’s awesome, but we’re not there yet. I don’t want to <em>have to use
-Authy</em> (even once) in order to <em>not use Authy later</em>.</p>
-<p>A mystery still remains. Since during 2FA setup they don’t ever show a
-QR code or give access to a TOTP URI or plaintext secret, how do this
-secret ever reach the Authy app? Is it cryptographically derived from
-the phone number, the service name, and other parameters? How does the
-Authy app automagically knows what secret to generate the codes with?</p>
-<p>Well, as it often turns out, the easiest answer is often the right one.
-By inspecting the network traffic of the Chrome app, we clearly see
-that… the secrets are directly retrieved from the Authy servers.</p>
-<p>Now, how do we write our own code that fetches the secrets from the
-Authy servers, without installing the Authy app? Let me tell you.</p>
-<h2 id="documenting-the-protocol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#documenting-the-protocol"><span>Documenting the protocol</span></a></h2>
-<p>If we install the Chrome app, use our phone number to sign up or log in,
-and generate a one-time code, the following happens:</p>
-<ol>
-<li>The app checks the status of the given number on the Authy servers.</li>
-<li>If the user doesn’t exist, it creates it.</li>
-<li>Then it starts a device registration flow, which consists in sending
-a code to the user’s device via a call, SMS, or a push notification
-to an existing Authy app if any.</li>
-<li>By inputting that code in the Chrome app, it can finalize the
-registration flow and gets its own ID and “secret seed”.</li>
-<li>It uses that seed as TOTP secret to generate a code for the next 3
-periods, and sends those 3 codes along with its device ID to sync the
-Authy state. This is how we retrieve the plaintext secrets for all
-the services associated with that account.</li>
-</ol>
-<p>Additionally, all the requests contain an API key that’s public and
-hardcoded in the Chrome app.</p>
-<div class="note">
-<p><strong>Note:</strong> the secrets for each 2FA entry are unique to each Authy
-installation. This means that the secrets in the app on one device
-will be different from the secrets on another device (including our own
-client).</p>
-<p>I expect they use that to make the secrets revocable. If you remove one
-of your Authy devices, the secret seeds associated with it are going to
-be invalidated and the codes generated by this device are no longer
-valid.</p>
-</div>
-<p>With that in mind, we can write an API client.</p>
-<h2 id="making-a-client" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-client"><span>Making a client</span></a></h2>
-<p>At that point you’ll be interested to look at the code of <a href="https://github.com/valeriangalliat/authy-user-client">Authy user client</a>.</p>
-<p>I won’t copy everything here, but I essentially made a quick
-<a href="https://github.com/valeriangalliat/authy-user-client/blob/c77d5c6e56619b012079482da4d7b9d269bab485/index.js#L38">API wrapper</a>
-that allows me to define every method very concisely:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> checkUserStatus = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.country_code}</span>-<span class="hljs-subst">${p.cellphone}</span>/status`</span>,
-  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> createUser = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;/users/new&#x27;</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>, <span class="hljs-string">&#x27;cellphone&#x27;</span>, <span class="hljs-string">&#x27;country_code&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> startRegistration = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/start`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;via&#x27;</span>, <span class="hljs-string">&#x27;signature&#x27;</span>, <span class="hljs-string">&#x27;device_app&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> completeRegistration = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/complete`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;pin&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> listDevices = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices`</span>,
-  <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> deleteDevice = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.delete_device_id}</span>/delete`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> enableMultiDevice = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/enable`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> disableMultiDevice = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/disable`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
-})
-
-<span class="hljs-keyword">const</span> sync = api({
-  <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.device_id}</span>/apps/sync`</span>,
-  <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
-})
-</code></pre>
-<p>We’ll also need a method to generate a TOTP codes using Authy settings:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> base32 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;rfc-3548-b32&#x27;</span>)
-<span class="hljs-keyword">const</span> totpGenerator = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtp</span> (<span class="hljs-params">secret</span>) </span>{
-  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
-  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
-  <span class="hljs-keyword">return</span> totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
-}
-</code></pre>
-<p>The main difference here is that Authy stores the TOTP secrets in
-hexadecimal while most TOTP libraries and services expect Base32 as
-defined in <a href="https://datatracker.ietf.org/doc/html/rfc3548#section-5">RFC 3548</a>,
-so we need to do a quick conversion.</p>
-<p>It’s a bit stupid because the first thing totp-generator does is
-<a href="https://github.com/bellstrand/totp-generator/blob/af64a977b2aee17d0f0d3e607afa0af2a9a4814b/index.js#L11">converting the secret back to hex</a>
-but there’s no way to avoid that by specifying a custom encoding, so be
-it.</p>
-<p>Then we also need an helper method to generate the 3 next codes in the
-time period sequence:</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtps</span> (<span class="hljs-params">secret</span>) </span>{
-  <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
-  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
-
-  <span class="hljs-keyword">const</span> now = <span class="hljs-built_in">Date</span>.now()
-
-  <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">otp1</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, now }),
-    <span class="hljs-attr">otp2</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">10_000</span> }),
-    <span class="hljs-attr">otp3</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">20_000</span> })
-  }
-}
-</code></pre>
-<p>This depends on <a href="https://github.com/bellstrand/totp-generator/pull/37">this PR on totp-generator</a>
-which might or might not be merged when you read this.</p>
-<p>From there I export those methods to be used in the CLI, or by other
-Node.js programs.</p>
-<h2 id="making-a-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#making-a-cli"><span>Making a CLI</span></a></h2>
-<p>From there, we can use the awesome <a href="https://www.npmjs.com/package/prompts">prompts</a>
-package to build an interactive CLI that dumps the TOTP secrets from
-your Authy account.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
-<span class="hljs-keyword">const</span> prompts = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;prompts&#x27;</span>)
-<span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).default
-<span class="hljs-keyword">const</span> authy = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;authy-user-client&#x27;</span>)
-
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">prompt</span> (<span class="hljs-params">params</span>) </span>{
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> prompts({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
-
-  <span class="hljs-keyword">if</span> (!res.value) {
-    process.exit()
-  }
-
-  <span class="hljs-keyword">return</span> res.value
-}
-
-<span class="hljs-keyword">const</span> countryCode = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Country code:&#x27;</span>, <span class="hljs-attr">initial</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span> })
-<span class="hljs-keyword">const</span> phoneNumber = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;phoneNumber&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Phone number:&#x27;</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
-
-<span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> authy.checkUserStatus({ <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
-<span class="hljs-keyword">let</span> authyId = status.authy_id
-
-<span class="hljs-keyword">if</span> (!authyId) {
-  <span class="hljs-keyword">const</span> email = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Email:&#x27;</span> })
-  <span class="hljs-keyword">const</span> registration = <span class="hljs-keyword">await</span> authy.createUser({ email, <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
-  authyId = registration.authy_id
-}
-
-<span class="hljs-keyword">const</span> via = <span class="hljs-keyword">await</span> prompt({
-  <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;select&#x27;</span>,
-  <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Authentication method:&#x27;</span>,
-  <span class="hljs-attr">choices</span>: [
-    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Push&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;push&#x27;</span> },
-    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;Call&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;call&#x27;</span> },
-    { <span class="hljs-attr">title</span>: <span class="hljs-string">&#x27;SMS&#x27;</span>, <span class="hljs-attr">value</span>: <span class="hljs-string">&#x27;sms&#x27;</span> }
-  ]
-})
-
-<span class="hljs-keyword">await</span> authy.startRegistration({
-  <span class="hljs-attr">authy_id</span>: authyId,
-  via,
-
-  <span class="hljs-comment">// Not sure why, but works better with this. 🤷</span>
-  <span class="hljs-attr">signature</span>: crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
-})
-
-<span class="hljs-keyword">const</span> pin = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;PIN:&#x27;</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
-<span class="hljs-keyword">const</span> registrationResponse = <span class="hljs-keyword">await</span> authy.completeRegistration({ <span class="hljs-attr">authy_id</span>: authyId, pin })
-
-<span class="hljs-keyword">const</span> deviceId = registrationResponse.device.id
-<span class="hljs-keyword">const</span> secretSeed = registrationResponse.device.secret_seed
-
-<span class="hljs-keyword">const</span> syncResponse = <span class="hljs-keyword">await</span> authy.sync({
-  <span class="hljs-attr">authy_id</span>: authyId,
-  <span class="hljs-attr">device_id</span>: deviceId,
-  ...authy.getOtps(secretSeed)
-})
-
-<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> app <span class="hljs-keyword">of</span> syncResponse.apps) {
-  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> URL(uri<span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${app.name}</span>`</span>)
-
-  url.search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-built_in">Object</span>.entries({
-    <span class="hljs-comment">// Authy uses hex, everything else uses Base32.</span>
-    <span class="hljs-attr">secret</span>: authy.hexToBase32(app.secret_seed),
-    <span class="hljs-attr">digits</span>: app.digits,
-    <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>
-  }))
-
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${app.name}</span>: <span class="hljs-subst">${url}</span>`</span>)
-}
-</code></pre>
-<p>This will list all the associated apps with a <a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format">standard TOTP URI</a>
-to be used in any compliant authenticator or password manager.</p>
-<p>You can look at <a href="https://github.com/valeriangalliat/authy-user-client/blob/master/cli.js">the full source</a>
-for the implementation of individual calls for more fine-grained
-control!</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/authy-reversed.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>Thanks to this, we can work around services that force the Authy app for
-2FA and extract the secret and settings to use them with our favorite
-authenticator app.</p>
-<p>Was this overkill? Hell yeah. But was it fun? Of course!</p>
-<p>Still, I hope this can be useful to you if you run into the same issue.
-You can just use the CLI and happily move on with your life and your
-favorite TOTP provider! 🎉</p>
-<div class="note">
-<p><strong>Note:</strong> if you need help understanding and documenting other
-undocumented APIs and protocols, <a href="https://www.codejam.info/val.html#contact">let me know</a>, I’m
-currently available for <a href="https://www.codejam.info/freelance.html">contracting</a> projects
-and I’ll be happy to help you with that. ✌️</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442826926545121284">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>TOTP/2FA support with ANY password manager (you read that right)</title>
-    <link href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html" />
-    <id>https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html</id>
-    <updated>2021-09-28T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>As I’m writing an article on <a href="https://www.codejam.info/2021/09/authy-reversed.html">how I reversed the Authy proprietary 2FA protocol</a>
-to generate their codes from my own password manager and authenticator,
-I realized that I didn’t write about the hack I use to <strong>support
-<abbr title="Time-based one-time password">TOTP</abbr> in any password
-manager</strong> (especially the ones that don’t support it out of the box).</p>
-<p>So I’ll start with that.</p>
-<p>See, I explained some time ago <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html">why I switched to Firefox Lockwise as my password manager</a>.
-In this post, I compare it to Bitwarden, and I go through some of the
-<a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#cons">Lockwise cons</a>,
-one of them being <a href="https://www.codejam.info/2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.html#no-totp-support">the lack of TOTP support</a>.</p>
-<p>I said that while it would be nice to have native support for TOTP, I
-already had my own authenticator app based on the <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>
-package. I since made that app a lot nicer and shared it on
-<a href="https://totp.vercel.app/">totp.vercel.app</a>! 🦄</p>
-<p>It’s called <a href="https://totp.vercel.app/">TOTP with a password manager that doesn’t support TOTP 😅</a>
-(yes, the emoji is part of the name) because I suck at naming things and
-that’s the most explicit name that I came up with.</p>
-<div class="note">
-<p><strong>Note:</strong> everything you need to know in order to use it is on the link
-above, but if you want to learn how it works in more technical details,
-keep reading!</p>
-</div>
-<h2 id="why-would-you-do-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#why-would-you-do-that"><span>Why would you do that?</span></a></h2>
-<p>Maybe like me you really like Lockwise or another password manager
-that doesn’t support TOTP, and that’s not enough of a reason to migrate
-to another app like Bitwarden, especially where TOTP support only comes
-in the paid version.</p>
-<p>And you don’t want to install Yet Another App™ to do this.</p>
-<p>Maybe a bit of a niche, I’ll admit.</p>
-<h2 id="how-does-it-work" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#how-does-it-work"><span>How does it work?</span></a></h2>
-<p>First things first, you probably want to <a href="https://github.com/valeriangalliat/totp">check out the repo on GitHub</a>.</p>
-<p>The principle is pretty simple. Most password managers will recognize
-login forms on websites (e.g. username and password fields). Upon
-submission, they’ll prompt you to save the credentials you just entered,
-so that the next time you encounter this form, it’ll be able to autofill
-the boxes and you just have to click “log in”.</p>
-<p>Additionally, if you log in later with a different username on the same
-site, it’ll also ask you to save it, and now every time you come back to
-that form, you’ll be able to chose amongst all the credentials that you
-saved.</p>
-<p><a href="https://totp.vercel.app/">TOTP with a password manager that doesn’t support TOTP 😅</a>
-looks like a login form, walks like a login form, and quacks like a
-login form:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;text&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;username&quot;</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;password&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;password&quot;</span>&gt;</span>
-</code></pre>
-<p>(Yes, it’s that easy.)</p>
-<p>This means that whatever you put in there, your password manager will
-prompt you to store upon submission of the form. With that trick, <strong>we
-can store arbitrary data in any password manager</strong>.</p>
-<p>To retrieve that data, the user simply clicks on the username or
-password field and chose from the list of all the saved items. We can
-then read the values directly from the form fields. For example if the
-above HTML was in a <code>&lt;form id=&quot;form&quot;&gt;</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { username, password } = form.elements
-<span class="hljs-built_in">console</span>.log(username.value, password.value)
-</code></pre>
-<p>Since <a href="https://stackoverflow.com/questions/11708092/detecting-browser-autofill">it’s a bit tricky</a>
-to reliably detect when inputs are autofilled (the <code>change</code> event is not
-usually triggered), we’ll use a Big Blue Button™ that reads “Get
-TOTP 🚀” instead. Good enough.</p>
-<figure class="center">
-  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-1.png">
-</figure>
-<p>When that button is clicked, we use <a href="https://www.npmjs.com/package/totp-generator">totp-generator</a>
-to generate a code for the secret that’s in the password field.</p>
-<p>If the TOTP settings differ from the standard SHA-1 algorithm, 6 digits
-and 30 seconds period, you can also paste a somewhat standard
-<a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format"><code>otpauth://</code> URI</a>
-thanks to the following code:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> totp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">totpFromUriOrSecret</span> (<span class="hljs-params">value</span>) </span>{
-  <span class="hljs-keyword">if</span> (!value.startsWith(<span class="hljs-string">&#x27;otpauth://&#x27;</span>)) {
-    <span class="hljs-comment">// Directly the secret, use default options.</span>
-    <span class="hljs-keyword">return</span> totp(value)
-  }
-
-  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-keyword">new</span> URL(value).search)
-  <span class="hljs-keyword">const</span> { secret, algorithm, digits, period } = <span class="hljs-built_in">Object</span>.fromEntries(search)
-
-  <span class="hljs-keyword">return</span> totp(secret, { algorithm, digits, period })
-}
-</code></pre>
-<p>For convenience, we can automatically copy the code to the user’s clipboard:</p>
-<pre><code class="hljs language-js">navigator.clipboard.writeText(code)
-</code></pre>
-<h2 id="scanning-qr-codes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#scanning-qr-codes"><span>Scanning QR codes</span></a></h2>
-<p>But that’s not enough. While some services will give us an option to
-retrieve the plaintext secret or a <code>otpauth://</code> URI, a lot will only
-give a QR code to scan, and some will even give <em>nothing</em> and force you
-to use Authy’s proprietary TOTP implementation (luckily, I already
-<a href="https://www.codejam.info/2021/09/authy-reversed.html">reversed that</a> so that you don’t have to).</p>
-<p>For that, I’ll add two options: scan a QR code using the device camera,
-or import a QR code from an existing image (like a screenshot).</p>
-<figure class="center">
-  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-2.png">
-</figure>
-<p>Luckily, there’s a <a href="https://www.npmjs.com/package/qr-scanner">QR scanner</a>
-package that makes that really easy.</p>
-<h3 id="using-the-camera" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#using-the-camera"><span>Using the camera</span></a></h3>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> QrScanner = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;qr-scanner&#x27;</span>)
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleTotpUri</span> (<span class="hljs-params">uri</span>) </span>{
-  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-keyword">new</span> URL(uri).search)
-
-  form.username.value = search.get(<span class="hljs-string">&#x27;issuer&#x27;</span>)
-  form.password.value = uri
-}
-
-<span class="hljs-keyword">const</span> video = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&#x27;video&#x27;</span>)
-
-<span class="hljs-keyword">const</span> qrScanner = <span class="hljs-keyword">new</span> QrScanner(video, <span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
-  qrScanner.stop()
-  handleTotpUri(result)
-})
-
-qrScanner.start()
-</code></pre>
-<p>During the scan, the QR scanner will show the camera feed in the given
-video element.</p>
-<p>On successful scan, we parse the URI to get the <code>issuer</code> value (the
-service that issued that secret) and fill the username field with it to
-give a meaningful name to our secret. Then we can store the full URI in
-the password field.</p>
-<h3 id="from-file-upload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#from-file-upload"><span>From file upload</span></a></h3>
-<p>We’ll support two ways to upload files. With a regular file input, and
-with drag and drop.</p>
-<p>For the file input, the following will do:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">input</span> <span class="hljs-attr">type</span>=<span class="hljs-string">&quot;file&quot;</span> <span class="hljs-attr">name</span>=<span class="hljs-string">&quot;file&quot;</span>&gt;</span>
-</code></pre>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { file } = form.elements
-
-file.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-  handleFile(file.files[<span class="hljs-number">0</span>])
-})
-</code></pre>
-<p>And for the drag and drop, the
-<a href="https://www.npmjs.com/package/drag-drop">drag-drop</a> package makes it
-trivial for us:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> dragDrop = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
-
-dragDrop(<span class="hljs-string">&#x27;body&#x27;</span>, {
-  onDrop (files) {
-    handleFile(files[<span class="hljs-number">0</span>])
-  },
-  onDragEnter (event) {
-    <span class="hljs-built_in">document</span>.body.classList.add(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
-  },
-  onDragLeave (event) {
-    <span class="hljs-built_in">document</span>.body.classList.remove(<span class="hljs-string">&#x27;drag-drop&#x27;</span>)
-  }
-})
-</code></pre>
-<p>Here we toggle a class on the <code>&lt;body&gt;</code> element during drag and drop to
-make it obvious that we’re accepting files to be dropped here.</p>
-<p>Now, all we need is to write the <code>handleFile</code> function that’s used by
-both of those, where we scan the uploaded file and parse the TOTP URI in it.</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">handleFile</span> (<span class="hljs-params">file</span>) </span>{
-  QrScanner.scanImage(file)
-    .then(<span class="hljs-function"><span class="hljs-params">result</span> =&gt;</span> {
-      handleTotpUri(result)
-    })
-}
-</code></pre>
-<h2 id="manually-editing-totp-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#manually-editing-totp-settings"><span>Manually editing TOTP settings</span></a></h2>
-<p>Lastly, we might encounter situations where we only have the secret and
-specific TOTP settings (algorithm, digits and period), but no TOTP URI.</p>
-<p>To support that, we need to add an “advanced” mode allowing to edit the
-individual settings, and automatically generating the proper URI in the
-password field to be stored.</p>
-<p>We’ll start by adding a hamburger menu that will open the detailed
-settings.</p>
-<figure class="center">
-  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-form-3.png">
-</figure>
-<p>This will toggle the following form:</p>
-<figure class="center">
-  <img alt="TOTP form" src="https://www.codejam.info/img/2021/09/totp-details-form.png">
-</figure>
-<p>Here, I added for convenience a “Authy” button that will automatically
-set the settings to 7 digits and a 10 seconds period, because that’s the
-main use case I have for this.</p>
-<p>When any of those settings change, I generate a new URI to put in the
-password field:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { username, password, secret, algorithm, digits, period } = form.elements
-
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">updatePasswordFromDetails</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> uri = <span class="hljs-keyword">new</span> URL(password.value.startsWith(<span class="hljs-string">&#x27;otpauth://&#x27;</span>) ? password.value : <span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(username.value)}</span>`</span>)
-  <span class="hljs-keyword">const</span> search = <span class="hljs-keyword">new</span> URLSearchParams(uri.search)
-
-  search.set(<span class="hljs-string">&#x27;secret&#x27;</span>, secret.value)
-  search.set(<span class="hljs-string">&#x27;algorithm&#x27;</span>, algorithm.value)
-  search.set(<span class="hljs-string">&#x27;digits&#x27;</span>, digits.value)
-  search.set(<span class="hljs-string">&#x27;period&#x27;</span>, period.value)
-
-  uri.search = search
-  password.value = uri.toString()
-}
-
-secret.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
-algorithm.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
-digits.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
-period.addEventListener(<span class="hljs-string">&#x27;change&#x27;</span>, updatePasswordFromDetails)
-</code></pre>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/09/totp-2fa-support-any-password-manager.html#conclusion"><span>Conclusion</span></a></h2>
-<p>And this is it! You know everything that’s behind <a href="https://totp.vercel.app/">totp.vercel.app</a>.</p>
-<p>Did you find this useful? Did you like that I explained some of the code
-behind it in this blog post? Don’t hesitate to let me know and <a href="https://twitter.com/valeriangalliat">ping me on Twitter</a>!</p>
-<p>Until next time, keep hacking! 🐿</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1442937054854221828">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

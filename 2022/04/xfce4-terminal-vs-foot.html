@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>xfce4-terminal vs. foot</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220325.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="xfce4-terminal vs. foot">
+  <meta property="og:description" content="This is going to be a pretty personal piece, but I figured I’d share either way. 🤷">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>xfce4-terminal vs. foot</h1>
+<p class="date">April 5, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This is going to be a pretty personal piece, but I figured I’d share
+either way. 🤷</p>
+<p>I’ve been using <a href="https://docs.xfce.org/apps/terminal/start">xfce4-terminal</a>
+as my terminal emulator on Linux for quite a while now, and I like it.
+It’s lightweight, supports emojis and has transparency, and it just
+works for me.</p>
+<p>Recently I switched to Wayland, and saw that <a href="https://swaywm.org/">Sway</a>
+(the Wayland alternative to <a href="https://i3wm.org/">i3</a>) was using
+<a href="https://codeberg.org/dnkl/foot">foot</a> as their default terminal
+emulator. I didn’t know about it, but it’s described as “a fast,
+lightweight and minimalistic Wayland terminal emulator”, which sounds
+like music to my ears, so I decided to try it!</p>
+<p>Here’s my feedback after using it for a couple of weeks, in particular
+the issues I encountered and the fixes I found.</p>
+<h2 id="incompatibility-with-vim-for-some-ctrl-key-combinations" tabindex="-1"><a class="header-anchor" href="#incompatibility-with-vim-for-some-ctrl-key-combinations"><span>Incompatibility with Vim for some <kbd>Ctrl</kbd> key combinations</span></a></h2>
+<p>The (deep) details are explained in <a href="https://github.com/vim/vim/issues/9014">this issue on Vim</a>,
+<a href="https://codeberg.org/dnkl/foot/issues/849">this issue on foot</a>, and the
+solution is documented <a href="https://codeberg.org/dnkl/foot/wiki#user-content-ctrl-key-breaks-input-in-vim">in foot’s wiki</a>.</p>
+<p>Basically, doing some <kbd>Ctrl</kbd> key combinations can break other
+<kbd>Ctrl</kbd> key mappings when using Vim inside foot.</p>
+<p>This is due to the fact that <a href="https://github.com/vim/vim/issues/9014#issuecomment-965187794">foot uses CSI 27 escape sequences</a>
+for some key combinations but keeps using “legacy” escape sequences for
+others.</p>
+<p><a href="https://invisible-island.net/xterm/manpage/xterm.html">xterm defines a feature <code>modifyOtherKeys</code></a>
+defining 2 behaviors for dealing with escape sequences (level 1 and
+level 2).</p>
+<p>foot implements the level 1 but after seeing a CSI 27 escape sequence,
+<a href="https://github.com/vim/vim/issues/9014#issuecomment-965388693">Vim assumes level 2</a>,
+resulting in this incompatibility.</p>
+<p>As mentioned <a href="https://codeberg.org/dnkl/foot/wiki#user-content-ctrl-key-breaks-input-in-vim">in foot’s wiki</a>,
+I added the following to my <code>vimrc</code> to fix it:</p>
+<pre><code class="hljs language-vim"><span class="hljs-comment">&quot;</span>
+<span class="hljs-comment">&quot; Make Vim and foot collaborate.</span>
+<span class="hljs-comment">&quot;</span>
+<span class="hljs-comment">&quot; See &lt;https://codeberg.org/dnkl/foot/wiki#ctrl-key-breaks-input-in-vim&gt;</span>
+<span class="hljs-comment">&quot; and &lt;https://github.com/vim/vim/issues/9014&gt;.</span>
+<span class="hljs-comment">&quot;</span>
+<span class="hljs-keyword">let</span> &amp;t_TI = <span class="hljs-string">&quot;\&lt;Esc&gt;[&gt;4;2m&quot;</span>
+<span class="hljs-keyword">let</span> &amp;t_TE = <span class="hljs-string">&quot;\&lt;Esc&gt;[&gt;4m&quot;</span>
+</code></pre>
+<p>If you’re curious about <code>t_TI</code> and <code>t_TE</code>, you can read more about it
+<a href="https://vi.stackexchange.com/a/27400">here</a>.</p>
+<h2 id="bracketed-paste" tabindex="-1"><a class="header-anchor" href="#bracketed-paste"><span>Bracketed paste</span></a></h2>
+<p><a href="https://cirw.in/blog/bracketed-paste">Bracketed paste</a> allows terminal
+emulator to communicate through escape sequences that content is being
+pasted as opposed of being typed, allowing programs to handle the
+content differently.</p>
+<p>This is especially useful inside Vim to paste text without having to
+care about turning on and off <code>paste</code> mode (for example to avoid messed
+up indent when pasting code).</p>
+<p>Vim doesn’t know that foot supports bracketed paste so it doesn’t work
+by default. But as shown in <code>:help xterm-bracketed-paste</code>, we can hint
+at it by adding this to our <code>vimrc</code>:</p>
+<pre><code class="hljs language-vim"><span class="hljs-keyword">if</span> &amp;term =~ <span class="hljs-string">&quot;foot&quot;</span>
+    <span class="hljs-keyword">let</span> &amp;t_BE = <span class="hljs-string">&quot;\e[?2004h&quot;</span>
+    <span class="hljs-keyword">let</span> &amp;t_BD = <span class="hljs-string">&quot;\e[?2004l&quot;</span>
+    exec <span class="hljs-string">&quot;set t_PS=\e[200~&quot;</span>
+    exec <span class="hljs-string">&quot;set t_PE=\e[201~&quot;</span>
+<span class="hljs-keyword">endif</span>
+</code></pre>
+<p>Not too bad!</p>
+<p>This is for Vim specifically, but <a href="https://codeberg.org/dnkl/foot/issues/305">from looking at this issue</a>,
+it looks like there might be other bracketed paste support issues with
+other software that need to be addressed individually. Not a problem for
+me for now…</p>
+<h2 id="clicking-urls" tabindex="-1"><a class="header-anchor" href="#clicking-urls"><span>Clicking URLs</span></a></h2>
+<p>I took for granted to be able to <kbd>Ctrl</kbd> + click links in
+terminal emulators. <a href="https://codeberg.org/dnkl/foot#user-content-urls">foot took a different approach</a>
+to this with a keyboard-driven URL mode:</p>
+<blockquote>
+<p>Pressing <kbd>Ctrl</kbd> + <kbd>Shift</kbd> + <kbd>U</kbd> enters “URL
+mode”, where all currently visible URLs are underlined, and is
+associated with a “jump-label”. The jump-label indicates the key
+sequence (e.g. “AF”) to use to activate the URL.</p>
+</blockquote>
+<p>I love the ability to be <em>able</em> to navigate URLs using my keyboard only,
+but I also like to have the <em>option</em> to click those links.</p>
+<p>Sometimes the cost of pressing <kbd>Ctrl</kbd> + <kbd>Shift</kbd> +
+<kbd>U</kbd>, identify the “jump-label” and typing it, feels higher than
+the cost of switching to my trackpad and <kbd>Ctrl</kbd> + clicking the
+URL I’m already looking at.</p>
+<p>I probably would get used to it after a while if I <em>only</em> used foot, but
+I also use iTerm2 on macOS where I <kbd>Command</kbd> + click the links,
+and I like to keep shortcuts and habits somewhat consistent between all
+the systems I use.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>foot is indeed fast and lightweight, and it’s a great Wayland terminal
+emulator.</p>
+<p>Because it sets <code>TERM=foot</code> in the environment, many programs (like Vim)
+don’t have built-in support for it (e.g. knowing how foot handles escape
+sequences and bracketed paste), meaning that you might need to add extra
+configuration to all the programs where you need this to add foot
+support.</p>
+<p>xfce4-terminal, for better or for worse, sets <code>TERM=xterm-256color</code>,
+which means most programs know out of the box how to deal with it (as
+long as it maintains proper xterm compatibility). In practice, that’s
+probably why xfce4-terminal “just works” for me.</p>
+<p>Because of that, and the fact I personally see clicking links as a “must
+have” and a keyboard mode to open links a “nice to have”, and not the
+other way around, I’m moving back to xfce4-terminal.</p>
+<p>I like lightweight and minimalist programs, but I like convenience as
+well. xfce4-terminal is the perfect balance for me, and it’s pretty
+strongly on the lightweight side already!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/xfce4-terminal-vs-foot.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

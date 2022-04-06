@@ -2,7 +2,7 @@
 June 8, 2019
 
 Most laptops feature a way to lock the function keys (<kbd>Fn Lock</kbd>),
-often by pressing </kbd>Fn</kbd> + <kbd>Esc</kbd> or changing some BIOS
+often by pressing <kbd>Fn</kbd> + <kbd>Esc</kbd> or changing some BIOS
 or UEFI settings.
 
 However, my laptop (ASUS VivoBook, X510UA-BB51-CB) does not have any way

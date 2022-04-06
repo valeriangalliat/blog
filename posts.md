@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>
+* [Migrating `.xmodmaprc` to Wayland: remap arbitrary keys](2022/04/xmodmaprc-wayland.md) <small>April 5, 2022</small>
 * [Google Apps Script: sorry, unable to open the file at this time](2022/04/google-apps-script-unable-to-open-the-file.md) <small>April 1, 2022</small>
 * [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
 * [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>

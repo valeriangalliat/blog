@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Make a bootable Windows USB from Linux in 2022</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220325.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Make a bootable Windows USB from Linux in 2022">
+  <meta property="og:description" content="In the Linux world we’re used to dd if=some-image.iso of=/dev/some-usb-key bs=4M and it Just Works™.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Make a bootable Windows USB from Linux in 2022</h1>
+<p class="date">April 9, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>In the Linux world we’re used to <code>dd if=some-image.iso of=/dev/some-usb-key bs=4M</code>
+and it Just Works™.</p>
+<p>It is because most Linux ISO <a href="https://askubuntu.com/a/1174287">are hybrid</a>
+in a way where the same ISO can be used on a DVD, USB or SD card. It’s
+not the case for the Windows ISO.</p>
+<p>From Windows, <a href="https://rufus.ie/">Rufus</a> is the easiest solution, but if
+I’m making a bootable Windows USB, maybe it’s because I don’t have a
+Windows installation handy at the moment. 😬</p>
+<h2 id="the-traditional-solution" tabindex="-1"><a class="header-anchor" href="#the-traditional-solution"><span>The traditional solution</span></a></h2>
+<p>Before Windows shipped ISOs with files larger than 4 GB, making a
+bootable Windows USB for EFI was as simple as format the key as FAT32,
+and just copying over the contents of the ISO to it. Example:</p>
+<pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a single partition for the whole drive</span>
+mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
+
+mkdir usb windows <span class="hljs-comment"># Make some mount points</span>
+mount /dev/sdX1 usb
+mount windows.iso windows
+
+cp -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
+
+umount windows
+umount usb
+</code></pre>
+<p>If your motherboard’s EFI supports exFAT out of the box, you can replace
+<code>mkfs.fat</code> by <code>mkfs.exfat</code> in the above script and that should work for
+you with files larger than 4 GB. But in my experience, none of the
+computers I tried this on supported directly booting from exFAT.</p>
+<p>Nowadays <a href="https://github.com/WoeUSB/WoeUSB">WoeUSB</a> seems like a good
+solution to prepare Windows USB drives, but if you want to keep it
+low-level, there’s another solution, and it’s easy, I promise.</p>
+<h2 id="splitting-the-iso-in-two-partitions" tabindex="-1"><a class="header-anchor" href="#splitting-the-iso-in-two-partitions"><span>Splitting the ISO in two partitions</span></a></h2>
+<p>I found this quite unique solution in <a href="https://win10.guru/usb-install-media-with-larger-than-4gb-wim-file/">this blog post</a>.</p>
+<p>It consists in making a 1 GB FAT32 partition on the USB, and using the
+rest as NTFS, then copying everything from the ISO but the <code>sources</code>
+directory to the FAT32 partition (only including <code>sources/boot.wim</code>),
+and copying the whole ISO contents to the NTFS partition.</p>
+<p>I’m not sure why this works, but it looks like Windows is able to handle
+such a USB layout seamlessly, and it’s by far the easiest solution out
+there, because it doesn’t require splitting the <code>install.wim</code> file, or
+<a href="https://willhaley.com/blog/windows-installer-usb-linux/">installing and configuring another bootloader</a>
+to boot from a second partition (after all Windows installer’s
+bootloader is already capable of doing that by itself!).</p>
+<p>Here’s how to do it:</p>
+<pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a 1 GB partition and another partition with the rest</span>
+mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
+mkfs.ntfs --fast /dev/sdX2 <span class="hljs-comment"># Format as NTFS</span>
+
+mkdir boot usb windows <span class="hljs-comment"># Make some mount points</span>
+mount /dev/sdX1 boot
+mount /dev/sdX2 usb
+mount windows.iso windows
+
+<span class="hljs-comment"># Copy everything but the `sources` directory</span>
+find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> cp -rv {} boot \;
+
+<span class="hljs-comment"># Add `sources/boot.wim`</span>
+mkdir boot/sources
+cp iso/sources/boot.wim boot/sources
+
+cp -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
+
+umount windows
+umount usb
+umount boot
+</code></pre>
+<p>I hope you found this trick useful! And I wish you a smooth Windows
+installation. 🎉</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/bootable-windows-usb-from-linux.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

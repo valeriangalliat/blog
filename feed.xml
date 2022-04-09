@@ -5,10 +5,92 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-06T02:42:22.963Z</updated>
+  <updated>2022-04-09T14:20:08.138Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Make a bootable Windows USB from Linux in 2022</title>
+    <link href="https://www.codejam.info/2022/04/bootable-windows-usb-from-linux.html" />
+    <id>https://www.codejam.info/2022/04/bootable-windows-usb-from-linux.html</id>
+    <updated>2022-04-09T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>In the Linux world we’re used to <code>dd if=some-image.iso of=/dev/some-usb-key bs=4M</code>
+and it Just Works™.</p>
+<p>It is because most Linux ISO <a href="https://askubuntu.com/a/1174287">are hybrid</a>
+in a way where the same ISO can be used on a DVD, USB or SD card. It’s
+not the case for the Windows ISO.</p>
+<p>From Windows, <a href="https://rufus.ie/">Rufus</a> is the easiest solution, but if
+I’m making a bootable Windows USB, maybe it’s because I don’t have a
+Windows installation handy at the moment. 😬</p>
+<h2 id="the-traditional-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/bootable-windows-usb-from-linux.html#the-traditional-solution"><span>The traditional solution</span></a></h2>
+<p>Before Windows shipped ISOs with files larger than 4 GB, making a
+bootable Windows USB for EFI was as simple as format the key as FAT32,
+and just copying over the contents of the ISO to it. Example:</p>
+<pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a single partition for the whole drive</span>
+mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
+
+mkdir usb windows <span class="hljs-comment"># Make some mount points</span>
+mount /dev/sdX1 usb
+mount windows.iso windows
+
+cp -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
+
+umount windows
+umount usb
+</code></pre>
+<p>If your motherboard’s EFI supports exFAT out of the box, you can replace
+<code>mkfs.fat</code> by <code>mkfs.exfat</code> in the above script and that should work for
+you with files larger than 4 GB. But in my experience, none of the
+computers I tried this on supported directly booting from exFAT.</p>
+<p>Nowadays <a href="https://github.com/WoeUSB/WoeUSB">WoeUSB</a> seems like a good
+solution to prepare Windows USB drives, but if you want to keep it
+low-level, there’s another solution, and it’s easy, I promise.</p>
+<h2 id="splitting-the-iso-in-two-partitions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/bootable-windows-usb-from-linux.html#splitting-the-iso-in-two-partitions"><span>Splitting the ISO in two partitions</span></a></h2>
+<p>I found this quite unique solution in <a href="https://win10.guru/usb-install-media-with-larger-than-4gb-wim-file/">this blog post</a>.</p>
+<p>It consists in making a 1 GB FAT32 partition on the USB, and using the
+rest as NTFS, then copying everything from the ISO but the <code>sources</code>
+directory to the FAT32 partition (only including <code>sources/boot.wim</code>),
+and copying the whole ISO contents to the NTFS partition.</p>
+<p>I’m not sure why this works, but it looks like Windows is able to handle
+such a USB layout seamlessly, and it’s by far the easiest solution out
+there, because it doesn’t require splitting the <code>install.wim</code> file, or
+<a href="https://willhaley.com/blog/windows-installer-usb-linux/">installing and configuring another bootloader</a>
+to boot from a second partition (after all Windows installer’s
+bootloader is already capable of doing that by itself!).</p>
+<p>Here’s how to do it:</p>
+<pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a 1 GB partition and another partition with the rest</span>
+mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
+mkfs.ntfs --fast /dev/sdX2 <span class="hljs-comment"># Format as NTFS</span>
+
+mkdir boot usb windows <span class="hljs-comment"># Make some mount points</span>
+mount /dev/sdX1 boot
+mount /dev/sdX2 usb
+mount windows.iso windows
+
+<span class="hljs-comment"># Copy everything but the `sources` directory</span>
+find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> cp -rv {} boot \;
+
+<span class="hljs-comment"># Add `sources/boot.wim`</span>
+mkdir boot/sources
+cp iso/sources/boot.wim boot/sources
+
+cp -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
+
+umount windows
+umount usb
+umount boot
+</code></pre>
+<p>I hope you found this trick useful! And I wish you a smooth Windows
+installation. 🎉</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>xfce4-terminal vs. foot</title>
     <link href="https://www.codejam.info/2022/04/xfce4-terminal-vs-foot.html" />
@@ -2775,115 +2857,6 @@ love to know about it!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1448722067638177795">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How long can you keep a tent and sleeping bag packed wet? 🏕️</title>
-    <link href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html" />
-    <id>https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html</id>
-    <updated>2021-10-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Camping is not always going as planned. You might hit unexpected rain,
-or just a very humid weather, and might be forced to leave in unideal
-conditions, where your sleeping bag or tent is still humid from rain or
-condensation, and you’re not in a situation where you can properly dry
-it off before packing.</p>
-<p>How bad can it be if you packed your wet sleeping bag or tent? What if
-you forgot it like this for a few days, or just weren’t in a situation
-where you could take it out to dry the same day? How bad can this be for
-your equipment? Here’s my experience.</p>
-<figure class="center">
-  <a href="https://photography.codejam.info/photos/P2560398.html">
-    <img alt="Tents in snow" src="https://photography.codejam.info/photos/sd/P2560398.jpg">
-  </a>
-</figure>
-<h2 id="equipment-and-context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#equipment-and-context"><span>Equipment and context</span></a></h2>
-<p>My tent is a <a href="https://www.msrgear.com/ca/tents/backpacking-tents/hubba-hubba-nx-2-person-backpacking-tent/10316.html">MSR Hubba Hubba NX</a>,
-and my sleeping bag is actually a <a href="https://enlightenedequipment.com/revelation-custom/">down quilt</a>
-made by <a href="https://enlightenedequipment.com/">Enlightened Equipment</a>. Both
-are fairly expensive so I’m always pretty cautious about them.</p>
-<p>Few days ago I was camping and packed my tent in the morning after a
-rainy night. It was going to rain all day so there was no chance of the
-equipment drying properly before leaving.</p>
-<p>This is not the first time this happens, and usually I can unpack them a
-few hours later or at least the same night at home, and have them dry in
-the apartment or outside if it’s nice enough. When it’s dry, I shake the
-dust off the tent and pack everything nicely again. Or if I’m on a
-multiday hike, I’ll just set it up again somewhere else the same night,
-and even if it’s still raining, the humidity is usually not a problem
-unless the gear is tightly packed and cannot breathe.</p>
-<figure class="center">
-  <a href="https://photography.codejam.info/photos/P2640878.html">
-    <img alt="Tent on an island" src="https://photography.codejam.info/photos/sd/P2640878.jpg">
-  </a>
-</figure>
-<h2 id="the-exception" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#the-exception"><span>The exception</span></a></h2>
-<p>But this time, something different happened that made me forget about my
-equipment. We went for a bouldering session during the day, and <strong>I took
-a pretty bad fall and broke my tailbone</strong>. Not bad enough for me to go
-to the hospital, but still shook me enough that I forgot about my tent
-and sleeping bag during the rest of the trip (we were staying at a
-chalet for the last few days).</p>
-<p><strong>I left my (damp) gear packed in my hiking backpack</strong>. It’s only when
-getting back home that I realized everything stayed packed wet for 4
-days straight. Kinda worrying when you read online a sleeping bag
-shouldn’t stay compressed more than 12 hours, let alone compressed wet,
-and a tent can develop mold when stored wet for more than 24 or 48
-hours.</p>
-<blockquote>
-<p>Generally speaking, you should not leave your sleeping bag in a
-compression sack for longer than 12 hours at a time.</p>
-<p>This is only a guideline though, and you shouldn’t worry if your
-sleeping bag is compressed for longer than this. It is not like it
-will be ruined if it’s stored for another few hours or even a day like
-this.</p>
-<p>— <a href="https://bigoutdooradventure.com/compression-sack-sleeping-bags-how-long-can-they-stay-compressed/">Big Outdoor Adventure, “Compression sack sleeping bags – how long can they stay compressed?”</a></p>
-</blockquote>
-<p>What about when it’s 4 days straight or more though?</p>
-<blockquote>
-<p>It only takes 24 to 48 hours before mold starts to noticeably grow on
-the fabric of your tent.</p>
-<p>— <a href="https://bigoutdooradventure.com/compression-sack-sleeping-bags-how-long-can-they-stay-compressed/">Camping Habits, “How long can you store a wet tent?”</a></p>
-</blockquote>
-<figure class="center">
-  <a href="https://photography.codejam.info/photos/P2560533.html">
-    <img alt="Tents with a sunset" src="https://photography.codejam.info/photos/sd/P2560533.jpg">
-  </a>
-</figure>
-<h2 id="how-bad-was-it" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#how-bad-was-it"><span>How bad was it?</span></a></h2>
-<p>When I unpacked everything, they were both still pretty wet to the
-touch. I let them dry overnight in my apartment. 🙏 Those are very good
-and expensive equipment and I was worried that I might have ruined or
-significantly damaged them by leaving them packed wet for pretty much
-4 times longer than recommended.</p>
-<p>The next day, I shook everything off, and it turns out the tent didn’t
-develop any mold! And the sleeping bag was nicely dry and took back its
-normal fluffiness. Both smelled as smokey as usual 😆, no worst no
-better, but definitely not like mold or anything concerning.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/tent-sleeping-bag-packed-wet.html#conclusion"><span>Conclusion</span></a></h2>
-<p>While you should definitely avoid doing that, if you end up in a
-situation where you left your tent or sleeping bag packed wet for a
-few days, maybe even a week, don’t sweat it, <strong>you probably didn’t ruin
-your gear</strong>!</p>
-<p>If you have high quality equipment, maybe it’ll last 28 years instead of
-30 because of such a mistake? But it shouldn’t be a huge deal if it
-<strong>happens exceptionally</strong> and you otherwise <strong>take good care of it</strong>.</p>
-<p>Did you have a similar experience where you left your gear packed in an
-unideal way for longer than you would have wanted to? <a href="https://www.codejam.info/val.html#contact">Let me know</a>
-what kind of gear you have, what happened and how it turned out! I’d
-love to update this post and get a better idea of how different
-equipment react to rough situations.</p>
-<figure class="center">
-  <a href="https://photography.codejam.info/photos/P1060390-Edit.html">
-    <img alt="Tents in snow" src="https://photography.codejam.info/photos/sd/P1060390-Edit.jpg">
-  </a>
-</figure>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -53,7 +53,8 @@ and copying the whole ISO contents to the NTFS partition.
 I'm not sure why this works, but it looks like Windows is able to handle
 such a USB layout seamlessly, and it's by far the easiest solution out
 there, because it doesn't require splitting the `install.wim` file, or
-[installing and configuring another bootloader](https://willhaley.com/blog/windows-installer-usb-linux/)
+[installing and configuring](https://willhaley.com/blog/windows-installer-usb-linux/)
+[another bootloader](https://help.ubuntu.com/community/Installation/iso2usb/diy/windows-installer-for-big-files)
 to boot from a second partition (after all Windows installer's
 bootloader is already capable of doing that by itself!).
 

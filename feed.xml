@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-09T14:22:00.067Z</updated>
+  <updated>2022-04-09T16:31:25.959Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -38,13 +38,18 @@ cp -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
 umount windows
 umount usb
 </code></pre>
-<p>If your motherboard’s EFI supports exFAT out of the box, you can replace
-<code>mkfs.fat</code> by <code>mkfs.exfat</code> in the above script and that should work for
-you with files larger than 4 GB. But in my experience, none of the
-computers I tried this on supported directly booting from exFAT.</p>
-<p>Nowadays <a href="https://github.com/WoeUSB/WoeUSB">WoeUSB</a> seems like a good
-solution to prepare Windows USB drives, but if you want to keep it
-low-level, there’s another solution, and it’s easy, I promise.</p>
+<p>If your motherboard’s EFI somehow supports exFAT out of the box, you can
+replace <code>mkfs.fat</code> by <code>mkfs.exfat</code> in the above script and that should
+work for you with files larger than 4 GB.</p>
+<p>This didn’t work on any of the PCs I tried this on, but according to
+<a href="https://www.tonymacx86.com/threads/guide-how-to-create-bootable-windows-usb-install-media-in-macos-and-linux.305580/">this post</a>,
+some firmware have native UEFI boot support for exFAT, and
+<a href="https://youtu.be/Nt58WrkgAzk">this video</a> is full of comments of people
+booting the Windows installer from an exFAT drive using this method, so
+it might work for you!</p>
+<p>Otherwise, nowadays <a href="https://github.com/WoeUSB/WoeUSB">WoeUSB</a> seems
+like a good solution to prepare Windows USB drives, but if you want to
+keep it low-level, there’s an even easier solution!</p>
 <h2 id="splitting-the-iso-in-two-partitions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/bootable-windows-usb-from-linux.html#splitting-the-iso-in-two-partitions"><span>Splitting the ISO in two partitions</span></a></h2>
 <p>I found this quite unique solution in <a href="https://win10.guru/usb-install-media-with-larger-than-4gb-wim-file/">this blog post</a>.</p>
 <p>It consists in making a 1 GB FAT32 partition on the USB, and using the

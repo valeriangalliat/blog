@@ -32,14 +32,20 @@ umount windows
 umount usb
 ```
 
-If your motherboard's EFI supports exFAT out of the box, you can replace
-`mkfs.fat` by `mkfs.exfat` in the above script and that should work for
-you with files larger than 4 GB. But in my experience, none of the
-computers I tried this on supported directly booting from exFAT.
+If your motherboard's EFI somehow supports exFAT out of the box, you can
+replace `mkfs.fat` by `mkfs.exfat` in the above script and that should
+work for you with files larger than 4 GB.
 
-Nowadays [WoeUSB](https://github.com/WoeUSB/WoeUSB) seems like a good
-solution to prepare Windows USB drives, but if you want to keep it
-low-level, there's another solution, and it's easy, I promise.
+This didn't work on any of the PCs I tried this on, but according to
+[this post](https://www.tonymacx86.com/threads/guide-how-to-create-bootable-windows-usb-install-media-in-macos-and-linux.305580/),
+some firmware have native UEFI boot support for exFAT, and
+[this video](https://youtu.be/Nt58WrkgAzk) is full of comments of people
+booting the Windows installer from an exFAT drive using this method, so
+it might work for you!
+
+Otherwise, nowadays [WoeUSB](https://github.com/WoeUSB/WoeUSB) seems
+like a good solution to prepare Windows USB drives, but if you want to
+keep it low-level, there's an even easier solution!
 
 ## Splitting the ISO in two partitions
 

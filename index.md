@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
 * [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>
 * [Migrating `.xmodmaprc` to Wayland: remap arbitrary keys](2022/04/xmodmaprc-wayland.md) <small>April 5, 2022</small>
 * [Google Apps Script: sorry, unable to open the file at this time](2022/04/google-apps-script-unable-to-open-the-file.md) <small>April 1, 2022</small>
@@ -22,7 +23,6 @@ A blog about tech, programming and other things.
 * [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
 * [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>
 * [Yearly Hackintosh upgrade: macOS Monterey with OpenCore](2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md) <small>November 16, 2021</small>
-* [Standalone userland SSH server](2021/11/standalone-userland-ssh-server.md) <small>November 9, 2021</small>
 
 [All the posts](posts.md)
 

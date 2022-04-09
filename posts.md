@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
 * [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>
 * [Migrating `.xmodmaprc` to Wayland: remap arbitrary keys](2022/04/xmodmaprc-wayland.md) <small>April 5, 2022</small>
 * [Google Apps Script: sorry, unable to open the file at this time](2022/04/google-apps-script-unable-to-open-the-file.md) <small>April 1, 2022</small>

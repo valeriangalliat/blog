@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1512854917702164494
+---
+
 # How can rsync work on a host without shell access? 🤔
 And SFTP, SCP, BorgBackup...  
 April 9, 2022

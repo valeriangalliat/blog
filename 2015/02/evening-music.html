@@ -91,7 +91,7 @@ minutes of music, wait the end of the song and shut down”. Turns out this
 is <em>trivial</em> to do with a music server like <a href="http://www.musicpd.org/">MPD</a>.</p>
 <p>I’ll use <a href="http://www.musicpd.org/clients/mpc/">mpc</a> to controll the MPD instance from the shell.</p>
 <h2 id="play-10-songs-and-shut-down" tabindex="-1"><a class="header-anchor" href="#play-10-songs-and-shut-down"><span>Play 10 songs and shut down</span></a></h2>
-<pre><code class="hljs language-sh">mpc idleloop player | head -18; poweroff
+<pre><code class="hljs language-sh">mpc idleloop player | <span class="hljs-built_in">head</span> -18; poweroff
 </code></pre>
 <p>The <code>mpc idleloop player</code> command will listen for <code>player</code> events. A
 <code>player</code> event will fire when the song is seeked, the end of a song is
@@ -103,7 +103,7 @@ about “next song” events). The <code>head</code> command will exit when the 
 number of lines are printed.</p>
 <p>Originally from <a href="https://twitter.com/valeriangalliat/status/569613240168292352">this tweet</a>.</p>
 <h2 id="30-minutes-of-music-and-shut-down" tabindex="-1"><a class="header-anchor" href="#30-minutes-of-music-and-shut-down"><span>30 minutes of music and shut down</span></a></h2>
-<pre><code class="hljs language-sh">sleep 30m; mpc idle player; poweroff
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sleep</span> 30m; mpc idle player; poweroff
 </code></pre>
 <p>This one speaks for itself:</p>
 <blockquote>
@@ -115,7 +115,7 @@ down.</p>
 <p>I also like the volume to go down slowly while listening to music before
 sleeping. This is extremely simple to do (here, I manage my sound with
 ALSA):</p>
-<pre><code class="hljs language-sh"><span class="hljs-keyword">while</span> :; <span class="hljs-keyword">do</span> amixer <span class="hljs-built_in">set</span> PCM 1%-; sleep 3m; <span class="hljs-keyword">done</span>
+<pre><code class="hljs language-sh"><span class="hljs-keyword">while</span> :; <span class="hljs-keyword">do</span> amixer <span class="hljs-built_in">set</span> PCM 1%-; <span class="hljs-built_in">sleep</span> 3m; <span class="hljs-keyword">done</span>
 </code></pre>
 <p>This will lower the PCM channel by 1% every 3 minutes. Tweak to your
 tastes!</p>

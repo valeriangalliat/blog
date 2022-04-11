@@ -90,7 +90,7 @@ resulting in the following error:</p>
 <pre><code class="hljs">urllib.error.URLError: &lt;urlopen error [SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed (_ssl.c:600)&gt;
 </code></pre>
 <p>The quick and dirty fix for this was the following:</p>
-<pre><code class="hljs language-sh">ln -s /usr/<span class="hljs-built_in">local</span>/etc/ssl/cert.pem /etc/ssl/cert.pem
+<pre><code class="hljs language-sh"><span class="hljs-built_in">ln</span> -s /usr/local/etc/ssl/cert.pem /etc/ssl/cert.pem
 </code></pre>
 <p>Now Python can find the system certificates, and we don’t need to
 explicitely give the certificate file to <code>request</code> when doing the

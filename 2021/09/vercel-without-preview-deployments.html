@@ -171,11 +171,11 @@ below <a href="#garbage-collecting-dangling-deployments">how to garbage collect 
 the deployment.</p>
 <p>To avoid that, create a <code>vercel.json</code> file in every branch where you
 want to turn this off, with the following content:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;github&quot;</span>: {
-    <span class="hljs-attr">&quot;silent&quot;</span>: <span class="hljs-literal">true</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;github&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;silent&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <div class="note">
 <p><strong>Note:</strong> if you used the previous trick to only run builds in the

@@ -124,8 +124,8 @@ anything when run from another user because of permission issues.</p>
 <a href="https://newbedev.com/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">one</a>
 to try to do this, a simple search for this yields a fuckton of results!
 And they all mostly share the same “tip” which is some variant of:</p>
-<pre><code class="hljs language-sh">chgrp -R admin /usr/<span class="hljs-built_in">local</span>/*
-chmod -R g+w /usr/<span class="hljs-built_in">local</span>/*
+<pre><code class="hljs language-sh"><span class="hljs-built_in">chgrp</span> -R admin /usr/local/*
+<span class="hljs-built_in">chmod</span> -R g+w /usr/local/*
 </code></pre>
 <p>Some variants use <code>brew --prefix</code> instead of hardcoding <code>/usr/local</code>,
 some use a custom group instead of <code>admin</code>. Either way, it’s all the

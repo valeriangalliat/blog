@@ -160,12 +160,12 @@ global variable if you’re writing a service-worker-style… worker, or
 from the <code>env</code> parameter of the <code>fetch</code> function if you’re in a
 module-style worker:</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// Service worker</span>
-<span class="hljs-keyword">const</span> serviceAccount = <span class="hljs-built_in">JSON</span>.parse(GOOGLE_APPLICATION_CREDENTIALS_JSON)
+<span class="hljs-keyword">const</span> serviceAccount = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-variable constant_">GOOGLE_APPLICATION_CREDENTIALS_JSON</span>)
 
 <span class="hljs-comment">// Module</span>
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
   fetch (request, env, context) {
-    <span class="hljs-keyword">const</span> serviceAccount = <span class="hljs-built_in">JSON</span>.parse(env.GOOGLE_APPLICATION_CREDENTIALS_JSON)
+    <span class="hljs-keyword">const</span> serviceAccount = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(env.<span class="hljs-property">GOOGLE_APPLICATION_CREDENTIALS_JSON</span>)
     <span class="hljs-comment">// ...</span>
   }
 }
@@ -178,16 +178,16 @@ carefully how this all works!</p>
 <p>The service account JSON has a <code>private_key</code> string, containing a
 PEM-encoded RSA private key that we can use to sign JWTs. It looks
 something like this:</p>
-<pre><code class="hljs language-js">-----BEGIN PRIVATE KEY-----
-MIIBVAIBADANBgkqhkiG9w0BAQEFAASCAT4wggE6AgEAAkEApL8kivZkDZn0NPYR
-pVfe8uM+IO8Fk+d3Qd4EaPcD1MHmXY8Jef1T+v33mMNUHTDiEfGi3n/9kmSN4u0p
-fr/9rwIDAQABAkEAgQAe6CUYoUHc5B+OH68Xp47i1jzzXCYRzuS/BUXunQfZgncH
-EO4LZz/7m6ggAx8dWPaxlsXD4QJZbatlVo4wAQIhANhPWVrWcry8oct3MDMPNLCW
+<pre><code class="hljs language-js">-----<span class="hljs-variable constant_">BEGIN</span> <span class="hljs-variable constant_">PRIVATE</span> <span class="hljs-variable constant_">KEY</span>-----
+<span class="hljs-title class_">MIIBVAIBADANBgkqhkiG</span>9w0BAQEFAASCAT4wggE6AgEAAkEApL8kivZkDZn0NPYR
+pVfe8uM+<span class="hljs-title class_">IO8Fk</span>+d3Qd4EaPcD1MHmXY8Jef1T+v33mMNUHTDiEfGi3n/9kmSN4u0p
+fr/9rwIDAQABAkEAgQAe6CUYoUHc5B+<span class="hljs-title class_">OH68Xp47</span>i1jzzXCYRzuS/<span class="hljs-title class_">BUXunQfZgncH</span>
+<span class="hljs-title class_">EO4LZz</span>/7m6ggAx8dWPaxlsXD4QJZbatlVo4wAQIhANhPWVrWcry8oct3MDMPNLCW
 +sP14q3P8fQJDT76rIgBAiEAwvm6k2qPn2S8RLyaD1gHwSgX7/oxS44n8Hztjgwn
-Ba8CICp4yg6v9K9iSlJtAKXF4o6Z1nsLmIqQPe2wqU0oYyABAiBk+dqTwCtTnGMY
+<span class="hljs-title class_">Ba8CICp4</span>yg6v9K9iSlJtAKXF4o6Z1nsLmIqQPe2wqU0oYyABAiBk+dqTwCtTnGMY
 oiiTa77QXUhQY12mSKAMn1aUK10GRwIgU/+scWe64dWIkodZRorlYjLtJYsjNikR
 5MjzJijoE1s=
------END PRIVATE KEY-----
+-----<span class="hljs-variable constant_">END</span> <span class="hljs-variable constant_">PRIVATE</span> <span class="hljs-variable constant_">KEY</span>-----
 </code></pre>
 <p>Because our Cloudflare Worker is a browser-like environment, we can’t
 use the <a href="https://nodejs.org/api/crypto.html">Node.js <code>crypto</code> module</a> to
@@ -218,18 +218,18 @@ Base64-encoded format.</p>
 <p>In a Node.js script, we can directly import the PEM key:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
-<span class="hljs-keyword">const</span> privateKey = crypto.createPrivateKey({
-  <span class="hljs-attr">key</span>: serviceAccount.private_key,
+<span class="hljs-keyword">const</span> privateKey = crypto.<span class="hljs-title function_">createPrivateKey</span>({
+  <span class="hljs-attr">key</span>: serviceAccount.<span class="hljs-property">private_key</span>,
   <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>,
 })
 </code></pre>
 <p>Which allows us to easily convert it to a JWK:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwk = privateKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwk = privateKey.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
 </code></pre>
 <p>If we carry this JWK to the worker, for example putting the serialized
 JSON in a <code>GOOGLE_APPLICATION_CREDENTIALS_JWK</code> environment variable, we
 can import it like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwk = <span class="hljs-built_in">JSON</span>.parse(env.GOOGLE_APPLICATION_CREDENTIALS_JWK)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwk = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(env.<span class="hljs-property">GOOGLE_APPLICATION_CREDENTIALS_JWK</span>)
 
 <span class="hljs-keyword">const</span> algorithm = {
   <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;RSASSA-PKCS1-v1_5&#x27;</span>,
@@ -241,7 +241,7 @@ can import it like this:</p>
 <span class="hljs-keyword">const</span> extractable = <span class="hljs-literal">false</span>
 <span class="hljs-keyword">const</span> keyUsages = [<span class="hljs-string">&#x27;sign&#x27;</span>]
 
-<span class="hljs-keyword">const</span> privateKey = <span class="hljs-keyword">await</span> crypto.subtle.importKey(<span class="hljs-string">&#x27;jwk&#x27;</span>, jwk, algorithm, extractable, keyUsages)
+<span class="hljs-keyword">const</span> privateKey = <span class="hljs-keyword">await</span> crypto.<span class="hljs-property">subtle</span>.<span class="hljs-title function_">importKey</span>(<span class="hljs-string">&#x27;jwk&#x27;</span>, jwk, algorithm, extractable, keyUsages)
 </code></pre>
 <p>A couple points here:</p>
 <ul>
@@ -268,17 +268,17 @@ us covered with <a href="https://developer.mozilla.org/en-US/docs/Web/API/Subtle
 I furthered adapted this example to our Google Cloud service account key
 use case.</p>
 <p>First, we strip the newlines from the PEM string:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pem = serviceAccount.private_key.replace(<span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">&#x27;&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pem = serviceAccount.<span class="hljs-property">private_key</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 </code></pre>
 <p>Then we strip the PEM header and footer markers:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pemHeader = <span class="hljs-string">&#x27;-----BEGIN PRIVATE KEY-----&#x27;</span>;
 <span class="hljs-keyword">const</span> pemFooter = <span class="hljs-string">&#x27;-----END PRIVATE KEY-----&#x27;</span>;
 
-<span class="hljs-keyword">if</span> (!pem.startsWith(pemHeader) || !pem.endsWith(pemFooter)) {
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">&#x27;Invalid service account private key&#x27;</span>);
+<span class="hljs-keyword">if</span> (!pem.<span class="hljs-title function_">startsWith</span>(pemHeader) || !pem.<span class="hljs-title function_">endsWith</span>(pemFooter)) {
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;Invalid service account private key&#x27;</span>);
 }
 
-<span class="hljs-keyword">const</span> pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+<span class="hljs-keyword">const</span> pemContents = pem.<span class="hljs-title function_">substring</span>(pemHeader.<span class="hljs-property">length</span>, pem.<span class="hljs-property">length</span> - pemFooter.<span class="hljs-property">length</span>);
 </code></pre>
 <p>This leaves us with a Base64-encoded string that we can decode to a
 <code>Uint8Array</code>. For that I like to use the <a href="https://www.npmjs.com/package/js-base64"><code>js-base64</code></a>
@@ -290,9 +290,9 @@ like <code>decodeURIComponent(escape(atob(str)))</code>.</p>
 since Cloudflare doesn’t let us import modules like this. I like to use
 <a href="https://github.com/evanw/esbuild">esbuild</a> for this, but
 <a href="https://webpack.js.org/">webpack</a> is also a popular alternative.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { Base64 } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;js-base64&#x27;</span>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Base64</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;js-base64&#x27;</span>
 
-<span class="hljs-keyword">const</span> buffer = Base64.toUint8Array(pemContents)
+<span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Base64</span>.<span class="hljs-title function_">toUint8Array</span>(pemContents)
 </code></pre>
 <p>This buffer contains effectively a binary PKCS #8 key that we can import
 like this:</p>
@@ -306,7 +306,7 @@ like this:</p>
 <span class="hljs-keyword">const</span> extractable = <span class="hljs-literal">false</span>
 <span class="hljs-keyword">const</span> keyUsages = [<span class="hljs-string">&#x27;sign&#x27;</span>]
 
-<span class="hljs-keyword">const</span> privateKey = <span class="hljs-keyword">await</span> crypto.subtle.importKey(<span class="hljs-string">&#x27;pkcs8&#x27;</span>, buffer, algorithm, extractable, keyUsages)
+<span class="hljs-keyword">const</span> privateKey = <span class="hljs-keyword">await</span> crypto.<span class="hljs-property">subtle</span>.<span class="hljs-title function_">importKey</span>(<span class="hljs-string">&#x27;pkcs8&#x27;</span>, buffer, algorithm, extractable, keyUsages)
 </code></pre>
 <p>See above for explanation of <code>algorithm</code>, <code>extractable</code> and <code>keyUsage</code>
 parameters.</p>
@@ -347,11 +347,11 @@ Base64, but slightly tweaked to be URL-safe.</p>
 <a href="https://www.npmjs.com/package/js-base64"><code>js-base64</code></a> module we
 imported above (which conveniently supports Base64URL). Let’s start with
 the header:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> header = Base64.encodeURI(
-  <span class="hljs-built_in">JSON</span>.stringify({
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> header = <span class="hljs-title class_">Base64</span>.<span class="hljs-built_in">encodeURI</span>(
+  <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
     <span class="hljs-attr">alg</span>: <span class="hljs-string">&#x27;RS256&#x27;</span>,
     <span class="hljs-attr">typ</span>: <span class="hljs-string">&#x27;JWT&#x27;</span>,
-    <span class="hljs-attr">kid</span>: serviceAccount.private_key_id,
+    <span class="hljs-attr">kid</span>: serviceAccount.<span class="hljs-property">private_key_id</span>,
   }),
 )
 </code></pre>
@@ -367,13 +367,13 @@ trailing slash is important)</li>
 <li><code>exp</code>, the Unix time when the JWT will expire, which can be maximum an
 hour after <code>iat</code></li>
 </ul>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iat = <span class="hljs-built_in">Math</span>.floor(<span class="hljs-built_in">Date</span>.now() / <span class="hljs-number">1000</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iat = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">floor</span>(<span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() / <span class="hljs-number">1000</span>)
 <span class="hljs-keyword">const</span> exp = iat + <span class="hljs-number">3600</span>
 
-<span class="hljs-keyword">const</span> payload = Base64.encodeURI(
-  <span class="hljs-built_in">JSON</span>.stringify({
-    <span class="hljs-attr">iss</span>: serviceAccount.client_email,
-    <span class="hljs-attr">sub</span>: serviceAccount.client_email,
+<span class="hljs-keyword">const</span> payload = <span class="hljs-title class_">Base64</span>.<span class="hljs-built_in">encodeURI</span>(
+  <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+    <span class="hljs-attr">iss</span>: serviceAccount.<span class="hljs-property">client_email</span>,
+    <span class="hljs-attr">sub</span>: serviceAccount.<span class="hljs-property">client_email</span>,
     <span class="hljs-attr">aud</span>: <span class="hljs-string">&#x27;https://pubsub.googleapis.com/&#x27;</span>,
     exp,
     iat
@@ -382,16 +382,16 @@ hour after <code>iat</code></li>
 </code></pre>
 <p>Next, we can compute the signature. Remember we still have our
 <code>privateKey</code> variable from earlier:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> textEncoder = <span class="hljs-keyword">new</span> TextEncoder()
-<span class="hljs-keyword">const</span> inputArrayBuffer = textEncoder.encode(<span class="hljs-string">`<span class="hljs-subst">${header}</span>.<span class="hljs-subst">${payload}</span>`</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> textEncoder = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TextEncoder</span>()
+<span class="hljs-keyword">const</span> inputArrayBuffer = textEncoder.<span class="hljs-title function_">encode</span>(<span class="hljs-string">`<span class="hljs-subst">${header}</span>.<span class="hljs-subst">${payload}</span>`</span>)
 
-<span class="hljs-keyword">const</span> outputArrayBuffer = <span class="hljs-keyword">await</span> crypto.subtle.sign(
+<span class="hljs-keyword">const</span> outputArrayBuffer = <span class="hljs-keyword">await</span> crypto.<span class="hljs-property">subtle</span>.<span class="hljs-title function_">sign</span>(
   { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;RSASSA-PKCS1-v1_5&#x27;</span> },
   privateKey,
   inputArrayBuffer
 )
 
-<span class="hljs-keyword">const</span> signature = Base64.fromUint8Array(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(outputArrayBuffer), <span class="hljs-literal">true</span>)
+<span class="hljs-keyword">const</span> signature = <span class="hljs-title class_">Base64</span>.<span class="hljs-title function_">fromUint8Array</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(outputArrayBuffer), <span class="hljs-literal">true</span>)
 </code></pre>
 <p>A bit more complexity here. <code>crypto.subtle.sign</code> expects an
 <code>ArrayBuffer</code> but we have a string, so <a href="https://stackoverflow.com/questions/6965107/converting-between-strings-and-arraybuffers">we use a <code>TextEncoder</code> to convert it</a>.
@@ -406,13 +406,13 @@ token are separated by the <code>.</code> character:</p>
 <h2 id="calling-the-google-cloud-api" tabindex="-1"><a class="header-anchor" href="#calling-the-google-cloud-api"><span>Calling the Google Cloud API</span></a></h2>
 <p>We can now use our fresh token to issue <code>fetch</code> requests to the Google
 Cloud API!</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(
   <span class="hljs-string">`https://pubsub.googleapis.com/v1/projects/.../topics/...:publish`</span>,
   {
     <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
     <span class="hljs-attr">headers</span>: {
       <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
     },
     body
   }

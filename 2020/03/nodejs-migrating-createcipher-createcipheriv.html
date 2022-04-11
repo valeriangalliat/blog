@@ -95,7 +95,7 @@ vector (IV), and instead derived the IV from the key using the OpenSSL
 the IV would be deterministic for a given key which is an issue for
 ciphers with counter mode like CTR, GCM and CCM.</p>
 <p>Your code might have looked like:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cipher = crypto.createCipher(<span class="hljs-string">&#x27;aes256&#x27;</span>, key)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cipher = crypto.<span class="hljs-title function_">createCipher</span>(<span class="hljs-string">&#x27;aes256&#x27;</span>, key)
 </code></pre>
 <p>If you want to make this code backwards compatible, you need to call
 OpenSSL’s <code>EVP_BytesToKey</code> function yourself, typically through
@@ -104,8 +104,8 @@ it available in JS userland.</p>
 <p>However the reason this function is deprecated in the first place is
 because you shouldn’t use it, and instead use a random unpredictable IV,
 which requires you to change your code to something like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iv = crypto.randomBytes(<span class="hljs-number">16</span>)
-<span class="hljs-keyword">const</span> cipher = crypto.createCipher(<span class="hljs-string">&#x27;aes256&#x27;</span>, key, iv)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> iv = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">16</span>)
+<span class="hljs-keyword">const</span> cipher = crypto.<span class="hljs-title function_">createCipher</span>(<span class="hljs-string">&#x27;aes256&#x27;</span>, key, iv)
 </code></pre>
 <p>Here, for AES-256 in CBC mode (<code>aes256</code> being aliased to <code>AES-256-CBC</code> by
 OpenSSL), the IV size is expected to be the same as the block size,

@@ -137,7 +137,7 @@ behavior is no longer the default.</p>
 <p>I like to explicitly install every package that’s not a hard dependency,
 so I use the following config to make sure nothing extra is installed by
 default.</p>
-<pre><code class="hljs language-sh">cat &lt;&lt; <span class="hljs-string">EOF &gt; /etc/apt/apt.conf
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> &lt;&lt; <span class="hljs-string">EOF &gt; /etc/apt/apt.conf
 APT::Install-Recommends false;
 APT::Install-Suggests false;
 APT::AutoRemove::RecommendsImportant false;
@@ -167,7 +167,7 @@ removes.</p>
 </div>
 <p>Finally, if you used <code>apt remove</code> or <code>apt autoremove</code>, you can still
 purge the dangling configuration files with the <a href="https://askubuntu.com/a/279432">following command</a>:</p>
-<pre><code class="hljs language-sh">apt purge $(dpkg --get-selections | grep deinstall | cut -f1)
+<pre><code class="hljs language-sh">apt purge $(dpkg --get-selections | grep deinstall | <span class="hljs-built_in">cut</span> -f1)
 </code></pre>
 <p>This will purge the configuration files of all packages that were ever
 deinstalled and left with existing configuration files in place.</p>
@@ -187,10 +187,10 @@ are necessary to build software from source.</p>
 configuration from scratch. The only file I want to keep is the
 <a href="https://github.com/nginx/nginx/blob/master/conf/mime.types">default <code>mime.types</code> file</a>.</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">cd</span> /etc
-mkdir nginx2
-cp nginx/mime.types nginx2
-rm -rf nginx
-mv nginx2 nginx
+<span class="hljs-built_in">mkdir</span> nginx2
+<span class="hljs-built_in">cp</span> nginx/mime.types nginx2
+<span class="hljs-built_in">rm</span> -rf nginx
+<span class="hljs-built_in">mv</span> nginx2 nginx
 </code></pre>
 <p>This wipes all the default nginx configuration and only keeps the
 <code>mime.types</code> file which I’ll include in my custom configuration.</p>
@@ -223,7 +223,7 @@ I’ll post my custom additions after.</p>
     <span class="hljs-attribute">default_type</span> application/octet-stream;
 
     <span class="hljs-attribute">access_log</span> /var/log/nginx/access.log;
-    <span class="hljs-attribute">error_log</span> /var/log/nginx/error.log;
+    <span class="hljs-attribute">error_log</span> /var/log/nginx/<span class="hljs-literal">error</span>.log;
 
     <span class="hljs-attribute">gzip</span> <span class="hljs-literal">on</span>;
 }
@@ -346,7 +346,7 @@ main <code>http</code> block which I won’t include again here.</p>
     <span class="hljs-attribute">listen</span> <span class="hljs-number">443</span> ssl http2 default_server;
     <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">443</span> ssl http2 default_server;
 
-    <span class="hljs-attribute">location</span> / {
+    <span class="hljs-section">location</span> / {
         <span class="hljs-attribute">return</span> <span class="hljs-number">404</span>;
     }
 }
@@ -357,11 +357,11 @@ main <code>http</code> block which I won’t include again here.</p>
 
     <span class="hljs-attribute">server_name</span> www.codejam.<span class="hljs-literal">info</span>;
 
-    <span class="hljs-attribute">location</span> / {
-        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://$host$request_uri;
+    <span class="hljs-section">location</span> / {
+        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://<span class="hljs-variable">$host</span><span class="hljs-variable">$request_uri</span>;
     }
 
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
+    <span class="hljs-section">location</span> /.well-known/acme-challenge {
         <span class="hljs-attribute">root</span> /var/www/challenges;
     }
 }
@@ -374,11 +374,11 @@ main <code>http</code> block which I won’t include again here.</p>
 
     <span class="hljs-attribute">server_name</span> codejam.<span class="hljs-literal">info</span>;
 
-    <span class="hljs-attribute">location</span> / {
-        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://www.$host$request_uri;
+    <span class="hljs-section">location</span> / {
+        <span class="hljs-attribute">return</span> <span class="hljs-number">301</span> https://www.<span class="hljs-variable">$host</span><span class="hljs-variable">$request_uri</span>;
     }
 
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
+    <span class="hljs-section">location</span> /.well-known/acme-challenge {
         <span class="hljs-attribute">root</span> /var/www/challenges;
     }
 }
@@ -395,7 +395,7 @@ main <code>http</code> block which I won’t include again here.</p>
     <span class="hljs-attribute">root</span> /var/www/www.codejam.<span class="hljs-literal">info</span>;
     <span class="hljs-attribute">index</span> index.html;
 
-    <span class="hljs-attribute">location</span> /.well-known/acme-challenge {
+    <span class="hljs-section">location</span> /.well-known/acme-challenge {
         <span class="hljs-attribute">root</span> /var/www/challenges;
     }
 }
@@ -467,15 +467,15 @@ irresponsible.</p>
 </code></pre>
 <p>We also make sure this home directory is only accessible by the <code>acme</code>
 user itself.</p>
-<pre><code class="hljs language-sh">chmod 700 /var/lib/acme
+<pre><code class="hljs language-sh"><span class="hljs-built_in">chmod</span> 700 /var/lib/acme
 </code></pre>
 <p>Then we prepare the webroot challenge directory that we configured
 earlier in <code>nginx.conf</code>. We make sure that it’s owned by the <code>acme</code> user
 and group so that it can write to this directory. The default permission
 for the directory is full access for the user and read and execute
 access for everyone else which is fine here.</p>
-<pre><code class="hljs language-sh">mkdir /var/www/challenges
-chown acme:acme /var/www/challenges
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> /var/www/challenges
+<span class="hljs-built_in">chown</span> acme:acme /var/www/challenges
 </code></pre>
 <p>Next, we prepare the directory where we’ll install the certificates.
 This directory needs to be writable by the <code>acme</code> user but nginx (who
@@ -486,9 +486,9 @@ the user, execute access for the group (on a directory that means it can
 access files in this directory according to the files permissions but
 cannot list the contents of the directory), and no permissions for
 everyone else.</p>
-<pre><code class="hljs language-sh">mkdir /etc/acme
-chown acme:www-data /etc/acme
-chmod 710 /etc/acme
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> /etc/acme
+<span class="hljs-built_in">chown</span> acme:www-data /etc/acme
+<span class="hljs-built_in">chmod</span> 710 /etc/acme
 </code></pre>
 <p>Finally we give <code>sudo</code> access to the <code>acme</code> user, allowing it to only
 run the <code>/bin/systemctl reload nginx</code> command without being prompted for
@@ -549,7 +549,7 @@ in the acme.sh readme.</p>
 <h2 id="preparing-the-certificates-directory-and-dh-parameters" tabindex="-1"><a class="header-anchor" href="#preparing-the-certificates-directory-and-dh-parameters"><span>Preparing the certificates directory and DH parameters</span></a></h2>
 <p>I like to install my certificates in <code>/etc/acme</code> which we created
 earlier, with a directory per domain, but this is totally arbitrary.</p>
-<pre><code class="hljs language-sh">mkdir /etc/acme/codejam.info
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> /etc/acme/codejam.info
 </code></pre>
 <p>We also get the <abbr title="Diffie-Hellman">DH</abbr> parameters as
 recommended by <a href="https://ssl-config.mozilla.org/">Mozilla’s SSL configuration generator</a>.</p>
@@ -618,7 +618,7 @@ htpasswd -c /etc/nginx/htpasswd &lt;user&gt;
 </code></pre>
 <p>Then in <code>nginx.conf</code>, add the following to the <code>server</code> block you want
 to add authentication to:</p>
-<pre><code class="hljs language-nginx"><span class="hljs-attribute">location</span> / {
+<pre><code class="hljs language-nginx"><span class="hljs-section">location</span> / {
     <span class="hljs-attribute">auth_basic</span> <span class="hljs-string">&quot;Private&quot;</span>;
     <span class="hljs-attribute">auth_basic_user_file</span> /etc/nginx/htpasswd;
 }

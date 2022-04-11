@@ -257,8 +257,8 @@ their upsides and caveats. All of this can be found on the
 and it’s part of the 8.0.0 release. Here’s an overview of what was
 added.</p>
 <h3 id="header-link" tabindex="-1"><a class="header-anchor" href="#header-link"><span>Header link</span></a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.headerLink()
+<pre><code class="hljs language-js">md.<span class="hljs-title function_">use</span>(anchor, {
+  <span class="hljs-attr">permalink</span>: anchor.<span class="hljs-property">permalink</span>.<span class="hljs-title function_">headerLink</span>()
 })
 </code></pre>
 <pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">h2</span> <span class="hljs-attr">id</span>=<span class="hljs-string">&quot;title&quot;</span>&gt;</span>
@@ -284,8 +284,8 @@ an issue you can also notice on the referenced websites above. This was
 already <a href="https://bugs.webkit.org/show_bug.cgi?id=225609#c2">reported to Apple</a>
 but their bug tracker is not public.</p>
 <h3 id="link-after-header" tabindex="-1"><a class="header-anchor" href="#link-after-header"><span>Link after header</span></a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.linkAfterHeader({
+<pre><code class="hljs language-js">md.<span class="hljs-title function_">use</span>(anchor, {
+  <span class="hljs-attr">permalink</span>: anchor.<span class="hljs-property">permalink</span>.<span class="hljs-title function_">linkAfterHeader</span>({
     <span class="hljs-attr">style</span>: <span class="hljs-string">&#x27;visually-hidden&#x27;</span>,
     <span class="hljs-attr">assistiveText</span>: <span class="hljs-function"><span class="hljs-params">title</span> =&gt;</span> <span class="hljs-string">`Permalink to “<span class="hljs-subst">${title}</span>”`</span>,
     <span class="hljs-attr">visuallyHiddenClass</span>: <span class="hljs-string">&#x27;visually-hidden&#x27;</span>
@@ -315,8 +315,8 @@ localize, causes the visually hidden text to show in SERP and RSS
 readers, and adds extra padding below headers in reader mode. Not bad,
 considering.</p>
 <h3 id="aria-hidden" tabindex="-1"><a class="header-anchor" href="#aria-hidden"><span>ARIA hidden</span></a></h3>
-<pre><code class="hljs language-js">md.use(anchor, {
-  <span class="hljs-attr">permalink</span>: anchor.permalink.ariaHidden({
+<pre><code class="hljs language-js">md.<span class="hljs-title function_">use</span>(anchor, {
+  <span class="hljs-attr">permalink</span>: anchor.<span class="hljs-property">permalink</span>.<span class="hljs-title function_">ariaHidden</span>({
     <span class="hljs-attr">placement</span>: <span class="hljs-string">&#x27;before&#x27;</span>
   })
 })

@@ -90,7 +90,7 @@ with hibernation added.</p>
 <p>Download the <a href="https://www.archlinux.org/download/">latest ISO</a> and
 <code>dd</code> it to your USB drive as per the <a href="https://wiki.archlinux.org/index.php/USB_flash_installation_media">official documentation</a>.</p>
 <p>With GNU/Linux (replace <code>/dev/sdx</code> with the proper drive):</p>
-<pre><code class="hljs language-sh">dd <span class="hljs-keyword">if</span>=archlinux.iso of=/dev/sdx bs=4M status=progress oflag=sync
+<pre><code class="hljs language-sh"><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=archlinux.iso of=/dev/sdx bs=4M status=progress oflag=<span class="hljs-built_in">sync</span>
 </code></pre>
 <p>Then boot on the USB.</p>
 <p>If it won’t boot, you might need to disable Secure Boot in your
@@ -137,7 +137,7 @@ mkswap /dev/vg0/swap
 <p>Mount partitions.</p>
 <pre><code class="hljs language-sh">mount /dev/vg0/root /mnt
 swapon /dev/vg0/swap
-mkdir /mnt/boot
+<span class="hljs-built_in">mkdir</span> /mnt/boot
 mount /dev/sdx1 /mnt/boot
 </code></pre>
 <p>Install the base system together will necessary packages.</p>
@@ -161,7 +161,7 @@ vim /mnt/etc/fstab
 <pre><code class="hljs language-sh">arch-chroot /mnt
 </code></pre>
 <p>Setup the timezone (Montreal for me), and synchronize hardware clock.</p>
-<pre><code class="hljs language-sh">ln -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
+<pre><code class="hljs language-sh"><span class="hljs-built_in">ln</span> -sf /usr/share/zoneinfo/America/Montreal /etc/localtime
 hwclock --systohc
 </code></pre>
 <p>Uncomment the locale you desire in <code>/etc/locale.gen</code> (<code>en_CA.UTF-8</code> for
@@ -316,7 +316,7 @@ EndSection
 <p>If you want to have the system hibernate after being suspended for some
 time (3 hours by default as per <code>/etc/systemd/sleep.conf</code>
 <code>HibernateDelaySec</code>), run the following:</p>
-<pre><code class="hljs language-sh">ln -s /usr/lib/systemd/system/systemd-suspend-then-hibernate.service /etc/systemd/system/systemd-suspend.service
+<pre><code class="hljs language-sh"><span class="hljs-built_in">ln</span> -s /usr/lib/systemd/system/systemd-suspend-then-hibernate.service /etc/systemd/system/systemd-suspend.service
 </code></pre>
 <p>The advantage of this solution is anything that would normally just
 suspend will suspend then hibernate, which is an easy way to make sure

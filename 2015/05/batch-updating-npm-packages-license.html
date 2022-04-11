@@ -89,17 +89,17 @@ it now must be just a string.</p>
 <p>I needed the old format because npm didn’t support the <a href="http://unlicense.org/">Unlicense</a> yet,
 but it looks like it’s not the case anymore!</p>
 <p>So I basically have to change the following:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;license&quot;</span>: {
-    <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;Unlicense&quot;</span>,
-    <span class="hljs-attr">&quot;url&quot;</span>: <span class="hljs-string">&quot;http://unlicense.org/&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;license&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Unlicense&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;url&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;http://unlicense.org/&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>to this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;license&quot;</span>: <span class="hljs-string">&quot;Unlicense&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;license&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Unlicense&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>for all the packages I have under the Unlicense (roughly 30 packages).</p>
 <h2 id="automation" tabindex="-1"><a class="header-anchor" href="#automation"><span>Automation</span></a></h2>
@@ -111,36 +111,36 @@ trial and error) and comments:</p>
 curl -s <span class="hljs-string">&#x27;https://www.npmjs.com/~valeriangalliat&#x27;</span> | grep /package/ | sed <span class="hljs-string">&#x27;s,.*/package/,,;s/&quot;.*//&#x27;</span> &gt; my-packages
 
 <span class="hljs-comment"># Get the URL of non-deprecated packages</span>
-cat my-packages | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> package; <span class="hljs-keyword">do</span>
+<span class="hljs-built_in">cat</span> my-packages | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> package; <span class="hljs-keyword">do</span>
     node -e <span class="hljs-string">&quot;var x = <span class="hljs-subst">$(npm info <span class="hljs-string">&quot;<span class="hljs-variable">$package</span>&quot;</span>)</span>;&quot;</span><span class="hljs-string">&#x27; if (!x.deprecated) console.log(x.repository.url.replace(&quot;git+https&quot;, &quot;https&quot;))&#x27;</span>
 <span class="hljs-keyword">done</span> &gt; repos
 
 <span class="hljs-comment"># Clone all repositories</span>
-cat repos | xargs -L1 git <span class="hljs-built_in">clone</span>
+<span class="hljs-built_in">cat</span> repos | xargs -L1 git <span class="hljs-built_in">clone</span>
 
 <span class="hljs-comment"># Get the directory names</span>
-cat repos | xargs -L1 basename &gt; <span class="hljs-built_in">dirs</span>
+<span class="hljs-built_in">cat</span> repos | xargs -L1 <span class="hljs-built_in">basename</span> &gt; <span class="hljs-built_in">dirs</span>
 
 <span class="hljs-comment"># Update the license</span>
-cat <span class="hljs-built_in">dirs</span> | sed <span class="hljs-string">&#x27;s,$,/package.json,&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;/license/{N;/Unlicense/{N;N;s/.*/  &quot;license&quot;: &quot;Unlicense&quot;,/;}}&#x27;</span>
+<span class="hljs-built_in">cat</span> <span class="hljs-built_in">dirs</span> | sed <span class="hljs-string">&#x27;s,$,/package.json,&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;/license/{N;/Unlicense/{N;N;s/.*/  &quot;license&quot;: &quot;Unlicense&quot;,/;}}&#x27;</span>
 
 <span class="hljs-comment"># Check the update</span>
-cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} diff
+<span class="hljs-built_in">cat</span> <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} diff
 
 <span class="hljs-comment"># Commit</span>
-cat <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} commit -am <span class="hljs-string">&#x27;Update package license format&#x27;</span>
+<span class="hljs-built_in">cat</span> <span class="hljs-built_in">dirs</span> | xargs -I{} git -C {} commit -am <span class="hljs-string">&#x27;Update package license format&#x27;</span>
 
 <span class="hljs-comment"># Get the repositories where a change occurred (otherwise the commit was not done)</span>
-cat <span class="hljs-built_in">dirs</span> | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git log -n 1 | grep -q &quot;Update package license format&quot; &amp;&amp; echo {}&#x27;</span> &gt; updated
+<span class="hljs-built_in">cat</span> <span class="hljs-built_in">dirs</span> | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git log -n 1 | grep -q &quot;Update package license format&quot; &amp;&amp; echo {}&#x27;</span> &gt; updated
 
 <span class="hljs-comment"># Bump patch (commit and tag)</span>
-cat updated | xargs -I{} npm version patch -m <span class="hljs-string">&#x27;Bump %s&#x27;</span>
+<span class="hljs-built_in">cat</span> updated | xargs -I{} npm version patch -m <span class="hljs-string">&#x27;Bump %s&#x27;</span>
 
 <span class="hljs-comment"># Check commits to push</span>
-cat updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin/master..
+<span class="hljs-built_in">cat</span> updated | xargs -I{} git -C {} <span class="hljs-built_in">log</span> origin/master..
 
 <span class="hljs-comment"># Push, install dependencies and publish</span>
-cat updated | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish&#x27;</span>
+<span class="hljs-built_in">cat</span> updated | xargs -I{} sh -c <span class="hljs-string">&#x27;cd {} &amp;&amp; git push &amp;&amp; npm install &amp;&amp; npm publish&#x27;</span>
 </code></pre>
 <h2 id="was-it-worth-it" tabindex="-1"><a class="header-anchor" href="#was-it-worth-it"><span>Was it worth it?</span></a></h2>
 <p>In the end, I think it took way more time to write this script (and blog

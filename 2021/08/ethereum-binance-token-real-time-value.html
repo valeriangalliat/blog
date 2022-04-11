@@ -229,7 +229,7 @@ that feature an endpoint to fetch a given contract ABI.</p>
 <p>Now, we got everything we need to call the contracts with <a href="https://web3js.readthedocs.io/">web3.js</a>.</p>
 <p>If you read everything I wrote until now, the code should be
 self-explanatory.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> Web3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;web3&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Web3</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;web3&#x27;</span>)
 
 <span class="hljs-keyword">const</span> checoinAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./checoin&#x27;</span>)
 <span class="hljs-keyword">const</span> wbnbAbi = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./wbnb&#x27;</span>)
@@ -245,33 +245,33 @@ self-explanatory.</p>
 <span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
 <span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> web3 = <span class="hljs-keyword">new</span> Web3(rpcEndpoint)
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+  <span class="hljs-keyword">const</span> web3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Web3</span>(rpcEndpoint)
 
-  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> web3.eth.Contract(checoinAbi, checoinAddress)
-  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> web3.eth.Contract(wbnbAbi, wbnbAddress)
-  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> web3.eth.Contract(factoryAbi, factoryAddress)
+  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> web3.<span class="hljs-property">eth</span>.<span class="hljs-title class_">Contract</span>(checoinAbi, checoinAddress)
+  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> web3.<span class="hljs-property">eth</span>.<span class="hljs-title class_">Contract</span>(wbnbAbi, wbnbAddress)
+  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> web3.<span class="hljs-property">eth</span>.<span class="hljs-title class_">Contract</span>(factoryAbi, factoryAddress)
 
   <span class="hljs-comment">// If token provides `uniswapV2Pair`.</span>
   <span class="hljs-comment">// const pairAddress = await checoinContract.methods.uniswapV2Pair().call()</span>
 
   <span class="hljs-comment">// Generic method.</span>
-  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.methods.getPair(checoinAddress, wbnbAddress).call()
+  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.<span class="hljs-property">methods</span>.<span class="hljs-title function_">getPair</span>(checoinAddress, wbnbAddress).<span class="hljs-title function_">call</span>()
 
-  <span class="hljs-keyword">const</span> pairContract = <span class="hljs-keyword">new</span> web3.eth.Contract(pairAbi, pairAddress)
+  <span class="hljs-keyword">const</span> pairContract = <span class="hljs-keyword">new</span> web3.<span class="hljs-property">eth</span>.<span class="hljs-title class_">Contract</span>(pairAbi, pairAddress)
 
-  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.methods.decimals().call()
-  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.methods.decimals().call()
-  <span class="hljs-keyword">const</span> reserves = <span class="hljs-keyword">await</span> pairContract.methods.getReserves().call()
+  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.<span class="hljs-property">methods</span>.<span class="hljs-title function_">decimals</span>().<span class="hljs-title function_">call</span>()
+  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.<span class="hljs-property">methods</span>.<span class="hljs-title function_">decimals</span>().<span class="hljs-title function_">call</span>()
+  <span class="hljs-keyword">const</span> reserves = <span class="hljs-keyword">await</span> pairContract.<span class="hljs-property">methods</span>.<span class="hljs-title function_">getReserves</span>().<span class="hljs-title function_">call</span>()
 
-  <span class="hljs-keyword">const</span> checoin = reserves[<span class="hljs-number">0</span>] / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-  <span class="hljs-keyword">const</span> wbnb = reserves[<span class="hljs-number">1</span>] / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
+  <span class="hljs-keyword">const</span> checoin = reserves[<span class="hljs-number">0</span>] / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, checoinDecimals)
+  <span class="hljs-keyword">const</span> wbnb = reserves[<span class="hljs-number">1</span>] / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, wbnbDecimals)
   <span class="hljs-keyword">const</span> timestamp = reserves[<span class="hljs-number">2</span>]
 
-  <span class="hljs-built_in">console</span>.log(timestamp, checoin, wbnb, (wbnb / checoin).toFixed(<span class="hljs-number">18</span>), (checoin / wbnb).toFixed(<span class="hljs-number">18</span>))
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(timestamp, checoin, wbnb, (wbnb / checoin).<span class="hljs-title function_">toFixed</span>(<span class="hljs-number">18</span>), (checoin / wbnb).<span class="hljs-title function_">toFixed</span>(<span class="hljs-number">18</span>))
 }
 
-main()
+<span class="hljs-title function_">main</span>()
 </code></pre>
 <p>This displays the latest block timestamp, the current CheCoin balance,
 wBNB balance, then the price of CheCoin in wBNB, and the price of wBNB
@@ -303,56 +303,56 @@ us on that aspect.</p>
 <span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
 <span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> ethers.providers.JsonRpcProvider(rpcEndpoint)
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+  <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> ethers.<span class="hljs-property">providers</span>.<span class="hljs-title class_">JsonRpcProvider</span>(rpcEndpoint)
 
-  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> ethers.Contract(checoinAddress, checoinAbi, provider)
-  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> ethers.Contract(wbnbAddress, wbnbAbi, provider)
-  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> ethers.Contract(factoryAddress, factoryAbi, provider)
+  <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> ethers.<span class="hljs-title class_">Contract</span>(checoinAddress, checoinAbi, provider)
+  <span class="hljs-keyword">const</span> wbnbContract = <span class="hljs-keyword">new</span> ethers.<span class="hljs-title class_">Contract</span>(wbnbAddress, wbnbAbi, provider)
+  <span class="hljs-keyword">const</span> factoryContract = <span class="hljs-keyword">new</span> ethers.<span class="hljs-title class_">Contract</span>(factoryAddress, factoryAbi, provider)
 
   <span class="hljs-comment">// If token provides `uniswapV2Pair`.</span>
   <span class="hljs-comment">// const pairAddress = await checoinContract.uniswapV2Pair()</span>
 
   <span class="hljs-comment">// Generic method.</span>
-  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.getPair(checoinAddress, wbnbAddress)
+  <span class="hljs-keyword">const</span> pairAddress = <span class="hljs-keyword">await</span> factoryContract.<span class="hljs-title function_">getPair</span>(checoinAddress, wbnbAddress)
 
-  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.decimals()
-  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.decimals()
+  <span class="hljs-keyword">const</span> checoinDecimals = <span class="hljs-keyword">await</span> checoinContract.<span class="hljs-title function_">decimals</span>()
+  <span class="hljs-keyword">const</span> wbnbDecimals = <span class="hljs-keyword">await</span> wbnbContract.<span class="hljs-title function_">decimals</span>()
 
-  <span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.utils.Interface(pairAbi)
+  <span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.<span class="hljs-property">utils</span>.<span class="hljs-title class_">Interface</span>(pairAbi)
 
-  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress })
+  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.<span class="hljs-title function_">getLogs</span>({ <span class="hljs-attr">address</span>: pairAddress })
 
   <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
-    <span class="hljs-keyword">const</span> parsed = pairInterface.parseLog(log)
+    <span class="hljs-keyword">const</span> parsed = pairInterface.<span class="hljs-title function_">parseLog</span>(log)
 
-    <span class="hljs-keyword">if</span> (parsed.name !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
+    <span class="hljs-keyword">if</span> (parsed.<span class="hljs-property">name</span> !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
       <span class="hljs-keyword">continue</span>
     }
 
     <span class="hljs-keyword">let</span> type, che, bnb
 
-    <span class="hljs-keyword">if</span> (parsed.args.amount1Out.isZero()) {
+    <span class="hljs-keyword">if</span> (parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1Out</span>.<span class="hljs-title function_">isZero</span>()) {
       type = <span class="hljs-string">&#x27;buy&#x27;</span>
-      bnb = parsed.args.amount1In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-      che = parsed.args.amount0Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
+      bnb = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1In</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, wbnbDecimals)
+      che = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount0Out</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, checoinDecimals)
     } <span class="hljs-keyword">else</span> {
       type = <span class="hljs-string">&#x27;sell&#x27;</span>
-      che = parsed.args.amount0In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-      bnb = parsed.args.amount1Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
+      che = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount0In</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, checoinDecimals)
+      bnb = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1Out</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, wbnbDecimals)
     }
 
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
   }
 }
 
-main()
+<span class="hljs-title function_">main</span>()
 </code></pre>
 <p>Everything until defining <code>wbnbDecimals</code> is the same as the previous
 example, but with Ethers.js instead of web3.js.</p>
 <p>Then, Ethers.js conveniently provides us with an <code>Interface</code> class that
 lets us decode binary logs from a given ABI. Very nice.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.utils.Interface(pairAbi)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pairInterface = <span class="hljs-keyword">new</span> ethers.<span class="hljs-property">utils</span>.<span class="hljs-title class_">Interface</span>(pairAbi)
 </code></pre>
 <p>We call the <code>getLogs</code> function on the <code>pairAddress</code>, getting all logs
 from the latest block.</p>
@@ -360,7 +360,7 @@ from the latest block.</p>
 <p><strong>Note:</strong> for testing purpose, feel free to check the last few blocks of
 the pair on Etherscan or BscScan, and request logs from an older block
 so that you get some data more consistently:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress, <span class="hljs-attr">fromBlock</span>: <span class="hljs-number">10289051</span> })
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.<span class="hljs-title function_">getLogs</span>({ <span class="hljs-attr">address</span>: pairAddress, <span class="hljs-attr">fromBlock</span>: <span class="hljs-number">10289051</span> })
 </code></pre>
 </div>
 <p>For each log, the interface we instantiated earlier from the ABI allows
@@ -368,13 +368,13 @@ us to parse the log. We get back an object with the transaction name
 (here, we care about <code>Swap</code> transactions) as well as the transaction
 arguments.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
-  <span class="hljs-keyword">const</span> parsed = pairInterface.parseLog(log)
+  <span class="hljs-keyword">const</span> parsed = pairInterface.<span class="hljs-title function_">parseLog</span>(log)
 
-  <span class="hljs-keyword">if</span> (parsed.name !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
+  <span class="hljs-keyword">if</span> (parsed.<span class="hljs-property">name</span> !== <span class="hljs-string">&#x27;Swap&#x27;</span>) {
     <span class="hljs-keyword">continue</span>
   }
 
-  <span class="hljs-built_in">console</span>.log(parsed.args)
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(parsed.<span class="hljs-property">args</span>)
 }
 </code></pre>
 <p>With Uniswap / PancakeSwap, there are 4 arguments to a swap:
@@ -391,17 +391,17 @@ type (buy or sell), CheCoin amount, wBNB amount, as well as the
 transaction hash and block number.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">let</span> type, che, bnb
 
-<span class="hljs-keyword">if</span> (parsed.args.amount1Out.isZero()) {
+<span class="hljs-keyword">if</span> (parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1Out</span>.<span class="hljs-title function_">isZero</span>()) {
   type = <span class="hljs-string">&#x27;buy&#x27;</span>
-  bnb = parsed.args.amount1In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
-  che = parsed.args.amount0Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
+  bnb = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1In</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, wbnbDecimals)
+  che = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount0Out</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, checoinDecimals)
 } <span class="hljs-keyword">else</span> {
   type = <span class="hljs-string">&#x27;sell&#x27;</span>
-  che = parsed.args.amount0In / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, checoinDecimals)
-  bnb = parsed.args.amount1Out / <span class="hljs-built_in">Math</span>.pow(<span class="hljs-number">10</span>, wbnbDecimals)
+  che = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount0In</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, checoinDecimals)
+  bnb = parsed.<span class="hljs-property">args</span>.<span class="hljs-property">amount1Out</span> / <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">pow</span>(<span class="hljs-number">10</span>, wbnbDecimals)
 }
 
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${type}</span> che=<span class="hljs-subst">${che}</span> bnb=<span class="hljs-subst">${bnb}</span> tx=<span class="hljs-subst">${log.transactionHash}</span> blk=<span class="hljs-subst">${log.blockNumber}</span>`</span>)
 </code></pre>
 <h3 id="actually-polling" tabindex="-1"><a class="header-anchor" href="#actually-polling"><span>Actually polling</span></a></h3>
 <p>The previous script will only log the latest transaction once, then
@@ -410,18 +410,18 @@ them to the console, it’s easily done with an infinite loop.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">let</span> fromBlock = <span class="hljs-string">&#x27;latest&#x27;</span>
 
 <span class="hljs-keyword">while</span> (<span class="hljs-literal">true</span>) {
-  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.getLogs({ <span class="hljs-attr">address</span>: pairAddress, fromBlock })
+  <span class="hljs-keyword">const</span> logs = <span class="hljs-keyword">await</span> provider.<span class="hljs-title function_">getLogs</span>({ <span class="hljs-attr">address</span>: pairAddress, fromBlock })
 
-  <span class="hljs-keyword">if</span> (logs.length) {
+  <span class="hljs-keyword">if</span> (logs.<span class="hljs-property">length</span>) {
     <span class="hljs-comment">// `fromBlock` is inclusive so poll from next block.</span>
-    fromBlock = logs[logs.length - <span class="hljs-number">1</span>].blockNumber + <span class="hljs-number">1</span>
+    fromBlock = logs[logs.<span class="hljs-property">length</span> - <span class="hljs-number">1</span>].<span class="hljs-property">blockNumber</span> + <span class="hljs-number">1</span>
   }
 
   <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> log <span class="hljs-keyword">of</span> logs) {
     <span class="hljs-comment">// Previous code goes here.</span>
   }
 
-  <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> <span class="hljs-built_in">setTimeout</span>(resolve, <span class="hljs-number">1000</span>))
+  <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> <span class="hljs-built_in">setTimeout</span>(resolve, <span class="hljs-number">1000</span>))
 }
 </code></pre>
 <p>Here, we poll every second (adjust to something reasonable for the

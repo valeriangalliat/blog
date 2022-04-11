@@ -98,7 +98,7 @@ the whole database file and query the copy</strong>. If working off a one-time
 snapshot of the database work for you, awesome, problem solved:</p>
 <pre><code class="hljs language-sh">$ <span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite
 Error: database is locked
-$ cp db.sqlite db-snapshot.sqlite
+$ <span class="hljs-built_in">cp</span> db.sqlite db-snapshot.sqlite
 $ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 db-snapshot.sqlite
 actual_table
 </code></pre>
@@ -181,7 +181,7 @@ format, we need to pass this kind of URI to our driver, e.g.
 flag in order to enable it.</p>
 <p>With <code>sqlite3</code>, this looks like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> sqlite3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;sqlite3&#x27;</span>)
-<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.Database(<span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>, sqlite3.OPEN_READONLY | sqlite3.OPEN_URI)
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.<span class="hljs-title class_">Database</span>(<span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>, sqlite3.<span class="hljs-property">OPEN_READONLY</span> | sqlite3.<span class="hljs-property">OPEN_URI</span>)
 </code></pre>
 <p>We need to precise <code>OPEN_READONLY</code> because <code>OPEN_URI</code> alone is not a
 valid mode, and by passing an explicit mode, we’re effectively

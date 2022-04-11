@@ -184,22 +184,22 @@ with Firefox Accounts, and looking at the package API, it contains a
 method to send an unblock code, and a way to forward it to the <code>signIn</code>
 method, so I integrate this flow to allow continuing the process using
 the code sent to the account email.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">AuthClient</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
 
-<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(<span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>)
+<span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(<span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>)
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">login</span> (<span class="hljs-params">email, pass</span>) </span>{
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">login</span> (email, pass) {
   <span class="hljs-keyword">const</span> params = {
     <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>
   }
 
   <span class="hljs-keyword">try</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> client.signIn(email, pass, params)
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, params)
   } <span class="hljs-keyword">catch</span> (err) {
-    <span class="hljs-keyword">if</span> (err.code === <span class="hljs-number">400</span> &amp;&amp; err.errno === <span class="hljs-number">125</span>) {
-      <span class="hljs-keyword">await</span> client.sendUnblockCode(email)
-      params.unblockCode = <span class="hljs-keyword">await</span> promptUserForCode()
-      <span class="hljs-keyword">return</span> client.signIn(email, pass, params)
+    <span class="hljs-keyword">if</span> (err.<span class="hljs-property">code</span> === <span class="hljs-number">400</span> &amp;&amp; err.<span class="hljs-property">errno</span> === <span class="hljs-number">125</span>) {
+      <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">sendUnblockCode</span>(email)
+      params.<span class="hljs-property">unblockCode</span> = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promptUserForCode</span>()
+      <span class="hljs-keyword">return</span> client.<span class="hljs-title function_">signIn</span>(email, pass, params)
     }
 
     <span class="hljs-keyword">throw</span> err
@@ -213,7 +213,7 @@ and figured the only difference was that <a href="https://github.com/mozilla/PyF
 the Python client for Firefox Accounts, <a href="https://github.com/mozilla/PyFxA/blob/6c3f803b3c27c665f417b0c5bd3ca79add8e2027/fxa/core.py#L78">sent <code>reason=login</code></a>
 as part of the login parameters by default, which made the
 authentication successful without external verification. Sweet!</p>
-<pre><code class="hljs language-js">client.signIn(email, pass, {
+<pre><code class="hljs language-js">client.<span class="hljs-title function_">signIn</span>(email, pass, {
   <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
 })
@@ -221,16 +221,16 @@ authentication successful without external verification. Sweet!</p>
 <p>After this patch, I got <code>fx-sync</code> to work without the need for an
 unblock code, and it was successfully able to access my Firefox Sync
 collections and decrypt them.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> FxSync = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fx-sync&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">FxSync</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fx-sync&#x27;</span>)
 
-<span class="hljs-keyword">const</span> sync = <span class="hljs-keyword">new</span> FxSync({
+<span class="hljs-keyword">const</span> sync = <span class="hljs-keyword">new</span> <span class="hljs-title class_">FxSync</span>({
   <span class="hljs-attr">email</span>: <span class="hljs-string">&#x27;...&#x27;</span>,
   <span class="hljs-attr">password</span>: <span class="hljs-string">&#x27;...&#x27;</span>
 })
 
-<span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> sync.fetch(<span class="hljs-string">&#x27;passwords&#x27;</span>)
+<span class="hljs-keyword">const</span> passwords = <span class="hljs-keyword">await</span> sync.<span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;passwords&#x27;</span>)
 
-<span class="hljs-built_in">console</span>.log(passwords)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(passwords)
 </code></pre>
 <p>This is a great start, but there’s something with using a package that
 hasn’t been updated since 2014 that just doesn’t feel right to me.</p>

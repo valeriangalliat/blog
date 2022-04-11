@@ -96,14 +96,14 @@ which requires some credentials to be present in the container.</p>
 <h2 id="cdk-lambda-asset-bundling" tabindex="-1"><a class="header-anchor" href="#cdk-lambda-asset-bundling"><span>CDK Lambda asset bundling</span></a></h2>
 <p>Instead, CDK offers a way to write custom bundling logic for Lambda
 functions (which is what <code>PythonFunction</code> uses internally); from their <a href="https://docs.aws.amazon.com/cdk/api/latest/docs/aws-lambda-readme.html#bundling-asset-code">documentation</a>:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
+<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.<span class="hljs-title class_">Function</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
+  <span class="hljs-attr">code</span>: lambda.<span class="hljs-property">Code</span>.<span class="hljs-title function_">fromAsset</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
     <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
+      <span class="hljs-attr">image</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>.<span class="hljs-property">bundlingImage</span>,
       <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&#x27;pip install -r requirements.txt -t /asset-output &amp;&amp; cp -a . /asset-output&#x27;</span>]
     }
   }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
+  <span class="hljs-attr">runtime</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>,
   <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
 })
 </code></pre>
@@ -112,10 +112,10 @@ Docker container that bundles the Lambda asset, like <code>environment</code> to
 pass credentials in environment variables, or <code>volumes</code> which can be
 used to mount directories or even single files that contains credentials
 or other data you would want inside the bundling container, e.g.:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
+<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.<span class="hljs-title class_">Function</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
+  <span class="hljs-attr">code</span>: lambda.<span class="hljs-property">Code</span>.<span class="hljs-title function_">fromAsset</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
     <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
+      <span class="hljs-attr">image</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>.<span class="hljs-property">bundlingImage</span>,
       <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">&#x27;pip install -r requirements.txt -t /asset-output &amp;&amp; cp -a . /asset-output&#x27;</span>],
       <span class="hljs-attr">environment</span>: {
         <span class="hljs-attr">SECRET</span>: <span class="hljs-string">&#x27;token&#x27;</span>
@@ -128,7 +128,7 @@ or other data you would want inside the bundling container, e.g.:</p>
       ]
     }
   }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
+  <span class="hljs-attr">runtime</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>,
   <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
 })
 </code></pre>
@@ -177,10 +177,10 @@ cross filesystem operations, and then add that to the <code>cp</code> command we
 already have.</p>
 <p>I also like to replace the hardcoded <code>/asset-output</code> by the constant
 <code>cdk.AssetStaging.BUNDLING_OUTPUT_DIR</code>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.Function(<span class="hljs-built_in">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
-  <span class="hljs-attr">code</span>: lambda.Code.fromAsset(path.join(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
+<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> lambda.<span class="hljs-title class_">Function</span>(<span class="hljs-variable language_">this</span>, <span class="hljs-string">&#x27;Function&#x27;</span>, {
+  <span class="hljs-attr">code</span>: lambda.<span class="hljs-property">Code</span>.<span class="hljs-title function_">fromAsset</span>(path.<span class="hljs-title function_">join</span>(__dirname, <span class="hljs-string">&#x27;my-python-handler&#x27;</span>), {
     <span class="hljs-attr">bundling</span>: {
-      <span class="hljs-attr">image</span>: lambda.Runtime.PYTHON_3_8.bundlingImage,
+      <span class="hljs-attr">image</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>.<span class="hljs-property">bundlingImage</span>,
       <span class="hljs-attr">command</span>: [<span class="hljs-string">&#x27;bash&#x27;</span>, <span class="hljs-string">&#x27;-c&#x27;</span>, <span class="hljs-string">`pip install -r requirements.txt -t /tmp/deps &amp;&amp; cp -a . /tmp/deps/* <span class="hljs-subst">${cdk.AssetStaging.BUNDLING_OUTPUT_DIR}</span>`</span>],
       <span class="hljs-attr">environment</span>: {
         <span class="hljs-attr">SECRET</span>: <span class="hljs-string">&#x27;token&#x27;</span>
@@ -193,7 +193,7 @@ already have.</p>
       ]
     }
   }),
-  <span class="hljs-attr">runtime</span>: lambda.Runtime.PYTHON_3_8,
+  <span class="hljs-attr">runtime</span>: lambda.<span class="hljs-property">Runtime</span>.<span class="hljs-property">PYTHON_3_8</span>,
   <span class="hljs-attr">handler</span>: <span class="hljs-string">&#x27;index.handler&#x27;</span>
 })
 </code></pre>

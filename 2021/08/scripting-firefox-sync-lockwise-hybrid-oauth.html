@@ -221,7 +221,7 @@ where I can specify a <code>scope</code> of <code>https://identity.mozilla.com/a
 <a href="https://github.com/mozilla-services/tokenserver#using-oauth">as documented</a>,
 and I do get back a valid OAuth token. Sweet.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> scope = <span class="hljs-string">&#x27;https://identity.mozilla.com/apps/oldsync&#x27;</span>
-<span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.createOAuthToken(creds.sessionToken, clientId, { scope })
+<span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">createOAuthToken</span>(creds.<span class="hljs-property">sessionToken</span>, clientId, { scope })
 </code></pre>
 <h2 id="unmasking-the-x-keyid-header" tabindex="-1"><a class="header-anchor" href="#unmasking-the-x-keyid-header"><span>Unmasking the <code>X-KeyID</code> header</span></a></h2>
 <p>Now that’s not enough to authenticate to the TokenServer, I also <a href="https://github.com/mozilla-services/tokenserver#using-oauth">need to pass</a>
@@ -313,13 +313,13 @@ isn’t working, so we’re not going to try to port it, but Base64URL
 encoding the first 16 bytes of a key reminds me of something.</p>
 <p>We can also see this pattern in <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/deriver/ScopedKeys.js#L107">the code Ryan pointed to</a>
 in order to address the key derivation issue:</p>
-<pre><code class="hljs language-js">scopedKey.kid = options.keyRotationTimestamp + <span class="hljs-string">&#x27;-&#x27;</span> + base64url(kHash.slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>))
+<pre><code class="hljs language-js">scopedKey.<span class="hljs-property">kid</span> = options.<span class="hljs-property">keyRotationTimestamp</span> + <span class="hljs-string">&#x27;-&#x27;</span> + <span class="hljs-title function_">base64url</span>(kHash.<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>))
 </code></pre>
 <p>While it’s not immediately clear to me what <code>kHash</code> is, the
 <code>base64url(kHash.slice(0, 16))</code> is again awfully familiar. It is exactly
 what we used to do <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#compute-client-state">to compute the <code>X-Client-State</code> header</a>
 for the BrowserID version!</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> clientState = sha256(syncKey).slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> clientState = <span class="hljs-title function_">sha256</span>(syncKey).<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)
 </code></pre>
 <p>This is especially promising since <a href="https://github.com/mozilla-services/tokenserver/blob/39239dd7a8d6b8270e22c9b6fef3f6be147e0df4/tokenserver/views.py#L247">the Python code behind the TokenServer</a>
 also calls it <code>client_state</code>:</p>
@@ -338,7 +338,7 @@ series, up to getting the Sync token from the TokenServer. <a href="scripting-fi
 from there is not affected, so I won’t include it again here.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
-<span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">AuthClient</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
 
 <span class="hljs-keyword">const</span> authServerUrl = <span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>
 <span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
@@ -347,33 +347,33 @@ from there is not affected, so I won’t include it again here.</p>
 <span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
 <span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(authServerUrl)
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+  <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(authServerUrl)
 
-  <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.signIn(email, pass, {
+  <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, {
     <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
   })
 
-  <span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
-  <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.createOAuthToken(creds.sessionToken, clientId, { scope })
-  <span class="hljs-keyword">const</span> scopedKeyData = <span class="hljs-keyword">await</span> client.getOAuthScopedKeyData(creds.sessionToken, clientId, scope)
+  <span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">accountKeys</span>(creds.<span class="hljs-property">keyFetchToken</span>, creds.<span class="hljs-property">unwrapBKey</span>)
+  <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">createOAuthToken</span>(creds.<span class="hljs-property">sessionToken</span>, clientId, { scope })
+  <span class="hljs-keyword">const</span> scopedKeyData = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">getOAuthScopedKeyData</span>(creds.<span class="hljs-property">sessionToken</span>, clientId, scope)
 
-  <span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-  <span class="hljs-keyword">const</span> clientState = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(syncKey).digest().slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> syncKey = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(accountKeys.<span class="hljs-property">kB</span>, <span class="hljs-string">&#x27;hex&#x27;</span>)
+  <span class="hljs-keyword">const</span> clientState = crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(syncKey).<span class="hljs-title function_">digest</span>().<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
   <span class="hljs-keyword">const</span> keyId = <span class="hljs-string">`<span class="hljs-subst">${scopedKeyData[scope].keyRotationTimestamp}</span>-<span class="hljs-subst">${clientState}</span>`</span>
 
   <span class="hljs-comment">// See &lt;https://github.com/mozilla-services/tokenserver#using-oauth&gt;.</span>
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
     <span class="hljs-attr">headers</span>: {
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
       <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keyId
     }
   })
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 }
 
-main()
+<span class="hljs-title function_">main</span>()
 </code></pre>
 <p>Here’s the equivalent code from the previous article for comparison:</p>
 <details>
@@ -381,7 +381,7 @@ main()
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
-<span class="hljs-keyword">const</span> AuthClient = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
+<span class="hljs-keyword">const</span> <span class="hljs-title class_">AuthClient</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fxa-js-client&#x27;</span>)
 <span class="hljs-keyword">const</span> njwt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;njwt&#x27;</span>)
 
 <span class="hljs-keyword">const</span> authServerUrl = <span class="hljs-string">&#x27;https://api.accounts.firefox.com/v1&#x27;</span>
@@ -389,61 +389,61 @@ main()
 <span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
 <span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">base64to10</span> (<span class="hljs-params">data</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + Buffer.from(data, <span class="hljs-string">&#x27;base64&#x27;</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)).toString(<span class="hljs-number">10</span>)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (data) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(data, <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)).<span class="hljs-title function_">toString</span>(<span class="hljs-number">10</span>)
 }
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> AuthClient(authServerUrl)
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+  <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(authServerUrl)
 
-  <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.signIn(email, pass, {
+  <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, {
     <span class="hljs-attr">keys</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">reason</span>: <span class="hljs-string">&#x27;login&#x27;</span>
   })
 
-  <span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.accountKeys(creds.keyFetchToken, creds.unwrapBKey)
+  <span class="hljs-keyword">const</span> accountKeys = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">accountKeys</span>(creds.<span class="hljs-property">keyFetchToken</span>, creds.<span class="hljs-property">unwrapBKey</span>)
 
-  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
+  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
     <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
   })
 
-  <span class="hljs-keyword">const</span> jwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+  <span class="hljs-keyword">const</span> jwk = kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
 
   <span class="hljs-keyword">const</span> publicKey = {
-    <span class="hljs-attr">algorithm</span>: jwk.algorithm.slice(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>),
-    <span class="hljs-attr">n</span>: base64to10(jwk.n),
-    <span class="hljs-attr">e</span>: base64to10(jwk.e)
+    <span class="hljs-attr">algorithm</span>: jwk.<span class="hljs-property">algorithm</span>.<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>),
+    <span class="hljs-attr">n</span>: <span class="hljs-title function_">base64to10</span>(jwk.<span class="hljs-property">n</span>),
+    <span class="hljs-attr">e</span>: <span class="hljs-title function_">base64to10</span>(jwk.<span class="hljs-property">e</span>)
   }
 
   <span class="hljs-comment">// Time interval in milliseconds until the certificate will expire, up to a</span>
   <span class="hljs-comment">// maximum of 24 hours as documented in &lt;https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-32&gt;.</span>
   <span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>
 
-  <span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, publicKey, duration)
+  <span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">certificateSign</span>(creds.<span class="hljs-property">sessionToken</span>, publicKey, duration)
 
   <span class="hljs-comment">// Generate an &quot;identity assertion&quot; which is a JWT as documented in</span>
   <span class="hljs-comment">// &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#identity-assertion&gt;.</span>
-  <span class="hljs-keyword">const</span> signedObject = njwt.create({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.privateKey, <span class="hljs-string">&#x27;RS256&#x27;</span>)
-    .setClaim(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-built_in">Date</span>.now() + duration)
-    .compact()
+  <span class="hljs-keyword">const</span> signedObject = njwt.<span class="hljs-title function_">create</span>({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.<span class="hljs-property">privateKey</span>, <span class="hljs-string">&#x27;RS256&#x27;</span>)
+    .<span class="hljs-title function_">setClaim</span>(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration)
+    .<span class="hljs-title function_">compact</span>()
 
   <span class="hljs-comment">// Certs are separated by a `~` as documented in &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion&gt;.</span>
-  <span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
+  <span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;~&#x27;</span>)
 
   <span class="hljs-comment">// See &lt;https://github.com/mozilla-services/tokenserver#using-browserid&gt;.</span>
-  <span class="hljs-keyword">const</span> syncKey = Buffer.from(accountKeys.kB, <span class="hljs-string">&#x27;hex&#x27;</span>)
-  <span class="hljs-keyword">const</span> clientState = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(syncKey).digest().slice(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
+  <span class="hljs-keyword">const</span> syncKey = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(accountKeys.<span class="hljs-property">kB</span>, <span class="hljs-string">&#x27;hex&#x27;</span>)
+  <span class="hljs-keyword">const</span> clientState = crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(syncKey).<span class="hljs-title function_">digest</span>().<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)
 
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
     <span class="hljs-attr">headers</span>: {
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`BrowserID <span class="hljs-subst">${backedAssertion}</span>`</span>,
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`BrowserID <span class="hljs-subst">${backedAssertion}</span>`</span>,
       <span class="hljs-string">&#x27;X-Client-State&#x27;</span>: clientState
     }
   })
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 }
 
-main()
+<span class="hljs-title function_">main</span>()
 </code></pre>
 </details>
 <p>But while this is a solid improvement from what we had previously built

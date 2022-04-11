@@ -189,47 +189,47 @@ valid.</p>
 <p>I won’t copy everything here, but I essentially made a quick
 <a href="https://github.com/valeriangalliat/authy-user-client/blob/c77d5c6e56619b012079482da4d7b9d269bab485/index.js#L38">API wrapper</a>
 that allows me to define every method very concisely:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> checkUserStatus = api({
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> checkUserStatus = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.country_code}</span>-<span class="hljs-subst">${p.cellphone}</span>/status`</span>,
   <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> createUser = api({
+<span class="hljs-keyword">const</span> createUser = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;/users/new&#x27;</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;email&#x27;</span>, <span class="hljs-string">&#x27;cellphone&#x27;</span>, <span class="hljs-string">&#x27;country_code&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> startRegistration = api({
+<span class="hljs-keyword">const</span> startRegistration = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/start`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;via&#x27;</span>, <span class="hljs-string">&#x27;signature&#x27;</span>, <span class="hljs-string">&#x27;device_app&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> completeRegistration = api({
+<span class="hljs-keyword">const</span> completeRegistration = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/registration/complete`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;pin&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> listDevices = api({
+<span class="hljs-keyword">const</span> listDevices = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices`</span>,
   <span class="hljs-attr">search</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> deleteDevice = api({
+<span class="hljs-keyword">const</span> deleteDevice = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.delete_device_id}</span>/delete`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> enableMultiDevice = api({
+<span class="hljs-keyword">const</span> enableMultiDevice = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/enable`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> disableMultiDevice = api({
+<span class="hljs-keyword">const</span> disableMultiDevice = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/disable`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
 })
 
-<span class="hljs-keyword">const</span> sync = api({
+<span class="hljs-keyword">const</span> sync = <span class="hljs-title function_">api</span>({
   <span class="hljs-attr">url</span>: <span class="hljs-function"><span class="hljs-params">p</span> =&gt;</span> <span class="hljs-string">`/users/<span class="hljs-subst">${p.authy_id}</span>/devices/<span class="hljs-subst">${p.device_id}</span>/apps/sync`</span>,
   <span class="hljs-attr">body</span>: [<span class="hljs-string">&#x27;api_key&#x27;</span>, <span class="hljs-string">&#x27;locale&#x27;</span>, <span class="hljs-string">&#x27;otp1&#x27;</span>, <span class="hljs-string">&#x27;otp2&#x27;</span>, <span class="hljs-string">&#x27;otp3&#x27;</span>, <span class="hljs-string">&#x27;device_id&#x27;</span>]
 })
@@ -238,10 +238,10 @@ that allows me to define every method very concisely:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> base32 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;rfc-3548-b32&#x27;</span>)
 <span class="hljs-keyword">const</span> totpGenerator = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtp</span> (<span class="hljs-params">secret</span>) </span>{
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtp</span> (secret) {
   <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
-  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
-  <span class="hljs-keyword">return</span> totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
+  secret = base32.<span class="hljs-title function_">encode</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">totpGenerator</span>(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
 }
 </code></pre>
 <p>The main difference here is that Authy stores the TOTP secrets in
@@ -254,16 +254,16 @@ but there’s no way to avoid that by specifying a custom encoding, so be
 it.</p>
 <p>Then we also need an helper method to generate the 3 next codes in the
 time period sequence:</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtps</span> (<span class="hljs-params">secret</span>) </span>{
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtps</span> (secret) {
   <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
-  secret = base32.encode(Buffer.from(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
+  secret = base32.<span class="hljs-title function_">encode</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
 
-  <span class="hljs-keyword">const</span> now = <span class="hljs-built_in">Date</span>.now()
+  <span class="hljs-keyword">const</span> now = <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>()
 
   <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">otp1</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, now }),
-    <span class="hljs-attr">otp2</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">10_000</span> }),
-    <span class="hljs-attr">otp3</span>: totpGenerator(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">20_000</span> })
+    <span class="hljs-attr">otp1</span>: <span class="hljs-title function_">totpGenerator</span>(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, now }),
+    <span class="hljs-attr">otp2</span>: <span class="hljs-title function_">totpGenerator</span>(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">10_000</span> }),
+    <span class="hljs-attr">otp3</span>: <span class="hljs-title function_">totpGenerator</span>(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>, <span class="hljs-attr">now</span>: now + <span class="hljs-number">20_000</span> })
   }
 }
 </code></pre>
@@ -277,32 +277,32 @@ package to build an interactive CLI that dumps the TOTP secrets from
 your Authy account.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 <span class="hljs-keyword">const</span> prompts = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;prompts&#x27;</span>)
-<span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).default
+<span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).<span class="hljs-property">default</span>
 <span class="hljs-keyword">const</span> authy = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;authy-user-client&#x27;</span>)
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">prompt</span> (<span class="hljs-params">params</span>) </span>{
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> prompts({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">prompt</span> (params) {
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompts</span>({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
 
-  <span class="hljs-keyword">if</span> (!res.value) {
-    process.exit()
+  <span class="hljs-keyword">if</span> (!res.<span class="hljs-property">value</span>) {
+    process.<span class="hljs-title function_">exit</span>()
   }
 
-  <span class="hljs-keyword">return</span> res.value
+  <span class="hljs-keyword">return</span> res.<span class="hljs-property">value</span>
 }
 
-<span class="hljs-keyword">const</span> countryCode = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Country code:&#x27;</span>, <span class="hljs-attr">initial</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span> })
-<span class="hljs-keyword">const</span> phoneNumber = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;phoneNumber&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Phone number:&#x27;</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+<span class="hljs-keyword">const</span> countryCode = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompt</span>({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Country code:&#x27;</span>, <span class="hljs-attr">initial</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span> })
+<span class="hljs-keyword">const</span> phoneNumber = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompt</span>({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;phoneNumber&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Phone number:&#x27;</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
 
-<span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> authy.checkUserStatus({ <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
-<span class="hljs-keyword">let</span> authyId = status.authy_id
+<span class="hljs-keyword">const</span> status = <span class="hljs-keyword">await</span> authy.<span class="hljs-title function_">checkUserStatus</span>({ <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+<span class="hljs-keyword">let</span> authyId = status.<span class="hljs-property">authy_id</span>
 
 <span class="hljs-keyword">if</span> (!authyId) {
-  <span class="hljs-keyword">const</span> email = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Email:&#x27;</span> })
-  <span class="hljs-keyword">const</span> registration = <span class="hljs-keyword">await</span> authy.createUser({ email, <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
-  authyId = registration.authy_id
+  <span class="hljs-keyword">const</span> email = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompt</span>({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;text&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Email:&#x27;</span> })
+  <span class="hljs-keyword">const</span> registration = <span class="hljs-keyword">await</span> authy.<span class="hljs-title function_">createUser</span>({ email, <span class="hljs-attr">country_code</span>: countryCode, <span class="hljs-attr">cellphone</span>: phoneNumber })
+  authyId = registration.<span class="hljs-property">authy_id</span>
 }
 
-<span class="hljs-keyword">const</span> via = <span class="hljs-keyword">await</span> prompt({
+<span class="hljs-keyword">const</span> via = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompt</span>({
   <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;select&#x27;</span>,
   <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;Authentication method:&#x27;</span>,
   <span class="hljs-attr">choices</span>: [
@@ -312,37 +312,37 @@ your Authy account.</p>
   ]
 })
 
-<span class="hljs-keyword">await</span> authy.startRegistration({
+<span class="hljs-keyword">await</span> authy.<span class="hljs-title function_">startRegistration</span>({
   <span class="hljs-attr">authy_id</span>: authyId,
   via,
 
   <span class="hljs-comment">// Not sure why, but works better with this. 🤷</span>
-  <span class="hljs-attr">signature</span>: crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)
+  <span class="hljs-attr">signature</span>: crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">32</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)
 })
 
-<span class="hljs-keyword">const</span> pin = <span class="hljs-keyword">await</span> prompt({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;PIN:&#x27;</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
-<span class="hljs-keyword">const</span> registrationResponse = <span class="hljs-keyword">await</span> authy.completeRegistration({ <span class="hljs-attr">authy_id</span>: authyId, pin })
+<span class="hljs-keyword">const</span> pin = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompt</span>({ <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;number&#x27;</span>, <span class="hljs-attr">message</span>: <span class="hljs-string">&#x27;PIN:&#x27;</span>, <span class="hljs-attr">min</span>: <span class="hljs-number">1</span>, <span class="hljs-attr">validate</span>: <span class="hljs-function"><span class="hljs-params">value</span> =&gt;</span> value !== <span class="hljs-string">&#x27;&#x27;</span> })
+<span class="hljs-keyword">const</span> registrationResponse = <span class="hljs-keyword">await</span> authy.<span class="hljs-title function_">completeRegistration</span>({ <span class="hljs-attr">authy_id</span>: authyId, pin })
 
-<span class="hljs-keyword">const</span> deviceId = registrationResponse.device.id
-<span class="hljs-keyword">const</span> secretSeed = registrationResponse.device.secret_seed
+<span class="hljs-keyword">const</span> deviceId = registrationResponse.<span class="hljs-property">device</span>.<span class="hljs-property">id</span>
+<span class="hljs-keyword">const</span> secretSeed = registrationResponse.<span class="hljs-property">device</span>.<span class="hljs-property">secret_seed</span>
 
-<span class="hljs-keyword">const</span> syncResponse = <span class="hljs-keyword">await</span> authy.sync({
+<span class="hljs-keyword">const</span> syncResponse = <span class="hljs-keyword">await</span> authy.<span class="hljs-title function_">sync</span>({
   <span class="hljs-attr">authy_id</span>: authyId,
   <span class="hljs-attr">device_id</span>: deviceId,
-  ...authy.getOtps(secretSeed)
+  ...authy.<span class="hljs-title function_">getOtps</span>(secretSeed)
 })
 
-<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> app <span class="hljs-keyword">of</span> syncResponse.apps) {
-  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> URL(uri<span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${app.name}</span>`</span>)
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> app <span class="hljs-keyword">of</span> syncResponse.<span class="hljs-property">apps</span>) {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(uri<span class="hljs-string">`otpauth://totp/<span class="hljs-subst">${app.name}</span>`</span>)
 
-  url.search = <span class="hljs-keyword">new</span> URLSearchParams(<span class="hljs-built_in">Object</span>.entries({
+  url.<span class="hljs-property">search</span> = <span class="hljs-keyword">new</span> <span class="hljs-title class_">URLSearchParams</span>(<span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>({
     <span class="hljs-comment">// Authy uses hex, everything else uses Base32.</span>
-    <span class="hljs-attr">secret</span>: authy.hexToBase32(app.secret_seed),
-    <span class="hljs-attr">digits</span>: app.digits,
+    <span class="hljs-attr">secret</span>: authy.<span class="hljs-title function_">hexToBase32</span>(app.<span class="hljs-property">secret_seed</span>),
+    <span class="hljs-attr">digits</span>: app.<span class="hljs-property">digits</span>,
     <span class="hljs-attr">period</span>: <span class="hljs-number">10</span>
   }))
 
-  <span class="hljs-built_in">console</span>.log(<span class="hljs-string">`<span class="hljs-subst">${app.name}</span>: <span class="hljs-subst">${url}</span>`</span>)
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">`<span class="hljs-subst">${app.name}</span>: <span class="hljs-subst">${url}</span>`</span>)
 }
 </code></pre>
 <p>This will list all the associated apps with a <a href="https://github.com/google/google-authenticator/wiki/Key-Uri-Format">standard TOTP URI</a>

@@ -135,8 +135,8 @@ support of this pattern is going to be way better than that of the
 outdated, “smelly code”, “not clean” and so on by purists (including myself),
 because it usually results in poor maintainability, and it would be
 better to do something like:</p>
-<pre><code class="hljs language-js"><span class="hljs-built_in">document</span>.querySelectorAll(<span class="hljs-string">&#x27;form.search&#x27;</span>).forEach(<span class="hljs-function"><span class="hljs-params">form</span> =&gt;</span> {
-  form.addEventListener(<span class="hljs-string">&#x27;submit&#x27;</span>, onSearchSubmit)
+<pre><code class="hljs language-js"><span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelectorAll</span>(<span class="hljs-string">&#x27;form.search&#x27;</span>).<span class="hljs-title function_">forEach</span>(<span class="hljs-function"><span class="hljs-params">form</span> =&gt;</span> {
+  form.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;submit&#x27;</span>, onSearchSubmit)
 })
 </code></pre>
 <p>On the other hand, this form is only going to be used on two pages on
@@ -160,15 +160,15 @@ uses (don’t worry, there’s only two!).</p>
 <p>The first one is called <code>el</code> and just adds some sugar around
 <code>document.createElement</code>, setting attributes and adding child nodes to
 it. I find it extremely convenient when scripting sites using vanilla JS.</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">el</span> (<span class="hljs-params">name, attrs = {}, children = []</span>) </span>{
-  <span class="hljs-keyword">const</span> element = <span class="hljs-built_in">document</span>.createElement(name)
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">el</span> (name, attrs = {}, children = []) {
+  <span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(name)
 
-  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-built_in">Object</span>.entries(attrs)) {
+  <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(attrs)) {
     element[key] = value
   }
 
   <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> child <span class="hljs-keyword">of</span> children) {
-    element.appendChild(child)
+    element.<span class="hljs-title function_">appendChild</span>(child)
   }
 
   <span class="hljs-keyword">return</span> element
@@ -178,15 +178,15 @@ it. I find it extremely convenient when scripting sites using vanilla JS.</p>
 message <code>div</code>s. This is useful because when show results, I also want to
 clear an eventual previous error message, and when showing an error, I
 want to clear an eventual previous results set.</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">emptyFormData</span> (<span class="hljs-params">form</span>) </span>{
-  form.querySelector(<span class="hljs-string">&#x27;.posts&#x27;</span>).textContent = <span class="hljs-string">&#x27;&#x27;</span>
-  form.querySelector(<span class="hljs-string">&#x27;.message&#x27;</span>).textContent = <span class="hljs-string">&#x27;&#x27;</span>
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">emptyFormData</span> (form) {
+  form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.posts&#x27;</span>).<span class="hljs-property">textContent</span> = <span class="hljs-string">&#x27;&#x27;</span>
+  form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.message&#x27;</span>).<span class="hljs-property">textContent</span> = <span class="hljs-string">&#x27;&#x27;</span>
 }
 </code></pre>
 <p>This is followed by another quick helper to set the message.</p>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">formMessage</span> (<span class="hljs-params">form, textContent</span>) </span>{
-  emptyFormData(form)
-  form.querySelector(<span class="hljs-string">&#x27;.message&#x27;</span>).appendChild(el(<span class="hljs-string">&#x27;p&#x27;</span>, { textContent }))
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">formMessage</span> (form, textContent) {
+  <span class="hljs-title function_">emptyFormData</span>(form)
+  form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.message&#x27;</span>).<span class="hljs-title function_">appendChild</span>(<span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;p&#x27;</span>, { textContent }))
 }
 </code></pre>
 <p>Now, to the interesting parts.</p>
@@ -197,11 +197,11 @@ callable from the HTML.</p>
 guess it’s being called from the HTML), so I need to add the comment
 above to ignore this warning.</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// eslint-disable-next-line no-unused-vars</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">onSearchSubmit</span> (<span class="hljs-params">form</span>) </span>{
-  searchBlog(form)
-    .catch(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
-      <span class="hljs-built_in">console</span>.error(err)
-      formMessage(form, <span class="hljs-string">&#x27;An error occurred! Check the console. 🤭&#x27;</span>)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">onSearchSubmit</span> (form) {
+  <span class="hljs-title function_">searchBlog</span>(form)
+    .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err)
+      <span class="hljs-title function_">formMessage</span>(form, <span class="hljs-string">&#x27;An error occurred! Check the console. 🤭&#x27;</span>)
     })
 
   <span class="hljs-keyword">return</span> <span class="hljs-literal">false</span>
@@ -213,15 +213,15 @@ by logging it and showing a message using the <code>formMessage</code> helper.</
 submission, which is to submit the form data as query parameters on the
 current URL.</p>
 <p>The following is the breakdown of the <code>searchBlog</code> function, defined as:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">searchBlog</span> (<span class="hljs-params">form</span>) </span>{
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">searchBlog</span> (form) {
   <span class="hljs-comment">// Code goes here.</span>
 }
 </code></pre>
 <h3 id="the-search-part" tabindex="-1"><a class="header-anchor" href="#the-search-part"><span>The search part</span></a></h3>
 <p>We start with a quick sanity check.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> query = form.query.value.trim().toLowerCase()
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> query = form.<span class="hljs-property">query</span>.<span class="hljs-property">value</span>.<span class="hljs-title function_">trim</span>().<span class="hljs-title function_">toLowerCase</span>()
 
-<span class="hljs-keyword">if</span> (!query.length) {
+<span class="hljs-keyword">if</span> (!query.<span class="hljs-property">length</span>) {
   <span class="hljs-keyword">return</span>
 }
 </code></pre>
@@ -231,66 +231,66 @@ mechanism.</p>
 <p>This makes the search trivial to implement:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> q = <span class="hljs-string">`<span class="hljs-subst">${query}</span> in:file language:markdown repo:valeriangalliat/blog`</span>
 
-<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`https://api.github.com/search/code?q=<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(q)}</span>`</span>)
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`https://api.github.com/search/code?q=<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(q)}</span>`</span>)
+  .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 </code></pre>
 <p>In practice, I also need to fetch the <code>posts.html</code> page which contains
 the links to all the posts on the blog. This will allow me to find the
 title of the pages that are matched without loading every single page.
 In the end the code looks like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> [result, posts] = <span class="hljs-keyword">await</span> <span class="hljs-built_in">Promise</span>.all([
-  fetch(<span class="hljs-string">`https://api.github.com/search/code?q=<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(q)}</span>`</span>)
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json()),
-  fetch(<span class="hljs-string">&#x27;/posts.html&#x27;</span>)
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.text())
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> [result, posts] = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>([
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`https://api.github.com/search/code?q=<span class="hljs-subst">${<span class="hljs-built_in">encodeURIComponent</span>(q)}</span>`</span>)
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>()),
+  <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;/posts.html&#x27;</span>)
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">text</span>())
 ])
 </code></pre>
 <h3 id="the-render-part" tabindex="-1"><a class="header-anchor" href="#the-render-part"><span>The render part</span></a></h3>
 <p>First, I remove <code>index.md</code> and <code>posts.md</code> from the results, since those
 pages include a lot of links to existing articles, they would be matched
 very often, and are not usually relevant.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> items = result.items.filter(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> ![<span class="hljs-string">&#x27;index.md&#x27;</span>, <span class="hljs-string">&#x27;posts.md&#x27;</span>].includes(item.path))
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> items = result.<span class="hljs-property">items</span>.<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> ![<span class="hljs-string">&#x27;index.md&#x27;</span>, <span class="hljs-string">&#x27;posts.md&#x27;</span>].<span class="hljs-title function_">includes</span>(item.<span class="hljs-property">path</span>))
 </code></pre>
 <p>Then, I add a quick check in case there was no match, again using the
 <code>formMessage</code> helper.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">if</span> (!items.length) {
-  <span class="hljs-keyword">return</span> formMessage(form, <span class="hljs-string">&#x27;No matches found on the blog. 🥺&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">if</span> (!items.<span class="hljs-property">length</span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">formMessage</span>(form, <span class="hljs-string">&#x27;No matches found on the blog. 🥺&#x27;</span>)
 }
 </code></pre>
 <p>Then I create a (native) <code>DOMParser</code> to parse the posts page, which
 allows me to <code>querySelector</code> the matched posts by <code>href</code>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> parser = <span class="hljs-keyword">new</span> DOMParser()
-<span class="hljs-keyword">const</span> postsDocument = parser.parseFromString(posts, <span class="hljs-string">&#x27;text/html&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> parser = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DOMParser</span>()
+<span class="hljs-keyword">const</span> postsDocument = parser.<span class="hljs-title function_">parseFromString</span>(posts, <span class="hljs-string">&#x27;text/html&#x27;</span>)
 
-<span class="hljs-keyword">const</span> lis = items.map(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> {
-  <span class="hljs-keyword">const</span> url = item.path.replace(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
-  <span class="hljs-keyword">return</span> postsDocument.querySelector(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${url}</span>&quot;]`</span>).parentNode
+<span class="hljs-keyword">const</span> lis = items.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> {
+  <span class="hljs-keyword">const</span> url = item.<span class="hljs-property">path</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
+  <span class="hljs-keyword">return</span> postsDocument.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${url}</span>&quot;]`</span>).<span class="hljs-property">parentNode</span>
 })
 </code></pre>
 <p>In practice though, this page links posts relatively (e.g.
 <code>2021/07/post-title.md</code>), while the search form could be included
 anywhere, and require an absolute link like <code>/2021/07/post-title.md</code>. To
 support this, we need to slightly modify the code:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> lis = items.map(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> {
-  <span class="hljs-keyword">const</span> relativeUrl = item.path.replace(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> lis = items.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">item</span> =&gt;</span> {
+  <span class="hljs-keyword">const</span> relativeUrl = item.<span class="hljs-property">path</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">`/<span class="hljs-subst">${relativeUrl}</span>`</span>
-  <span class="hljs-keyword">const</span> a = postsDocument.querySelector(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${relativeUrl}</span>&quot;]`</span>)
+  <span class="hljs-keyword">const</span> a = postsDocument.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${relativeUrl}</span>&quot;]`</span>)
 
-  a.href = url
+  a.<span class="hljs-property">href</span> = url
 
-  <span class="hljs-keyword">return</span> a.parentNode
+  <span class="hljs-keyword">return</span> a.<span class="hljs-property">parentNode</span>
 })
 </code></pre>
 <p>I also want to sort the results by most recent post. The date is
 included in a <code>&lt;small&gt;</code> element whose content is compatible with
 <code>Date.parse</code> so this is convenient:</p>
-<pre><code class="hljs language-js">lis.sort(<span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> <span class="hljs-built_in">Date</span>.parse(b.querySelector(<span class="hljs-string">&#x27;small&#x27;</span>).textContent) - <span class="hljs-built_in">Date</span>.parse(a.querySelecotr(<span class="hljs-string">&#x27;small&#x27;</span>).textContent))
+<pre><code class="hljs language-js">lis.<span class="hljs-title function_">sort</span>(<span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">parse</span>(b.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;small&#x27;</span>).<span class="hljs-property">textContent</span>) - <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">parse</span>(a.<span class="hljs-title function_">querySelecotr</span>(<span class="hljs-string">&#x27;small&#x27;</span>).<span class="hljs-property">textContent</span>))
 </code></pre>
 <p>Finally I can show the results.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ul = el(<span class="hljs-string">&#x27;ul&#x27;</span>, {}, lis)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ul = <span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;ul&#x27;</span>, {}, lis)
 
-emptyFormData(form)
-form.querySelector(<span class="hljs-string">&#x27;.posts&#x27;</span>).appendChild(ul)
+<span class="hljs-title function_">emptyFormData</span>(form)
+form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.posts&#x27;</span>).<span class="hljs-title function_">appendChild</span>(ul)
 </code></pre>
 <h3 id="the-reality-is-a-bit-more-complex-just-a-bit" tabindex="-1"><a class="header-anchor" href="#the-reality-is-a-bit-more-complex-just-a-bit"><span>The reality is a bit more complex (just a bit)</span></a></h3>
 <p>This whole search feature is implemented in around 50 lines of code, HTML and
@@ -319,35 +319,35 @@ always valid.</p>
 <p>I also replaced <code>li.querySelector('small')</code> by <code>li.lastElementChild</code> to
 support posts that include a <code>&lt;small&gt;</code> element in the title.</p>
 <p>Here’s the full code:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> lis = <span class="hljs-keyword">await</span> <span class="hljs-built_in">Promise</span>.all(items.map(<span class="hljs-keyword">async</span> item =&gt; {
-  <span class="hljs-keyword">const</span> relativeUrl = item.path.replace(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> lis = <span class="hljs-keyword">await</span> <span class="hljs-title class_">Promise</span>.<span class="hljs-title function_">all</span>(items.<span class="hljs-title function_">map</span>(<span class="hljs-keyword">async</span> item =&gt; {
+  <span class="hljs-keyword">const</span> relativeUrl = item.<span class="hljs-property">path</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\.md$/</span>, <span class="hljs-string">&#x27;.html&#x27;</span>)
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">`/<span class="hljs-subst">${relativeUrl}</span>`</span>
-  <span class="hljs-keyword">const</span> a = postsDocument.querySelector(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${relativeUrl}</span>&quot;]`</span>)
+  <span class="hljs-keyword">const</span> a = postsDocument.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">`a[href=&quot;<span class="hljs-subst">${relativeUrl}</span>&quot;]`</span>)
 
   <span class="hljs-keyword">if</span> (a) {
-    <span class="hljs-keyword">const</span> li = a.parentNode
-    a.href = url
-    <span class="hljs-keyword">const</span> small = li.lastElementChild
-    li.customSortValue = small ? <span class="hljs-built_in">Date</span>.parse(small.textContent) : <span class="hljs-number">0</span>
+    <span class="hljs-keyword">const</span> li = a.<span class="hljs-property">parentNode</span>
+    a.<span class="hljs-property">href</span> = url
+    <span class="hljs-keyword">const</span> small = li.<span class="hljs-property">lastElementChild</span>
+    li.<span class="hljs-property">customSortValue</span> = small ? <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">parse</span>(small.<span class="hljs-property">textContent</span>) : <span class="hljs-number">0</span>
     <span class="hljs-keyword">return</span> li
   }
 
   <span class="hljs-comment">// Fallback to fetching `&lt;h1&gt;` from actual page.</span>
-  <span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> fetch(url).then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.text())
-  <span class="hljs-keyword">const</span> pageDocument = parser.parseFromString(html, <span class="hljs-string">&#x27;text/html&#x27;</span>)
+  <span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">text</span>())
+  <span class="hljs-keyword">const</span> pageDocument = parser.<span class="hljs-title function_">parseFromString</span>(html, <span class="hljs-string">&#x27;text/html&#x27;</span>)
 
-  <span class="hljs-keyword">return</span> el(<span class="hljs-string">&#x27;li&#x27;</span>, { <span class="hljs-attr">customSortValue</span>: <span class="hljs-number">0</span> }, [
-    el(<span class="hljs-string">&#x27;a&#x27;</span>, {
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;li&#x27;</span>, { <span class="hljs-attr">customSortValue</span>: <span class="hljs-number">0</span> }, [
+    <span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;a&#x27;</span>, {
       <span class="hljs-attr">href</span>: url,
-      <span class="hljs-attr">textContent</span>: pageDocument.querySelector(<span class="hljs-string">&#x27;h1&#x27;</span>).textContent
+      <span class="hljs-attr">textContent</span>: pageDocument.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;h1&#x27;</span>).<span class="hljs-property">textContent</span>
     }),
-    el(<span class="hljs-string">&#x27;small&#x27;</span>, {
+    <span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;small&#x27;</span>, {
       <span class="hljs-attr">textContent</span>: <span class="hljs-string">&#x27;—&#x27;</span>
     })
   ])
 }))
 
-lis.sort(<span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> b.customSortValue - a.customSortValue)
+lis.<span class="hljs-title function_">sort</span>(<span class="hljs-function">(<span class="hljs-params">a, b</span>) =&gt;</span> b.<span class="hljs-property">customSortValue</span> - a.<span class="hljs-property">customSortValue</span>)
 </code></pre>
 <p>This block starts to be a bit long and could probably be refactored into
 different functions, but since it’s not code that I foresee evolving a

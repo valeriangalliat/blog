@@ -112,7 +112,7 @@ inst=../phpfarm/inst
 <span class="hljs-built_in">exec</span> <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>
 </code></pre>
 <p>And the Apache configuration:</p>
-<pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">DocumentRoot</span></span> /home/site/public_html
+<pre><code class="hljs language-apache"><span class="hljs-attribute">DocumentRoot</span> /home/site/public_html
 <span class="hljs-attribute">ScriptAlias</span> /cgi-bin-php/ /home/site/cgi-bin/
 
 <span class="hljs-attribute">AddHandler</span> php-cgi .php
@@ -120,12 +120,12 @@ inst=../phpfarm/inst
 </code></pre>
 <p>The PHP version will be executed according to the <code>PHP_VERSION</code>
 environment variable, that you can set for example from a <code>.htaccess</code>:</p>
-<pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">SetEnv</span></span> PHP_VERSION <span class="hljs-number">5</span>.<span class="hljs-number">6</span>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">SetEnv</span> PHP_VERSION <span class="hljs-number">5</span>.<span class="hljs-number">6</span>
 </code></pre>
 <h2 id="variant-php-version-at-project-level" tabindex="-1"><a class="header-anchor" href="#variant-php-version-at-project-level"><span>Variant: PHP version at project level</span></a></h2>
 <p>If you don’t need this to be configurable at environment level, you can
 simply configure the PHP version in the virtual host:</p>
-<pre><code class="hljs language-apache"><span class="hljs-attribute"><span class="hljs-nomarkup">DocumentRoot</span></span> /home/site/public_html
+<pre><code class="hljs language-apache"><span class="hljs-attribute">DocumentRoot</span> /home/site/public_html
 <span class="hljs-attribute">ScriptAlias</span> /cgi-bin-php/ /home/site/cgi-bin/
 
 <span class="hljs-section">&lt;Location /project-5.5&gt;</span>

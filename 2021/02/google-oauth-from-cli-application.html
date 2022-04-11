@@ -117,7 +117,7 @@ in your app.</p>
 <p>Then you can create an OAuth client using the SDK.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { google } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;googleapis&#x27;</span>)
 
-<span class="hljs-keyword">const</span> oauth2Client = <span class="hljs-keyword">new</span> google.auth.OAuth2(clientId, clientSecret, <span class="hljs-string">&#x27;urn:ietf:wg:oauth:2.0:oob&#x27;</span>)
+<span class="hljs-keyword">const</span> oauth2Client = <span class="hljs-keyword">new</span> google.<span class="hljs-property">auth</span>.<span class="hljs-title class_">OAuth2</span>(clientId, clientSecret, <span class="hljs-string">&#x27;urn:ietf:wg:oauth:2.0:oob&#x27;</span>)
 </code></pre>
 <p>The third parameter here is the redirect URL, where the Google auth page
 would normally redirect to when the authentication is complete.</p>
@@ -129,12 +129,12 @@ paste into your app to complete the process.</p>
 <p>Here’s an example.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
 
-<span class="hljs-keyword">const</span> rl = readline.createInterface({
-  <span class="hljs-attr">input</span>: process.stdin,
-  <span class="hljs-attr">output</span>: process.stdout
+<span class="hljs-keyword">const</span> rl = readline.<span class="hljs-title function_">createInterface</span>({
+  <span class="hljs-attr">input</span>: process.<span class="hljs-property">stdin</span>,
+  <span class="hljs-attr">output</span>: process.<span class="hljs-property">stdout</span>
 })
 
-<span class="hljs-keyword">const</span> authUrl = oauth2Client.generateAuthUrl({
+<span class="hljs-keyword">const</span> authUrl = oauth2Client.<span class="hljs-title function_">generateAuthUrl</span>({
   <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
   <span class="hljs-attr">scope</span>: [
     <span class="hljs-string">&#x27;https://www.googleapis.com/auth/userinfo.profile&#x27;</span>,
@@ -142,20 +142,20 @@ paste into your app to complete the process.</p>
   ]
 })
 
-<span class="hljs-built_in">console</span>.log(<span class="hljs-string">&#x27;Authorize this app by visiting this URL: &#x27;</span>, authUrl)
-<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Enter the code from that page here: &#x27;</span>, resolve))
-rl.close()
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Authorize this app by visiting this URL: &#x27;</span>, authUrl)
+<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.<span class="hljs-title function_">question</span>(<span class="hljs-string">&#x27;Enter the code from that page here: &#x27;</span>, resolve))
+rl.<span class="hljs-title function_">close</span>()
 
-<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-  oauth2Client.getToken(code, <span class="hljs-function">(<span class="hljs-params">err, token</span>) =&gt;</span> err ? reject(err) : resolve(token))
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+  oauth2Client.<span class="hljs-title function_">getToken</span>(code, <span class="hljs-function">(<span class="hljs-params">err, token</span>) =&gt;</span> err ? <span class="hljs-title function_">reject</span>(err) : <span class="hljs-title function_">resolve</span>(token))
 })
 
-oauth2Client.setCredentials(token)
+oauth2Client.<span class="hljs-title function_">setCredentials</span>(token)
 </code></pre>
 <p>Your <code>oauth2Client</code> is now authenticated, and you can use it to access
 the Google APIs that you requested in your scope, for example for
 YouTube (had we asked for the <code>https://www.googleapis.com/auth/youtube</code> scope):</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> youtube = google.youtube({
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> youtube = google.<span class="hljs-title function_">youtube</span>({
   <span class="hljs-attr">version</span>: <span class="hljs-string">&#x27;v3&#x27;</span>,
   <span class="hljs-attr">auth</span>: oauth2Client
 })
@@ -169,18 +169,18 @@ the application authentication flow.</p>
 <p>Which means we can easily do the following:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> firebase = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase&#x27;</span>)
 
-<span class="hljs-keyword">const</span> app = firebase.initializeApp({
+<span class="hljs-keyword">const</span> app = firebase.<span class="hljs-title function_">initializeApp</span>({
   <span class="hljs-comment">// Your config goes here.</span>
 })
 
-<span class="hljs-keyword">const</span> auth = app.auth()
-<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> firebase.auth.GoogleAuthProvider()
+<span class="hljs-keyword">const</span> auth = app.<span class="hljs-title function_">auth</span>()
+<span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> firebase.<span class="hljs-property">auth</span>.<span class="hljs-title class_">GoogleAuthProvider</span>()
 
 <span class="hljs-comment">// Here, `token` is the result of `oauth2Client.getToken` in the earlier example.</span>
-<span class="hljs-keyword">const</span> credential = firebase.auth.GoogleAuthProvider.credential(token.id_token)
-<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> auth.signInWithCredential(credential)
+<span class="hljs-keyword">const</span> credential = firebase.<span class="hljs-property">auth</span>.<span class="hljs-property">GoogleAuthProvider</span>.<span class="hljs-title function_">credential</span>(token.<span class="hljs-property">id_token</span>)
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> auth.<span class="hljs-title function_">signInWithCredential</span>(credential)
 
-<span class="hljs-built_in">console</span>.log(result)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result)
 </code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>

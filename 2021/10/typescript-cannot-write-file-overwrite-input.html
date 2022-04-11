@@ -114,20 +114,20 @@ file and there’s a matching <code>.d.ts</code> next to it, TypeScript will
 directory instead of next to the <code>.js</code> files. You can do that by
 configuring a <code>outDir</code>, as explained in the documentation about
 <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">creating <code>.d.ts</code> files from <code>.js</code> files</a>:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;compilerOptions&quot;</span>: {
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;compilerOptions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
     <span class="hljs-comment">// Tells TypeScript to read `.js` files, as normally they are</span>
     <span class="hljs-comment">// ignored as source files.</span>
-    <span class="hljs-attr">&quot;allowJs&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">&quot;allowJs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span>
     <span class="hljs-comment">// Generate `d.ts` files.</span>
-    <span class="hljs-attr">&quot;declaration&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">&quot;declaration&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span>
     <span class="hljs-comment">// This compiler run should only output `d.ts` files.</span>
-    <span class="hljs-attr">&quot;emitDeclarationOnly&quot;</span>: <span class="hljs-literal">true</span>,
+    <span class="hljs-attr">&quot;emitDeclarationOnly&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-keyword">true</span><span class="hljs-punctuation">,</span>
     <span class="hljs-comment">// Types should go into this directory. Removing this would place</span>
     <span class="hljs-comment">// the `.d.ts` files next to the `.js` files.</span>
-    <span class="hljs-attr">&quot;outDir&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
-  }
-}
+    <span class="hljs-attr">&quot;outDir&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dist&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>As they nicely indicate, if you don’t specify <code>outDir</code>, the <code>.d.ts</code> will
 be put next to the <code>.js</code> files (which literally means they’ll be
@@ -135,9 +135,9 @@ automatically considered as inputs on the next build and it will crash),
 and it’s probably the way you’re using this right now.</p>
 <p>Then you can tell TypeScript where to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html">find the package types</a>
 in your <code>package.json</code>:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;types&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;dist&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>But this only works for the main export (<code>import 'my-lib'</code>) and will
 break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
@@ -170,7 +170,7 @@ generated <code>.d.ts</code> files.</p>
 <p>A <a href="https://vccolombo.github.io/blog/tsc-how-to-copy-non-typescript-files-when-building/">better way</a>
 if you want to ship your <code>.js</code> files unaltered is to copy them yourself
 next to the <code>.d.ts</code> declarations.</p>
-<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly --outDir dist &amp;&amp; cp *.js dist
+<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly --outDir dist &amp;&amp; <span class="hljs-built_in">cp</span> *.js dist
 </code></pre>
 <p>Then you can <code>import 'my-lib/dist/some-file</code> and types will work
 properly. If you want to allow deep imports though, we need to dig a bit
@@ -182,7 +182,7 @@ of documenting <code>import 'my-lib/dist/some-file'</code>, you have again
 <h3 id="compile-to-the-project-root" tabindex="-1"><a class="header-anchor" href="#compile-to-the-project-root"><span>Compile to the project root</span></a></h3>
 <p>Make sure your source files are in a subfolder, e.g. <code>src</code>, then compile
 to the project root directory.</p>
-<pre><code class="hljs language-sh">tsc src/*.js --allowJs --declaration --emitDeclarationOnly --outDir . &amp;&amp; cp src/*.js .
+<pre><code class="hljs language-sh">tsc src/*.js --allowJs --declaration --emitDeclarationOnly --outDir . &amp;&amp; <span class="hljs-built_in">cp</span> src/*.js .
 </code></pre>
 <h3 id="publish-from-your-dist-directory" tabindex="-1"><a class="header-anchor" href="#publish-from-your-dist-directory"><span>Publish from your <code>dist</code> directory</span></a></h3>
 <p>The previous solution might get a bit messy though so
@@ -197,12 +197,12 @@ build command is up to you.</p>
 <a href="https://nodejs.org/api/packages.html#packages_exports"><code>exports</code> map</a>
 in your <code>package.json</code> so that <code>import 'my-lib/some-file</code> translates
 to <code>my-lib/dist/some-file</code>.</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;exports&quot;</span>: {
-   <span class="hljs-attr">&quot;./some-file&quot;</span>: <span class="hljs-string">&quot;./dist/some-file&quot;</span>,
-   <span class="hljs-attr">&quot;./some/other-file&quot;</span>: <span class="hljs-string">&quot;./dist/some/other-file&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;exports&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+   <span class="hljs-attr">&quot;./some-file&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/some-file&quot;</span><span class="hljs-punctuation">,</span>
+   <span class="hljs-attr">&quot;./some/other-file&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/some/other-file&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>That being said only the paths defined here will be allowed to be
 imported, you won’t be able to import arbitrary files anymore, which
@@ -214,7 +214,7 @@ source <code>.js</code> files without adding extra configuration and still allow
 deep imports, you need to <strong>explicitly remove the generated files before
 running the compiler</strong>.</p>
 <p>Simple, easy and dirty:</p>
-<pre><code class="hljs language-sh">rm -f *.d.ts &amp;&amp; tsc *.js --allowJs --declaration --emitDeclarationOnly
+<pre><code class="hljs language-sh"><span class="hljs-built_in">rm</span> -f *.d.ts &amp;&amp; tsc *.js --allowJs --declaration --emitDeclarationOnly
 </code></pre>
 <p>Here I use <code>rm -f</code> so that it doesn’t fail if the declaration files are
 not generated yet. Feel free to tweak the pattern, for example if you

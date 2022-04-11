@@ -127,7 +127,7 @@ and extract the part that use the browserid-crypto package.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
 
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(jwcrypto.generateKeypair)({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> })
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(jwcrypto.<span class="hljs-property">generateKeypair</span>)({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> })
 
 <span class="hljs-comment">// Also works with RSA.</span>
 <span class="hljs-comment">// const kp = await promisify(jwcrypto.generateKeypair)({ algorithm: &#x27;RS&#x27;, keysize: 256 })</span>
@@ -136,22 +136,22 @@ and extract the part that use the browserid-crypto package.</p>
 <span class="hljs-comment">// maximum of 24 hours as documented in &lt;https://github.com/mozilla/fxa/blob/f6bc0268a9be12407456fa42494243f336d81a38/packages/fxa-auth-server/docs/api.md#request-body-32&gt;.</span>
 <span class="hljs-keyword">const</span> duration = <span class="hljs-number">1000</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">24</span>
 
-<span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
+<span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">certificateSign</span>(creds.<span class="hljs-property">sessionToken</span>, kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">toSimpleObject</span>(), duration)
 
 <span class="hljs-comment">// Generate an &quot;identity assertion&quot; which is a JWT as documented in</span>
 <span class="hljs-comment">// &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#identity-assertion&gt;.</span>
-<span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
+<span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(jwcrypto.<span class="hljs-property">assertion</span>.<span class="hljs-property">sign</span>)(
   {},
   {
     <span class="hljs-attr">audience</span>: tokenServerUrl,
     <span class="hljs-attr">issuer</span>: authServerUrl,
-    <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
+    <span class="hljs-attr">expiresAt</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration
   },
-  kp.secretKey
+  kp.<span class="hljs-property">secretKey</span>
 )
 
 <span class="hljs-comment">// Certs are separated by a `~` as documented in &lt;https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion&gt;.</span>
-<span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
+<span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;~&#x27;</span>)
 </code></pre>
 <p>There are 3 steps here:</p>
 <ol>
@@ -176,12 +176,12 @@ useful for later.</p>
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
 <span class="hljs-comment">// With RSA</span>
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
   <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
 })
 
 <span class="hljs-comment">// With DSA</span>
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
   <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>,
   <span class="hljs-attr">divisorLength</span>: <span class="hljs-number">256</span>
 })
@@ -195,7 +195,7 @@ length for a key size of 2048.</p>
 <h2 id="encoding-the-key" tabindex="-1"><a class="header-anchor" href="#encoding-the-key"><span>Encoding the key</span></a></h2>
 <p>Where it gets a bit more tricky, especially for DSA, is when we want to
 encode the key as JSON for the Firefox Accounts API to sign:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.certificateSign(creds.sessionToken, kp.publicKey.toSimpleObject(), duration)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { cert } = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">certificateSign</span>(creds.<span class="hljs-property">sessionToken</span>, kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">toSimpleObject</span>(), duration)
 </code></pre>
 <p>The keys from browserid-crypto conveniently include a <code>toSimpleObject</code>
 function that formats the key in the BrowserID JSON format. I couldn’t
@@ -227,32 +227,32 @@ public key as a JWK like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
   <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
 })
 
-<span class="hljs-built_in">console</span>.log(kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> }))
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> }))
 </code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;RSA&quot;</span>,
-  <span class="hljs-attr">&quot;n&quot;</span>: <span class="hljs-string">&quot;3M852Cy7DIH1wYJVgRxQfDYPa26fC4KR4uYmHeGV7rTtiQ2-IdypkOQd6Clp01-J4L9e28w-3hR06ZWKRMIbfyajcer1bd_9luBKkRiFlYxa-CBNTlOJBmtej7MbouQJdqcxRIHufk7R4HBWYzR8H1WUDzJfIZJLxz2eymTNXu7CPFyDoNZXQ9SRu7tzPzhUsDrkdpNSs2x8tRrllJRiO-BOC2Ce3W5vCE9eB91VFuIOHOuL5y-Fr6K-vCfvpLBzoF2uk399ZGxZ8rLXHk01QDoin3BVXQzGBKNXoVNrNe-tKflp5QJ5wMifvL4tPfCCrps8rrfbE1NDPE2x1QmCfQ&quot;</span>,
-  <span class="hljs-attr">&quot;e&quot;</span>: <span class="hljs-string">&quot;AQAB&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;kty&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;RSA&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;n&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;3M852Cy7DIH1wYJVgRxQfDYPa26fC4KR4uYmHeGV7rTtiQ2-IdypkOQd6Clp01-J4L9e28w-3hR06ZWKRMIbfyajcer1bd_9luBKkRiFlYxa-CBNTlOJBmtej7MbouQJdqcxRIHufk7R4HBWYzR8H1WUDzJfIZJLxz2eymTNXu7CPFyDoNZXQ9SRu7tzPzhUsDrkdpNSs2x8tRrllJRiO-BOC2Ce3W5vCE9eB91VFuIOHOuL5y-Fr6K-vCfvpLBzoF2uk399ZGxZ8rLXHk01QDoin3BVXQzGBKNXoVNrNe-tKflp5QJ5wMifvL4tPfCCrps8rrfbE1NDPE2x1QmCfQ&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;e&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;AQAB&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>On the other hand, a BrowserID RSA public key looks like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwcrypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto&#x27;</span>)
 
 <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
 
-jwcrypto.generateKeypair({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;RS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(publicKey.toSimpleObject())
+jwcrypto.<span class="hljs-title function_">generateKeypair</span>({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;RS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(publicKey.<span class="hljs-title function_">toSimpleObject</span>())
 })
 </code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;algorithm&quot;</span>: <span class="hljs-string">&quot;RS&quot;</span>,
-  <span class="hljs-attr">&quot;n&quot;</span>: <span class="hljs-string">&quot;24561144013955114361783231655761853176741812326893374232205401875943449227620158204608340216900927757193227109312970662811636219675773452185909191206484694392560433664701055247500397746104758184735693308844235833317883872067955852418577691056051019648528118784214798195301896767050575864274186910237901534713406182369363255235410257674380032656581487055343920363852506722639241918085307849979198768941882638020102729524988683333585179817471524571511030397962907590237048329319430881173155778553010801560573247170682531231684185163187096747308113243183139470492492221024173487301503496674419087411376160055924262029047&quot;</span>,
-  <span class="hljs-attr">&quot;e&quot;</span>: <span class="hljs-string">&quot;65537&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;algorithm&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;RS&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;n&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;24561144013955114361783231655761853176741812326893374232205401875943449227620158204608340216900927757193227109312970662811636219675773452185909191206484694392560433664701055247500397746104758184735693308844235833317883872067955852418577691056051019648528118784214798195301896767050575864274186910237901534713406182369363255235410257674380032656581487055343920363852506722639241918085307849979198768941882638020102729524988683333585179817471524571511030397962907590237048329319430881173155778553010801560573247170682531231684185163187096747308113243183139470492492221024173487301503496674419087411376160055924262029047&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;e&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;65537&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>It is easy to convert a native JWK to the BrowserID format, as we can
 leverage <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/BigInt"><code>BigInt</code></a>
@@ -262,20 +262,20 @@ hexadecimal.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">base64to10</span> (<span class="hljs-params">data</span>) </span>{
-  <span class="hljs-keyword">return</span> <span class="hljs-built_in">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + Buffer.from(data, <span class="hljs-string">&#x27;base64&#x27;</span>).toString(<span class="hljs-string">&#x27;hex&#x27;</span>)).toString(<span class="hljs-number">10</span>)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (data) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(data, <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)).<span class="hljs-title function_">toString</span>(<span class="hljs-number">10</span>)
 }
 
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;rsa&#x27;</span>, {
   <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>
 })
 
-<span class="hljs-keyword">const</span> jwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+<span class="hljs-keyword">const</span> jwk = kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
 
 <span class="hljs-keyword">const</span> publicKey = {
-  <span class="hljs-attr">algorithm</span>: jwk.algorithm.slice(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>),
-  <span class="hljs-attr">n</span>: base64to10(jwk.n),
-  <span class="hljs-attr">e</span>: base64to10(jwk.e)
+  <span class="hljs-attr">algorithm</span>: jwk.<span class="hljs-property">algorithm</span>.<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">2</span>),
+  <span class="hljs-attr">n</span>: <span class="hljs-title function_">base64to10</span>(jwk.<span class="hljs-property">n</span>),
+  <span class="hljs-attr">e</span>: <span class="hljs-title function_">base64to10</span>(jwk.<span class="hljs-property">e</span>)
 }
 </code></pre>
 <h3 id="dsa" tabindex="-1"><a class="header-anchor" href="#dsa"><span>DSA</span></a></h3>
@@ -293,17 +293,17 @@ we’re trying to reproduce:</p>
 
 <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;browserid-crypto/lib/algs/rs&#x27;</span>)
 
-jwcrypto.generateKeypair({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
-  <span class="hljs-built_in">console</span>.log(publicKey.toSimpleObject())
+jwcrypto.<span class="hljs-title function_">generateKeypair</span>({ <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>, <span class="hljs-attr">keysize</span>: <span class="hljs-number">256</span> }, <span class="hljs-function">(<span class="hljs-params">err, { publicKey }</span>) =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(publicKey.<span class="hljs-title function_">toSimpleObject</span>())
 })
 </code></pre>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;algorithm&quot;</span>: <span class="hljs-string">&quot;DS&quot;</span>,
-  <span class="hljs-attr">&quot;y&quot;</span>: <span class="hljs-string">&quot;735b5ddcb95622cb39370efbd0ab4020e7ed5b73f06aecf7ba89ea57f7627ecec5973e1fcb8628125d58d94fed65d65affbfb2722f302085de127fb6fba97e18502da5e1d23d05979ff5a64b587a75b1f0953b4afce05cab74af5b886b059f67889756360d2d41c2312493695d891fad1b2b9cf6169e335f65d573da27b524aa968b9de93d0f0ddf157345917598b630b8937b2c76bedf8fb5ae686d0eddddee2c6cb9829b6d5a19bb07332e7ab3e6116c523198ef699af154b0ea038e92e15ca43ef757f7e854463596346634f759c30730d04cae296d6e663322cb030749c818c922cf2ed51a117bcc17aa603b560159ace99b4aea549c402d1390a1cf1648&quot;</span>,
-  <span class="hljs-attr">&quot;p&quot;</span>: <span class="hljs-string">&quot;d6c4e5045697756c7a312d02c2289c25d40f9954261f7b5876214b6df109c738b76226b199bb7e33f8fc7ac1dcc316e1e7c78973951bfc6ff2e00cc987cd76fcfb0b8c0096b0b460fffac960ca4136c28f4bfb580de47cf7e7934c3985e3b3d943b77f06ef2af3ac3494fc3c6fc49810a63853862a02bb1c824a01b7fc688e4028527a58ad58c9d512922660db5d505bc263af293bc93bcd6d885a157579d7f52952236dd9d06a4fc3bc2247d21f1a70f5848eb0176513537c983f5a36737f01f82b44546e8e7f0fabc457e3de1d9c5dba96965b10a2a0580b0ad0f88179e10066107fb74314a07e6745863bc797b7002ebec0b000a98eb697414709ac17b401&quot;</span>,
-  <span class="hljs-attr">&quot;q&quot;</span>: <span class="hljs-string">&quot;b1e370f6472c8754ccd75e99666ec8ef1fd748b748bbbc08503d82ce8055ab3b&quot;</span>,
-  <span class="hljs-attr">&quot;g&quot;</span>: <span class="hljs-string">&quot;9a8269ab2e3b733a5242179d8f8ddb17ff93297d9eab00376db211a22b19c854dfa80166df2132cbc51fb224b0904abb22da2c7b7850f782124cb575b116f41ea7c4fc75b1d77525204cd7c23a15999004c23cdeb72359ee74e886a1dde7855ae05fe847447d0a68059002c3819a75dc7dcbb30e39efac36e07e2c404b7ca98b263b25fa314ba93c0625718bd489cea6d04ba4b0b7f156eeb4c56c44b50e4fb5bce9d7ae0d55b379225feb0214a04bed72f33e0664d290e7c840df3e2abb5e48189fa4e90646f1867db289c6560476799f7be8420a6dc01d078de437f280fff2d7ddf1248d56e1a54b933a41629d6c252983c58795105802d30d7bcd819cf6ef&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;algorithm&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;DS&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;735b5ddcb95622cb39370efbd0ab4020e7ed5b73f06aecf7ba89ea57f7627ecec5973e1fcb8628125d58d94fed65d65affbfb2722f302085de127fb6fba97e18502da5e1d23d05979ff5a64b587a75b1f0953b4afce05cab74af5b886b059f67889756360d2d41c2312493695d891fad1b2b9cf6169e335f65d573da27b524aa968b9de93d0f0ddf157345917598b630b8937b2c76bedf8fb5ae686d0eddddee2c6cb9829b6d5a19bb07332e7ab3e6116c523198ef699af154b0ea038e92e15ca43ef757f7e854463596346634f759c30730d04cae296d6e663322cb030749c818c922cf2ed51a117bcc17aa603b560159ace99b4aea549c402d1390a1cf1648&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;p&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;d6c4e5045697756c7a312d02c2289c25d40f9954261f7b5876214b6df109c738b76226b199bb7e33f8fc7ac1dcc316e1e7c78973951bfc6ff2e00cc987cd76fcfb0b8c0096b0b460fffac960ca4136c28f4bfb580de47cf7e7934c3985e3b3d943b77f06ef2af3ac3494fc3c6fc49810a63853862a02bb1c824a01b7fc688e4028527a58ad58c9d512922660db5d505bc263af293bc93bcd6d885a157579d7f52952236dd9d06a4fc3bc2247d21f1a70f5848eb0176513537c983f5a36737f01f82b44546e8e7f0fabc457e3de1d9c5dba96965b10a2a0580b0ad0f88179e10066107fb74314a07e6745863bc797b7002ebec0b000a98eb697414709ac17b401&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;q&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;b1e370f6472c8754ccd75e99666ec8ef1fd748b748bbbc08503d82ce8055ab3b&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;g&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;9a8269ab2e3b733a5242179d8f8ddb17ff93297d9eab00376db211a22b19c854dfa80166df2132cbc51fb224b0904abb22da2c7b7850f782124cb575b116f41ea7c4fc75b1d77525204cd7c23a15999004c23cdeb72359ee74e886a1dde7855ae05fe847447d0a68059002c3819a75dc7dcbb30e39efac36e07e2c404b7ca98b263b25fa314ba93c0625718bd489cea6d04ba4b0b7f156eeb4c56c44b50e4fb5bce9d7ae0d55b379225feb0214a04bed72f33e0664d290e7c840df3e2abb5e48189fa4e90646f1867db289c6560476799f7be8420a6dc01d078de437f280fff2d7ddf1248d56e1a54b933a41629d6c252983c58795105802d30d7bcd819cf6ef&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>Exporting the key as a JWK was really handy earlier to access the
 low-level key parameters, but we cannot do that with DSA. We can only
@@ -314,19 +314,19 @@ key.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;dsa&#x27;</span>, {
   <span class="hljs-attr">modulusLength</span>: <span class="hljs-number">2048</span>,
   <span class="hljs-attr">divisorLength</span>: <span class="hljs-number">256</span>
 })
 
-<span class="hljs-keyword">const</span> privateKey = kp.privateKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>, <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;pkcs8&#x27;</span> })
+<span class="hljs-keyword">const</span> privateKey = kp.<span class="hljs-property">privateKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>, <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;pkcs8&#x27;</span> })
 </code></pre>
 <p>Then, we can invoke the <code>openssl</code> command, piping it the private key.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> cp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;child_process&#x27;</span>)
 
-<span class="hljs-keyword">const</span> sub = cp.spawn(<span class="hljs-string">&#x27;openssl&#x27;</span>, [<span class="hljs-string">&#x27;dsa&#x27;</span>, <span class="hljs-string">&#x27;-in&#x27;</span>, <span class="hljs-string">&#x27;-&#x27;</span>, <span class="hljs-string">&#x27;-text&#x27;</span>, <span class="hljs-string">&#x27;-noout&#x27;</span>])
+<span class="hljs-keyword">const</span> sub = cp.<span class="hljs-title function_">spawn</span>(<span class="hljs-string">&#x27;openssl&#x27;</span>, [<span class="hljs-string">&#x27;dsa&#x27;</span>, <span class="hljs-string">&#x27;-in&#x27;</span>, <span class="hljs-string">&#x27;-&#x27;</span>, <span class="hljs-string">&#x27;-text&#x27;</span>, <span class="hljs-string">&#x27;-noout&#x27;</span>])
 
-sub.stdin.write(privateKey)
+sub.<span class="hljs-property">stdin</span>.<span class="hljs-title function_">write</span>(privateKey)
 </code></pre>
 <p>The child process will now emit <code>data</code> events on the <code>stdout</code> stream and
 we can use that to parse the OpenSSL output. For context, here’s what a
@@ -404,62 +404,62 @@ G:
 <p>With the following code, we can parse it into an object:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
 
-<span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: sub.stdout })
+<span class="hljs-keyword">const</span> rl = readline.<span class="hljs-title function_">createInterface</span>({ <span class="hljs-attr">input</span>: sub.<span class="hljs-property">stdout</span> })
 
 <span class="hljs-keyword">const</span> params = {}
 <span class="hljs-keyword">let</span> currentParam
 
-rl.on(<span class="hljs-string">&#x27;line&#x27;</span>, <span class="hljs-function"><span class="hljs-params">line</span> =&gt;</span> {
+rl.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;line&#x27;</span>, <span class="hljs-function"><span class="hljs-params">line</span> =&gt;</span> {
   <span class="hljs-comment">// Continuation of an existing parameter, append to it.</span>
-  <span class="hljs-keyword">if</span> (line.startsWith(<span class="hljs-string">&#x27; &#x27;</span>) &amp;&amp; currentParam) {
-    params[currentParam] += line.trim()
+  <span class="hljs-keyword">if</span> (line.<span class="hljs-title function_">startsWith</span>(<span class="hljs-string">&#x27; &#x27;</span>) &amp;&amp; currentParam) {
+    params[currentParam] += line.<span class="hljs-title function_">trim</span>()
     <span class="hljs-keyword">return</span>
   }
 
   <span class="hljs-comment">// Definition of a new parameter.</span>
-  <span class="hljs-keyword">const</span> split = line.split(<span class="hljs-string">&#x27;:&#x27;</span>)
+  <span class="hljs-keyword">const</span> split = line.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;:&#x27;</span>)
 
-  <span class="hljs-keyword">if</span> (split.length &lt; <span class="hljs-number">2</span>) {
+  <span class="hljs-keyword">if</span> (split.<span class="hljs-property">length</span> &lt; <span class="hljs-number">2</span>) {
     <span class="hljs-keyword">return</span>
   }
 
   currentParam = split[<span class="hljs-number">0</span>]
-  params[currentParam] = split[<span class="hljs-number">1</span>].trim()
+  params[currentParam] = split[<span class="hljs-number">1</span>].<span class="hljs-title function_">trim</span>()
 })
 
-<span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-  sub.on(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function"><span class="hljs-params">code</span> =&gt;</span> {
+<span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
+  sub.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;exit&#x27;</span>, <span class="hljs-function"><span class="hljs-params">code</span> =&gt;</span> {
     <span class="hljs-keyword">if</span> (code &gt; <span class="hljs-number">0</span>) {
-      <span class="hljs-keyword">return</span> reject(<span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`OpenSSL failed with code <span class="hljs-subst">${code}</span>`</span>))
+      <span class="hljs-keyword">return</span> <span class="hljs-title function_">reject</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`OpenSSL failed with code <span class="hljs-subst">${code}</span>`</span>))
     }
 
-    resolve()
+    <span class="hljs-title function_">resolve</span>()
   })
 })
 
-<span class="hljs-built_in">console</span>.log(params)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(params)
 </code></pre>
 <p>Conveniently, OpenSSL returns the parameters in hexadecimal form
 already, so we just need to remove the <code>:</code> that it separates each byte
 with, and rename the properties to make a BrowserID JSON key.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> publicKey = {
   <span class="hljs-attr">algorithm</span>: <span class="hljs-string">&#x27;DS&#x27;</span>,
-  <span class="hljs-attr">y</span>: params.pub.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">p</span>: params.P.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">q</span>: params.Q.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
-  <span class="hljs-attr">g</span>: params.G.replaceAll(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
+  <span class="hljs-attr">y</span>: params.<span class="hljs-property">pub</span>.<span class="hljs-title function_">replaceAll</span>(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
+  <span class="hljs-attr">p</span>: params.<span class="hljs-property">P</span>.<span class="hljs-title function_">replaceAll</span>(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
+  <span class="hljs-attr">q</span>: params.<span class="hljs-property">Q</span>.<span class="hljs-title function_">replaceAll</span>(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>),
+  <span class="hljs-attr">g</span>: params.<span class="hljs-property">G</span>.<span class="hljs-title function_">replaceAll</span>(<span class="hljs-string">&#x27;:&#x27;</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 }
 </code></pre>
 <h2 id="signing-the-jwt" tabindex="-1"><a class="header-anchor" href="#signing-the-jwt"><span>Signing the JWT</span></a></h2>
 <p>The last part to refactor is the JWT:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> promisify(jwcrypto.assertion.sign)(
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> signedObject = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(jwcrypto.<span class="hljs-property">assertion</span>.<span class="hljs-property">sign</span>)(
   {},
   {
     <span class="hljs-attr">audience</span>: tokenServerUrl,
     <span class="hljs-attr">issuer</span>: authServerUrl,
-    <span class="hljs-attr">expiresAt</span>: <span class="hljs-built_in">Date</span>.now() + duration
+    <span class="hljs-attr">expiresAt</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration
   },
-  kp.secretKey
+  kp.<span class="hljs-property">secretKey</span>
 )
 </code></pre>
 <p>It seems that this is a standard JWT, so we can use the <a href="https://www.npmjs.com/package/njwt"><code>njwt</code></a>
@@ -483,9 +483,9 @@ module, we can directly give it the <a href="https://nodejs.org/api/crypto.html#
 that’s in <code>kp.privateKey</code>.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> njwt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;njwt&#x27;</span>)
 
-<span class="hljs-keyword">const</span> signedObject = njwt.create({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.privateKey, <span class="hljs-string">&#x27;RS256&#x27;</span>)
-  .setClaim(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-built_in">Date</span>.now() + duration)
-  .compact()
+<span class="hljs-keyword">const</span> signedObject = njwt.<span class="hljs-title function_">create</span>({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.<span class="hljs-property">privateKey</span>, <span class="hljs-string">&#x27;RS256&#x27;</span>)
+  .<span class="hljs-title function_">setClaim</span>(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration)
+  .<span class="hljs-title function_">compact</span>()
 </code></pre>
 <p>Here we specified the <code>RS256</code> algorithm for a RSA key. This works
 perfectly, and with this code, we can effectively generate a BrowserID
@@ -505,18 +505,18 @@ time it is encoded in the JWT (otherwise the library will complain that
 the algorithm is unsupported).</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> njwt = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;njwt&#x27;</span>)
 
-<span class="hljs-keyword">const</span> jwt = njwt.create({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.privateKey, <span class="hljs-string">&#x27;RS256&#x27;</span>)
-  .setClaim(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-built_in">Date</span>.now() + duration)
+<span class="hljs-keyword">const</span> jwt = njwt.<span class="hljs-title function_">create</span>({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.<span class="hljs-property">privateKey</span>, <span class="hljs-string">&#x27;RS256&#x27;</span>)
+  .<span class="hljs-title function_">setClaim</span>(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration)
 
-jwt.header.compact = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">compact</span> (<span class="hljs-params"></span>) </span>{
-  <span class="hljs-keyword">const</span> alg = <span class="hljs-built_in">this</span>.alg
-  <span class="hljs-built_in">this</span>.alg = <span class="hljs-string">&#x27;DS256&#x27;</span>
-  <span class="hljs-keyword">const</span> header = njwt.JwtHeader.prototype.compact.call(<span class="hljs-built_in">this</span>)
-  <span class="hljs-built_in">this</span>.alg = alg
+jwt.<span class="hljs-property">header</span>.<span class="hljs-property">compact</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">compact</span> () {
+  <span class="hljs-keyword">const</span> alg = <span class="hljs-variable language_">this</span>.<span class="hljs-property">alg</span>
+  <span class="hljs-variable language_">this</span>.<span class="hljs-property">alg</span> = <span class="hljs-string">&#x27;DS256&#x27;</span>
+  <span class="hljs-keyword">const</span> header = njwt.<span class="hljs-property">JwtHeader</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">compact</span>.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>)
+  <span class="hljs-variable language_">this</span>.<span class="hljs-property">alg</span> = alg
   <span class="hljs-keyword">return</span> header
 }
 
-<span class="hljs-keyword">const</span> signedObject = jwt.compact()
+<span class="hljs-keyword">const</span> signedObject = jwt.<span class="hljs-title function_">compact</span>()
 </code></pre>
 <p>This should work but it does not. I keep getting HTTP 401s with
 <code>invalid-credentials</code> error from the TokenServer. Why? It took some
@@ -526,9 +526,9 @@ and BrowserID only supports the IEEE P1363 format.</p>
 <p>Thankfully, Node.js allows us to wrap the private key in an object to
 specify extra options like a <code>dsaEncoding: 'ieee-p1363'</code>. In the
 previous code this would look like:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwt = njwt.create(
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> jwt = njwt.<span class="hljs-title function_">create</span>(
   { <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl },
-  { <span class="hljs-attr">key</span>: kp.privateKey, <span class="hljs-attr">dsaEncoding</span>: <span class="hljs-string">&#x27;ieee-p1363&#x27;</span> },
+  { <span class="hljs-attr">key</span>: kp.<span class="hljs-property">privateKey</span>, <span class="hljs-attr">dsaEncoding</span>: <span class="hljs-string">&#x27;ieee-p1363&#x27;</span> },
   <span class="hljs-string">&#x27;RS256&#x27;</span>
 )
 </code></pre>
@@ -541,19 +541,19 @@ made.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
 <span class="hljs-keyword">const</span> header = { <span class="hljs-attr">alg</span>: <span class="hljs-string">&#x27;DS256&#x27;</span> }
-<span class="hljs-keyword">const</span> payload = { <span class="hljs-attr">exp</span>: <span class="hljs-built_in">Date</span>.now() + duration, <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }
+<span class="hljs-keyword">const</span> payload = { <span class="hljs-attr">exp</span>: <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration, <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }
 
 <span class="hljs-keyword">const</span> body = [
-  Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(header)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>),
-  Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(payload)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
-].join(<span class="hljs-string">&#x27;.&#x27;</span>)
+  <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(header)).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>),
+  <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(payload)).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+].<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;.&#x27;</span>)
 
-<span class="hljs-keyword">const</span> signature = crypto.sign(<span class="hljs-string">&#x27;SHA256&#x27;</span>, body, {
-  <span class="hljs-attr">key</span>: kp.privateKey,
+<span class="hljs-keyword">const</span> signature = crypto.<span class="hljs-title function_">sign</span>(<span class="hljs-string">&#x27;SHA256&#x27;</span>, body, {
+  <span class="hljs-attr">key</span>: kp.<span class="hljs-property">privateKey</span>,
   <span class="hljs-attr">dsaEncoding</span>: <span class="hljs-string">&#x27;ieee-p1363&#x27;</span>
-}).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+}).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
-<span class="hljs-keyword">const</span> signedObject = [body, signature].join(<span class="hljs-string">&#x27;.&#x27;</span>)
+<span class="hljs-keyword">const</span> signedObject = [body, signature].<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;.&#x27;</span>)
 </code></pre>
 <p>Believe it or not, this is all it takes to make a valid JWT. Not so bad,
 isn’t it?</p>
@@ -561,7 +561,7 @@ isn’t it?</p>
 <p>Since we have a valid <code>cert</code> and <code>signedObject</code> at that point, that part
 stays the same. All we need to do is to <a href="https://github.com/mozilla/id-specs/blob/prod/browserid/index.md#backed-identity-assertion">bundle them together</a>
 with the <code>~</code> character (tilde).</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].join(<span class="hljs-string">&#x27;~&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> backedAssertion = [cert, signedObject].<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;~&#x27;</span>)
 </code></pre>
 <p>This is the value we can pass in the <code>Authorization</code> header such as:</p>
 <pre><code class="hljs">Authorization: BrowserID &lt;backedAssertion&gt;

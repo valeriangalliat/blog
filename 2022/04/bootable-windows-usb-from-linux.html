@@ -98,11 +98,11 @@ and just copying over the contents of the ISO to it. Example:</p>
 <pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a single partition for the whole drive</span>
 mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
 
-mkdir usb windows <span class="hljs-comment"># Make some mount points</span>
+<span class="hljs-built_in">mkdir</span> usb windows <span class="hljs-comment"># Make some mount points</span>
 mount /dev/sdX1 usb
 mount windows.iso windows
 
-cp -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
+<span class="hljs-built_in">cp</span> -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
 
 umount windows
 umount usb
@@ -137,19 +137,19 @@ bootloader is already capable of doing that by itself!).</p>
 mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
 mkfs.ntfs --fast /dev/sdX2 <span class="hljs-comment"># Format as NTFS</span>
 
-mkdir boot usb windows <span class="hljs-comment"># Make some mount points</span>
+<span class="hljs-built_in">mkdir</span> boot usb windows <span class="hljs-comment"># Make some mount points</span>
 mount /dev/sdX1 boot
 mount /dev/sdX2 usb
 mount windows.iso windows
 
 <span class="hljs-comment"># Copy everything but the `sources` directory</span>
-find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> cp -rv {} boot \;
+find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> <span class="hljs-built_in">cp</span> -rv {} boot \;
 
 <span class="hljs-comment"># Add `sources/boot.wim`</span>
-mkdir boot/sources
-cp iso/sources/boot.wim boot/sources
+<span class="hljs-built_in">mkdir</span> boot/sources
+<span class="hljs-built_in">cp</span> iso/sources/boot.wim boot/sources
 
-cp -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
+<span class="hljs-built_in">cp</span> -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
 
 umount windows
 umount usb

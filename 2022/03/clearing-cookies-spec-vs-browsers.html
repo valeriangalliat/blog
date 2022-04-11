@@ -96,14 +96,14 @@ was set.</p>
 thinks that it’s actually a separate cookie with the same name.</p>
 </blockquote>
 <p>In code, using Node.js and Express, this looks like this:</p>
-<pre><code class="hljs language-js">res.cookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, sessionId, {
+<pre><code class="hljs language-js">res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;sessionId&#x27;</span>, sessionId, {
   <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
   <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> <span class="hljs-comment">// 30 days</span>
 })
 
-res.clearCookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
+res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
   <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
@@ -193,31 +193,31 @@ without passing any option.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;express&#x27;</span>)
 <span class="hljs-keyword">const</span> cookieParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;cookie-parser&#x27;</span>)
 
-<span class="hljs-keyword">const</span> app = express()
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>()
 
-app.use(cookieParser())
+app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">cookieParser</span>())
 
-app.get(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.json(req.cookies)
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">json</span>(req.<span class="hljs-property">cookies</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
     <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>)
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.listen(<span class="hljs-number">9999</span>)
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">9999</span>)
 </code></pre>
 <p>Interestingly, it appears that both Chrome and Firefox allow cookies
 with the <code>secure</code> attribute to be set on <code>http://localhost</code>, which is
@@ -258,7 +258,7 @@ cookie.</p>
 <span class="hljs-comment">// GetCookieDomainWithString-&gt;CanonicalizeHost).</span>
 <span class="hljs-comment">// If partitioned cookies are enabled, then we check the cookies have the same</span>
 <span class="hljs-comment">// partition key in addition to the checks in RFC 2965.</span>
-<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">IsEquivalent</span><span class="hljs-params">(<span class="hljs-keyword">const</span> CanonicalCookie&amp; ecc)</span> <span class="hljs-keyword">const</span> </span>{
+<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">IsEquivalent</span><span class="hljs-params">(<span class="hljs-type">const</span> CanonicalCookie&amp; ecc)</span> <span class="hljs-type">const</span> </span>{
   <span class="hljs-comment">// It seems like it would make sense to take secure, httponly, and samesite</span>
   <span class="hljs-comment">// into account, but the RFC doesn&#x27;t specify this.</span>
   <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> Keep this logic in-sync with TrimDuplicateCookiesForKey().</span>
@@ -269,7 +269,7 @@ cookie.</p>
 <span class="hljs-comment">// guaranteed to be equivalent in the sense of IsEquivalent().</span>
 <span class="hljs-comment">// The `partition_key_` field will always be nullopt when partitioned cookies</span>
 <span class="hljs-comment">// are not enabled.</span>
-<span class="hljs-function">UniqueCookieKey <span class="hljs-title">UniqueKey</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span> </span>{
+<span class="hljs-function">UniqueCookieKey <span class="hljs-title">UniqueKey</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>{
   <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">make_tuple</span>(partition_key_, name_, domain_, path_);
 }
 </code></pre>
@@ -300,25 +300,25 @@ because specifying those attributes when clearing a cookie doesn’t cause
 issues with the current implementation, <strong>I would advise to specify all
 the attributes when clearing the cookie</strong> just to be on the safe side.</p>
 <p>In my example code earlier, I would recommend to rewrite it as:</p>
-<pre><code class="hljs language-js">app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+<pre><code class="hljs language-js">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
     <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>, {
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 </code></pre>
 <section class="post-footer">

@@ -179,23 +179,23 @@ this too.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fs = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fs&#x27;</span>)
 <span class="hljs-keyword">const</span> fastify = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify&#x27;</span>)
 
-<span class="hljs-keyword">const</span> form = fs.readFileSync(<span class="hljs-string">&#x27;form.html&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>)
+<span class="hljs-keyword">const</span> form = fs.<span class="hljs-title function_">readFileSync</span>(<span class="hljs-string">&#x27;form.html&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>)
 
-<span class="hljs-keyword">const</span> app = fastify({ <span class="hljs-attr">logger</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">fastify</span>({ <span class="hljs-attr">logger</span>: <span class="hljs-literal">true</span> })
 
-app.get(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next) {
-    <span class="hljs-keyword">return</span> res.type(<span class="hljs-string">&#x27;text/plain&#x27;</span>).send(<span class="hljs-string">&#x27;Hello!&#x27;</span>)
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  <span class="hljs-keyword">if</span> (!req.<span class="hljs-property">query</span>.<span class="hljs-property">code</span> || !req.<span class="hljs-property">query</span>.<span class="hljs-property">next</span>) {
+    <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">type</span>(<span class="hljs-string">&#x27;text/plain&#x27;</span>).<span class="hljs-title function_">send</span>(<span class="hljs-string">&#x27;Hello!&#x27;</span>)
   }
 
-  res.type(<span class="hljs-string">&#x27;text/html&#x27;</span>).send(form)
+  res.<span class="hljs-title function_">type</span>(<span class="hljs-string">&#x27;text/html&#x27;</span>).<span class="hljs-title function_">send</span>(form)
 })
 
 
-app.listen(process.env.PORT || <span class="hljs-number">8080</span>, <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
+app.<span class="hljs-title function_">listen</span>(process.<span class="hljs-property">env</span>.<span class="hljs-property">PORT</span> || <span class="hljs-number">8080</span>, <span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
   <span class="hljs-keyword">if</span> (err) {
-    app.log.error(err)
-    process.exit(<span class="hljs-number">1</span>)
+    app.<span class="hljs-property">log</span>.<span class="hljs-title function_">error</span>(err)
+    process.<span class="hljs-title function_">exit</span>(<span class="hljs-number">1</span>)
   }
 })
 </code></pre>
@@ -215,47 +215,47 @@ as well as the redirect URL that we defined during creation.</p>
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
 <span class="hljs-keyword">const</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./config&#x27;</span>)
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getToken</span> (<span class="hljs-params">code</span>) </span>{
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getToken</span> (code) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v2/oauth/access_token&#x27;</span>
 
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
     <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
     <span class="hljs-attr">headers</span>: {
       <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/x-www-form-urlencoded&#x27;</span>
     },
-    <span class="hljs-attr">body</span>: qs.stringify({
-      <span class="hljs-attr">client_id</span>: config.clientId,
-      <span class="hljs-attr">client_secret</span>: config.clientSecret,
+    <span class="hljs-attr">body</span>: qs.<span class="hljs-title function_">stringify</span>({
+      <span class="hljs-attr">client_id</span>: config.<span class="hljs-property">clientId</span>,
+      <span class="hljs-attr">client_secret</span>: config.<span class="hljs-property">clientSecret</span>,
       code,
-      <span class="hljs-attr">redirect_uri</span>: config.redirectUri
+      <span class="hljs-attr">redirect_uri</span>: config.<span class="hljs-property">redirectUri</span>
     })
   })
 
-  <span class="hljs-keyword">if</span> (!res.ok) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
+  <span class="hljs-keyword">if</span> (!res.<span class="hljs-property">ok</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
   }
 
-  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> res.json()
+  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> res.<span class="hljs-title function_">json</span>()
 
-  <span class="hljs-keyword">return</span> json.access_token
+  <span class="hljs-keyword">return</span> json.<span class="hljs-property">access_token</span>
 }
 </code></pre>
 <p>With that token, we can call the log drains endpoint to create a new log
 drain.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">createLogDrain</span> (<span class="hljs-params">token, body</span>) </span>{
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createLogDrain</span> (token, body) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v1/integrations/log-drains&#x27;</span>
 
-  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> fetch(url, {
+  <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
     <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
     <span class="hljs-attr">headers</span>: {
       <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
     },
-    <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify(body)
+    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(body)
   })
 
-  <span class="hljs-keyword">if</span> (!res.ok) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
+  <span class="hljs-keyword">if</span> (!res.<span class="hljs-property">ok</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">`<span class="hljs-subst">${url}</span> responded with <span class="hljs-subst">${res.status}</span>`</span>)
   }
 }
 </code></pre>
@@ -263,22 +263,22 @@ drain.</p>
 as well as redirecting to the <code>next</code> URL at the end.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> formBody = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;fastify-formbody&#x27;</span>)
 
-app.register(formBody)
+app.<span class="hljs-title function_">register</span>(formBody)
 
-app.post(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-keyword">async</span> (req, res) =&gt; {
-  <span class="hljs-keyword">if</span> (!req.query.code || !req.query.next || !req.body.type || !req.body.url) {
-    <span class="hljs-keyword">return</span> res.code(<span class="hljs-number">400</span>)
+app.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-keyword">async</span> (req, res) =&gt; {
+  <span class="hljs-keyword">if</span> (!req.<span class="hljs-property">query</span>.<span class="hljs-property">code</span> || !req.<span class="hljs-property">query</span>.<span class="hljs-property">next</span> || !req.<span class="hljs-property">body</span>.<span class="hljs-property">type</span> || !req.<span class="hljs-property">body</span>.<span class="hljs-property">url</span>) {
+    <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">code</span>(<span class="hljs-number">400</span>)
   }
 
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> getToken(req.query.code)
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getToken</span>(req.<span class="hljs-property">query</span>.<span class="hljs-property">code</span>)
 
-  <span class="hljs-keyword">await</span> createLogDrain(token, {
+  <span class="hljs-keyword">await</span> <span class="hljs-title function_">createLogDrain</span>(token, {
     <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;custom-log-drain&#x27;</span>,
-    <span class="hljs-attr">type</span>: req.body.type,
-    <span class="hljs-attr">url</span>: req.body.url
+    <span class="hljs-attr">type</span>: req.<span class="hljs-property">body</span>.<span class="hljs-property">type</span>,
+    <span class="hljs-attr">url</span>: req.<span class="hljs-property">body</span>.<span class="hljs-property">url</span>
   })
 
-  res.redirect(req.query.next)
+  res.<span class="hljs-title function_">redirect</span>(req.<span class="hljs-property">query</span>.<span class="hljs-property">next</span>)
 })
 </code></pre>
 <p>You can see <a href="https://github.com/valeriangalliat/vercel-custom-log-drain/blob/master/index.js">the full code on GitHub</a>.</p>
@@ -311,7 +311,7 @@ drain.</p>
 <p>First, we’ll define a <code>postdata</code> log format that logs the plain
 unescaped request body to the log file:</p>
 <pre><code class="hljs language-nginx"><span class="hljs-section">http</span> {
-    <span class="hljs-attribute">log_format</span> postdata escape=<span class="hljs-literal">none</span> $request_body;
+    <span class="hljs-attribute">log_format</span> postdata escape=<span class="hljs-literal">none</span> <span class="hljs-variable">$request_body</span>;
 }
 </code></pre>
 <p>But we can’t just us it like this. By default, nginx won’t bother
@@ -328,10 +328,10 @@ as a Vercel log drain. I find that NDJSON works best with this format.</p>
 <span class="hljs-attribute">load_module</span> modules/ngx_http_echo_module.so;
 
 <span class="hljs-section">server</span> {
-    <span class="hljs-attribute">location</span> /vercel/drain {
+    <span class="hljs-section">location</span> /vercel/drain {
         <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
 
-        <span class="hljs-attribute">if</span> ($request_method = POST) {
+        <span class="hljs-attribute">if</span> (<span class="hljs-variable">$request_method</span> = POST) {
             <span class="hljs-comment"># Wherever you want to store your logs.</span>
             <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
 
@@ -351,14 +351,14 @@ into defining a “black hole” endpoint to proxy to. Because <code>proxy_pass<
 will need to read the whole HTTP body in order to forward it, it will
 become accessible to our log format.</p>
 <pre><code class="hljs language-nginx"><span class="hljs-section">server</span> {
-    <span class="hljs-attribute">location</span> /vercel/empty {
+    <span class="hljs-section">location</span> /vercel/empty {
       <span class="hljs-attribute">return</span> <span class="hljs-number">204</span>;
     }
 
-    <span class="hljs-attribute">location</span> /vercel/drain {
+    <span class="hljs-section">location</span> /vercel/drain {
         <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;
 
-        <span class="hljs-attribute">if</span> ($request_method = POST) {
+        <span class="hljs-attribute">if</span> (<span class="hljs-variable">$request_method</span> = POST) {
             <span class="hljs-attribute">access_log</span> /path/to/vercel.log postdata;
 
             <span class="hljs-comment"># Adapt this to whatever your server responds to, or</span>

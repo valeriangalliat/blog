@@ -90,9 +90,9 @@ space.</p>
 <p>To shrink a VirtualBox disk after removing large files, just zero out
 the rest of the drive, before asking VirtualBox to compact the disk:</p>
 <p>On the guest:</p>
-<pre><code class="hljs language-sh">dd <span class="hljs-keyword">if</span>=/dev/zero of=junk <span class="hljs-comment"># Will fail with disk full error</span>
-sync
-rm junk
+<pre><code class="hljs language-sh"><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/zero of=junk <span class="hljs-comment"># Will fail with disk full error</span>
+<span class="hljs-built_in">sync</span>
+<span class="hljs-built_in">rm</span> junk
 </code></pre>
 <p>On the host:</p>
 <pre><code class="hljs language-sh">find ~/VirtualBox\ VMs -name <span class="hljs-string">&#x27;*.vdi&#x27;</span> -<span class="hljs-built_in">exec</span> VBoxManage modifyhd --compact  {} \;

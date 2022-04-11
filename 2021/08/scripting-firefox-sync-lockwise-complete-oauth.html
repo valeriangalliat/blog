@@ -181,7 +181,7 @@ and encode it <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6
 They also trim that final string to 16 characters but it seems that
 this is mostly for code reuse purpose rather than out of actual
 necessity so we’ll leave that part alone.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> state = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 </code></pre>
 </dd>
 <dt><code>code_challenge</code> and <code>code_challenge_method</code></dt>
@@ -218,11 +218,11 @@ token without user interaction.</p>
 <span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;...&#x27;</span>
 
 <span class="hljs-comment">// To prevent CSRF attacks.</span>
-<span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<span class="hljs-keyword">const</span> state = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
 <span class="hljs-comment">// Dead simple PKCE challenge implementation.</span>
-<span class="hljs-keyword">const</span> codeVerifier = crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
-<span class="hljs-keyword">const</span> codeChallenge = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(codeVerifier).digest(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<span class="hljs-keyword">const</span> codeVerifier = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">32</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<span class="hljs-keyword">const</span> codeChallenge = crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(codeVerifier).<span class="hljs-title function_">digest</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
 <span class="hljs-keyword">const</span> params = {
   <span class="hljs-attr">client_id</span>: clientId,
@@ -235,7 +235,7 @@ token without user interaction.</p>
 
 <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${authorizationUrl}</span>?<span class="hljs-subst">${qs.stringify(params)}</span>`</span>
 
-<span class="hljs-built_in">console</span>.log(url)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(url)
 </code></pre>
 <p>The code verifier is <a href="https://datatracker.ietf.org/doc/html/rfc7636#section-4.1">defined by PKCE</a>
 as a string of <a href="https://github.com/mozilla/fxa-crypto-relier/blob/168f4a6c47de9021a0d9ae23a3e6757013a38dbd/src/relier/OAuthUtils.js#L78">43 Base64URL charaters</a>,
@@ -309,31 +309,31 @@ PKCE code verifier we created earlier. But first we need to prompt the
 user for the code. In a basic CLI, this would look something like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> readline = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;readline&#x27;</span>)
 
-<span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: process.stdin, <span class="hljs-attr">output</span>: process.stdout })
+<span class="hljs-keyword">const</span> rl = readline.<span class="hljs-title function_">createInterface</span>({ <span class="hljs-attr">input</span>: process.<span class="hljs-property">stdin</span>, <span class="hljs-attr">output</span>: process.<span class="hljs-property">stdout</span> })
 
-<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
-  .finally(<span class="hljs-function">() =&gt;</span> rl.close())
+<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.<span class="hljs-title function_">question</span>(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
+  .<span class="hljs-title function_">finally</span>(<span class="hljs-function">() =&gt;</span> rl.<span class="hljs-title function_">close</span>())
 </code></pre>
 <p>Then we can prepare the payload and send it to the token endpoint.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
 
 <span class="hljs-keyword">const</span> tokenEndpoint = <span class="hljs-string">&#x27;https://oauth.accounts.firefox.com/v1/token&#x27;</span>
 
-<span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> fetch(tokenEndpoint, {
+<span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(tokenEndpoint, {
   <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
   <span class="hljs-attr">headers</span>: {
     <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>
   },
-  <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify({
+  <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
     <span class="hljs-attr">client_id</span>: clientId,
     <span class="hljs-attr">grant_type</span>: <span class="hljs-string">&#x27;authorization_code&#x27;</span>,
     <span class="hljs-attr">code_verifier</span>: codeVerifier,
     code
   })
 })
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+  .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 
-<span class="hljs-built_in">console</span>.log(oauthToken)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(oauthToken)
 </code></pre>
 <p>We get back an object that includes the OAuth access token, as well as a
 refresh token if we specified <code>access_type: 'offline'</code> earlier.</p>
@@ -459,13 +459,13 @@ keypair. It stands for “256-bit prime field Weierstrass curve”, and it’s
 also known as <code>secp256r1</code> and <code>prime256v1</code>.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 
-<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
+<span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
   <span class="hljs-attr">namedCurve</span>: <span class="hljs-string">&#x27;P-256&#x27;</span>
 })
 </code></pre>
 <p>Then we serialize the public key as a Base64URL encoded JWK.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> publicJwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
-<span class="hljs-keyword">const</span> keysJwk = Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(publicJwk)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> publicJwk = kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+<span class="hljs-keyword">const</span> keysJwk = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(publicJwk)).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 </code></pre>
 <p>Finally, we add it to the parameters of our initial example.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> params = {
@@ -486,10 +486,10 @@ endpoint in a <code>oauthToken</code> variable.</p>
 <p>Because <code>keys_jwe</code> is formatted according to <a href="https://datatracker.ietf.org/doc/html/rfc7516#section-3.1">JWE compact serialization</a>
 it’s made of 5 Base64URL encoded segments separated by a <code>.</code>, so let’s
 parse it.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawSegments = oauthToken.keys_jwe.split(<span class="hljs-string">&#x27;.&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawSegments = oauthToken.<span class="hljs-property">keys_jwe</span>.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;.&#x27;</span>)
 <span class="hljs-keyword">const</span> rawHeader = rawSegments[<span class="hljs-number">0</span>]
-<span class="hljs-keyword">const</span> segments = rawSegments.map(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> Buffer.from(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
-<span class="hljs-keyword">const</span> header = <span class="hljs-built_in">JSON</span>.parse(segments[<span class="hljs-number">0</span>])
+<span class="hljs-keyword">const</span> segments = rawSegments.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
+<span class="hljs-keyword">const</span> header = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(segments[<span class="hljs-number">0</span>])
 <span class="hljs-keyword">const</span> iv = segments[<span class="hljs-number">2</span>]
 <span class="hljs-keyword">const</span> ciphertext = segments[<span class="hljs-number">3</span>]
 <span class="hljs-keyword">const</span> authTag = segments[<span class="hljs-number">4</span>]
@@ -497,30 +497,30 @@ parse it.</p>
 <p>We left alone <code>segments[1]</code> because as we saw, it’s defined as an
 encryption key by the JWE format but is not used in this protocol.</p>
 <p>The parsed header looks something like this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;enc&quot;</span>: <span class="hljs-string">&quot;A256GCM&quot;</span>,
-  <span class="hljs-attr">&quot;alg&quot;</span>: <span class="hljs-string">&quot;ECDH-ES&quot;</span>,
-  <span class="hljs-attr">&quot;kid&quot;</span>: <span class="hljs-string">&quot;IGJXkJzwHacMq2Qc52NZ_FBmt-uksqyXs8jC-pViIXM&quot;</span>,
-  <span class="hljs-attr">&quot;epk&quot;</span>: {
-    <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;EC&quot;</span>,
-    <span class="hljs-attr">&quot;crv&quot;</span>: <span class="hljs-string">&quot;P-256&quot;</span>,
-    <span class="hljs-attr">&quot;x&quot;</span>: <span class="hljs-string">&quot;UmI2Qm4DLbawF4E6UlmMvYAEomULFEBQiiJ7rxaQnY8&quot;</span>,
-    <span class="hljs-attr">&quot;y&quot;</span>: <span class="hljs-string">&quot;cSC0O-tPAeJXl2s-2ACCxN6wCpDRnhB_ginYIBmfTgU&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;enc&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;A256GCM&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;alg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ECDH-ES&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;kid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;IGJXkJzwHacMq2Qc52NZ_FBmt-uksqyXs8jC-pViIXM&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;epk&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;kty&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;EC&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;crv&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;P-256&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;x&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;UmI2Qm4DLbawF4E6UlmMvYAEomULFEBQiiJ7rxaQnY8&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;y&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;cSC0O-tPAeJXl2s-2ACCxN6wCpDRnhB_ginYIBmfTgU&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>The <code>epk</code> property contains a JWK representation of the public key
 matching the private key that Firefox Accounts used for its part of
 ECDH. We’ll refer to it as <code>peerKey</code>. In combination with the private
 key from the initial P-256 keypair <a href="#sending-our-ecdh-public-key-in-keys-jwk">we created earlier</a>
 in the <code>kp</code> variable, we can establish a shared secret through ECDH.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> peerKey = crypto.createPublicKey({
-  <span class="hljs-attr">key</span>: header.epk,
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> peerKey = crypto.<span class="hljs-title function_">createPublicKey</span>({
+  <span class="hljs-attr">key</span>: header.<span class="hljs-property">epk</span>,
   <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span>
 })
 
-<span class="hljs-keyword">const</span> ikm = crypto.diffieHellman({
-  <span class="hljs-attr">privateKey</span>: kp.privateKey,
+<span class="hljs-keyword">const</span> ikm = crypto.<span class="hljs-title function_">diffieHellman</span>({
+  <span class="hljs-attr">privateKey</span>: kp.<span class="hljs-property">privateKey</span>,
   <span class="hljs-attr">publicKey</span>: peerKey
 })
 </code></pre>
@@ -571,21 +571,21 @@ KDF that performs a single iteration and doesn’t bother trimming the
 output to the desired length.</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
 <span class="hljs-comment">// integer as a buffer.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
-  <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
-  buffer.writeUInt32BE(number)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (number) {
+  <span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">alloc</span>(<span class="hljs-number">4</span>)
+  buffer.<span class="hljs-title function_">writeUInt32BE</span>(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sha256</span> (<span class="hljs-params">buffer</span>) </span>{
-  <span class="hljs-keyword">return</span> crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(buffer).digest()
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (buffer) {
+  <span class="hljs-keyword">return</span> crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(buffer).<span class="hljs-title function_">digest</span>()
 }
 
 <span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
 <span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
 <span class="hljs-comment">// need matches the hash length.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) </span>{
-  <span class="hljs-keyword">return</span> sha256(Buffer.concat([uint32BE(<span class="hljs-number">1</span>), key, otherInfo]))
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, otherInfo) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">sha256</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([<span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">1</span>), key, otherInfo]))
 }
 </code></pre>
 <p>That being said, for fun, here’s my understanding of a full Concat KDF
@@ -593,17 +593,17 @@ function (I’m not a cryptography expert though so get that properly
 reviewed if you’re going to use it).</p>
 <details>
   <summary>See the implementation</summary>
-<pre><code class="hljs language-js"><span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, keyLengthBits, otherInfo</span>) </span>{
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, keyLengthBits, otherInfo) {
   <span class="hljs-keyword">const</span> hashLengthBits = <span class="hljs-number">256</span>
-  <span class="hljs-keyword">const</span> hashLengthBytes = <span class="hljs-built_in">Math</span>.ceil(hashLengthBits / <span class="hljs-number">8</span>)
-  <span class="hljs-keyword">const</span> keyLengthBytes = <span class="hljs-built_in">Math</span>.ceil(keyLengthBits / <span class="hljs-number">8</span>)
-  <span class="hljs-keyword">const</span> out = Buffer.alloc(keyLengthBytes)
-  <span class="hljs-keyword">const</span> iterations = <span class="hljs-built_in">Math</span>.ceil(keyLengthBytes / hashLengthBytes)
+  <span class="hljs-keyword">const</span> hashLengthBytes = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(hashLengthBits / <span class="hljs-number">8</span>)
+  <span class="hljs-keyword">const</span> keyLengthBytes = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(keyLengthBits / <span class="hljs-number">8</span>)
+  <span class="hljs-keyword">const</span> out = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">alloc</span>(keyLengthBytes)
+  <span class="hljs-keyword">const</span> iterations = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(keyLengthBytes / hashLengthBytes)
 
   <span class="hljs-keyword">for</span> (<span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>; i &lt; iterations; i++) {
-    <span class="hljs-keyword">const</span> hash = sha256(Buffer.concat([uint32BE(i + <span class="hljs-number">1</span>), key, otherInfo]))
+    <span class="hljs-keyword">const</span> hash = <span class="hljs-title function_">sha256</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([<span class="hljs-title function_">uint32BE</span>(i + <span class="hljs-number">1</span>), key, otherInfo]))
     <span class="hljs-keyword">const</span> offset = hashLengthBytes * i
-    hash.copy(out, offset)
+    hash.<span class="hljs-title function_">copy</span>(out, offset)
   }
 
   <span class="hljs-keyword">return</span> out
@@ -618,65 +618,65 @@ and the <a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea53
 I ended up with:</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// Internal Mozilla format for Concat KDF `OtherInfo`, copied from</span>
 <span class="hljs-comment">// Firefox Application Services and Firefox Send code.</span>
-<span class="hljs-keyword">const</span> otherInfo = Buffer.concat([
-  uint32BE(header.enc.length),
-  Buffer.from(header.enc),
-  uint32BE(<span class="hljs-number">0</span>),
-  uint32BE(<span class="hljs-number">0</span>),
-  uint32BE(<span class="hljs-number">256</span>)
+<span class="hljs-keyword">const</span> otherInfo = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([
+  <span class="hljs-title function_">uint32BE</span>(header.<span class="hljs-property">enc</span>.<span class="hljs-property">length</span>),
+  <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(header.<span class="hljs-property">enc</span>),
+  <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">0</span>),
+  <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">0</span>),
+  <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">256</span>)
 ])
 </code></pre>
 <details>
   <summary>See the original code for comparison</summary>
 <p><a href="https://github.com/mozilla/application-services/blob/e16821a601f7e4cedea5af8ab24486467f3fd9bf/components/support/jwcrypto/src/ec.rs#L142">In Rust</a>:</p>
-<pre><code class="hljs language-rust"><span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">get_secret_from_ikm</span></span>(
+<pre><code class="hljs language-rust"><span class="hljs-keyword">fn</span> <span class="hljs-title function_">get_secret_from_ikm</span>(
     ikm: InputKeyMaterial,
-    apu: &amp;<span class="hljs-built_in">str</span>,
-    apv: &amp;<span class="hljs-built_in">str</span>,
-    alg: &amp;<span class="hljs-built_in">str</span>,
-) -&gt; <span class="hljs-built_in">Result</span>&lt;digest::Digest&gt; {
-    <span class="hljs-keyword">let</span> secret = ikm.derive(|z| {
-        <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> buf: <span class="hljs-built_in">Vec</span>&lt;<span class="hljs-built_in">u8</span>&gt; = <span class="hljs-built_in">vec!</span>[];
+    apu: &amp;<span class="hljs-type">str</span>,
+    apv: &amp;<span class="hljs-type">str</span>,
+    alg: &amp;<span class="hljs-type">str</span>,
+) <span class="hljs-punctuation">-&gt;</span> <span class="hljs-type">Result</span>&lt;digest::Digest&gt; {
+    <span class="hljs-keyword">let</span> <span class="hljs-variable">secret</span> = ikm.<span class="hljs-title function_ invoke__">derive</span>(|z| {
+        <span class="hljs-keyword">let</span> <span class="hljs-keyword">mut </span><span class="hljs-variable">buf</span>: <span class="hljs-type">Vec</span>&lt;<span class="hljs-type">u8</span>&gt; = <span class="hljs-built_in">vec!</span>[];
 
         <span class="hljs-comment">// Concat KDF (1 iteration since `keyLen &lt;= hashLen`).</span>
         <span class="hljs-comment">// See RFC 7518 section 4.6 for reference.</span>
-        buf.extend_from_slice(&amp;<span class="hljs-number">1u32</span>.to_be_bytes());
-        buf.extend_from_slice(&amp;z);
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;<span class="hljs-number">1u32</span>.<span class="hljs-title function_ invoke__">to_be_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;z);
 
         <span class="hljs-comment">// `OtherInfo`</span>
-        buf.extend_from_slice(&amp;(alg.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
-        buf.extend_from_slice(alg.as_bytes());
-        buf.extend_from_slice(&amp;(apu.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
-        buf.extend_from_slice(apu.as_bytes());
-        buf.extend_from_slice(&amp;(apv.len() <span class="hljs-keyword">as</span> <span class="hljs-built_in">u32</span>).to_be_bytes());
-        buf.extend_from_slice(apv.as_bytes());
-        buf.extend_from_slice(&amp;<span class="hljs-number">256u32</span>.to_be_bytes());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;(alg.<span class="hljs-title function_ invoke__">len</span>() <span class="hljs-keyword">as</span> <span class="hljs-type">u32</span>).<span class="hljs-title function_ invoke__">to_be_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(alg.<span class="hljs-title function_ invoke__">as_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;(apu.<span class="hljs-title function_ invoke__">len</span>() <span class="hljs-keyword">as</span> <span class="hljs-type">u32</span>).<span class="hljs-title function_ invoke__">to_be_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(apu.<span class="hljs-title function_ invoke__">as_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;(apv.<span class="hljs-title function_ invoke__">len</span>() <span class="hljs-keyword">as</span> <span class="hljs-type">u32</span>).<span class="hljs-title function_ invoke__">to_be_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(apv.<span class="hljs-title function_ invoke__">as_bytes</span>());
+        buf.<span class="hljs-title function_ invoke__">extend_from_slice</span>(&amp;<span class="hljs-number">256u32</span>.<span class="hljs-title function_ invoke__">to_be_bytes</span>());
 
-        digest::digest(&amp;digest::SHA256, &amp;buf)
+        digest::<span class="hljs-title function_ invoke__">digest</span>(&amp;digest::SHA256, &amp;buf)
     })?;
-    <span class="hljs-literal">Ok</span>(secret)
+    <span class="hljs-title function_ invoke__">Ok</span>(secret)
 }
 </code></pre>
 <p><a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">In JavaScript</a>:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> encoder = <span class="hljs-keyword">new</span> TextEncoder()
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> encoder = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TextEncoder</span>()
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getOtherInfo</span> (<span class="hljs-params">enc</span>) </span>{
-  <span class="hljs-keyword">const</span> name = encoder.encode(enc)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtherInfo</span> (enc) {
+  <span class="hljs-keyword">const</span> name = encoder.<span class="hljs-title function_">encode</span>(enc)
   <span class="hljs-keyword">const</span> length = <span class="hljs-number">256</span>
-  <span class="hljs-keyword">const</span> buffer = <span class="hljs-keyword">new</span> <span class="hljs-built_in">ArrayBuffer</span>(name.length + <span class="hljs-number">16</span>)
-  <span class="hljs-keyword">const</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-built_in">DataView</span>(buffer)
-  <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(buffer)
+  <span class="hljs-keyword">const</span> buffer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(name.<span class="hljs-property">length</span> + <span class="hljs-number">16</span>)
+  <span class="hljs-keyword">const</span> dv = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DataView</span>(buffer)
+  <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Uint8Array</span>(buffer)
   <span class="hljs-keyword">let</span> i = <span class="hljs-number">0</span>
 
-  dv.setUint32(i, name.length)
+  dv.<span class="hljs-title function_">setUint32</span>(i, name.<span class="hljs-property">length</span>)
   i += <span class="hljs-number">4</span>
-  result.set(name, i)
-  i += name.length
-  dv.setUint32(i, <span class="hljs-number">0</span>)
+  result.<span class="hljs-title function_">set</span>(name, i)
+  i += name.<span class="hljs-property">length</span>
+  dv.<span class="hljs-title function_">setUint32</span>(i, <span class="hljs-number">0</span>)
   i += <span class="hljs-number">4</span>
-  dv.setUint32(i, <span class="hljs-number">0</span>)
+  dv.<span class="hljs-title function_">setUint32</span>(i, <span class="hljs-number">0</span>)
   i += <span class="hljs-number">4</span>
-  dv.setUint32(i, length)
+  dv.<span class="hljs-title function_">setUint32</span>(i, length)
 
   <span class="hljs-keyword">return</span> result
 }
@@ -684,32 +684,32 @@ I ended up with:</p>
 </details>
 <p>We can now derive that <code>OtherInfo</code> together with the input key material
 we established earlier to get the decryption key.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> key = concatKdf(ikm, otherInfo)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> key = <span class="hljs-title function_">concatKdf</span>(ikm, otherInfo)
 </code></pre>
 <h3 id="decrypting-the-ciphertext" tabindex="-1"><a class="header-anchor" href="#decrypting-the-ciphertext"><span>Decrypting the ciphertext</span></a></h3>
 <p>Finally, we have everything we need to decrypt the ciphertext of the JWE
 that <a href="#parsing-keys-jwe">we got back earlier</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> decipher = crypto.<span class="hljs-title function_">createDecipheriv</span>(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
 
-decipher.setAuthTag(authTag)
-decipher.setAAD(rawHeader)
+decipher.<span class="hljs-title function_">setAuthTag</span>(authTag)
+decipher.<span class="hljs-title function_">setAAD</span>(rawHeader)
 
-<span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">JSON</span>.parse(Buffer.concat([
-  decipher.update(ciphertext),
-  decipher.final()
+<span class="hljs-keyword">const</span> keys = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([
+  decipher.<span class="hljs-title function_">update</span>(ciphertext),
+  decipher.<span class="hljs-title function_">final</span>()
 ]))
 
-<span class="hljs-built_in">console</span>.log(keys)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(keys)
 </code></pre>
 <p>This gives us something like this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span>: {
-    <span class="hljs-attr">&quot;kty&quot;</span>: <span class="hljs-string">&quot;oct&quot;</span>,
-    <span class="hljs-attr">&quot;scope&quot;</span>: <span class="hljs-string">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span>,
-    <span class="hljs-attr">&quot;k&quot;</span>: <span class="hljs-string">&quot;e_9j35zPyTng1QT1ioegeZxPQOVUS10FdMNV1YIZuJ8zJIvQ-OZMiHiy3tLCMcc_mKTEopDpjzS9kqq-FmS4og&quot;</span>,
-    <span class="hljs-attr">&quot;kid&quot;</span>: <span class="hljs-string">&quot;1628100899317-sLLG5AsHn9Fc1gPhW_rfaQ&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;kty&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;oct&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://identity.mozilla.com/apps/oldsync&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;k&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;e_9j35zPyTng1QT1ioegeZxPQOVUS10FdMNV1YIZuJ8zJIvQ-OZMiHiy3tLCMcc_mKTEopDpjzS9kqq-FmS4og&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;kid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1628100899317-sLLG5AsHn9Fc1gPhW_rfaQ&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>If we had requested an <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#application-specific-keys">application specific key</a>,
 we would have gotten back a 32 bytes scoped key <a href="https://mozilla.github.io/ecosystem-platform/docs/fxa-engineering/fxa-scoped-keys#deriving-scoped-keys-ks">as defined in “deriving scoped keys”</a>.</p>
@@ -741,24 +741,24 @@ encryption key in the <code>X-KeyID</code> header</strong>.</p>
 </blockquote>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> tokenServerUrl = <span class="hljs-string">&#x27;https://token.services.mozilla.com&#x27;</span>
 
-<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
   <span class="hljs-attr">headers</span>: {
-    <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
-    <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].kid
+    <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
+    <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].<span class="hljs-property">kid</span>
   }
 })
-  .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+  .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 </code></pre>
 <p>From there, the rest of the code is going to be <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">the same as our original BrowserID implementation</a>!</p>
 <p>The only difference is that we already have the Sync key bundle in our
 JWK, so we don’t need the <code>deriveKeys</code> function anymore. Instead, we
 only to need to split the <code>k</code> field to separate the encryption key from
 the HMAC key:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k, <span class="hljs-string">&#x27;base64&#x27;</span>)
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> rawBundle = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(keys[scope].<span class="hljs-property">k</span>, <span class="hljs-string">&#x27;base64&#x27;</span>)
 
 <span class="hljs-keyword">const</span> syncKeyBundle = {
-  <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
-  <span class="hljs-attr">hmacKey</span>: rawBundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
+  <span class="hljs-attr">encryptionKey</span>: rawBundle.<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
+  <span class="hljs-attr">hmacKey</span>: rawBundle.<span class="hljs-title function_">slice</span>(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
 }
 </code></pre>
 <p>This is enough to decrypt the response of <code>storage/crypto/keys</code>, which
@@ -781,38 +781,38 @@ them together, you would get something like this:</p>
 
 <span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
 <span class="hljs-comment">// integer as a buffer.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">uint32BE</span> (<span class="hljs-params">number</span>) </span>{
-  <span class="hljs-keyword">const</span> buffer = Buffer.alloc(<span class="hljs-number">4</span>)
-  buffer.writeUInt32BE(number)
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (number) {
+  <span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">alloc</span>(<span class="hljs-number">4</span>)
+  buffer.<span class="hljs-title function_">writeUInt32BE</span>(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">sha256</span> (<span class="hljs-params">buffer</span>) </span>{
-  <span class="hljs-keyword">return</span> crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(buffer).digest()
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (buffer) {
+  <span class="hljs-keyword">return</span> crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(buffer).<span class="hljs-title function_">digest</span>()
 }
 
 <span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
 <span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
 <span class="hljs-comment">// need matches the hash length.</span>
-<span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) </span>{
-  <span class="hljs-keyword">return</span> sha256(Buffer.concat([uint32BE(<span class="hljs-number">1</span>), key, otherInfo]))
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, otherInfo) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title function_">sha256</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([<span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">1</span>), key, otherInfo]))
 }
 
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">main</span> (<span class="hljs-params"></span>) </span>{
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
   <span class="hljs-comment">// To prevent CSRF attacks.</span>
-  <span class="hljs-keyword">const</span> state = crypto.randomBytes(<span class="hljs-number">16</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> state = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
   <span class="hljs-comment">// Dead simple PKCE challenge implementation.</span>
-  <span class="hljs-keyword">const</span> codeVerifier = crypto.randomBytes(<span class="hljs-number">32</span>).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
-  <span class="hljs-keyword">const</span> codeChallenge = crypto.createHash(<span class="hljs-string">&#x27;sha256&#x27;</span>).update(codeVerifier).digest(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> codeVerifier = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">32</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> codeChallenge = crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(codeVerifier).<span class="hljs-title function_">digest</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
   <span class="hljs-comment">// Keypair to obtain a shared secret from Firefox Accounts via ECDH.</span>
-  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> promisify(crypto.generateKeyPair)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
+  <span class="hljs-keyword">const</span> kp = <span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">generateKeyPair</span>)(<span class="hljs-string">&#x27;ec&#x27;</span>, {
     <span class="hljs-attr">namedCurve</span>: <span class="hljs-string">&#x27;P-256&#x27;</span>
   })
 
-  <span class="hljs-keyword">const</span> publicJwk = kp.publicKey.export({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
-  <span class="hljs-keyword">const</span> keysJwk = Buffer.from(<span class="hljs-built_in">JSON</span>.stringify(publicJwk)).toString(<span class="hljs-string">&#x27;base64url&#x27;</span>)
+  <span class="hljs-keyword">const</span> publicJwk = kp.<span class="hljs-property">publicKey</span>.<span class="hljs-title function_">export</span>({ <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span> })
+  <span class="hljs-keyword">const</span> keysJwk = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(publicJwk)).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 
   <span class="hljs-keyword">const</span> params = {
     <span class="hljs-attr">client_id</span>: clientId,
@@ -826,86 +826,86 @@ them together, you would get something like this:</p>
 
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${authorizationUrl}</span>?<span class="hljs-subst">${qs.stringify(params)}</span>`</span>
 
-  <span class="hljs-built_in">console</span>.log(url)
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(url)
 
-  <span class="hljs-keyword">const</span> rl = readline.createInterface({ <span class="hljs-attr">input</span>: process.stdin, <span class="hljs-attr">output</span>: process.stdout })
+  <span class="hljs-keyword">const</span> rl = readline.<span class="hljs-title function_">createInterface</span>({ <span class="hljs-attr">input</span>: process.<span class="hljs-property">stdin</span>, <span class="hljs-attr">output</span>: process.<span class="hljs-property">stdout</span> })
 
-  <span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.question(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
-    .finally(<span class="hljs-function">() =&gt;</span> rl.close())
+  <span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.<span class="hljs-title function_">question</span>(<span class="hljs-string">&#x27;Code: &#x27;</span>, resolve))
+    .<span class="hljs-title function_">finally</span>(<span class="hljs-function">() =&gt;</span> rl.<span class="hljs-title function_">close</span>())
 
-  <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> fetch(tokenEndpoint, {
+  <span class="hljs-keyword">const</span> oauthToken = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(tokenEndpoint, {
     <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
     <span class="hljs-attr">headers</span>: {
       <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>
     },
-    <span class="hljs-attr">body</span>: <span class="hljs-built_in">JSON</span>.stringify({
+    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
       <span class="hljs-attr">client_id</span>: clientId,
       <span class="hljs-attr">grant_type</span>: <span class="hljs-string">&#x27;authorization_code&#x27;</span>,
       <span class="hljs-attr">code_verifier</span>: codeVerifier,
       code
     })
   })
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 
-  <span class="hljs-keyword">const</span> rawSegments = oauthToken.keys_jwe.split(<span class="hljs-string">&#x27;.&#x27;</span>)
+  <span class="hljs-keyword">const</span> rawSegments = oauthToken.<span class="hljs-property">keys_jwe</span>.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;.&#x27;</span>)
   <span class="hljs-keyword">const</span> rawHeader = rawSegments[<span class="hljs-number">0</span>]
-  <span class="hljs-keyword">const</span> segments = rawSegments.map(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> Buffer.from(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
-  <span class="hljs-keyword">const</span> header = <span class="hljs-built_in">JSON</span>.parse(segments[<span class="hljs-number">0</span>])
+  <span class="hljs-keyword">const</span> segments = rawSegments.<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">segment</span> =&gt;</span> <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(segment, <span class="hljs-string">&#x27;base64&#x27;</span>))
+  <span class="hljs-keyword">const</span> header = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(segments[<span class="hljs-number">0</span>])
   <span class="hljs-keyword">const</span> iv = segments[<span class="hljs-number">2</span>]
   <span class="hljs-keyword">const</span> ciphertext = segments[<span class="hljs-number">3</span>]
   <span class="hljs-keyword">const</span> authTag = segments[<span class="hljs-number">4</span>]
 
-  <span class="hljs-keyword">const</span> peerKey = crypto.createPublicKey({
-    <span class="hljs-attr">key</span>: header.epk,
+  <span class="hljs-keyword">const</span> peerKey = crypto.<span class="hljs-title function_">createPublicKey</span>({
+    <span class="hljs-attr">key</span>: header.<span class="hljs-property">epk</span>,
     <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;jwk&#x27;</span>
   })
 
-  <span class="hljs-keyword">const</span> ikm = crypto.diffieHellman({
-    <span class="hljs-attr">privateKey</span>: kp.privateKey,
+  <span class="hljs-keyword">const</span> ikm = crypto.<span class="hljs-title function_">diffieHellman</span>({
+    <span class="hljs-attr">privateKey</span>: kp.<span class="hljs-property">privateKey</span>,
     <span class="hljs-attr">publicKey</span>: peerKey
   })
 
   <span class="hljs-comment">// Internal Mozilla format for Concat KDF `OtherInfo`, copied from</span>
   <span class="hljs-comment">// Firefox Application Services and Firefox Send code.</span>
-  <span class="hljs-keyword">const</span> otherInfo = Buffer.concat([
-    uint32BE(header.enc.length),
-    Buffer.from(header.enc),
-    uint32BE(<span class="hljs-number">0</span>),
-    uint32BE(<span class="hljs-number">0</span>),
-    uint32BE(<span class="hljs-number">256</span>)
+  <span class="hljs-keyword">const</span> otherInfo = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([
+    <span class="hljs-title function_">uint32BE</span>(header.<span class="hljs-property">enc</span>.<span class="hljs-property">length</span>),
+    <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(header.<span class="hljs-property">enc</span>),
+    <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">0</span>),
+    <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">0</span>),
+    <span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">256</span>)
   ])
 
-  <span class="hljs-keyword">const</span> key = concatKdf(ikm, otherInfo)
-  <span class="hljs-keyword">const</span> decipher = crypto.createDecipheriv(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
+  <span class="hljs-keyword">const</span> key = <span class="hljs-title function_">concatKdf</span>(ikm, otherInfo)
+  <span class="hljs-keyword">const</span> decipher = crypto.<span class="hljs-title function_">createDecipheriv</span>(<span class="hljs-string">&#x27;aes-256-gcm&#x27;</span>, key, iv)
 
-  decipher.setAuthTag(authTag)
-  decipher.setAAD(rawHeader)
+  decipher.<span class="hljs-title function_">setAuthTag</span>(authTag)
+  decipher.<span class="hljs-title function_">setAAD</span>(rawHeader)
 
-  <span class="hljs-keyword">const</span> keys = <span class="hljs-built_in">JSON</span>.parse(Buffer.concat([
-    decipher.update(ciphertext),
-    decipher.final()
+  <span class="hljs-keyword">const</span> keys = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([
+    decipher.<span class="hljs-title function_">update</span>(ciphertext),
+    decipher.<span class="hljs-title function_">final</span>()
   ]))
 
-  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> fetch(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
+  <span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">`<span class="hljs-subst">${tokenServerUrl}</span>/1.0/sync/1.5`</span>, {
     <span class="hljs-attr">headers</span>: {
-      <span class="hljs-attr">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
-      <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].kid
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${oauthToken.access_token}</span>`</span>,
+      <span class="hljs-string">&#x27;X-KeyID&#x27;</span>: keys[scope].<span class="hljs-property">kid</span>
     }
   })
-    .then(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.json())
+    .<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">json</span>())
 
-  <span class="hljs-keyword">const</span> rawBundle = Buffer.from(keys[scope].k)
+  <span class="hljs-keyword">const</span> rawBundle = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(keys[scope].<span class="hljs-property">k</span>)
 
   <span class="hljs-keyword">const</span> syncKeyBundle = {
-    <span class="hljs-attr">encryptionKey</span>: rawBundle.slice(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
-    <span class="hljs-attr">hmacKey</span>: rawBundle.slice(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
+    <span class="hljs-attr">encryptionKey</span>: rawBundle.<span class="hljs-title function_">slice</span>(<span class="hljs-number">0</span>, <span class="hljs-number">32</span>),
+    <span class="hljs-attr">hmacKey</span>: rawBundle.<span class="hljs-title function_">slice</span>(<span class="hljs-number">32</span>, <span class="hljs-number">64</span>)
   }
 
-  <span class="hljs-built_in">console</span>.log(token)
-  <span class="hljs-built_in">console</span>.log(syncKeyBundle)
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(token)
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(syncKeyBundle)
 }
 
-main()
+<span class="hljs-title function_">main</span>()
 </code></pre>
 <p>From there, you have everything you need to <a href="scripting-firefox-sync-lockwise-figuring-the-protocol.html#actually-calling-firefox-sync">actually call Firefox Sync</a>
 and decrypt its responses. This piece of code is already long enough so
@@ -1048,7 +1048,7 @@ sacrificing too much (if any) convenience or flexibility.</p>
 series.</p>
 <pre><code class="hljs language-sh">grep -Eoh <span class="hljs-string">&#x27;[(&lt;]http[^)]+[)&gt;]&#x27;</span> 2021/08/scripting-firefox-sync-lockwise-* \
   | sed <span class="hljs-string">&#x27;s/^.//;s/.$//&#x27;</span> | sed <span class="hljs-string">&#x27;s/#.*$//&#x27;</span> \
-  | sort | uniq -c
+  | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c
 </code></pre>
 <p>With some quick filtering and formatting, here’s the list!</p>
 <h3 id="documentation" tabindex="-1"><a class="header-anchor" href="#documentation"><span>Documentation</span></a></h3>

@@ -194,61 +194,61 @@ consume. Here’s a few examples:</p>
 <span class="hljs-keyword">const</span> base = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./oauth-base&#x27;</span>)
 
 <span class="hljs-comment">/**
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOAuthChallengeImpl</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{crypto.KeyPairKeyObjectResult}</span> <span class="hljs-variable">keyPair</span></span>
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{base.OAuthChallenge &amp; SyncOAuthChallengeImpl}</span> <span class="hljs-variable">SyncOAuthChallenge</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncOAuthChallengeImpl</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">crypto.KeyPairKeyObjectResult</span>} <span class="hljs-variable">keyPair</span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">base.OAuthChallenge &amp; SyncOAuthChallengeImpl</span>} <span class="hljs-variable">SyncOAuthChallenge</span>
  */</span>
 
 <span class="hljs-comment">/**
- * <span class="hljs-doctag">@param <span class="hljs-type">{SyncOAuthChallenge}</span> <span class="hljs-variable">challenge</span></span>
- * <span class="hljs-doctag">@param <span class="hljs-type">{base.OAuthResult}</span> <span class="hljs-variable">result</span></span>
- * <span class="hljs-doctag">@param <span class="hljs-type">{Object}</span> </span>[options]
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.clientId] - OAuth client ID.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.scope] - OAuth scope.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenEndpoint] - OAuth token endpoint.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenServerUrl] - TokenServer URL.
- * <span class="hljs-doctag">@returns <span class="hljs-type">{Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;}</span></span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">SyncOAuthChallenge</span>} <span class="hljs-variable">challenge</span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">base.OAuthResult</span>} <span class="hljs-variable">result</span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">Object</span>} [options]
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.clientId] - OAuth client ID.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.scope] - OAuth scope.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.tokenEndpoint] - OAuth token endpoint.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.tokenServerUrl] - TokenServer URL.
+ * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;</span>}
  */</span>
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">complete</span> (<span class="hljs-params">challenge, result, options</span>) </span>{
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">complete</span> (challenge, result, options) {
   <span class="hljs-comment">// Actual code.</span>
 }
 
-<span class="hljs-built_in">module</span>.exports = { complete }
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = { complete }
 </code></pre>
 </details>
 <details>
   <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/types.js"><code>types.js</code></a></summary>
 <pre><code class="hljs language-js"><span class="hljs-comment">/**
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOptions</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authServerUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authorizationUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenEndpoint]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenServerUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{import(&#x27;./auth/oauth-base&#x27;).OAuthOptions}</span> </span>[oauthOptions]
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncOptions</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [authServerUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [authorizationUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [tokenEndpoint]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [tokenServerUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">import(&#x27;./auth/oauth-base&#x27;).OAuthOptions</span>} [oauthOptions]
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">OAuthToken</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">access_token</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">scope</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">expires_in</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">OAuthToken</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">access_token</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">scope</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number</span>} <span class="hljs-variable">expires_in</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncToken</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">id</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">key</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncToken</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">id</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">key</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncKeyBundle</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">encryptionKey</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">hmacKey</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">kid</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncKeyBundle</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">encryptionKey</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">hmacKey</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">kid</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncCredentials</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{OAuthToken}</span> <span class="hljs-variable">oauthToken</span></span> - The OAuth token required to authenticate to the TokenServer.
- * <span class="hljs-doctag">@property <span class="hljs-type">{SyncKeyBundle}</span> <span class="hljs-variable">syncKeyBundle</span></span> - The Sync key bundle required to decrypt the collection keys.
- * <span class="hljs-doctag">@property <span class="hljs-type">{SyncToken}</span> <span class="hljs-variable">token</span></span> - The token object required to call the Firefox Sync API.
- * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">tokenIssuedAt</span></span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncCredentials</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">OAuthToken</span>} <span class="hljs-variable">oauthToken</span> - The OAuth token required to authenticate to the TokenServer.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">SyncKeyBundle</span>} <span class="hljs-variable">syncKeyBundle</span> - The Sync key bundle required to decrypt the collection keys.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">SyncToken</span>} <span class="hljs-variable">token</span> - The token object required to call the Firefox Sync API.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number</span>} <span class="hljs-variable">tokenIssuedAt</span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
  */</span>
 
 <span class="hljs-comment">// Does nothing but required for TypeScript to import this file.</span>
-<span class="hljs-built_in">module</span>.exports = {}
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {}
 </code></pre>
 </details>
 <p>Because I was writing that library from scratch and not adding types to
@@ -375,14 +375,14 @@ be there in the first place).</p>
 to make sure that the code passes type checking when I generate the
 final definitions.</p>
 <p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;scripts&quot;</span>: {
-    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span>,
-    <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
-    <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
-    <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;check&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;lint&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;standard&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;prepare&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;types&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>As always, I use <a href="https://standardjs.com/"><code>standard</code></a> to lint my code,
 and in the <a href="https://docs.npmjs.com/cli/v7/using-npm/scripts#life-cycle-scripts"><code>prepare</code></a>

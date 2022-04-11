@@ -156,9 +156,9 @@ for your own needs.</p>
 <p>We create an <code>image</code> directory to mount the installation ISO in, and a
 <code>rescue</code> directory to mount the 2GB <code>nixos-rescue</code> partition and
 replicate the ISO system in.</p>
-<pre><code class="hljs language-sh">mkdir image rescue
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> image rescue
 mount /dev/disk/by-label/nixos-rescue rescue
-mkdir rescue/nix
+<span class="hljs-built_in">mkdir</span> rescue/nix
 </code></pre>
 <h3 id="get-the-iso-and-mount-it" tabindex="-1"><a class="header-anchor" href="#get-the-iso-and-mount-it"><span>Get the ISO and mount it</span></a></h3>
 <p>Get the ISO URL of the NixOS release you want to install, see the
@@ -178,7 +178,7 @@ unsquashfs -d rescue/nix/store image/nix-store.squashfs <span class="hljs-string
 <a href="https://en.wikipedia.org/wiki/Filesystem_Hierarchy_Standard">FHS</a>
 entries and mount bind or copy whatever is needed from the host system:</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">cd</span> rescue
-mkdir -p etc dev proc sys
+<span class="hljs-built_in">mkdir</span> -p etc dev proc sys
 mount --<span class="hljs-built_in">bind</span> /dev dev
 mount --<span class="hljs-built_in">bind</span> /proc proc
 mount --<span class="hljs-built_in">bind</span> /sys sys
@@ -188,7 +188,7 @@ after <code>chroot</code>.</p>
 <h3 id="chroot-in-the-installation-system" tabindex="-1"><a class="header-anchor" href="#chroot-in-the-installation-system"><span><code>chroot</code> in the installation system</span></a></h3>
 <p>First need to find the right path for <code>init</code> and <code>bash</code>:</p>
 <pre><code class="hljs language-sh">INIT=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*nixos*/init&#x27;</span>)
-BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*/bin/bash&#x27;</span> | tail -n 1)
+BASH=$(find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*/bin/bash&#x27;</span> | <span class="hljs-built_in">tail</span> -n 1)
 
 <span class="hljs-comment"># See &lt;https://discourse.nixos.org/t/nixos-on-ovh-kimsufi-cloning-builder-process-operation-not-permitted/1494/2&gt;</span>
 find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string">&#x27;*-nix.conf&#x27;</span> | xargs sed -i <span class="hljs-string">&#x27;s/sandbox = true/sandbox = false/&#x27;</span>
@@ -197,13 +197,13 @@ find . -<span class="hljs-built_in">type</span> f -path <span class="hljs-string
 <pre><code class="hljs language-sh">sed -i <span class="hljs-string">&quot;s,exec systemd,exec /<span class="hljs-variable">$BASH</span>,&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$INIT</span>&quot;</span>
 </code></pre>
 <p>Now ready to <code>chroot</code>:</p>
-<pre><code class="hljs language-sh">chroot . /<span class="hljs-variable">$INIT</span>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">chroot</span> . /<span class="hljs-variable">$INIT</span>
 </code></pre>
 <p>Just after, restore the <code>/etc/resolv.conf</code>.</p>
 <h2 id="regular-installation" tabindex="-1"><a class="header-anchor" href="#regular-installation"><span>Regular installation</span></a></h2>
 <p>You can now install your system as if you were in the installation ISO:</p>
 <pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt
-mkdir /mnt/home
+<span class="hljs-built_in">mkdir</span> /mnt/home
 mount /dev/disk/by-label/home /mnt/home
 swapon /dev/disk/by-label/swap
 nixos-generate-config --root /mnt
@@ -242,7 +242,7 @@ vim /mnt/etc/nixos/configuration.nix
 </code></pre>
 <p>If you want to execute more commands in your new system, like setting
 passwords for new users:</p>
-<pre><code class="hljs language-sh">nixos-install --chroot
+<pre><code class="hljs language-sh">nixos-install --<span class="hljs-built_in">chroot</span>
 </code></pre>
 <p>Then you can unmount everything and exit:</p>
 <pre><code class="hljs language-sh">umount -R /mnt
@@ -256,7 +256,7 @@ you created previously.</p>
 <p>If your server doesn’t go up, you can’t connect, or whatever, boot back
 in rescue mode, and look what happened in the system logs with:</p>
 <pre><code class="hljs language-sh">mount /dev/disk/by-label/nixos /mnt
-journalctl -D /mnt/var/<span class="hljs-built_in">log</span>/journal
+journalctl -D /mnt/var/log/journal
 </code></pre>
 <hr class="footnotes-sep">
 <section class="footnotes">

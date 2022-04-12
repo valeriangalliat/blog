@@ -77,6 +77,14 @@ have to make sure I keep supporting that.
 
 I'll need [another page](playground-hero.md) to show you that.
 
+## Notes
+
+<div class="note">
+
+**Note:** this is a note.
+
+</div>
+
 ## Floats
 
 <div class="float-wrapper">
@@ -150,9 +158,6 @@ consecutive floats. Fuck this shit.
 </div>
 
 This is not part of the float inner, it just flows naturally.
-
-This currently doesn't look well because I commented the hack to make
-this work, because I don't actually need it.
 
 </div>
 

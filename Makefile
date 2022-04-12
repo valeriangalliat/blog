@@ -68,9 +68,7 @@ dist/css/main-20220411.css: \
 	css/components/contact.css \
 	css/components/figure.css \
 	css/components/footer.css \
-	css/components/footnotes.css \
 	css/components/header.css \
-	css/components/hero.css \
 	css/components/nav.css \
 	css/components/note.css \
 	css/components/oversized.css \

@@ -23,3 +23,7 @@ footer a:hover {
     color: var(--black);
     text-decoration: none;
 }
+
+.footnotes p {
+    margin: 0;
+}

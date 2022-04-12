@@ -22,6 +22,9 @@ nav ul {
     padding-left: 0;
     display: flex;
     justify-content: center;
+
+    /* Negative horizontal margin to make up for the fact each `<li>`
+     * has horizontal padding. */
     margin: 1em -1em;
 }
 

@@ -5,7 +5,6 @@
 .post .tagline,
 .post .date {
     font-family: "Helvetica Neue", sans-serif;
-    margin-top: 0;
 }
 
 .post .tagline {
@@ -17,8 +16,6 @@
 }
 
 .post-footer {
-    /* For the rare cases like in `2014/10/low-consumption-home-server.html`
-     * where the last elemnt doesn't have a bottom margin. */
-    margin-top: 2rem;
+    padding-top: 2rem;
     border-top: 1px solid var(--gray-2);
 }

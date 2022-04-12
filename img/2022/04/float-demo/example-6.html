@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <link rel="stylesheet" src="/css/normalize.css">
+  <style>
+    body {
+      margin: 0;
+    }
+
+    .square {
+      float: left;
+      width: 6em;
+      height: 6em;
+      background: #0366d6;
+    }
+
+    .float-hack {
+      overflow: hidden;
+    }
+
+    p, ul {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <p>Paragraph</p>
+  <div class="square"></div>
+  <div class="float-hack">
+    <ul><li><p>Hello from a paragraph</p></li></ul>
+  </div>
+  <p>Paragraph</p>
+  <script>
+    frameElement.height = document.documentElement.offsetHeight
+  </script>
+</body>
+</html>

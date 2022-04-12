@@ -265,6 +265,10 @@ button:hover {
     cursor: pointer;
 }
 
+iframe {
+    border: 1px solid var(--gray-2);
+}
+
 .float-wrapper::after {
     display: table;
     clear: both;

@@ -5,10 +5,215 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-09T18:08:39.523Z</updated>
+  <updated>2022-04-12T00:52:08.568Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Make floats and lists collaborate 🙈</title>
+    <link href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html" />
+    <id>https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html</id>
+    <updated>2022-04-11T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Am I the only one struggling to get lists and other styled elements to
+render properly next to a float?</p>
+<p>At least, it definitely doesn’t work well out of the box. Let’s start
+from a generic browser style sheet context (a HTML file without any CSS
+added), or <a href="https://necolas.github.io/normalize.css/">Normalize.css</a>.</p>
+<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#the-problem"><span>The problem</span></a></h2>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</code></pre>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.square</span> {
+    <span class="hljs-attribute">float</span>: left;
+    <span class="hljs-attribute">width</span>: <span class="hljs-number">6em</span>;
+    <span class="hljs-attribute">height</span>: <span class="hljs-number">6em</span>;
+    <span class="hljs-attribute">background</span>: <span class="hljs-number">0366</span>d6;
+}
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-0.html" width="100%"></iframe>
+<p>This is not great. The left padding of the <code>&lt;ul&gt;</code> overlaps with the
+square, and so does the bullet point.</p>
+<p>The only way I’m aware of to fix this in a normal document flow (e.g.
+not doing a very custom thing with Flexbox or grids) is to set
+<code>overflow: hidden</code> to the <code>&lt;ul&gt;</code> (or on a parent block that’s also being
+pushed by the float):</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-tag">ul</span> {
+    <span class="hljs-attribute">overflow</span>: hidden;
+}
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-1.html" width="100%"></iframe>
+<p>Better. Let’s add a paragraph <em>before</em> the square and <em>after</em> the <code>&lt;ul&gt;</code>
+and see what happens.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-2.html" width="100%"></iframe>
+<p>So far so good.</p>
+<h2 id="breaking-it-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#breaking-it-again"><span>Breaking it again</span></a></h2>
+<p>Now let’s assume we have paragraphs <em>inside</em> our list items (yes, this
+happens). You also get a similar problem with <code>&lt;blockquote&gt;</code>s or any
+other element where you might want to have a left border and padding,
+and that contains paragraphs or anything with a vertical margin.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello from a paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-3.html" width="100%"></iframe>
+<p>Subtle yet important thing to notice: the vertical margin from the
+list paragraph now don’t merge with the adjacent margins because of our
+<code>overflow: hidden</code> hack! So we have double the margin before and after
+the list. Not good.</p>
+<p>But what is this behavior in the first place? Meet <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing">margin collapsing</a>.
+This concept is is very well defined by <a href="https://css-tricks.com/what-you-should-know-about-collapsing-margins/">CSS-Tricks</a>:</p>
+<blockquote>
+<p>Collapsing margins happen when two vertical margins come in contact
+with one another. If one margin is greater than the other, then that
+margin overrides the other, leaving one margin.</p>
+</blockquote>
+<p>So by using <code>overflow: hidden</code>, we break margin collapsing.</p>
+<h2 id="avoiding-collapsing-altogether" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#avoiding-collapsing-altogether"><span>Avoiding collapsing altogether</span></a></h2>
+<p>It’s quite common to use something like <code>margin-top: 0</code> and
+<code>margin-bottom: 1em</code> on all content elements (or the other way
+around) to avoid relying on (and dealing with) margin collapsing.</p>
+<p><a href="https://twitter.com/valeriangalliat/status/1512869222111756292">I ran a poll on Twitter</a>
+that got 74 answers. A majority of y’all use this technique to avoid
+margin collapsing!</p>
+<table>
+  <tr>
+    <td><code>p { margin: 1em 0; }</code>
+    <td>37.8%</td>
+  </tr>
+  <tr>
+    <td><code>p { margin-bottom: 1em; }</code>
+    <td>62.2%</td>
+  </tr>
+</table>
+<p>We can try this and see if it helps with our problem.</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-tag">p</span>, <span class="hljs-selector-tag">ul</span> {
+    <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>;
+}
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-4.html" width="100%"></iframe>
+<p>It’s better. We don’t have double the spacing anymore above the <code>&lt;ul&gt;</code>,
+but we still have the problem with the <code>margin-bottom</code> of the <code>&lt;ul&gt;</code> not
+collapsing with its inner paragraph.</p>
+<p>What we can do though is to set <code>overflow: hidden</code> on a wrapper element
+instead of the <code>&lt;ul&gt;</code> directly, then this should let the inner paragraph
+collapse with it’s parent <code>&lt;ul&gt;</code>'s <code>margin-bottom</code>:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello from a paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+</code></pre>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.float-hack</span> {
+    <span class="hljs-attribute">overflow</span>: hidden;
+}
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-5.html" width="100%"></iframe>
+<p>Sweet, that works like a charm!</p>
+<p>That being said, it works especially well because we decided to kill the
+<code>margin-top</code> of content elements, but if you want to remove the
+<code>margin-bottom</code> instead and keep the <code>margin-top</code>, it’s a different
+story:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-tag">p</span>, <span class="hljs-selector-tag">ul</span> {
+    <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">0</span>;
+}
+</code></pre>
+<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-6.html" width="100%"></iframe>
+<p>So keep that in mind of you want to drop margin collapsing, the margin
+you kill has an importance!</p>
+<h2 id="a-solution-to-keep-collapsing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#a-solution-to-keep-collapsing"><span>A solution to keep collapsing?</span></a></h2>
+<p>The simplicity of the previous solution pretty much convinced me to use
+this pattern on my blog. But for some reason you might want to keep
+relying on margin collapsing and still need to fix this spacing issues
+with floats. Let’s find a way.</p>
+<p>Since we need to combat the fact that <code>overflow: hidden</code> prevents our
+vertical margins from collapsing, an option is to set <code>margin-top: 0</code>
+<strong>recursively</strong> on all the first children of the <code>overflow: hidden</code> element,
+and <code>margin-bottom: 0</code> on all the last children.</p>
+<p>Why <em>recursively</em>? Because any element in the tree of direct first
+children could set a <code>margin-top</code> that we want to cancel (and similarly
+for <code>margin-bottom</code> and the last children tree).</p>
+<p>But <a href="https://stackoverflow.com/questions/12477272/select-recursive-last-child-possible">we can’t recursively target all the first or last children of an element</a>!</p>
+<p>So a solution would be to write something like this (relying on the
+<code>float-hack</code> class we introduced earlier:</p>
+<pre><code class="hljs language-css"><span class="hljs-selector-class">.float-hack</span> {
+    <span class="hljs-attribute">overflow</span>: hidden;
+}
+
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child {
+    <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>;
+}
+
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
+<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> {
+    <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">0</span>;
+}
+</code></pre>
+<p>This should be good enough for most simple cases. You can even have a
+paragraph inside a <code>&lt;blockquote&gt;</code>, itself inside a list item!</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>This is a quote<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<p>Or a nested list, which reach the same level of nesting:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
+      <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
+        <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Nested list item<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+      <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
+    <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
+</code></pre>
+<p>Maybe don’t add a <code>&lt;blockquote&gt;</code> with paragraphs inside this nested list
+item or you might want to add a few recursion levels to our earlier CSS
+rule. 😂</p>
+<div class="note">
+<p><strong>Note:</strong> this isn’t a complete fix as it won’t behave properly if the
+collapsing margins are not equal.</p>
+<p>The engine normally keeps the greater margin, but here we’ll always nuke
+the margin of the first and last items of our <code>float-hack</code> element.</p>
+</div>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>And there you go! Two solutions for the price of one:</p>
+<ol>
+<li>Prevent margin collapsing altogether by only applying a
+<code>margin-bottom</code> and setting <code>margin-top: 0</code> on all content elements.</li>
+<li>Recursively target the first and last children of the <code>overflow: hidden</code>
+element to cancel their margin.</li>
+</ol>
+<p>Which one is your favorite?</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>How can rsync work on a host without shell access? 🤔</title>
     <link href="https://www.codejam.info/2022/04/rsync-without-shell-access.html" />
@@ -277,11 +482,11 @@ and just copying over the contents of the ISO to it. Example:</p>
 <pre><code class="hljs language-sh">fdisk /dev/sdX <span class="hljs-comment"># Make a single partition for the whole drive</span>
 mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
 
-mkdir usb windows <span class="hljs-comment"># Make some mount points</span>
+<span class="hljs-built_in">mkdir</span> usb windows <span class="hljs-comment"># Make some mount points</span>
 mount /dev/sdX1 usb
 mount windows.iso windows
 
-cp -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
+<span class="hljs-built_in">cp</span> -rv windows/* usb <span class="hljs-comment"># Copy contents</span>
 
 umount windows
 umount usb
@@ -316,19 +521,19 @@ bootloader is already capable of doing that by itself!).</p>
 mkfs.fat -F32 /dev/sdX1 <span class="hljs-comment"># Format as FAT32</span>
 mkfs.ntfs --fast /dev/sdX2 <span class="hljs-comment"># Format as NTFS</span>
 
-mkdir boot usb windows <span class="hljs-comment"># Make some mount points</span>
+<span class="hljs-built_in">mkdir</span> boot usb windows <span class="hljs-comment"># Make some mount points</span>
 mount /dev/sdX1 boot
 mount /dev/sdX2 usb
 mount windows.iso windows
 
 <span class="hljs-comment"># Copy everything but the `sources` directory</span>
-find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> cp -rv {} boot \;
+find iso -mindepth 1 -maxdepth 1 -not -name sources -<span class="hljs-built_in">exec</span> <span class="hljs-built_in">cp</span> -rv {} boot \;
 
 <span class="hljs-comment"># Add `sources/boot.wim`</span>
-mkdir boot/sources
-cp iso/sources/boot.wim boot/sources
+<span class="hljs-built_in">mkdir</span> boot/sources
+<span class="hljs-built_in">cp</span> iso/sources/boot.wim boot/sources
 
-cp -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
+<span class="hljs-built_in">cp</span> -rv iso/* usb <span class="hljs-comment"># Copy everything to the NTFS partition</span>
 
 umount windows
 umount usb
@@ -667,14 +872,14 @@ was set.</p>
 thinks that it’s actually a separate cookie with the same name.</p>
 </blockquote>
 <p>In code, using Node.js and Express, this looks like this:</p>
-<pre><code class="hljs language-js">res.cookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, sessionId, {
+<pre><code class="hljs language-js">res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;sessionId&#x27;</span>, sessionId, {
   <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
   <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span> <span class="hljs-comment">// 30 days</span>
 })
 
-res.clearCookie(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
+res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;sessionId&#x27;</span>, {
   <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
   <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
@@ -764,31 +969,31 @@ without passing any option.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> express = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;express&#x27;</span>)
 <span class="hljs-keyword">const</span> cookieParser = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;cookie-parser&#x27;</span>)
 
-<span class="hljs-keyword">const</span> app = express()
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">express</span>()
 
-app.use(cookieParser())
+app.<span class="hljs-title function_">use</span>(<span class="hljs-title function_">cookieParser</span>())
 
-app.get(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.json(req.cookies)
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">json</span>(req.<span class="hljs-property">cookies</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
     <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>)
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.listen(<span class="hljs-number">9999</span>)
+app.<span class="hljs-title function_">listen</span>(<span class="hljs-number">9999</span>)
 </code></pre>
 <p>Interestingly, it appears that both Chrome and Firefox allow cookies
 with the <code>secure</code> attribute to be set on <code>http://localhost</code>, which is
@@ -829,7 +1034,7 @@ cookie.</p>
 <span class="hljs-comment">// GetCookieDomainWithString-&gt;CanonicalizeHost).</span>
 <span class="hljs-comment">// If partitioned cookies are enabled, then we check the cookies have the same</span>
 <span class="hljs-comment">// partition key in addition to the checks in RFC 2965.</span>
-<span class="hljs-function"><span class="hljs-keyword">bool</span> <span class="hljs-title">IsEquivalent</span><span class="hljs-params">(<span class="hljs-keyword">const</span> CanonicalCookie&amp; ecc)</span> <span class="hljs-keyword">const</span> </span>{
+<span class="hljs-function"><span class="hljs-type">bool</span> <span class="hljs-title">IsEquivalent</span><span class="hljs-params">(<span class="hljs-type">const</span> CanonicalCookie&amp; ecc)</span> <span class="hljs-type">const</span> </span>{
   <span class="hljs-comment">// It seems like it would make sense to take secure, httponly, and samesite</span>
   <span class="hljs-comment">// into account, but the RFC doesn&#x27;t specify this.</span>
   <span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> Keep this logic in-sync with TrimDuplicateCookiesForKey().</span>
@@ -840,7 +1045,7 @@ cookie.</p>
 <span class="hljs-comment">// guaranteed to be equivalent in the sense of IsEquivalent().</span>
 <span class="hljs-comment">// The `partition_key_` field will always be nullopt when partitioned cookies</span>
 <span class="hljs-comment">// are not enabled.</span>
-<span class="hljs-function">UniqueCookieKey <span class="hljs-title">UniqueKey</span><span class="hljs-params">()</span> <span class="hljs-keyword">const</span> </span>{
+<span class="hljs-function">UniqueCookieKey <span class="hljs-title">UniqueKey</span><span class="hljs-params">()</span> <span class="hljs-type">const</span> </span>{
   <span class="hljs-keyword">return</span> std::<span class="hljs-built_in">make_tuple</span>(partition_key_, name_, domain_, path_);
 }
 </code></pre>
@@ -871,25 +1076,25 @@ because specifying those attributes when clearing a cookie doesn’t cause
 issues with the current implementation, <strong>I would advise to specify all
 the attributes when clearing the cookie</strong> just to be on the safe side.</p>
 <p>In my example code earlier, I would recommend to rewrite it as:</p>
-<pre><code class="hljs language-js">app.get(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.cookie(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
+<pre><code class="hljs language-js">app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/set&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">cookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>,
     <span class="hljs-attr">maxAge</span>: <span class="hljs-number">30</span> * <span class="hljs-number">24</span> * <span class="hljs-number">60</span> * <span class="hljs-number">60</span> * <span class="hljs-number">1000</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 
-app.get(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
-  res.clearCookie(<span class="hljs-string">&#x27;foo&#x27;</span>, {
+app.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;/clear&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  res.<span class="hljs-title function_">clearCookie</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, {
     <span class="hljs-attr">secure</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">httpOnly</span>: <span class="hljs-literal">true</span>,
     <span class="hljs-attr">sameSite</span>: <span class="hljs-string">&#x27;lax&#x27;</span>
   })
 
-  res.redirect(<span class="hljs-string">&#x27;/&#x27;</span>)
+  res.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
 })
 </code></pre>
 <section class="post-footer">
@@ -1567,8 +1772,8 @@ anything when run from another user because of permission issues.</p>
 <a href="https://newbedev.com/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">one</a>
 to try to do this, a simple search for this yields a fuckton of results!
 And they all mostly share the same “tip” which is some variant of:</p>
-<pre><code class="hljs language-sh">chgrp -R admin /usr/<span class="hljs-built_in">local</span>/*
-chmod -R g+w /usr/<span class="hljs-built_in">local</span>/*
+<pre><code class="hljs language-sh"><span class="hljs-built_in">chgrp</span> -R admin /usr/local/*
+<span class="hljs-built_in">chmod</span> -R g+w /usr/local/*
 </code></pre>
 <p>Some variants use <code>brew --prefix</code> instead of hardcoding <code>/usr/local</code>,
 some use a custom group instead of <code>admin</code>. Either way, it’s all the
@@ -2234,7 +2439,7 @@ specific SSH key of my other machine.</p>
 <a href="https://github.com/valeriangalliat/sshd-on-the-go">go check it out</a>!</p>
 </div>
 <p>First, let’s make a directory to contain our server files.</p>
-<pre><code class="hljs language-sh">mkdir standalone-sshd
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> standalone-sshd
 <span class="hljs-built_in">cd</span> standalone-sshd
 </code></pre>
 <p>In there, we generate our host RSA key (the <code>-N ''</code> part specifies an
@@ -2373,23 +2578,23 @@ only then (to avoid the quick text flash mentioned earlier).</p>
 <h2 id="using-phoenix-liveview-hooks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#using-phoenix-liveview-hooks"><span>Using Phoenix LiveView hooks?</span></a></h2>
 <p>The first thing I thought about was to use LiveView hooks as documented
 in <a href="https://hexdocs.pm/phoenix_live_view/js-interop.html">JavaScript interoperability</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { Socket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
-<span class="hljs-keyword">import</span> { LiveSocket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Socket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">LiveSocket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
 
-<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).getAttribute(<span class="hljs-string">&#x27;content&#x27;</span>)
+<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;content&#x27;</span>)
 
-<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> LiveSocket(<span class="hljs-string">&#x27;/live&#x27;</span>, Socket, {
+<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LiveSocket</span>(<span class="hljs-string">&#x27;/live&#x27;</span>, <span class="hljs-title class_">Socket</span>, {
   <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken },
   <span class="hljs-attr">hooks</span>: {
-    <span class="hljs-attr">ElementUpdated</span>: {
+    <span class="hljs-title class_">ElementUpdated</span>: {
       updated (e) {
-        <span class="hljs-built_in">this</span>.el.dispatchEvent(<span class="hljs-keyword">new</span> CustomEvent(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>))
+        <span class="hljs-variable language_">this</span>.<span class="hljs-property">el</span>.<span class="hljs-title function_">dispatchEvent</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomEvent</span>(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>))
       }
     }
   }
 })
 
-liveSocket.connect()
+liveSocket.<span class="hljs-title function_">connect</span>()
 </code></pre>
 <p>By adding <code>phx-hook=&quot;ElementUpdated&quot;</code> on the elements we want to get
 notified for updates, we trigger the hook we defined, which here
@@ -2398,7 +2603,7 @@ handle that event at the node level instead of trying to handle every
 single case directly from the hook, which is very nice and decoupled if
 you ask me.</p>
 <p>For example you could now do:</p>
-<pre><code class="hljs language-js">someElement.addEventListener(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+<pre><code class="hljs language-js">someElement.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
   <span class="hljs-comment">// Deal with the fact this element got updated!</span>
 })
 </code></pre>
@@ -2425,7 +2630,7 @@ to <code>&lt;span&gt;</code> mode. Sweet!</p>
 <div class="note">
 <p><strong>Note:</strong> if you don’t use Alpine, you can just listen to the
 <code>phx:page-loading-stop</code> event on the <code>window</code> object:</p>
-<pre><code class="hljs language-js">addEventListener(<span class="hljs-string">&#x27;phx:page-loading-stop&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
+<pre><code class="hljs language-js"><span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;phx:page-loading-stop&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
   <span class="hljs-comment">// Your code here!</span>
 })
 </code></pre>
@@ -2434,29 +2639,29 @@ to <code>&lt;span&gt;</code> mode. Sweet!</p>
 <p>Oh yeah, we love monkey patching. If you use Phoenix LiveView your code
 should look something like this (I left alone the Alpine part because
 it’s not relevant to this example).</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { Socket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
-<span class="hljs-keyword">import</span> { LiveSocket } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Socket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">LiveSocket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
 
-<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-built_in">document</span>.querySelector(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).getAttribute(<span class="hljs-string">&#x27;content&#x27;</span>)
+<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;content&#x27;</span>)
 
-<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> LiveSocket(<span class="hljs-string">&#x27;/live&#x27;</span>, Socket, {
+<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LiveSocket</span>(<span class="hljs-string">&#x27;/live&#x27;</span>, <span class="hljs-title class_">Socket</span>, {
   <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken }
 })
 
-liveSocket.connect()
+liveSocket.<span class="hljs-title function_">connect</span>()
 </code></pre>
 <p>From there, we can intercept the <code>push</code> method on the LiveSocket
 channel. That will in turn allow us to add an event handler to the
 <code>receive</code> event for a given push, so that we can not only get the full
 response from Phoenix, but can also tell from what event it originated!</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> channel = <span class="hljs-built_in">Object</span>.values(liveSocket.roots)[<span class="hljs-number">0</span>].channel
-<span class="hljs-keyword">const</span> pushImpl = channel.push
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> channel = <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">values</span>(liveSocket.<span class="hljs-property">roots</span>)[<span class="hljs-number">0</span>].<span class="hljs-property">channel</span>
+<span class="hljs-keyword">const</span> pushImpl = channel.<span class="hljs-property">push</span>
 
-channel.push = <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">wrappedPush</span> (<span class="hljs-params">event, payload, timeout</span>) </span>{
-  <span class="hljs-keyword">const</span> push = pushImpl.call(<span class="hljs-built_in">this</span>, event, payload, timeout)
+channel.<span class="hljs-property">push</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">wrappedPush</span> (event, payload, timeout) {
+  <span class="hljs-keyword">const</span> push = pushImpl.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, event, payload, timeout)
 
-  push.receive(<span class="hljs-string">&#x27;ok&#x27;</span>, <span class="hljs-function"><span class="hljs-params">resp</span> =&gt;</span> {
-    <span class="hljs-built_in">console</span>.log(event, payload, resp)
+  push.<span class="hljs-title function_">receive</span>(<span class="hljs-string">&#x27;ok&#x27;</span>, <span class="hljs-function"><span class="hljs-params">resp</span> =&gt;</span> {
+    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(event, payload, resp)
   })
 
   <span class="hljs-keyword">return</span> push
@@ -2466,11 +2671,11 @@ channel.push = <span class="hljs-function"><span class="hljs-keyword">function</
 <code>event</code>, <code>resp</code> would contain a <code>diff</code> object that really only makes
 sense to Phoenix (or be an empty object if nothing was updated), and the
 <code>payload</code> would look something like this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;type&quot;</span>: <span class="hljs-string">&quot;form&quot;</span>,
-  <span class="hljs-attr">&quot;event&quot;</span>: <span class="hljs-string">&quot;edit_whatever&quot;</span>,
-  <span class="hljs-attr">&quot;value&quot;</span>: <span class="hljs-string">&quot;URL encoded string of the form elements&quot;</span>
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;form&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;event&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;edit_whatever&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;URL encoded string of the form elements&quot;</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>This gives pretty useful informations that can allow to hook to LiveView
 events in a much more granular manner!</p>
@@ -2618,61 +2823,61 @@ consume. Here’s a few examples:</p>
 <span class="hljs-keyword">const</span> base = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./oauth-base&#x27;</span>)
 
 <span class="hljs-comment">/**
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOAuthChallengeImpl</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{crypto.KeyPairKeyObjectResult}</span> <span class="hljs-variable">keyPair</span></span>
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{base.OAuthChallenge &amp; SyncOAuthChallengeImpl}</span> <span class="hljs-variable">SyncOAuthChallenge</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncOAuthChallengeImpl</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">crypto.KeyPairKeyObjectResult</span>} <span class="hljs-variable">keyPair</span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">base.OAuthChallenge &amp; SyncOAuthChallengeImpl</span>} <span class="hljs-variable">SyncOAuthChallenge</span>
  */</span>
 
 <span class="hljs-comment">/**
- * <span class="hljs-doctag">@param <span class="hljs-type">{SyncOAuthChallenge}</span> <span class="hljs-variable">challenge</span></span>
- * <span class="hljs-doctag">@param <span class="hljs-type">{base.OAuthResult}</span> <span class="hljs-variable">result</span></span>
- * <span class="hljs-doctag">@param <span class="hljs-type">{Object}</span> </span>[options]
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.clientId] - OAuth client ID.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.scope] - OAuth scope.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenEndpoint] - OAuth token endpoint.
- * <span class="hljs-doctag">@param <span class="hljs-type">{string}</span> </span>[options.tokenServerUrl] - TokenServer URL.
- * <span class="hljs-doctag">@returns <span class="hljs-type">{Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;}</span></span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">SyncOAuthChallenge</span>} <span class="hljs-variable">challenge</span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">base.OAuthResult</span>} <span class="hljs-variable">result</span>
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">Object</span>} [options]
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.clientId] - OAuth client ID.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.scope] - OAuth scope.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.tokenEndpoint] - OAuth token endpoint.
+ * <span class="hljs-doctag">@param</span> {<span class="hljs-type">string</span>} [options.tokenServerUrl] - TokenServer URL.
+ * <span class="hljs-doctag">@returns</span> {<span class="hljs-type">Promise&lt;import(&#x27;../types&#x27;).SyncCredentials&gt;</span>}
  */</span>
-<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">complete</span> (<span class="hljs-params">challenge, result, options</span>) </span>{
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">complete</span> (challenge, result, options) {
   <span class="hljs-comment">// Actual code.</span>
 }
 
-<span class="hljs-built_in">module</span>.exports = { complete }
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = { complete }
 </code></pre>
 </details>
 <details>
   <summary><a href="https://github.com/valeriangalliat/node-firefox-sync/blob/master/types.js"><code>types.js</code></a></summary>
 <pre><code class="hljs language-js"><span class="hljs-comment">/**
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncOptions</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authServerUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[authorizationUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenEndpoint]
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> </span>[tokenServerUrl]
- * <span class="hljs-doctag">@property <span class="hljs-type">{import(&#x27;./auth/oauth-base&#x27;).OAuthOptions}</span> </span>[oauthOptions]
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncOptions</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [authServerUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [authorizationUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [tokenEndpoint]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} [tokenServerUrl]
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">import(&#x27;./auth/oauth-base&#x27;).OAuthOptions</span>} [oauthOptions]
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">OAuthToken</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">access_token</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">scope</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">expires_in</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">OAuthToken</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">access_token</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">scope</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number</span>} <span class="hljs-variable">expires_in</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncToken</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">id</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">key</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncToken</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">id</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">key</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncKeyBundle</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">encryptionKey</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">hmacKey</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{string}</span> <span class="hljs-variable">kid</span></span>
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncKeyBundle</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">encryptionKey</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">hmacKey</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">string</span>} <span class="hljs-variable">kid</span>
  *
- * <span class="hljs-doctag">@typedef <span class="hljs-type">{Object}</span> <span class="hljs-variable">SyncCredentials</span></span>
- * <span class="hljs-doctag">@property <span class="hljs-type">{OAuthToken}</span> <span class="hljs-variable">oauthToken</span></span> - The OAuth token required to authenticate to the TokenServer.
- * <span class="hljs-doctag">@property <span class="hljs-type">{SyncKeyBundle}</span> <span class="hljs-variable">syncKeyBundle</span></span> - The Sync key bundle required to decrypt the collection keys.
- * <span class="hljs-doctag">@property <span class="hljs-type">{SyncToken}</span> <span class="hljs-variable">token</span></span> - The token object required to call the Firefox Sync API.
- * <span class="hljs-doctag">@property <span class="hljs-type">{number}</span> <span class="hljs-variable">tokenIssuedAt</span></span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
+ * <span class="hljs-doctag">@typedef</span> {<span class="hljs-type">Object</span>} <span class="hljs-variable">SyncCredentials</span>
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">OAuthToken</span>} <span class="hljs-variable">oauthToken</span> - The OAuth token required to authenticate to the TokenServer.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">SyncKeyBundle</span>} <span class="hljs-variable">syncKeyBundle</span> - The Sync key bundle required to decrypt the collection keys.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">SyncToken</span>} <span class="hljs-variable">token</span> - The token object required to call the Firefox Sync API.
+ * <span class="hljs-doctag">@property</span> {<span class="hljs-type">number</span>} <span class="hljs-variable">tokenIssuedAt</span> - Timestamp in milliseconds of when the token was issued to preemptively refresh it.
  */</span>
 
 <span class="hljs-comment">// Does nothing but required for TypeScript to import this file.</span>
-<span class="hljs-built_in">module</span>.exports = {}
+<span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {}
 </code></pre>
 </details>
 <p>Because I was writing that library from scratch and not adding types to
@@ -2799,14 +3004,14 @@ be there in the first place).</p>
 to make sure that the code passes type checking when I generate the
 final definitions.</p>
 <p>In my <code>package.json</code>, the final <code>scripts</code> property looks like this:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;scripts&quot;</span>: {
-    <span class="hljs-attr">&quot;check&quot;</span>: <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span>,
-    <span class="hljs-attr">&quot;lint&quot;</span>: <span class="hljs-string">&quot;standard&quot;</span>,
-    <span class="hljs-attr">&quot;prepare&quot;</span>: <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span>,
-    <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
-  }
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;check&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;tsc *.js --checkJs --noEmit&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;lint&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;standard&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;prepare&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;npm run lint &amp;&amp; npm run types&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;types&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;rm *.d.ts &amp;&amp; tsc *.js --checkJs --declaration --emitDeclarationOnly --removeComments&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>As always, I use <a href="https://standardjs.com/"><code>standard</code></a> to lint my code,
 and in the <a href="https://docs.npmjs.com/cli/v7/using-npm/scripts#life-cycle-scripts"><code>prepare</code></a>
@@ -2833,161 +3038,6 @@ and let me know. And as usual, keep hacking! ✨</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1449783928970256394">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>TypeScript: cannot write file .d.ts because it would overwrite input file</title>
-    <link href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html" />
-    <id>https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html</id>
-    <updated>2021-10-16T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>There’s <a href="https://stackoverflow.com/questions/42609768/typescript-error-cannot-write-file-because-it-would-overwrite-input-file">countless</a>
-<a href="https://stackoverflow.com/questions/46914070/how-to-exclude-d-ts-file-for-typescript-compiler">issues</a>
-<a href="https://github.com/microsoft/TypeScript/issues/16749">about</a>
-this error and I thought it would be useful to write a clear explanation
-of what’s going on and a summary of the possible solutions.</p>
-<p>This happens for two reasons:</p>
-<ol>
-<li>You’re explicitly including those <code>.d.ts</code> files e.g. as part of your
-<code>include</code> array in <code>tsconfig.json</code> or as part of the <code>tsc</code> arguments,
-and you’re asking TypeScript to output type declarations in the same
-place. Then the error is pretty obvious and the fix should be too
-(don’t output the generated declarations in the same place as types
-you’re importing, for example using <code>outDir</code>, or don’t import those
-generated declarations in the first place).</li>
-<li>You’re not importing those <code>.d.ts</code> files, or you’re even explicitly
-ignoring them e.g. with the <code>exclude</code> array in <code>tsconfig.json</code>, yet
-TypeScript keeps using them as input and complaining that it can’t
-overwrite them when generating type declarations.</li>
-</ol>
-<p>Here we’ll go in more details about the second reason.</p>
-<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#the-problem"><span>The problem</span></a></h2>
-<p>The main thing that you need to know is that if you’re importing a <code>.js</code>
-file and there’s a matching <code>.d.ts</code> next to it, TypeScript will
-<strong>always</strong> import it, even if you didn’t explicitly include those
-<code>.d.ts</code> files as input, and even if you explicitly put them in the
-<code>exclude</code> array. There’s no way around this.</p>
-<h2 id="output-d-ts-declarations-to-a-separate-directory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#output-d-ts-declarations-to-a-separate-directory"><span>Output <code>.d.ts</code> declarations to a separate directory</span></a></h2>
-<p>One solution is to put the generated type declarations in a separate
-directory instead of next to the <code>.js</code> files. You can do that by
-configuring a <code>outDir</code>, as explained in the documentation about
-<a href="https://www.typescriptlang.org/docs/handbook/declaration-files/dts-from-js.html#tsconfig">creating <code>.d.ts</code> files from <code>.js</code> files</a>:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;compilerOptions&quot;</span>: {
-    <span class="hljs-comment">// Tells TypeScript to read `.js` files, as normally they are</span>
-    <span class="hljs-comment">// ignored as source files.</span>
-    <span class="hljs-attr">&quot;allowJs&quot;</span>: <span class="hljs-literal">true</span>,
-    <span class="hljs-comment">// Generate `d.ts` files.</span>
-    <span class="hljs-attr">&quot;declaration&quot;</span>: <span class="hljs-literal">true</span>,
-    <span class="hljs-comment">// This compiler run should only output `d.ts` files.</span>
-    <span class="hljs-attr">&quot;emitDeclarationOnly&quot;</span>: <span class="hljs-literal">true</span>,
-    <span class="hljs-comment">// Types should go into this directory. Removing this would place</span>
-    <span class="hljs-comment">// the `.d.ts` files next to the `.js` files.</span>
-    <span class="hljs-attr">&quot;outDir&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
-  }
-}
-</code></pre>
-<p>As they nicely indicate, if you don’t specify <code>outDir</code>, the <code>.d.ts</code> will
-be put next to the <code>.js</code> files (which literally means they’ll be
-automatically considered as inputs on the next build and it will crash),
-and it’s probably the way you’re using this right now.</p>
-<p>Then you can tell TypeScript where to <a href="https://www.typescriptlang.org/docs/handbook/declaration-files/publishing.html">find the package types</a>
-in your <code>package.json</code>:</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;types&quot;</span>: <span class="hljs-string">&quot;dist&quot;</span>
-}
-</code></pre>
-<p>But this only works for the main export (<code>import 'my-lib'</code>) and will
-break if you attempt to import nested files <code>import 'my-lib/some-file'</code>.</p>
-<p>If you want to support this use case, you <strong>have to</strong> ship the <code>.d.ts</code>
-files next to the <code>.js</code> files.</p>
-<p>So here’s a few alternative solutions and their tradeoffs.</p>
-<h2 id="copy-the-js-files-next-to-the-d-ts-declarations" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#copy-the-js-files-next-to-the-d-ts-declarations"><span>Copy the <code>.js</code> files next to the <code>.d.ts</code> declarations</span></a></h2>
-<p>Since we can’t generate the <code>.d.ts</code> next to the source <code>.js</code> files (well
-we can, but just once), we can instead generate the <code>.d.ts</code> files to a
-<code>dist</code> directory and copy the <code>.js</code> files next to them.</p>
-<p>There’s two ways you can do that, the first one I tried is to remove
-<code>emitDeclarationOnly</code> so that let TypeScript compiles the source <code>.js</code>
-files to the <code>outDir</code>, and the other one is to manually copy them.</p>
-<p>In both cases there’s a number of caveats with that about how you import
-nested files, and I’ll go through the possible workarounds.</p>
-<h3 id="compile-your-js-files-to-js-lol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#compile-your-js-files-to-js-lol"><span>Compile your JS files to JS (lol)</span></a></h3>
-<p>The reason you have this error in the first place is likely because
-you’re writing actual JavaScript and generating types from JSDoc.</p>
-<p>One of the numerous benefits of doing that is that you don’t need to
-compile your code. Your <code>src</code> is your <code>dist</code> and that’s the beauty of
-it. You run what you write, no compilation, no source maps, and no
-configuration of every single tool and service you use to deal with this
-extra complexity.</p>
-<p>You can throw away all of those benefits by letting TypeScript compile
-your <code>.js</code> files to the <code>outDir</code>, by removing <code>emitDeclarationOnly</code> from
-the <code>tsc</code> command or <code>tsconfig.json</code>, so that they’re put along the
-generated <code>.d.ts</code> files.</p>
-<p>But at that point you might as well write TypeScript in the first place.</p>
-<h3 id="manually-copy-your-js-files-to-the-outdir" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#manually-copy-your-js-files-to-the-outdir"><span>Manually copy your JS files to the <code>outDir</code></span></a></h3>
-<p>A <a href="https://vccolombo.github.io/blog/tsc-how-to-copy-non-typescript-files-when-building/">better way</a>
-if you want to ship your <code>.js</code> files unaltered is to copy them yourself
-next to the <code>.d.ts</code> declarations.</p>
-<pre><code class="hljs language-sh">tsc *.js --allowJs --declaration --emitDeclarationOnly --outDir dist &amp;&amp; cp *.js dist
-</code></pre>
-<p>Then you can <code>import 'my-lib/dist/some-file</code> and types will work
-properly. If you want to allow deep imports though, we need to dig a bit
-further.</p>
-<h2 id="getting-it-to-work-with-deep-nested-imports" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#getting-it-to-work-with-deep-nested-imports"><span>Getting it to work with deep/nested imports</span></a></h2>
-<p>If you want to allow <code>import 'my-lib/some-file'</code> and don’t like the idea
-of documenting <code>import 'my-lib/dist/some-file'</code>, you have again
-<a href="https://stackoverflow.com/questions/67097803/how-to-let-users-import-from-subfolders-of-my-npm-package">a few options</a>.</p>
-<h3 id="compile-to-the-project-root" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#compile-to-the-project-root"><span>Compile to the project root</span></a></h3>
-<p>Make sure your source files are in a subfolder, e.g. <code>src</code>, then compile
-to the project root directory.</p>
-<pre><code class="hljs language-sh">tsc src/*.js --allowJs --declaration --emitDeclarationOnly --outDir . &amp;&amp; cp src/*.js .
-</code></pre>
-<h3 id="publish-from-your-dist-directory" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#publish-from-your-dist-directory"><span>Publish from your <code>dist</code> directory</span></a></h3>
-<p>The previous solution might get a bit messy though so
-<a href="https://stackoverflow.com/questions/38935176/how-to-npm-publish-specific-folder-but-as-package-root">alternatively</a>
-you can use the earlier command with <code>--outDir dist</code>, but put your
-<code>package.json</code> in the <code>dist</code> directory as well, and run <code>npm publish dist</code> (or <code>cd dist &amp;&amp; npm publish</code>).</p>
-<p>Whether you want your <code>package.json</code> to live in the <code>dist</code> directory
-(and commit it there), or run <code>cp package.json dist</code> as part of your
-build command is up to you.</p>
-<h3 id="write-an-exports-map" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#write-an-exports-map"><span>Write an <code>exports</code> map</span></a></h3>
-<p>If you’re not happy with the previous solutions, you can write an
-<a href="https://nodejs.org/api/packages.html#packages_exports"><code>exports</code> map</a>
-in your <code>package.json</code> so that <code>import 'my-lib/some-file</code> translates
-to <code>my-lib/dist/some-file</code>.</p>
-<pre><code class="hljs language-json">{
-  <span class="hljs-attr">&quot;exports&quot;</span>: {
-   <span class="hljs-attr">&quot;./some-file&quot;</span>: <span class="hljs-string">&quot;./dist/some-file&quot;</span>,
-   <span class="hljs-attr">&quot;./some/other-file&quot;</span>: <span class="hljs-string">&quot;./dist/some/other-file&quot;</span>
-  }
-}
-</code></pre>
-<p>That being said only the paths defined here will be allowed to be
-imported, you won’t be able to import arbitrary files anymore, which
-might not be a bad thing, but maybe you like the simplicity of
-everything being importable by default.</p>
-<h2 id="quick-and-dirty-hack-that-actually-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/10/typescript-cannot-write-file-overwrite-input.html#quick-and-dirty-hack-that-actually-works"><span>Quick and dirty hack that actually works</span></a></h2>
-<p>To get the best of both worlds by generating <code>.d.ts</code> files next to your
-source <code>.js</code> files without adding extra configuration and still allowing
-deep imports, you need to <strong>explicitly remove the generated files before
-running the compiler</strong>.</p>
-<p>Simple, easy and dirty:</p>
-<pre><code class="hljs language-sh">rm -f *.d.ts &amp;&amp; tsc *.js --allowJs --declaration --emitDeclarationOnly
-</code></pre>
-<p>Here I use <code>rm -f</code> so that it doesn’t fail if the declaration files are
-not generated yet. Feel free to tweak the pattern, for example if you
-have subfolders you want to include.</p>
-<p>I’m not a big fan of this solution, but it’s still my favorite of all
-the ones I described in this post. It seems that TypeScript wasn’t built
-for simplicity, let alone for working with source <code>.js</code> files, and deep
-imports don’t seem to be part of the happy path either. If you found a
-better way, please <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

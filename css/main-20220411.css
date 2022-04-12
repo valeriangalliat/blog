@@ -105,8 +105,10 @@ h1, h2, h3, h4, h5, h6 {
     font-family: "Helvetica Neue", sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure {
-    margin: var(--vertical-margin, 2rem) 0;
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure, hr,
+.content iframe,
+.content table {
+    margin: 0 0 var(--vertical-margin, 2rem);
 }
 
 h1.has-subtitle {
@@ -278,32 +280,6 @@ iframe {
 .float-inner {
     overflow: hidden;
 }
-
-/* Kill the margin of all the first children tree to mimic how margin
- * colapsing would otherwise work.
- *
- * I don't know of a better way to target all the first children like
- * this.
- *
- * See <https://stackoverflow.com/questions/12477272/select-recursive-last-child-possible>.
- *
- * Currently commented because I don't actually need this in any
- * real-life post. */
-.float-inner > :first-child /* ,
-.float-inner > :first-child > :first-child,
-.float-inner > :first-child > :first-child > :first-child,
-.float-inner > :first-child > :first-child > :first-child > :first-child,
-.float-inner > :first-child > :first-child > :first-child > :first-child > :first-child */ {
-    margin-top: 0;
-}
-
-.float-inner > :last-child /* ,
-.float-inner > :last-child > :last-child,
-.float-inner > :last-child > :last-child > :last-child,
-.float-inner > :last-child > :last-child > :last-child > :last-child,
-.float-inner > :last-child > :last-child > :last-child > :last-child > :last-child */ {
-    margin-bottom: 0;
-}
 .header-anchor {
     color: var(--black);
     margin-left: -1.5ch;
@@ -397,12 +373,12 @@ figure.center, figure.grid {
 @media (min-width: 42em) {
     figure.left {
         float: left;
-        margin: 0 1em 0 0;
+        margin-right: 1em;
     }
 
     figure.right {
         float: right;
-        margin: 0 0 0 1em;
+        margin-left: 1em;
     }
 
     figure.grid {
@@ -458,9 +434,6 @@ footer a:hover {
     color: var(--black);
     text-decoration: none;
 }
-.footnotes-sep {
-    margin-top: 2rem;
-}
 
 .footnotes p {
     margin: 0;
@@ -476,10 +449,12 @@ footer a:hover {
         margin-top: 5em;
     }
 }
+
 .hero {
     position: relative;
     background-size: cover;
     background-position: center;
+    margin-bottom: 2rem;
 }
 
 .hero .header-inner {
@@ -556,6 +531,9 @@ nav ul {
     padding-left: 0;
     display: flex;
     justify-content: center;
+
+    /* Negative horizontal margin to make up for the fact each `<li>`
+     * has horizontal padding. */
     margin: 1em -1em;
 }
 
@@ -598,7 +576,7 @@ nav .social a:hover svg {
     --color-fill: var(--black);
 }
 .note {
-    margin: 2rem 0;
+    margin: 0 0 var(--vertical-margin, 2rem);
     background: var(--blue-0);
     border-top: .25rem solid var(--blue-5);
     padding: 1em;
@@ -705,8 +683,8 @@ nav .social a:hover svg {
     }
 }
 
-.search p, .search ul {
-    margin: 1rem 0;
+.search {
+    --vertical-margin: 1rem;
 }
 .post h1 {
     margin-bottom: .5rem;
@@ -715,7 +693,6 @@ nav .social a:hover svg {
 .post .tagline,
 .post .date {
     font-family: "Helvetica Neue", sans-serif;
-    margin-top: 0;
 }
 
 .post .tagline {
@@ -727,8 +704,6 @@ nav .social a:hover svg {
 }
 
 .post-footer {
-    /* For the rare cases like in `2014/10/low-consumption-home-server.html`
-     * where the last elemnt doesn't have a bottom margin. */
-    margin-top: 2rem;
+    padding-top: 2rem;
     border-top: 1px solid var(--gray-2);
 }

@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
 * [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
 * [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
 * [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
 * [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>
-* [Yearly Hackintosh upgrade: macOS Monterey with OpenCore](2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.md) <small>November 16, 2021</small>
 
 [All the posts](posts.md)
 

@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
 * [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
 * [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>

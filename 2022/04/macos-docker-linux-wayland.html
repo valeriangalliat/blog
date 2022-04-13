@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Run macOS inside Docker on Linux, with Wayland</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Run macOS inside Docker on Linux, with Wayland">
+  <meta property="og:description" content="This is gonna be a short one. There’s this fucking fantastic software called Docker-OSX that lets you run a macOS VM on Linux out of the box, just like that. ✨">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Run macOS inside Docker on Linux, with Wayland</h1>
+<p class="date">April 13, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This is gonna be a short one. There’s this fucking fantastic software
+called <a href="https://github.com/sickcodes/Docker-OSX">Docker-OSX</a> that
+lets you run a macOS VM on Linux out of the box, just like that. ✨</p>
+<p>Running macOS on a non-Apple hardware is already
+<a href="https://www.codejam.info/2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">not a</a>
+<a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">trivial task</a>,
+even though <a href="https://github.com/acidanthera/OpenCorePkg">OpenCore</a> and
+the (also fucking fantastic) <a href="https://dortania.github.io/OpenCore-Install-Guide/">Dortania guide</a>
+help greatly. Let alone running it inside a VM.</p>
+<p>Docker-OSX is based on <a href="https://github.com/kholia/osx-kvm">OSX-KVM</a> as
+well as <a href="https://github.com/thenickdude/KVM-Opencore/">KVM-OpenCore</a>,
+and provides a Docker container that’s preconfigured to run the macOS
+installer of your choice inside a KVM virtual machine that’s already
+set up to support macOS.</p>
+<p>With some Docker volume mounts magic, it can show the KVM window
+directly on your X11 display, despite you not installing KVM on your
+main system and configuring anything. Sweet.</p>
+<p>The commands to run various macOS versions are directly <a href="https://github.com/sickcodes/Docker-OSX#quick-start-docker-osx">in the readme</a>
+and work out of the box! Example for Monterey:</p>
+<pre><code class="hljs language-sh">docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e <span class="hljs-string">&quot;DISPLAY=<span class="hljs-variable">${DISPLAY:-:0.0}</span>&quot;</span> \
+    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
+    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
+    sickcodes/docker-osx:monterey
+</code></pre>
+<h2 id="making-it-work-on-wayland" tabindex="-1"><a class="header-anchor" href="#making-it-work-on-wayland"><span>Making it work on Wayland</span></a></h2>
+<p>I recently moved to Wayland, so setting <code>DISPLAY=:0.0</code> and mount binding
+<code>/tmp/.X11-unix</code> is not gonna do much. 😬</p>
+<p>At the time of writing, there’s no official instructions in the readme
+to run with Wayland, but the task turned out to be fairly easy!</p>
+<p>Luckily I’m not the first one to try to do that, and there’s already two
+<a href="https://github.com/sickcodes/Docker-OSX/issues/410">open</a>
+<a href="https://github.com/sickcodes/Docker-OSX/issues/419">issues</a> on the
+topic! The second one in particular contains a
+<a href="https://github.com/sickcodes/Docker-OSX/issues/419#issuecomment-1011401905">solution</a>,
+essentially replacing the X11-specific volume and environment variable
+by Wayland equivalents (which I would definitely not have guessed easily 😂).</p>
+<p>Once adapted for Monterey, the command is the following:</p>
+<pre><code class="hljs language-sh">docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -e XDG_RUNTIME_DIR=/tmp \
+    -e WAYLAND_DISPLAY=<span class="hljs-variable">$WAYLAND_DISPLAY</span> \
+    -v <span class="hljs-variable">$XDG_RUNTIME_DIR</span>/<span class="hljs-variable">$WAYLAND_DISPLAY</span>:/tmp/<span class="hljs-variable">$WAYLAND_DISPLAY</span>  \
+    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
+    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
+    sickcodes/docker-osx:monterey
+</code></pre>
+<p>The original comment specified a number of extra environment variables
+but they didn’t appear to be needed for me.</p>
+<p>And that’s it! Happy hacking on macOS in a VM! 🎉</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/macos-docker-linux-wayland.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

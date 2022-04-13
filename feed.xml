@@ -5,10 +5,78 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-13T00:53:51.712Z</updated>
+  <updated>2022-04-13T22:16:36.329Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Run macOS inside Docker on Linux, with Wayland</title>
+    <link href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html" />
+    <id>https://www.codejam.info/2022/04/macos-docker-linux-wayland.html</id>
+    <updated>2022-04-13T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>This is gonna be a short one. There’s this fucking fantastic software
+called <a href="https://github.com/sickcodes/Docker-OSX">Docker-OSX</a> that
+lets you run a macOS VM on Linux out of the box, just like that. ✨</p>
+<p>Running macOS on a non-Apple hardware is already
+<a href="https://www.codejam.info/2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">not a</a>
+<a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">trivial task</a>,
+even though <a href="https://github.com/acidanthera/OpenCorePkg">OpenCore</a> and
+the (also fucking fantastic) <a href="https://dortania.github.io/OpenCore-Install-Guide/">Dortania guide</a>
+help greatly. Let alone running it inside a VM.</p>
+<p>Docker-OSX is based on <a href="https://github.com/kholia/osx-kvm">OSX-KVM</a> as
+well as <a href="https://github.com/thenickdude/KVM-Opencore/">KVM-OpenCore</a>,
+and provides a Docker container that’s preconfigured to run the macOS
+installer of your choice inside a KVM virtual machine that’s already
+set up to support macOS.</p>
+<p>With some Docker volume mounts magic, it can show the KVM window
+directly on your X11 display, despite you not installing KVM on your
+main system and configuring anything. Sweet.</p>
+<p>The commands to run various macOS versions are directly <a href="https://github.com/sickcodes/Docker-OSX#quick-start-docker-osx">in the readme</a>
+and work out of the box! Example for Monterey:</p>
+<pre><code class="hljs language-sh">docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -e <span class="hljs-string">&quot;DISPLAY=<span class="hljs-variable">${DISPLAY:-:0.0}</span>&quot;</span> \
+    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
+    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
+    sickcodes/docker-osx:monterey
+</code></pre>
+<h2 id="making-it-work-on-wayland" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html#making-it-work-on-wayland"><span>Making it work on Wayland</span></a></h2>
+<p>I recently moved to Wayland, so setting <code>DISPLAY=:0.0</code> and mount binding
+<code>/tmp/.X11-unix</code> is not gonna do much. 😬</p>
+<p>At the time of writing, there’s no official instructions in the readme
+to run with Wayland, but the task turned out to be fairly easy!</p>
+<p>Luckily I’m not the first one to try to do that, and there’s already two
+<a href="https://github.com/sickcodes/Docker-OSX/issues/410">open</a>
+<a href="https://github.com/sickcodes/Docker-OSX/issues/419">issues</a> on the
+topic! The second one in particular contains a
+<a href="https://github.com/sickcodes/Docker-OSX/issues/419#issuecomment-1011401905">solution</a>,
+essentially replacing the X11-specific volume and environment variable
+by Wayland equivalents (which I would definitely not have guessed easily 😂).</p>
+<p>Once adapted for Monterey, the command is the following:</p>
+<pre><code class="hljs language-sh">docker run -it \
+    --device /dev/kvm \
+    -p 50922:10022 \
+    -e XDG_RUNTIME_DIR=/tmp \
+    -e WAYLAND_DISPLAY=<span class="hljs-variable">$WAYLAND_DISPLAY</span> \
+    -v <span class="hljs-variable">$XDG_RUNTIME_DIR</span>/<span class="hljs-variable">$WAYLAND_DISPLAY</span>:/tmp/<span class="hljs-variable">$WAYLAND_DISPLAY</span>  \
+    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
+    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
+    sickcodes/docker-osx:monterey
+</code></pre>
+<p>The original comment specified a number of extra environment variables
+but they didn’t appear to be needed for me.</p>
+<p>And that’s it! Happy hacking on macOS in a VM! 🎉</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Make floats and lists collaborate 🙈</title>
     <link href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html" />
@@ -2546,168 +2614,6 @@ the <code>-crop</code> option is definitely nicer!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1457849255855542279">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Elixir: intercepting Phoenix LiveView events in JavaScript</title>
-    <link href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html" />
-    <id>https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html</id>
-    <updated>2021-11-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Recently, I was dealing with a Phoenix LiveView where I wanted to
-intercept some events from the LiveSocket to take specific action in
-JavaScript.</p>
-<p>Typically, I wanted to know when a form was done being submitted and
-processed by the backend <strong>even if that event didn’t trigger a DOM
-change</strong>.</p>
-<h2 id="the-use-case" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#the-use-case"><span>The use case</span></a></h2>
-<p>To give the context, I have a <code>&lt;span&gt;</code> that is transformed to a <code>&lt;form&gt;</code>
-on click. For reactivity, this is done in JavaScript. When the form is
-submitted, it triggers a Phoenix event that might or might not update
-the DOM.</p>
-<p>I don’t want to reset the state back to the <code>&lt;span&gt;</code> on submission,
-because it would temporarily show the old text until the update is
-processed by the backend and the DOM is updated, which causes a quick
-text flash.</p>
-<p>In the happy path where the form submission triggers a DOM update
-Phoenix resets the DOM to the <code>&lt;span&gt;</code> and everything is good, but
-if we just added a bunch of spaces to the existing text and the backend
-decides to trim the value, Phoenix is smart enough to notice that since
-the input state didn’t change, it doesn’t need to update the DOM. This
-is great, except it leaves us with the open <code>&lt;form&gt;</code> even if the
-submission was handled successfully.</p>
-<p>To deal with this, I wanted a way to tell from JavaScript when the form
-submission was <em>completed</em> so that I can make sure to reset the <code>&lt;span&gt;</code>
-only then (to avoid the quick text flash mentioned earlier).</p>
-<h2 id="using-phoenix-liveview-hooks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#using-phoenix-liveview-hooks"><span>Using Phoenix LiveView hooks?</span></a></h2>
-<p>The first thing I thought about was to use LiveView hooks as documented
-in <a href="https://hexdocs.pm/phoenix_live_view/js-interop.html">JavaScript interoperability</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Socket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
-<span class="hljs-keyword">import</span> { <span class="hljs-title class_">LiveSocket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
-
-<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;content&#x27;</span>)
-
-<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LiveSocket</span>(<span class="hljs-string">&#x27;/live&#x27;</span>, <span class="hljs-title class_">Socket</span>, {
-  <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken },
-  <span class="hljs-attr">hooks</span>: {
-    <span class="hljs-title class_">ElementUpdated</span>: {
-      updated (e) {
-        <span class="hljs-variable language_">this</span>.<span class="hljs-property">el</span>.<span class="hljs-title function_">dispatchEvent</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomEvent</span>(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>))
-      }
-    }
-  }
-})
-
-liveSocket.<span class="hljs-title function_">connect</span>()
-</code></pre>
-<p>By adding <code>phx-hook=&quot;ElementUpdated&quot;</code> on the elements we want to get
-notified for updates, we trigger the hook we defined, which here
-dispatches a custom <code>phx:element-updated</code> on the node. This allows us to
-handle that event at the node level instead of trying to handle every
-single case directly from the hook, which is very nice and decoupled if
-you ask me.</p>
-<p>For example you could now do:</p>
-<pre><code class="hljs language-js">someElement.<span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-  <span class="hljs-comment">// Deal with the fact this element got updated!</span>
-})
-</code></pre>
-<p>Sadly, this didn’t work for me because the <code>updated</code> hook only fires
-when the element is… updated, which is not the case if the form
-submission completes but doesn’t result in a state change. Bummer.</p>
-<h2 id="leveraging-the-phx-page-loading-stop-window-event" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#leveraging-the-phx-page-loading-stop-window-event"><span>Leveraging the <code>phx:page-loading-stop</code> <code>window</code> event</span></a></h2>
-<p>This is the easiest solution. Unlike the one I talk about after, it
-doesn’t give any granularity on the kind of event that was sent or
-received, but it’s very easy to implement.</p>
-<p>In my case, I use <a href="https://alpinejs.dev/">Alpine</a> so my code looks something like this:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">x-data</span>=<span class="hljs-string">&quot;{ edit: false }&quot;</span> @<span class="hljs-attr">click</span>=<span class="hljs-string">&quot;edit = true&quot;</span> @<span class="hljs-attr">click.outside</span>=<span class="hljs-string">&quot;edit = false&quot;</span> @<span class="hljs-attr">phx:page-loading-stop.window</span>=<span class="hljs-string">&quot;edit = false&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">span</span> <span class="hljs-attr">x-show</span>=<span class="hljs-string">&quot;!edit&quot;</span>&gt;</span><span class="hljs-comment">&lt;!-- ... --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">span</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">form</span> <span class="hljs-attr">x-show</span>=<span class="hljs-string">&quot;edit&quot;</span> <span class="hljs-attr">phx-submit</span>=<span class="hljs-string">&quot;edit_whatever&quot;</span>&gt;</span><span class="hljs-comment">&lt;!-- ... --&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">form</span>&gt;</span>
-  <span class="hljs-comment">&lt;!-- ... --&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-</code></pre>
-<p>We start with a state of <code>edit: false</code>. When that element is clicked, we
-switch the <code>&lt;span&gt;</code> to a <code>&lt;form&gt;</code> to let the user edit it. On
-submission, if the DOM is refreshed, Phoenix will reset the state
-anyways and we’re back to the <code>&lt;span&gt;</code>, but if it’s not (e.g. input not
-modified), we can still handle the <code>page-loading-stop</code> event to go back
-to <code>&lt;span&gt;</code> mode. Sweet!</p>
-<div class="note">
-<p><strong>Note:</strong> if you don’t use Alpine, you can just listen to the
-<code>phx:page-loading-stop</code> event on the <code>window</code> object:</p>
-<pre><code class="hljs language-js"><span class="hljs-title function_">addEventListener</span>(<span class="hljs-string">&#x27;phx:page-loading-stop&#x27;</span>, <span class="hljs-function">() =&gt;</span> {
-  <span class="hljs-comment">// Your code here!</span>
-})
-</code></pre>
-</div>
-<h2 id="monkey-patching-the-livesocket" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#monkey-patching-the-livesocket"><span>Monkey patching the LiveSocket 🙈</span></a></h2>
-<p>Oh yeah, we love monkey patching. If you use Phoenix LiveView your code
-should look something like this (I left alone the Alpine part because
-it’s not relevant to this example).</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Socket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix&#x27;</span>
-<span class="hljs-keyword">import</span> { <span class="hljs-title class_">LiveSocket</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;phoenix_live_view&#x27;</span>
-
-<span class="hljs-keyword">const</span> csrfToken = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&quot;meta[name=&#x27;csrf-token&#x27;]&quot;</span>).<span class="hljs-title function_">getAttribute</span>(<span class="hljs-string">&#x27;content&#x27;</span>)
-
-<span class="hljs-keyword">const</span> liveSocket = <span class="hljs-keyword">new</span> <span class="hljs-title class_">LiveSocket</span>(<span class="hljs-string">&#x27;/live&#x27;</span>, <span class="hljs-title class_">Socket</span>, {
-  <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken }
-})
-
-liveSocket.<span class="hljs-title function_">connect</span>()
-</code></pre>
-<p>From there, we can intercept the <code>push</code> method on the LiveSocket
-channel. That will in turn allow us to add an event handler to the
-<code>receive</code> event for a given push, so that we can not only get the full
-response from Phoenix, but can also tell from what event it originated!</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> channel = <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">values</span>(liveSocket.<span class="hljs-property">roots</span>)[<span class="hljs-number">0</span>].<span class="hljs-property">channel</span>
-<span class="hljs-keyword">const</span> pushImpl = channel.<span class="hljs-property">push</span>
-
-channel.<span class="hljs-property">push</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">wrappedPush</span> (event, payload, timeout) {
-  <span class="hljs-keyword">const</span> push = pushImpl.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, event, payload, timeout)
-
-  push.<span class="hljs-title function_">receive</span>(<span class="hljs-string">&#x27;ok&#x27;</span>, <span class="hljs-function"><span class="hljs-params">resp</span> =&gt;</span> {
-    <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(event, payload, resp)
-  })
-
-  <span class="hljs-keyword">return</span> push
-}
-</code></pre>
-<p>In the case of my <code>&lt;form&gt;</code> example earlier, <code>event</code> is set to the string
-<code>event</code>, <code>resp</code> would contain a <code>diff</code> object that really only makes
-sense to Phoenix (or be an empty object if nothing was updated), and the
-<code>payload</code> would look something like this:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;type&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;form&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;event&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;edit_whatever&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;value&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;URL encoded string of the form elements&quot;</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>This gives pretty useful informations that can allow to hook to LiveView
-events in a much more granular manner!</p>
-<p>While I didn’t end up needing that method, I found this trick during my
-numerous attempts at dealing with that issue and I found it would be
-pretty useful to documented as it’s pretty easy to implement and I
-didn’t find anything similar online.</p>
-<h2 id="further-reading" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/elixir-intercepting-phoenix-liveview-events-javascript.html#further-reading"><span>Further reading</span></a></h2>
-<p>If you enjoy reading about this topic, I encourage you to read those two
-articles I stumbled upon during my research on this subject.</p>
-<ul>
-<li><a href="http://blog.pthompson.org/alpine-js-and-liveview">Integrating Phoenix LiveView with JavaScript and AlpineJS</a>
-by <a href="http://blog.pthompson.org/">Patrick Thompson</a>, for a cool demo of
-using hooks and events to make LiveView and Alpine play nice together
-(but sadly not nice enough for my edge case).</li>
-<li><a href="https://elixirschool.com/blog/live-view-with-channels/">Using channels with LiveView for better UX</a>
-by <a href="https://twitter.com/sm_debenedetto">Sophie DeBenedetto</a>, to extend
-the LiveSocket with a custom channel that allow passing granular
-messages to the client. It’s pretty complex and it kinda scared me at
-first to be honest, but if my <a href="https://www.codejam.info/2021/11/monkey-patching-the-livesocket">monkey patch</a>
-solution wasn’t flexible enough for you, this one surely will!</li>
-</ul>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1456786062039261187">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -190,5 +190,5 @@ articles I stumbled upon during my research on this subject.
   by [Sophie DeBenedetto](https://twitter.com/sm_debenedetto), to extend
   the LiveSocket with a custom channel that allow passing granular
   messages to the client. It's pretty complex and it kinda scared me at
-  first to be honest, but if my [monkey patch](monkey-patching-the-livesocket)
+  first to be honest, but if my [monkey patch](#monkey-patching-the-livesocket)
   solution wasn't flexible enough for you, this one surely will!

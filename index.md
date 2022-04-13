@@ -18,12 +18,12 @@ A blog about tech, programming and other things.
 * [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
 * [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
+* [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
 * [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
 * [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
-* [Desktop power button not responding and random sleep issues](2021/11/computer-sleep-issues-power-button-not-responding.md) <small>November 16, 2021</small>
 
 [All the posts](posts.md)
 

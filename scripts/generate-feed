@@ -17,59 +17,38 @@ function absolufy (base, html) {
 async function * parsePostImpl (line) {
   const path = line.split('"')[1]
 
-  if (path.startsWith('https://')) {
-    return null
+  let url = path
+  let isExternal = true
+
+  if (!path.startsWith('https://')) {
+    url = `https://www.codejam.info/${path}`
+    isExternal = false
   }
 
-  const url = `https://www.codejam.info/${path}`
-  const rl = readline.createInterface({ input: fs.createReadStream(`dist/${path}`) })
-  let step = 'title'
-  let previousLine
+  const title = line.split('</a>')[0].replace(/<[^>]*>/g, '').trim()
+  const prettyDate = line.split('<small>')[1].split('</small>')[0]
+  const date = new Date(prettyDate).toISOString()
 
   yield '  <entry>\n'
+  yield `    <title>${title}</title>\n`
+  yield `    <link href="${url}" />\n`
+  yield `    <id>${url}</id>\n`
+  yield `    <updated>${date}</updated>\n`
 
-  for await (const line of rl) {
-    if (step === 'title' && line.includes('<title>')) {
-      yield `    ${line.trim()}\n`
-      yield `    <link href="${url}" />\n`
-      yield `    <id>${url}</id>\n`
-      step = 'date'
-      continue
-    }
-
-    if (step === 'date' && line.includes('<p class="date">')) {
-      const date = new Date(line.split('>')[1].split('<')[0]).toISOString()
-      yield `    <updated>${date}</updated>\n`
-      yield '    <content type="html"><![CDATA['
-      step = 'body'
-      continue
-    }
-
-    if (step === 'body' && line.includes('</header>')) {
-      step = 'skip'
-      continue
-    }
-
-    if (step === 'skip') {
-      step = 'read'
-      continue
-    }
-
-    if (step === 'read') {
-      if (line.includes('<footer>')) {
-        break
-      }
-
-      if (previousLine !== undefined) {
-        yield absolufy(url, previousLine)
-        yield '\n'
-      }
-
-      previousLine = line
-    }
+  if (isExternal) {
+    yield '  </entry>\n'
+    return
   }
 
-  yield ']]></content>\n'
+  const html = await fs.promises.readFile(`dist/${path}`, 'utf8')
+
+  const content = html
+    .split(/<\/header>\s*<div class="content">\s*/)[1]
+    .split(/\s*<\/div>\s*<footer>/)[0]
+
+  yield '    <content type="html"><![CDATA['
+  yield absolufy(url, content)
+  yield '\n]]></content>\n'
   yield '  </entry>\n'
 }
 
@@ -100,7 +79,7 @@ async function main () {
   }
 
   const latestPosts = await Promise.all(latestPostsPromises)
-  const entries = latestPosts.filter(post => post !== null).join('')
+  const entries = latestPosts.join('')
 
   process.stdout.write(
     feed

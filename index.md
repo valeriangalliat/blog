@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Run macOS inside Docker on Linux, with Wayland](2022/04/macos-docker-linux-wayland.md) <small>April 13, 2022</small>
 * [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
 * [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
 * [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
 * [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
-* [How I set up a new Mac](2021/11/mac-setup.md) <small>November 17, 2021</small>
 
 [All the posts](posts.md)
 

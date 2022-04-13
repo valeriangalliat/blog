@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Run macOS inside Docker on Linux, with Wayland](2022/04/macos-docker-linux-wayland.md) <small>April 13, 2022</small>
 * [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
 * [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>

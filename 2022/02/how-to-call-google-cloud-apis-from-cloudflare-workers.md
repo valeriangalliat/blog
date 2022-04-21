@@ -445,4 +445,4 @@ idea of the cryptography behind it.
 
 I hope you learnt something! And if you like to work with Cloudflare and
 Google Cloud, [we're hiring](https://hookdeck.com/jobs/backend-devops-sre),
-and that's what we do... everyday!
+and that's what we do... every day!

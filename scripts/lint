@@ -32,7 +32,7 @@ process() {
 
         head=$(grep -A4 '^# ' "$path")
         title=$(echo "$head" | head -1 | sed 's/^# //')
-        date=$(echo "$head" | grep -B1 '^$' | head -1)
+        date=$(echo "$head\n" | grep -B1 '^$' | head -1)
         expected="* [$title]($path) <small>$date</small>"
 
         if [ "$line" != "$expected" ]; then

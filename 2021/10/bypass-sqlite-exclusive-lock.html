@@ -96,10 +96,10 @@ problematic queries.</li>
 <p>By “you’re fucked” I mean that your seemingly only option is to <strong>copy
 the whole database file and query the copy</strong>. If working off a one-time
 snapshot of the database work for you, awesome, problem solved:</p>
-<pre><code class="hljs language-sh">$ <span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite</span>
 Error: database is locked
-$ <span class="hljs-built_in">cp</span> db.sqlite db-snapshot.sqlite
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 db-snapshot.sqlite
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cp</span> db.sqlite db-snapshot.sqlite</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 db-snapshot.sqlite</span>
 actual_table
 </code></pre>
 <p>But it seems that’s not a good enough solution for many people (including myself)
@@ -153,9 +153,9 @@ the database as if was on an read-only device by setting <code>immutable=1</code
 which has the particularity of disabling all locking mechanisms,
 <strong>including that of respecting existing locks</strong>.</p>
 <p>With this trick, we can rewrite the previous fix:</p>
-<pre><code class="hljs language-sh">$ <span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite</span>
 Error: database is locked
-$ <span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span></span>
 actual_table
 </code></pre>
 <p>This doesn’t require creating a copy of the file that you want to

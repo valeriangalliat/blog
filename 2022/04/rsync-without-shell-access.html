@@ -96,7 +96,7 @@ they list they support a number of protocols, including <strong>SFTP, SCP,
 BorgBackup, and rsync over SSH</strong>.</p>
 <p>All of those protocols happen over a SSH connection, yet Hetzner doesn’t
 give us SSH access to the box:</p>
-<pre><code class="hljs">$ ssh u123456@u123456.your-storagebox.de
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh u123456@u123456.your-storagebox.de</span>
 PTY allocation request failed on channel 0
 
 +-------------------------------------------------------------------------------+
@@ -115,43 +115,43 @@ simplicity, so that we can just <code>ssh hetzner</code>:</p>
 </code></pre>
 <p>While interactive SSH is not allowed, we can try running a command
 directly:</p>
-<pre><code class="hljs">$ ssh hetzner ls
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span></span>
 file1
 file2
 file3
 </code></pre>
 <p>Interesting. What other commands do they allow?</p>
-<pre><code class="hljs">$ ssh hetzner cp file3 file4
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cp</span> file3 file4</span>
 Command not found
-
-$ ssh hetzner cat file1
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cat</span> file1</span>
 Command not found
-
-$ ssh hetzner du -sh .
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">du</span> -sh .</span>
 Command not found
-
-$ ssh hetzner pwd
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">pwd</span></span>
 Command not found
-
-$ ssh hetzner whoami
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">whoami</span></span>
 Command not found
-
-$ ssh hetzner rm file3
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">rm</span> file3</span>
 Command not found
 </code></pre>
 <p>Well, not much. So by what sorcery are SFTP, SCP, BorgBackup and rsync
 able to work over this connection?</p>
-<pre><code class="hljs">$ sftp hetzner
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp hetzner</span>
 Connected to hetzner.
-sftp&gt;
-
-$ scp file4 hetzner:
+<span class="hljs-meta prompt_">sftp&gt;</span><span class="language-bash">
+</span><span class="hljs-meta prompt_">
+$ </span><span class="language-bash">scp file4 hetzner:</span>
 file4
-
-$ rsync -v file5 hetnzer:
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">rsync -v file5 hetnzer:</span>
 file5
-
-$ ssh hetzner ls file4 file5
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span> file4 file5</span>
 file4
 file5
 </code></pre>
@@ -162,7 +162,7 @@ rsync.</p>
 nevertheless.</p>
 <p>Using <code>-v</code> to enable debug output gives one interesting line near the
 end of the log:</p>
-<pre><code class="hljs">$ sftp -v hetzner
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp -v hetzner</span>
 ...
 debug1: Sending subsystem: sftp
 ...
@@ -177,7 +177,7 @@ configured on the server as:</p>
 <p>From the <a href="https://linux.die.net/man/1/ssh"><code>ssh(1)</code></a> man page, we can
 see that <code>ssh -s</code> allows to pass a subsystem where we would normally
 pass a command, e.g:</p>
-<pre><code class="hljs">$ ssh hetzner -s sftp
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner -s sftp</span>
 </code></pre>
 <p>This command hangs, meanings the remote server is waiting for SFTP
 commands. Since it’s a binary protocol, we won’t be able to play with it
@@ -185,7 +185,7 @@ directly, but this is the connection over which a normal SFTP client
 would be able to do its magic. Sweet!</p>
 <h2 id="scp" tabindex="-1"><a class="header-anchor" href="#scp"><span>SCP</span></a></h2>
 <p>Let’s use the verbose/debug mode trick like we did previously with SFTP:</p>
-<pre><code class="hljs">$ scp -v file4 hetzner:
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v file4 hetzner:</span>
 ...
 debug1: Sending command: scp -v -t .
 ...
@@ -210,7 +210,7 @@ where they parse the command line arguments:</p>
 mode. Because in our case we were sending a file to the remote host, we
 entered <code>-t</code> mode, but if we were downloading a file form the host, we
 would likely see <code>-f</code>. Let’s try:</p>
-<pre><code class="hljs">$ scp -v hetzner:file4 .
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v hetzner:file4 .</span>
 ...
 debug1: Sending command: scp -v -f file4
 ...
@@ -219,13 +219,13 @@ debug1: Sending command: scp -v -f file4
 local <code>scp</code> is able to transfer files. But how is that possible? We saw
 earlier that basically every command but <code>ls</code> was returning “command not
 found”! And we can confirm <code>scp</code> is not present on the remote host:</p>
-<pre><code class="hljs">$ ssh hetzner scp
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp</span>
 Command not found
 </code></pre>
 <p>Or is it? Let’s try the full command that <code>scp</code> would normally run on
 the remote host…</p>
-<pre><code class="hljs">$ ssh hetzner scp -t .
-$ ssh hetzner scp -f file4
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -t .</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -f file4</span>
 </code></pre>
 <p>Both those commands hang, meaning that Hetzner actually ran them, and we
 now have a communication channel with the remote <code>scp</code> process!</p>
@@ -236,13 +236,13 @@ to start the remote process. Smart.</p>
 <p>Now we know the pattern, it’s easy to confirm that they do the same
 whitelisting for BorgBackup. We can see that <a href="https://borgbackup.readthedocs.io/en/stable/usage/serve.html"><code>borg serve</code></a>
 is used to start the remote process.</p>
-<pre><code class="hljs">$ ssh hetzner borg
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner borg</span>
 Command not found
-
-$ ssh hetzner borg --help
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner borg --<span class="hljs-built_in">help</span></span>
 Command not found
-
-$ ssh hetzner borg serve
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner borg serve</span>
 </code></pre>
 <p>The last command hangs, and again we exposed the way Borg internally
 opens a communication channel with a Borg implementation on the remote
@@ -250,20 +250,20 @@ server!</p>
 <h2 id="rsync" tabindex="-1"><a class="header-anchor" href="#rsync"><span>rsync</span></a></h2>
 <p>One more time, we leverage the verbose mode, this time with <code>-vv</code> to get
 extra debug output, to see what rsync does internally:</p>
-<pre><code class="hljs">$ rsync -vv file5 hetzner:
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">rsync -vv file5 hetzner:</span>
 opening connection using: ssh hetzner rsync --server -vve.LsfxCIvu . .  (7 args)
 delta-transmission enabled
 file5
 ...
 </code></pre>
 <p>Sweet. Let’s try to run this manually:</p>
-<pre><code class="hljs">$ ssh hetzner rsync
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner rsync</span>
 Command not found
-
-$ ssh hetzner rsync --help
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner rsync --<span class="hljs-built_in">help</span></span>
 Command not found
-
-$ ssh hetzner rsync --server -vve.LsfxCIvu . .
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner rsync --server -vve.LsfxCIvu . .</span>
 </code></pre>
 <p>And again, Hetzner allowed the last command and we have an open
 communication channel with the remote rsync process!</p>

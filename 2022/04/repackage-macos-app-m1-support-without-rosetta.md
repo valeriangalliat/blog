@@ -175,7 +175,7 @@ total 16
 -rwxr-xr-x  1 val  staff   890B 13 Apr 18:40 preinstall
 ```
 
-Those are two shell scripts that the install runs respectively before
+Those are two shell scripts that the installer runs respectively before
 and after the installation.
 
 We don't need to mess with those in the scope of this article, but in
@@ -353,9 +353,9 @@ Error Domain=BOMCopierFatalError Code=1 "cpio read error: bad file format"
 ```
 
 This error is kinda misleading because it points to the cpio archive
-where the issue is really with the top-level XAR archive.
+while the issue really is with the top-level XAR archive.
 
-It's even more confusing that the macOS installer was able to extract
+It's even more confusing because the macOS installer was able to extract
 the XAR archive to read the metadata from it (and can happily show files
 of the nested `Payload` archive), yet somehow fails to proceed with
 the rest of the installation because the archive it's already reading

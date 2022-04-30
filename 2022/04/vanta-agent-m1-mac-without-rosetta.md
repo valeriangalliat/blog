@@ -104,7 +104,7 @@ open-source programs in very particular cases (e.g. some `nmap`
 invocations and such), or programs like nginx that I trust to properly
 drop privileges after starting and binding to a reserved port.
 
-This is definitely not the case of this Agent, and there's no way this
+This is definitely not the case of this agent, and there's no way this
 thing is going to run as `root`.
 
 So how do we run it without giving it superuser privileges? First, we
@@ -187,8 +187,8 @@ actually running and reporting properly. 😅
 </div>
 
 And we're up! The logs are happily reporting that everything is running
-fine, and the menu bar app (if you chose to run it) also reports the
-agent is running.
+fine, and the menu bar app (if you chose to run it) also reports that
+the agent is running.
 
 <div class="note">
 
@@ -196,7 +196,7 @@ agent is running.
 icon, I think there's a setting to hide it, or even better, just get rid
 of `/usr/local/vanta/Vanta Agent.app` and you won't see it ever again!
 
-All that apps seems to be really doing is `ps aux | grep /usr/local/vanta/metalauncher`
+All that app seems to be really doing is `ps aux | grep /usr/local/vanta/metalauncher`
 to check that the agent is running, so you can easily do that yourself
 if you want.
 
@@ -315,6 +315,10 @@ file and query it the way you like.
 ```sh
 mitmdump -w +/path/to/dump/file --listen-host 127.0.0.1 --listen-port 1337
 ```
+
+Here, `-w` specifies the file we want to log to, and it's prefixed by
+`+` because we want to append to it instead of truncating it. The other
+arguments are self-explanatory.
 
 To start it as a launch agent the same way we start the Vanta agent, we
 can add the following to `~/Library/LaunchAgents/mitmdump.plist`:

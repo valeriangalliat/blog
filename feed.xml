@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-30T21:43:15.836Z</updated>
+  <updated>2022-04-30T22:11:45.575Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -259,7 +259,7 @@ as part of the macOS base system, with the exception of some specific
 open-source programs in very particular cases (e.g. some <code>nmap</code>
 invocations and such), or programs like nginx that I trust to properly
 drop privileges after starting and binding to a reserved port.</p>
-<p>This is definitely not the case of this Agent, and there’s no way this
+<p>This is definitely not the case of this agent, and there’s no way this
 thing is going to run as <code>root</code>.</p>
 <p>So how do we run it without giving it superuser privileges? First, we
 need to dissect the package a bit and install it manually.</p>
@@ -313,13 +313,13 @@ those other tools will think it’s not running even though the agent is
 actually running and reporting properly. 😅</p>
 </div>
 <p>And we’re up! The logs are happily reporting that everything is running
-fine, and the menu bar app (if you chose to run it) also reports the
-agent is running.</p>
+fine, and the menu bar app (if you chose to run it) also reports that
+the agent is running.</p>
 <div class="note">
 <p><strong>Note:</strong> if you don’t want your menu bar to be “polluted” by the Vanta
 icon, I think there’s a setting to hide it, or even better, just get rid
 of <code>/usr/local/vanta/Vanta Agent.app</code> and you won’t see it ever again!</p>
-<p>All that apps seems to be really doing is <code>ps aux | grep /usr/local/vanta/metalauncher</code>
+<p>All that app seems to be really doing is <code>ps aux | grep /usr/local/vanta/metalauncher</code>
 to check that the agent is running, so you can easily do that yourself
 if you want.</p>
 </div>
@@ -411,6 +411,9 @@ be used to log the captured traffic to a file. Then you can parse that
 file and query it the way you like.</p>
 <pre><code class="hljs language-sh">mitmdump -w +/path/to/dump/file --listen-host 127.0.0.1 --listen-port 1337
 </code></pre>
+<p>Here, <code>-w</code> specifies the file we want to log to, and it’s prefixed by
+<code>+</code> because we want to append to it instead of truncating it. The other
+arguments are self-explanatory.</p>
 <p>To start it as a launch agent the same way we start the Vanta agent, we
 can add the following to <code>~/Library/LaunchAgents/mitmdump.plist</code>:</p>
 <pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
@@ -599,7 +602,7 @@ total 16
 -rwxr-xr-x  1 val  staff   1.7K 13 Apr 18:40 postinstall
 -rwxr-xr-x  1 val  staff   890B 13 Apr 18:40 preinstall
 </code></pre>
-<p>Those are two shell scripts that the install runs respectively before
+<p>Those are two shell scripts that the installer runs respectively before
 and after the installation.</p>
 <p>We don’t need to mess with those in the scope of this article, but in
 general, I like to read those scripts prior to running any macOS <code>.pkg</code>
@@ -728,8 +731,8 @@ installation:</p>
 <pre><code class="hljs">Error Domain=BOMCopierFatalError Code=1 &quot;cpio read error: bad file format&quot;
 </code></pre>
 <p>This error is kinda misleading because it points to the cpio archive
-where the issue is really with the top-level XAR archive.</p>
-<p>It’s even more confusing that the macOS installer was able to extract
+while the issue really is with the top-level XAR archive.</p>
+<p>It’s even more confusing because the macOS installer was able to extract
 the XAR archive to read the metadata from it (and can happily show files
 of the nested <code>Payload</code> archive), yet somehow fails to proceed with
 the rest of the installation because the archive it’s already reading

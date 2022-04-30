@@ -19,7 +19,7 @@ By "you're fucked" I mean that your seemingly only option is to **copy
 the whole database file and query the copy**. If working off a one-time
 snapshot of the database work for you, awesome, problem solved:
 
-```sh
+```console
 $ echo .tables | sqlite3 db.sqlite
 Error: database is locked
 $ cp db.sqlite db-snapshot.sqlite
@@ -90,7 +90,7 @@ which has the particularity of disabling all locking mechanisms,
 
 With this trick, we can rewrite the previous fix:
 
-```sh
+```console
 $ echo .tables | sqlite3 db.sqlite
 Error: database is locked
 $ echo '.tables' | sqlite3 'file:db.sqlite?immutable=1'

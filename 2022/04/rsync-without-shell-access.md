@@ -24,7 +24,7 @@ BorgBackup, and rsync over SSH**.
 All of those protocols happen over a SSH connection, yet Hetzner doesn't
 give us SSH access to the box:
 
-```
+```console
 $ ssh u123456@u123456.your-storagebox.de
 PTY allocation request failed on channel 0
 
@@ -49,7 +49,7 @@ Host hetzner
 While interactive SSH is not allowed, we can try running a command
 directly:
 
-```
+```console
 $ ssh hetzner ls
 file1
 file2
@@ -58,7 +58,7 @@ file3
 
 Interesting. What other commands do they allow?
 
-```
+```console
 $ ssh hetzner cp file3 file4
 Command not found
 
@@ -81,7 +81,7 @@ Command not found
 Well, not much. So by what sorcery are SFTP, SCP, BorgBackup and rsync
 able to work over this connection?
 
-```
+```console
 $ sftp hetzner
 Connected to hetzner.
 sftp>
@@ -108,7 +108,7 @@ nevertheless.
 Using `-v` to enable debug output gives one interesting line near the
 end of the log:
 
-```
+```console
 $ sftp -v hetzner
 ...
 debug1: Sending subsystem: sftp
@@ -130,7 +130,7 @@ From the [`ssh(1)`](https://linux.die.net/man/1/ssh) man page, we can
 see that `ssh -s` allows to pass a subsystem where we would normally
 pass a command, e.g:
 
-```
+```console
 $ ssh hetzner -s sftp
 ```
 
@@ -143,7 +143,7 @@ would be able to do its magic. Sweet!
 
 Let's use the verbose/debug mode trick like we did previously with SFTP:
 
-```
+```console
 $ scp -v file4 hetzner:
 ...
 debug1: Sending command: scp -v -t .
@@ -176,7 +176,7 @@ mode. Because in our case we were sending a file to the remote host, we
 entered `-t` mode, but if we were downloading a file form the host, we
 would likely see `-f`. Let's try:
 
-```
+```console
 $ scp -v hetzner:file4 .
 ...
 debug1: Sending command: scp -v -f file4
@@ -188,7 +188,7 @@ local `scp` is able to transfer files. But how is that possible? We saw
 earlier that basically every command but `ls` was returning "command not
 found"! And we can confirm `scp` is not present on the remote host:
 
-```
+```console
 $ ssh hetzner scp
 Command not found
 ```
@@ -196,7 +196,7 @@ Command not found
 Or is it? Let's try the full command that `scp` would normally run on
 the remote host...
 
-```
+```console
 $ ssh hetzner scp -t .
 $ ssh hetzner scp -f file4
 ```
@@ -214,7 +214,7 @@ Now we know the pattern, it's easy to confirm that they do the same
 whitelisting for BorgBackup. We can see that [`borg serve`](https://borgbackup.readthedocs.io/en/stable/usage/serve.html)
 is used to start the remote process.
 
-```
+```console
 $ ssh hetzner borg
 Command not found
 
@@ -233,7 +233,7 @@ server!
 One more time, we leverage the verbose mode, this time with `-vv` to get
 extra debug output, to see what rsync does internally:
 
-```
+```console
 $ rsync -vv file5 hetzner:
 opening connection using: ssh hetzner rsync --server -vve.LsfxCIvu . .  (7 args)
 delta-transmission enabled
@@ -243,7 +243,7 @@ file5
 
 Sweet. Let's try to run this manually:
 
-```
+```console
 $ ssh hetzner rsync
 Command not found
 

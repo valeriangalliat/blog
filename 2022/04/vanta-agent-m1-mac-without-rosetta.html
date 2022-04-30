@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Install the Vanta agent on a M1 Mac without Rosetta (and more)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Install the Vanta agent on a M1 Mac without Rosetta (and more)">
+  <meta property="og:description" content="Did you recently get asked to install the Vanta agent on your M1 Mac and got prompted to install Rosetta for it to run?">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Install the Vanta agent on a M1 Mac without Rosetta (and more)</h1>
+<p class="date">April 30, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Did you recently get asked to install the Vanta agent on your M1 Mac and
+got prompted to install Rosetta for it to run?</p>
+<p>Do you like running a Rosetta-free system?</p>
+<p>Then this post is for you.</p>
+<p>Also if you also don’t like running (benevolent) spyware with <code>root</code>
+permissions, and want to monitor what the spyware is precisely spying
+about you, read on, I have a few other things for you. 😉</p>
+<h2 id="the-rosetta-thing" tabindex="-1"><a class="header-anchor" href="#the-rosetta-thing"><span>The Rosetta thing</span></a></h2>
+<p>I wrote <a href="repackage-macos-app-m1-support-without-rosetta.html">a more generic post</a>
+about this, and I encourage you to read it if you want to learn about
+all the technical details, but for the purpose of this Vanta-specific
+article, I’ll keep it short. The objective is to:</p>
+<ol>
+<li>Extract the <code>vanta.pkg</code> installer to access its contents.</li>
+<li>Update the <code>Distribution</code> XML file to flag ARM support (removes the
+Rosetta prompt).</li>
+<li>Extract the <code>vanta-raw.pkg/Payload</code> archive and replace the x86-64
+<code>osqueryd</code> binary by the universal binary from <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
+(or greater).</li>
+<li>Repackage the whole thing.</li>
+</ol>
+<p>Assuming you have <code>vanta.pkg</code> already downloaded (otherwise you can get
+it from <a href="https://github.com/VantaInc/vanta-agent-scripts/blob/b4e421f11d51896d274ae5782884c90f6ba5ce27/install-macos.sh#L8%5D">here</a>),
+run the following commands:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Create a directory to extract the package into</span>
+<span class="hljs-built_in">mkdir</span> vanta
+<span class="hljs-built_in">cd</span> vanta
+
+<span class="hljs-comment"># Extract the package in the current directory</span>
+xar -xf ../vanta.pkg
+
+<span class="hljs-comment"># Go in the subpackage</span>
+<span class="hljs-built_in">cd</span> vanta-raw.pkg
+
+<span class="hljs-comment"># Create a directory to extract the payload into</span>
+<span class="hljs-built_in">mkdir</span> PayloadOut
+<span class="hljs-built_in">cd</span> PayloadOut
+
+<span class="hljs-comment"># Extract the payload in the current directory</span>
+cpio -i &lt; ../Payload
+
+<span class="hljs-comment"># Stream the tar archive for `osqueryd` 5.2.2 (follow redirects) and extract it to the current directory</span>
+curl --location <span class="hljs-string">&#x27;https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz&#x27;</span> | tar xf -
+
+<span class="hljs-comment"># We now have a `osqueryd` binary that we can move to the right location</span>
+<span class="hljs-built_in">mv</span> osqueryd usr/local/vanta
+
+<span class="hljs-comment"># Recreate the cpio archive</span>
+find . | cpio -oz --owner 0:80 &gt; ../Payload
+
+<span class="hljs-comment"># Go back to the parent directory and remove our temporary `PayloadOut` directory</span>
+<span class="hljs-built_in">cd</span> ..
+<span class="hljs-built_in">rm</span> -rf PayloadOut
+
+<span class="hljs-comment"># Go back to the parent directory</span>
+<span class="hljs-built_in">cd</span> ..
+
+<span class="hljs-comment"># Flag ARM support in the `Distribution` file</span>
+sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s/&lt;allowed-os-versions&gt;/&lt;options hostArchitectures=&quot;arm64,x86_64&quot; \/&gt;\n    &lt;allowed-os-versions&gt;/&#x27;</span> Distribution
+
+<span class="hljs-comment"># Alternative with GNU sed</span>
+<span class="hljs-comment"># gsed -i &#x27;/&lt;installer-gui-script/a \    &lt;options hostArchitectures=&quot;arm64,x86_64&quot; /&gt;&#x27; Distribution</span>
+
+<span class="hljs-comment"># Repackage the main installer</span>
+xar --compression none -cf ../vanta-new.pkg .
+</code></pre>
+<p>This will give you a <code>vanta-new.pkg</code> installer that now has proper ARM
+support and won’t prompt you to install Rosetta!</p>
+<p>Again if you want to know precisely how this works, check out my
+<a href="repackage-macos-app-m1-support-without-rosetta.html">detailed article on the topic</a>.</p>
+<p>But while having native M1 support is great, there’s still a few things
+that concern me about this program.</p>
+<p>For example, I didn’t actually run that installer on my machine because
+it requires <code>root</code> permissions and I don’t want to run untrusted code as
+<code>root</code>. I still tested the package in a macOS VM (which is <a href="macos-docker-linux-wayland.html">surprisingly easy to do nowdays</a>)
+to confirm that the script works end-to-end. But for a machine I care
+about, how do we install and run that thing with only user privileges?</p>
+<h2 id="installing-and-running-vanta-without-root-privilege" tabindex="-1"><a class="header-anchor" href="#installing-and-running-vanta-without-root-privilege"><span>Installing and running Vanta without <code>root</code> privilege</span></a></h2>
+<p>It’s unclear what the this program does concretely, but it
+<a href="https://help.vanta.com/hc/en-us/articles/360060881051-Getting-Started-with-the-Vanta-Agent">claims</a>
+to be read-only (“it will <strong>not</strong> change anything on your machine”),
+despite their installer and other commands requesting <code>root</code> access
+(this is fishy AF).</p>
+<p>I don’t like running as <code>root</code> anything that wasn’t shipped by Apple
+as part of the macOS base system, with the exception of some specific
+open-source programs in very particular cases (e.g. some <code>nmap</code>
+invocations and such), or programs like nginx that I trust to properly
+drop privileges after starting and binding to a reserved port.</p>
+<p>This is definitely not the case of this Agent, and there’s no way this
+thing is going to run as <code>root</code>.</p>
+<p>So how do we run it without giving it superuser privileges? First, we
+need to dissect the package a bit and install it manually.</p>
+<p>In the <a href="#the-rosetta-thing">first part</a>, we already extracted the
+installer as well as the <code>Payload</code> archive, in a <code>PayloadOut</code> directory.
+We’ll start from there, and go in the <code>PayloadOut</code> directory to manually
+install everything we need.</p>
+<p>First we’ll copy <code>Library/LaunchDaemons/com.vanta.metalauncher.plist</code>
+to <code>~/Library/LaunchAgents/com.vanta.metalauncher.plist</code>. Why? Launch
+daemons are systematically run as <code>root</code> while launch agents are user
+services. Their format is otherwise compatible so that makes things easy
+for us.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> Library/LaunchDaemons/com.vanta.metalauncher.plist ~/Library/LaunchAgents
+</code></pre>
+<p>We also replace the error log path in that file to point to a location
+where we actually have write permission:</p>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s,/var/log/vanta_stderr.log,/usr/local/vanta/log/vanta_stderr.log,&#x27;</span> ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<p>Then we can copy <code>etc/vanta.conf</code> and <code>usr/local/vanta</code> to <code>/etc/</code> and
+<code>/usr/local</code> respectively.</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cp</span> etc/vanta.conf /etc
+sudo <span class="hljs-built_in">cp</span> -r usr/local/vanta /usr/local
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> OK I lied earlier, we do need <code>root</code> permission for this step.
+But at no point in this section we’ll run third-party code as <code>root</code>,
+and that’s what I intended by “without <code>root</code> privilege”.</p>
+<p>Also, keep in mind that we need to copy the <code>vanta</code> directory to
+<code>/usr/local</code> because that path is actually hardcoded everywhere in the
+software binaries so we can’t easily run it from another location.</p>
+</div>
+<p>Vanta asserts that some binaries are owned by <code>root</code>, and refuses to run
+otherwise. Once owned by <code>root</code> though, the program runs just fine
+even from a user account.</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/launcher
+sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/osqueryd
+</code></pre>
+<p>Then, edit the <code>/etc/vanta.conf</code> file to set your agent key and email.</p>
+<p>Finally we can start the service:</p>
+<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<p>You can alternatively start the agent from any CLI instead of using
+<a href="https://en.wikipedia.org/wiki/Launchd">launchd</a>:</p>
+<pre><code class="hljs language-sh">/usr/local/vanta/metalauncher
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the agent needs to be started using an absolute path if you
+want the <code>vanta-cli</code> and the Vanta app in the tray to report that the
+agent is running. If you <code>cd /usr/local/vanta</code> and run <code>./metalauncher</code>,
+those other tools will think it’s not running even though the agent is
+actually running and reporting properly. 😅</p>
+</div>
+<p>And we’re up! The logs are happily reporting that everything is running
+fine, and the menu bar app (if you chose to run it) also reports the
+agent is running.</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t want your menu bar to be “polluted” by the Vanta
+icon, I think there’s a setting to hide it, or even better, just get rid
+of <code>/usr/local/vanta/Vanta Agent.app</code> and you won’t see it ever again!</p>
+<p>All that apps seems to be really doing is <code>ps aux | grep /usr/local/vanta/metalauncher</code>
+to check that the agent is running, so you can easily do that yourself
+if you want.</p>
+</div>
+<blockquote>
+<p>But Val, how do you know that the agent is working properly after you
+installed it in such an esoteric way?</p>
+</blockquote>
+<p>Well, thanks to <a href="macos-docker-linux-wayland.html">the VM</a> I mentioned
+earlier, I could test that the network traffic of the agent installed
+with the original x86-64 package is identical to that of my method
+without <code>root</code>. 😁</p>
+<blockquote>
+<p>But Val, how do you see the network traffic of the app? It’s all HTTPS
+and stuff.</p>
+</blockquote>
+<p>Well…</p>
+<h2 id="spying-on-the-spyware-and-monitoring-its-network-traffic" tabindex="-1"><a class="header-anchor" href="#spying-on-the-spyware-and-monitoring-its-network-traffic"><span>Spying on the spyware and monitoring its network traffic</span></a></h2>
+<p>This agent is essentially a spyware that employees willingly install on
+their work computer (or employers secretly install in some less ethical
+cases) to spy on them with good intentions.</p>
+<p>I’m more comfortable being spied on when I know precisely what is
+captured and what is not. A salesperson can always say “don’t worry, we
+respect your privacy”, but I tend to trust HTTPS traffic logs better. 😏</p>
+<h3 id="ways-to-sniff-packets" tabindex="-1"><a class="header-anchor" href="#ways-to-sniff-packets"><span>Ways to sniff packets</span></a></h3>
+<p>There’s a multitude of ways to sniff network traffic from an app. If all
+you care about is transport layer data (e.g. raw TCP or UDP traffic),
+you can easily monitor it with tools like <a href="https://linux.die.net/man/8/tcpdump"><code>tcpdump(8)</code></a>
+or Wireshark. But for encrypted HTTPS traffic, that won’t cut it (and
+that’s the whole point of HTTPS).</p>
+<p>When you have some control over the application you want to monitor, or
+if it natively supports running through a proxy, a logging HTTPS proxy
+like <a href="https://mitmproxy.org/">mitmproxy</a> is really useful. Some software
+support communicating over a proxy through the pretty common
+<code>http_proxy</code> and <code>https_proxy</code> environment variables. Others support
+configuring a proxy via configuration files, UI, or command line
+arguments. If this is your case, you’re in luck, and you can use those
+means to make that program run its HTTPS traffic through mitmproxy!</p>
+<p>Otherwise, you need to dig deeper and tools like
+<a href="https://linux.die.net/man/8/tsocks"><code>tsocks(1)</code></a>,
+<a href="https://github.com/haad/proxychains">ProxyChains</a>,
+<a href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a> and
+<a href="https://github.com/hmgle/graftcp">graftcp</a> (my personal favorite),
+can really help. I wrote a <a href="graftcp-inspect-https-traffic-proxy.html">dedicated article on the matter</a>
+if you’re interested!</p>
+<h3 id="the-proxy-hostname-argument" tabindex="-1"><a class="header-anchor" href="#the-proxy-hostname-argument"><span>The <code>--proxy_hostname</code> argument</span></a></h3>
+<p>In our case, it turns out that Vanta uses the open-source
+<a href="https://github.com/osquery/osquery">osquery</a> program, which allows
+defining a custom proxy (see <code>--proxy_hostname</code> on <a href="https://osquery.readthedocs.io/en/stable/deployment/remote/">this page</a>)!</p>
+<p>So all we need to do is add our own <code>--proxy_hostname</code> to the <code>osqueryd</code>
+arguments. While we don’t control the invocation of <code>osqueryd</code> (it’s in
+the Vanta launcher binary), we can easily achieve this by wrapping the
+<code>osqueryd</code> binary with a shell script:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mv</span> osqueryd osqueryd-orig
+
+<span class="hljs-built_in">cat</span> &lt;&lt; <span class="hljs-string">EOF &gt; osqueryd
+#!/bin/sh -e
+
+exec /usr/local/vanta/osqueryd-orig --proxy_hostname=localhost:1337 &quot;$@&quot;
+EOF</span>
+
+<span class="hljs-built_in">chmod</span> +x osqueryd
+</code></pre>
+<p>With that shell script, we invoke the original <code>osqueryd</code> binary,
+passing our custom <code>--proxy_hostname</code> option (here with a proxy running
+on port 1337), and otherwise forwarding all other arguments.</p>
+<h3 id="what-about-certificates" tabindex="-1"><a class="header-anchor" href="#what-about-certificates"><span>What about certificates?</span></a></h3>
+<p>In order to intercept HTTPS traffic, mitmproxy uses its own certificate,
+that you can find in <code>~/.mitmproxy/mitmproxy-ca-cert.pem</code>. You can add
+it to your system’s trusted certificates list, and as long as the
+software you’re monitoring uses the system CA certificates list, you
+should be good!</p>
+<p>However Vanta pins their own certificate chain (using the
+<code>--tls_server_certs</code> option), ignoring the certificates trusted at the
+OS level.</p>
+<p>The good news is that this pinned certificate is stored in
+<code>/usr/local/vanta/cert.pem</code>, and we can just replace it with the
+mitmproxy certificate!</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cat</span> ~/.mitmproxy/mitmproxy-ca-cert.pem &gt; /usr/local/vanta/cert.pem
+</code></pre>
+<p>After that, and restarting the service, we should be able to monitor the
+traffic:</p>
+<pre><code class="hljs language-sh">launchctl unload ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+launchctl load ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<h3 id="dump-with-mitmdump" tabindex="-1"><a class="header-anchor" href="#dump-with-mitmdump"><span>Dump with mitmdump</span></a></h3>
+<p>mitmproxy is great to interactively monitor the intercepted traffic, but
+you don’t want to be watching that all the time. Instead, mitmdump can
+be used to log the captured traffic to a file. Then you can parse that
+file and query it the way you like.</p>
+<pre><code class="hljs language-sh">mitmdump -w +/path/to/dump/file --listen-host 127.0.0.1 --listen-port 1337
+</code></pre>
+<p>To start it as a launch agent the same way we start the Vanta agent, we
+can add the following to <code>~/Library/LaunchAgents/mitmdump.plist</code>:</p>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
+<span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">plist</span> <span class="hljs-keyword">PUBLIC</span> <span class="hljs-string">&quot;-//Apple//DTD PLIST 1.0//EN&quot;</span> <span class="hljs-string">&quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">plist</span> <span class="hljs-attr">version</span>=<span class="hljs-string">&quot;1.0&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>KeepAlive<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>Label<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>ProgramArguments<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">array</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>/path/to/mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>-w<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>+/path/to/dump/file<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-host<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>127.0.0.1<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-port<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>1337<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">array</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>RunAtLoad<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plist</span>&gt;</span>
+</code></pre>
+<p>And enable it with:</p>
+<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/mitmdump.plist
+</code></pre>
+<h2 id="check-that-it-all-worked" tabindex="-1"><a class="header-anchor" href="#check-that-it-all-worked"><span>Check that it all worked</span></a></h2>
+<p>Finally, you can confirm that the agent is registered properly after all
+those tweaks by checking the following link:</p>
+<pre><code class="hljs">https://app.vanta.com/agent/info?uuid=YOUR-HARDWARE-UUID
+</code></pre>
+<p>Where <code>YOUR-HARDWARE-UUID</code> is your hardware UUID as it can be found in
+<kbd>About This Mac</kbd>, <kbd>System Report…</kbd>, <kbd>Hardware
+UUID</kbd>.</p>
+<p>And that’s all for today! I hope you found on this page what is it you
+were looking for, and that you learnt a thing or two along the way! Or
+at least that you enjoyed reading through my adventures messing around
+with this program. 😂</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/vanta-agent-m1-mac-without-rosetta.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

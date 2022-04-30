@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>graftcp: inspect any program’s HTTPS traffic through a proxy!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="graftcp: inspect any program’s HTTPS traffic through a proxy!">
+  <meta property="og:description" content="Recently, I needed to sniff an app’s HTTPS traffic.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>graftcp: inspect any program’s HTTPS traffic through a proxy!</h1>
+<p class="date">April 30, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Recently, I <a href="vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">needed to sniff an app’s HTTPS traffic</a>.</p>
+<p>While sniffing plaintext HTTP traffic is easy, by targeting the
+transport layer with tools like <a href="https://linux.die.net/man/8/tcpdump"><code>tcpdump(8)</code></a>
+or Wireshark, <em>HTTPS is another beast</em>.</p>
+<p>Because of the TLS encryption, all we see at the transport layer is a
+bunch of unusable encrypted data (and that’s the whole point of HTTPS).
+So we need to resort to solutions at a higher layer in the stack.</p>
+<p>My go-to for this kind of task is <a href="https://mitmproxy.org/">mitmproxy</a>,
+an interactive HTTPS proxy, as well as its headless counterpart
+<em>mitmdump</em>.</p>
+<p>But those are only half of the solution. A proxy server is useless until
+we route HTTPS traffic <em>through it</em>. And depending on the context, this
+task can go from pretty trivial to quite tricky.</p>
+<h2 id="common-ways-to-configure-a-proxy" tabindex="-1"><a class="header-anchor" href="#common-ways-to-configure-a-proxy"><span>Common ways to configure a proxy</span></a></h2>
+<p>There’s 3 main ways that you can use to configure a proxy:</p>
+<ol>
+<li>the OS level,</li>
+<li>the application level,</li>
+<li>the environment level.</li>
+</ol>
+<p>I already <a href="../../2021/07/intercept-macos-app-traffic-mitmproxy.html">gave an introduction to mitmproxy</a>
+last year on the blog, in which I explored <a href="../../2021/07/intercept-macos-app-traffic-mitmproxy.html#first-try-macos-network-proxy-settings">the OS level</a>
+and <a href="../../2021/07/intercept-macos-app-traffic-mitmproxy.html#second-try-spotify-supports-app-level-proxy-settings">the app level</a>,
+but I’ll give a quick refresher here.</p>
+<h3 id="the-os-level" tabindex="-1"><a class="header-anchor" href="#the-os-level"><span>The OS level</span></a></h3>
+<p>Your OS usually lets you configure a proxy in the networking settings.
+For example on macOS it’s in the advanced network preferences, and on
+Android it’s in the advanced Wi-Fi settings.</p>
+<p>It’s a good way to globally configure a proxy, but there’s no guarantee
+that apps are going to respect it. Typically, the default browser that
+ships with the OS (e.g. Safari) will use it, and some third-party
+browsers might too, but in general most other apps just ignore it. Not
+so good.</p>
+<h3 id="the-application-level" tabindex="-1"><a class="header-anchor" href="#the-application-level"><span>The application level</span></a></h3>
+<p>While most apps don’t respect OS-level proxy configuration, some can
+provide you with a way to configure a proxy at their own level.</p>
+<p>Typically this will be Firefox’s connection settings, with its very own
+proxy configuration, Spotify’s advanced settings that <a href="../../2021/07/intercept-macos-app-traffic-mitmproxy.html#second-try-spotify-supports-app-level-proxy-settings">let you configure a proxy</a>,
+or more recently I’ve explored <a href="vanta-agent-m1-mac-without-rosetta.html#the-proxy-hostname-argument">the <code>--proxy_hostname</code> argument</a>
+to the <code>osqueryd</code> program.</p>
+<p>But it’s up to the app’s developers to decide if they want or not to let
+you configure a proxy, and how rigorously they use it… (they might use
+the proxy for some requests but not all of them).</p>
+<h3 id="the-environment-level" tabindex="-1"><a class="header-anchor" href="#the-environment-level"><span>The environment level</span></a></h3>
+<p>Finally, there are two pretty commonly used environment variables
+(although I believe not standard per se) to configure a proxy:
+<code>http_proxy</code> and <code>https_proxy</code>. They respectively configure a proxy to
+route HTTP and HTTPS traffic through.</p>
+<p>For example the Python language <a href="https://github.com/python/cpython/blob/a03a09e068435f47d02649dda93988dc44ffaaf1/Lib/urllib/request.py#L2507">supports those</a>
+in its native <code>urllib</code> package, and while Node.js <a href="https://github.com/nodejs/node/issues/8381">doesn’t</a>,
+the popular <a href="https://github.com/axios/axios">axios</a> library
+<a href="https://github.com/axios/axios/blob/bc733fec78326609e751187c9d453cee9bf1993a/lib/adapters/http.js#L186">also supports them</a>
+out of the box.</p>
+<p>So basically, it might or might not work depending on the implementation
+of the software that you’re using, but it’s definitely worth trying!</p>
+<h2 id="when-nothing-works-the-hacker-way" tabindex="-1"><a class="header-anchor" href="#when-nothing-works-the-hacker-way"><span>When nothing works: the hacker way</span></a></h2>
+<p>So far all we’ve done is configuring a proxy in interfaces that
+explicitly allow us to set a proxy. But sometimes this is just not
+enough. That’s when we resort to ways to configure a proxy in places
+that don’t explicitly let us do so. 😏</p>
+<p>There’s two ways to do this. The most common one is to leverage
+<code>LD_PRELOAD</code> with dynamically linked binaries to override symbols in a
+library. This is the approach that <a href="https://linux.die.net/man/8/tsocks"><code>tsocks(1)</code></a>,
+<a href="https://github.com/haad/proxychains">ProxyChains</a> and <a href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a>
+use, hijacking the <a href="https://linux.die.net/man/2/connect"><code>connect(2)</code></a>
+<a href="https://en.wikipedia.org/wiki/C_standard_library">libc</a> function to
+route requests through the proxy of your choice.</p>
+<p>This is a great method when using programs that are dynamically linked
+against libc, but it will fail for statically liked programs, as well as
+programs that don’t use libc (Go programs for example).</p>
+<p>This is where <a href="https://github.com/hmgle/graftcp">graftcp</a> shines.
+Instead of hooking at the libc level, it leverages
+<a href="https://linux.die.net/man/2/ptrace"><code>ptrace(2)</code></a> to modify the
+<a href="https://linux.die.net/man/3/connect"><code>connect(3)</code></a> syscall arguments!
+Essentially, it’s acting at a lower level and that’s how it’s able to
+proxy against statically liked programs that don’t use libc. Their
+detailed <a href="https://github.com/hmgle/graftcp#principles">how does it work</a>
+explanation is really worth a read.</p>
+<h3 id="installation" tabindex="-1"><a class="header-anchor" href="#installation"><span>Installation</span></a></h3>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/hmgle/graftcp.git
+<span class="hljs-built_in">cd</span> graftcp
+make
+</code></pre>
+<h3 id="usage" tabindex="-1"><a class="header-anchor" href="#usage"><span>Usage</span></a></h3>
+<p>From there, you can use <code>local/graftcp-local</code> to start the graftcp
+server, and configure it to use your proxy (for example mitmproxy
+starts a HTTP proxy on port 8080 by default). Because graftcp also
+defaults to a SOCKS5 proxy on <code>localhost:1080</code>, we need to force it to
+use the HTTP proxy we configured by using <code>--select_proxy_mode only_http_proxy</code>:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/graftcp-local --http_proxy localhost:8080 --select_proxy_mode only_http_proxy
+</code></pre>
+<p>We can do the same thing by “emptying” the preconfigured SOCKS5 proxy:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/graftcp-local --http_proxy localhost:8080 --socks5 <span class="hljs-string">&#x27;&#x27;</span>
+</code></pre>
+<p>Or we can instead run mitmproxy as a SOCKS5 proxy, here on port 1080
+(the default for graftcp):</p>
+<pre><code class="hljs language-sh">mitmproxy --mode socks5 -p 1080
+</code></pre>
+<p>Then we can run <code>local/graftcp-local</code> without arguments and it’ll just
+work.</p>
+<p>Either way, once the proxy and <code>local/graftcp-local</code> program is started,
+we can prefix any command with <code>./graftcp</code> to force it to run its
+network calls through the proxy!</p>
+<pre><code class="hljs language-sh">./graftcp curl https://www.codejam.info/
+</code></pre>
+<h3 id="dealing-with-certificates" tabindex="-1"><a class="header-anchor" href="#dealing-with-certificates"><span>Dealing with certificates</span></a></h3>
+<p>However, this should complain that the SSL certificate from mitmproxy is
+untrusted. We can make it go through by appending <code>-k</code> (<code>--insecure</code>) to
+the <code>curl</code> command:</p>
+<pre><code class="hljs language-sh">./graftcp curl https://www.codejam.info/ --insecure
+</code></pre>
+<p>A better solution though would be to add the mitmproxy CA certificate
+found in <code>~/.mitmproxy/mitmproxy-ca-cert.pem</code> to the system trusted
+certificates. This will vary depending on your OS and distribution, but
+in my case that would be done with:</p>
+<pre><code class="hljs language-sh">sudo trust anchor ~/.mitmproxy/mitmproxy-ca-cert.pem
+</code></pre>
+<p>Then the <code>curl</code> command should work without <code>--insecure</code>!</p>
+<h3 id="short-version" tabindex="-1"><a class="header-anchor" href="#short-version"><span>Short version</span></a></h3>
+<p>Finally, if you don’t want to bother running <code>local/graftcp-local</code> and
+<code>./graftcp</code> separately, you can instead use <code>local/mgraftcp</code>. If you
+still use the SOCKS5 proxy on port 1080:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/mgraftcp curl https://www.codejam.info/
+</code></pre>
+<p>Or with a HTTP proxy on port 8080:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/mgraftcp --http_proxy localhost:8080 --select_proxy_mode only_http_proxy curl https://www.codejam.info/
+</code></pre>
+<p>This is useful if you only want to use graftcp for a single command, or
+don’t mind configure the proxy settings every single time. Otherwise the
+graftcp server method with <code>local/graftcp-local</code> works better as you
+only have to configure your proxy once and any call to <code>./graftcp</code> will
+use it!</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>graftcp is a really powerful tool that allows you to redirect HTTPS
+traffic through a proxy of your choice, even in situations where this
+wouldn’t be allowed or planned for.</p>
+<p>Because I love inspecting programs’ network traffic to know how they
+work, and it’s not always easy to get access to their requests logs,
+graftcp is now a go-to of mine for this kind of task, as it’s proven to
+work flawlessly and very reliably, even with statically linked binaries
+and programs that don’t link against libc like it’s the case with Go!</p>
+<p>I hope you learnt something with this post, and I wish you a happy
+network sniffing. 🤘</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/graftcp-inspect-https-traffic-proxy.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

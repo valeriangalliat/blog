@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How to repackage a macOS .pkg installer for M1 support without Rosetta</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="How to repackage a macOS .pkg installer for M1 support without Rosetta">
+  <meta property="og:description" content="To start with, some basis that you might already know:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>How to repackage a macOS <code>.pkg</code> installer for M1 support without Rosetta</h1>
+<p class="date">April 30, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>To start with, some basis that you might already know:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Apple_M1">Apple M1</a> is an
+<a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>-based
+CPU/GPU chip that ships with the latest Apple devices.</li>
+<li><a href="https://en.wikipedia.org/wiki/Rosetta_(software)">Rosetta</a> is a
+compatibility layer to translate <a href="https://en.wikipedia.org/wiki/X86-64">x86-64</a>
+instructions to <a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>
+instructions.</li>
+</ul>
+<p>Until recently, x86-64 was happily ruling the market (and still is by
+orders of magnitude, let’s be honest), but since Apple dropped those
+<strong>LIT</strong> 🔥 M1 chips that are basically killing the game in terms of
+performance, things are changing.</p>
+<p>This means that Mac software that was previously only targeting x86-64
+now needs to ship <strong>universal</strong> binaries that support both x86-64 and
+ARM if they want native performance.</p>
+<p>But some vendors didn’t catch up yet, and in those cases, you’ll need to
+rely on Rosetta for the while being to run those programs.</p>
+<p>That being said, there’s a thin chance that the program you install can
+be repackaged in a way that can run natively, <em>without Rosetta</em>! In this
+post we’ll explore the Vanta agent, that claims it requires Rosetta, but
+can easily be patched to run natively.</p>
+<p>If you’re in luck, you might be able to apply this knowledge to other
+macOS installers.</p>
+<h2 id="the-case-of-the-vanta-agent" tabindex="-1"><a class="header-anchor" href="#the-case-of-the-vanta-agent"><span>The case of the Vanta agent</span></a></h2>
+<p>As part of a security policy, my employer requires me to install an
+agent program on my work laptop. This program is provided by a company
+called Vanta.</p>
+<p>I won’t go in details about what is this program, but if you care, you
+can checkout my <a href="vanta-agent-m1-mac-without-rosetta.html">detailed post on the topic</a>!</p>
+<p>Anyways, they ship a <code>vanta.pkg</code> installer, that, when opened, claims to
+be incompatible with the M1 architecture and requests to install
+Rosetta. Not good.</p>
+<h2 id="why-not-install-rosetta" tabindex="-1"><a class="header-anchor" href="#why-not-install-rosetta"><span>Why not install Rosetta?</span></a></h2>
+<p>I don’t like installing garbage on my computer, and when I’m required to
+install garbage on my computer, I don’t like when on top of that the
+garbage requires me to emulate another CPU architecture in order to run
+it.</p>
+<p>Also the challenge is fun, and a bit of software golfing here and there
+is always enjoyable. I know it’s common practice to golf on production
+code these days in the industry, but I personally prefer to keep it
+contained and isolated. Golfing is a personal pleasure and, like
+masturbating, you shouldn’t impose it on your colleagues.</p>
+<h2 id="how-is-a-macos-installer-pkg-made" tabindex="-1"><a class="header-anchor" href="#how-is-a-macos-installer-pkg-made"><span>How is a macOS installer (<code>.pkg</code>) made?</span></a></h2>
+<p>Let’s ask <a href="https://linux.die.net/man/1/file"><code>file(1)</code></a> for some
+information.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file vanta.pkg</span>
+vanta.pkg: xar archive compressed TOC: 4838, SHA-1 checksum
+</code></pre>
+<p>It looks like we’re looking at a wild archive format, mostly
+used on Darwin: <a href="https://linux.die.net/man/1/xar"><code>xar(1)</code></a>.
+Its arguments are pretty similar to <a href="https://linux.die.net/man/1/tar"><code>tar(1)</code></a>.</p>
+<p>Let’s make a directory to extract the archive in:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> vanta</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">xar -xf ../vanta.pkg</span>
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 8
+-rw-r--r--  1 val  staff   1.1K 13 Apr 16:50 Distribution
+drwx------  3 val  staff    96B 31 Dec  1969 Resources
+drwx------  6 val  staff   192B 31 Dec  1969 vanta-raw.pkg
+</code></pre>
+<p>So we have a file, <code>Distribution</code> and two directories, <code>Resources</code> and
+<code>vanta-raw.pkg</code>. Let’s investigate.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file Distribution</span>
+Distribution: XML 1.0 document text, ASCII text
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">vim Distribution</span>
+</code></pre>
+<p><code>Distribution</code> is a XML document, and when we look at it, we can see a
+bunch of metadata for the macOS installer, where vendors can customize
+background, logos, images and so on of the installer. In our case, it
+also references the <code>vanta-raw.pkg</code> directory.</p>
+<p>We’ll see <a href="#preventing-the-rosetta-prompt">later</a> that’s also where we
+can specify whether or not the package supports universal binaries!</p>
+<p>But first, let’s inspect that <code>vanta-raw.pkg</code>.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta-raw.pkg</span>
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 75880
+-rw-r--r--  1 val  staff    42K  4 Jan 16:32 Bom
+-rw-r--r--  1 val  staff   920B 13 Apr 16:50 PackageInfo
+-rw-r--r--  1 val  staff    36M  4 Jan 16:32 Payload
+-rw-r--r--  1 val  staff   1.2K  4 Jan 16:32 Scripts
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">file *</span>
+Bom:         Mac OS X bill of materials (BOM) file
+PackageInfo: XML 1.0 document text, ASCII text
+Payload:     gzip compressed data, from Unix, original size modulo 2^32 104344576
+Scripts:     gzip compressed data, from Unix, original size modulo 2^32 3072
+</code></pre>
+<p>So, another XML, two gzipped files, and a BOM file that we won’t care
+about in the scope of this article.</p>
+<p>The XML specifies “bundles” as well as <code>preinstall</code> and <code>postinstall</code>
+scripts. Nothing really interesting in there.</p>
+<p>Let’s look at the gzipped data. This doesn’t tell us anything other than
+the fact that it’s compressed with gzip… but let’s ask <code>file</code> for its
+opinion on the decompressed data.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">gunzip &lt; Payload | file -</span>
+/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">gunzip &lt; Scripts | file -</span>
+/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
+</code></pre>
+<p>Another archive format? And another obscure (at least to me) one on top
+of that? Alright.</p>
+<p>According to <a href="https://linux.die.net/man/1/cpio"><code>cpio(1)</code></a>, we’ll use
+<code>cpio -i</code> to extract it (it knows to handle gzipped data so we don’t
+need to uncompress it first).</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> PayloadOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> PayloadOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Payload</span>
+203798 blocks
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 0
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 Library
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 etc
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 usr
+</code></pre>
+<p>Looks like this is the tree of files to be copied to the target system
+during the installation. We can do the same thing with <code>Scripts</code>:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> ScriptsOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> ScriptsOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Scripts</span>
+6 blocks
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 16
+-rwxr-xr-x  1 val  staff   1.7K 13 Apr 18:40 postinstall
+-rwxr-xr-x  1 val  staff   890B 13 Apr 18:40 preinstall
+</code></pre>
+<p>Those are two shell scripts that the install runs respectively before
+and after the installation.</p>
+<p>We don’t need to mess with those in the scope of this article, but in
+general, I like to read those scripts prior to running any macOS <code>.pkg</code>
+installer to get an idea of what it’s going to do to my system.</p>
+<h2 id="finding-the-non-arm-binaries" tabindex="-1"><a class="header-anchor" href="#finding-the-non-arm-binaries"><span>Finding the non-ARM binaries</span></a></h2>
+<p>Let’s go back to the extracted <code>Payload</code> and find all the executables in
+there to see which ones are not ARM-compatible.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . <span class="hljs-built_in">type</span> f -perm +111 | xargs file</span>
+./usr/local/vanta/launcher:          Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/launcher (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/launcher (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/osquery-vanta.ext: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/osquery-vanta.ext (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/osquery-vanta.ext (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/autoupdater:       Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/autoupdater (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/autoupdater (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/vanta-cli:         Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/vanta-cli (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/vanta-cli (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/metalauncher:      Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/metalauncher (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/metalauncher (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/osqueryd:          Mach-O 64-bit executable x86_64
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> in GNU <code>find</code>, this would be <code>find . -type f -executable</code> but
+BSD <code>find</code> doesn’t support <code>-executable</code>. Instead we can pass <code>-perm</code>
+with an expression for matching the permission bits, where <code>+</code> means
+we’re passing a bitmask where at least one of the bits must match, and
+<code>111</code> is the bitmask to match executable permissions (for owner, group
+and others).</p>
+<p>See <a href="https://stackoverflow.com/a/4458361">this thread</a> for details.</p>
+</div>
+<p>By scanning this output we see that <code>usr/local/vanta/osqueryd</code> isn’t
+compatible with ARM. We can sort through this output to confirm we
+didn’t miss anything (by printing only the files where <code>file(1)</code> didn’t
+give the string <code>universal</code>):</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> $(find . -<span class="hljs-built_in">type</span> f -perm +111 | grep -v <span class="hljs-string">&#x27;\.app&#x27;</span>); <span class="hljs-keyword">do</span> file <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q universal || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span></span>
+./usr/local/vanta/osqueryd
+</code></pre>
+<p>So we identified our culprit.</p>
+<p>If this binary wasn’t essential to the program (or what we specifically
+want to do with it), we could just ignore it and jump to the <a href="#preventing-the-rosetta-prompt">last step</a>
+to prevent the installer from prompting to install Rosetta.</p>
+<h2 id="replacing-the-binary" tabindex="-1"><a class="header-anchor" href="#replacing-the-binary"><span>Replacing the binary</span></a></h2>
+<p>Because in our case it’s actually an essential binary, we need to
+replace it with an ARM-compatible version. This is not always going to
+be possible, in which case you might have to resort to Rosetta (or
+deciding to not install this package after all).</p>
+<p>For this specific program, we’re in luck because
+<a href="https://github.com/osquery/osquery">osquery</a> is actually an
+open source program!</p>
+<p>This means that even if they don’t provide an ARM version, hopefully
+with little work we can compile from source for ARM and use that for our
+package.</p>
+<p>But for us it’s even better, because they released <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
+a few months ago with Apple silicon support. Dope!</p>
+<p>So we can just fetch <a href="https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz">the <code>osqueryd</code> binary from this release</a>
+and replace the one from the original Vanta package.</p>
+<p>In my case I <a href="vanta-agent-m1-mac-without-rosetta.html#installing-and-running-vanta-without-root-privilege">did a few</a>
+<a href="vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">other tweaks</a>
+because I didn’t want to give this program <code>root</code> privileges and I also
+wanted to monitor its HTTPS traffic, but that’s off-topic for this
+article.</p>
+<h2 id="preventing-the-rosetta-prompt" tabindex="-1"><a class="header-anchor" href="#preventing-the-rosetta-prompt"><span>Preventing the Rosetta prompt</span></a></h2>
+<p>Or in other words, marking the package as ARM-compatible.</p>
+<p>If we were to <a href="#repackaging-the-installer">repackage the installer</a>
+right now, even though all the binaries in the payload are
+ARM-compatible, we would still be greeted by a prompt to install Rosetta
+when running it!</p>
+<p>We can find the solution as part of <a href="https://stackoverflow.com/a/11487658">this answer</a>
+(the “Apple silicon” part). By adding the following line in the
+<code>Distribution</code> XML file inside our package, we claim that the installer
+supports ARM64 natively and hence doesn’t need Rosetta:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">options</span> <span class="hljs-attr">hostArchitectures</span>=<span class="hljs-string">&quot;arm64,x86_64&quot;</span> /&gt;</span>
+</code></pre>
+<p>It can be added anywhere inside the <code>installer-gui-script</code> node.</p>
+<h2 id="repackaging-the-installer" tabindex="-1"><a class="header-anchor" href="#repackaging-the-installer"><span>Repackaging the installer</span></a></h2>
+<p>Now we made sure all the binaries we needed are compatible with ARM,
+and the <code>Distribution</code> file reflects that, we’re ready to repackage the
+installer!</p>
+<p>This is done in two steps.</p>
+<ol>
+<li>Recreate the <code>Payload</code> cpio archive from our updated content.</li>
+<li>Recreate the <code>.pkg</code> archive containing the whole structure.</li>
+</ol>
+<p>All the necessary instructions are in <a href="https://stackoverflow.com/questions/11298855/how-to-unpack-and-pack-pkg-file">this thread</a>
+but I’ll detail the specific ones I used below.</p>
+<h3 id="the-payload" tabindex="-1"><a class="header-anchor" href="#the-payload"><span>The payload</span></a></h3>
+<p>For the <code>Payload</code>, that we extracted and updated in a temporary
+<code>PayloadOut</code> directory next to it, we’ll run the following command from
+the <code>PayloadOut</code> directory:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . | cpio -oz --owner 0:80 &gt; ../Payload</span>
+203798 blocks
+</code></pre>
+<p>Here, <code>cpio -o</code> archives the file list from <code>stdin</code> and outputs the
+archive in <code>stdout</code>. <code>-z</code> was added for built-in gzip compression (could
+also be achieved by piping the output to <code>gzip -c</code>). <code>--owner 0:80</code> is
+used to archive the files with <code>root:admin</code> ownership (instead of my own
+user and group), which was necessary for this particular program.</p>
+<div class="note">
+<p><strong>Note:</strong> there’s also a <code>Bom</code> file next to our <code>Payload</code> and <code>Scripts</code>
+archives, which is effectively a BOM (bill of materials), containing a
+bunch of information about the files in the package.</p>
+<p>In my experience I didn’t need to touch this file despite some of the
+contents of the package changing, but your mileage may vary, in which
+case you might want to regenerate the BOM from our extracted
+<code>PayloadOut</code> directory by running <code>mkbom PayloadOut Bom</code>.</p>
+</div>
+<h3 id="the-package" tabindex="-1"><a class="header-anchor" href="#the-package"><span>The package</span></a></h3>
+<p>Before repackaging don’t forget to remove our temporary <code>PayloadOut</code> and
+<code>ScriptsOut</code> directories.</p>
+<p>Then, from the root of the extracted package, we can run the following
+command to create a new package:</p>
+<pre><code class="hljs language-sh">xar --compression none -cf ../vanta-new.pkg .
+</code></pre>
+<p>The <code>--compression none</code> part turned out to be important because if the
+XAR archive is compressed, we encounter the following error during the
+installation:</p>
+<pre><code class="hljs">Error Domain=BOMCopierFatalError Code=1 &quot;cpio read error: bad file format&quot;
+</code></pre>
+<p>This error is kinda misleading because it points to the cpio archive
+where the issue is really with the top-level XAR archive.</p>
+<p>It’s even more confusing that the macOS installer was able to extract
+the XAR archive to read the metadata from it (and can happily show files
+of the nested <code>Payload</code> archive), yet somehow fails to proceed with
+the rest of the installation because the archive it’s already reading
+from is compressed?</p>
+<p>I’m not gonna try to understand why that is, but just know that
+<code>--compression none</code> is necessary for this to work!</p>
+<h2 id="what-about-the-package-signature" tabindex="-1"><a class="header-anchor" href="#what-about-the-package-signature"><span>What about the package signature?</span></a></h2>
+<p>You might have noticed that we didn’t sign that newly created package.</p>
+<p>It turns out that this is fine. Sure, we’re now lacking the lock icon on
+the top right corner of the installer, but for our own usage, this isn’t
+a big deal. It doesn’t prevent the installation from completing
+whatsoever.</p>
+<p>So how come we get a security warning when we try to run an unsigned
+installer downloaded from the internet? That’s because Apple flags
+downloaded files as quarantined. You can see it by running e.g. <code>xattr vanta.pkg</code> and seeing it includes <code>com.apple.quarantine</code>.</p>
+<p>When opening a quarantined installer, macOS will check for a valid
+signature and print a security warning otherwise.</p>
+<p>But the archive we just created on our own is not quarantined, because
+we didn’t download it, so macOS is happy to let us run it without
+signature, which is pretty useful here.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Was it worth going through all that trouble to keep running my software
+as natively as possible? Definitely not.</p>
+<p>Did I learn a lot about macOS installers in the process, and how they
+handle universal binaries? Hell yeah.</p>
+<p>So in the end, I’m happy I dug through this, and if you ended up on this
+article somehow, I hope this was useful to you too!</p>
+<p>Wishing you a happy Rosetta-free Mac!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/04/repackage-macos-app-m1-support-without-rosetta.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

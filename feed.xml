@@ -5,10 +5,768 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-13T22:16:36.329Z</updated>
+  <updated>2022-04-30T21:43:15.836Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>graftcp: inspect any program’s HTTPS traffic through a proxy!</title>
+    <link href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html" />
+    <id>https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html</id>
+    <updated>2022-04-30T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Recently, I <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">needed to sniff an app’s HTTPS traffic</a>.</p>
+<p>While sniffing plaintext HTTP traffic is easy, by targeting the
+transport layer with tools like <a href="https://linux.die.net/man/8/tcpdump"><code>tcpdump(8)</code></a>
+or Wireshark, <em>HTTPS is another beast</em>.</p>
+<p>Because of the TLS encryption, all we see at the transport layer is a
+bunch of unusable encrypted data (and that’s the whole point of HTTPS).
+So we need to resort to solutions at a higher layer in the stack.</p>
+<p>My go-to for this kind of task is <a href="https://mitmproxy.org/">mitmproxy</a>,
+an interactive HTTPS proxy, as well as its headless counterpart
+<em>mitmdump</em>.</p>
+<p>But those are only half of the solution. A proxy server is useless until
+we route HTTPS traffic <em>through it</em>. And depending on the context, this
+task can go from pretty trivial to quite tricky.</p>
+<h2 id="common-ways-to-configure-a-proxy" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#common-ways-to-configure-a-proxy"><span>Common ways to configure a proxy</span></a></h2>
+<p>There’s 3 main ways that you can use to configure a proxy:</p>
+<ol>
+<li>the OS level,</li>
+<li>the application level,</li>
+<li>the environment level.</li>
+</ol>
+<p>I already <a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html">gave an introduction to mitmproxy</a>
+last year on the blog, in which I explored <a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#first-try-macos-network-proxy-settings">the OS level</a>
+and <a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#second-try-spotify-supports-app-level-proxy-settings">the app level</a>,
+but I’ll give a quick refresher here.</p>
+<h3 id="the-os-level" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#the-os-level"><span>The OS level</span></a></h3>
+<p>Your OS usually lets you configure a proxy in the networking settings.
+For example on macOS it’s in the advanced network preferences, and on
+Android it’s in the advanced Wi-Fi settings.</p>
+<p>It’s a good way to globally configure a proxy, but there’s no guarantee
+that apps are going to respect it. Typically, the default browser that
+ships with the OS (e.g. Safari) will use it, and some third-party
+browsers might too, but in general most other apps just ignore it. Not
+so good.</p>
+<h3 id="the-application-level" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#the-application-level"><span>The application level</span></a></h3>
+<p>While most apps don’t respect OS-level proxy configuration, some can
+provide you with a way to configure a proxy at their own level.</p>
+<p>Typically this will be Firefox’s connection settings, with its very own
+proxy configuration, Spotify’s advanced settings that <a href="https://www.codejam.info/2021/07/intercept-macos-app-traffic-mitmproxy.html#second-try-spotify-supports-app-level-proxy-settings">let you configure a proxy</a>,
+or more recently I’ve explored <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-proxy-hostname-argument">the <code>--proxy_hostname</code> argument</a>
+to the <code>osqueryd</code> program.</p>
+<p>But it’s up to the app’s developers to decide if they want or not to let
+you configure a proxy, and how rigorously they use it… (they might use
+the proxy for some requests but not all of them).</p>
+<h3 id="the-environment-level" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#the-environment-level"><span>The environment level</span></a></h3>
+<p>Finally, there are two pretty commonly used environment variables
+(although I believe not standard per se) to configure a proxy:
+<code>http_proxy</code> and <code>https_proxy</code>. They respectively configure a proxy to
+route HTTP and HTTPS traffic through.</p>
+<p>For example the Python language <a href="https://github.com/python/cpython/blob/a03a09e068435f47d02649dda93988dc44ffaaf1/Lib/urllib/request.py#L2507">supports those</a>
+in its native <code>urllib</code> package, and while Node.js <a href="https://github.com/nodejs/node/issues/8381">doesn’t</a>,
+the popular <a href="https://github.com/axios/axios">axios</a> library
+<a href="https://github.com/axios/axios/blob/bc733fec78326609e751187c9d453cee9bf1993a/lib/adapters/http.js#L186">also supports them</a>
+out of the box.</p>
+<p>So basically, it might or might not work depending on the implementation
+of the software that you’re using, but it’s definitely worth trying!</p>
+<h2 id="when-nothing-works-the-hacker-way" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#when-nothing-works-the-hacker-way"><span>When nothing works: the hacker way</span></a></h2>
+<p>So far all we’ve done is configuring a proxy in interfaces that
+explicitly allow us to set a proxy. But sometimes this is just not
+enough. That’s when we resort to ways to configure a proxy in places
+that don’t explicitly let us do so. 😏</p>
+<p>There’s two ways to do this. The most common one is to leverage
+<code>LD_PRELOAD</code> with dynamically linked binaries to override symbols in a
+library. This is the approach that <a href="https://linux.die.net/man/8/tsocks"><code>tsocks(1)</code></a>,
+<a href="https://github.com/haad/proxychains">ProxyChains</a> and <a href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a>
+use, hijacking the <a href="https://linux.die.net/man/2/connect"><code>connect(2)</code></a>
+<a href="https://en.wikipedia.org/wiki/C_standard_library">libc</a> function to
+route requests through the proxy of your choice.</p>
+<p>This is a great method when using programs that are dynamically linked
+against libc, but it will fail for statically liked programs, as well as
+programs that don’t use libc (Go programs for example).</p>
+<p>This is where <a href="https://github.com/hmgle/graftcp">graftcp</a> shines.
+Instead of hooking at the libc level, it leverages
+<a href="https://linux.die.net/man/2/ptrace"><code>ptrace(2)</code></a> to modify the
+<a href="https://linux.die.net/man/3/connect"><code>connect(3)</code></a> syscall arguments!
+Essentially, it’s acting at a lower level and that’s how it’s able to
+proxy against statically liked programs that don’t use libc. Their
+detailed <a href="https://github.com/hmgle/graftcp#principles">how does it work</a>
+explanation is really worth a read.</p>
+<h3 id="installation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#installation"><span>Installation</span></a></h3>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/hmgle/graftcp.git
+<span class="hljs-built_in">cd</span> graftcp
+make
+</code></pre>
+<h3 id="usage" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#usage"><span>Usage</span></a></h3>
+<p>From there, you can use <code>local/graftcp-local</code> to start the graftcp
+server, and configure it to use your proxy (for example mitmproxy
+starts a HTTP proxy on port 8080 by default). Because graftcp also
+defaults to a SOCKS5 proxy on <code>localhost:1080</code>, we need to force it to
+use the HTTP proxy we configured by using <code>--select_proxy_mode only_http_proxy</code>:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/graftcp-local --http_proxy localhost:8080 --select_proxy_mode only_http_proxy
+</code></pre>
+<p>We can do the same thing by “emptying” the preconfigured SOCKS5 proxy:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/graftcp-local --http_proxy localhost:8080 --socks5 <span class="hljs-string">&#x27;&#x27;</span>
+</code></pre>
+<p>Or we can instead run mitmproxy as a SOCKS5 proxy, here on port 1080
+(the default for graftcp):</p>
+<pre><code class="hljs language-sh">mitmproxy --mode socks5 -p 1080
+</code></pre>
+<p>Then we can run <code>local/graftcp-local</code> without arguments and it’ll just
+work.</p>
+<p>Either way, once the proxy and <code>local/graftcp-local</code> program is started,
+we can prefix any command with <code>./graftcp</code> to force it to run its
+network calls through the proxy!</p>
+<pre><code class="hljs language-sh">./graftcp curl https://www.codejam.info/
+</code></pre>
+<h3 id="dealing-with-certificates" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#dealing-with-certificates"><span>Dealing with certificates</span></a></h3>
+<p>However, this should complain that the SSL certificate from mitmproxy is
+untrusted. We can make it go through by appending <code>-k</code> (<code>--insecure</code>) to
+the <code>curl</code> command:</p>
+<pre><code class="hljs language-sh">./graftcp curl https://www.codejam.info/ --insecure
+</code></pre>
+<p>A better solution though would be to add the mitmproxy CA certificate
+found in <code>~/.mitmproxy/mitmproxy-ca-cert.pem</code> to the system trusted
+certificates. This will vary depending on your OS and distribution, but
+in my case that would be done with:</p>
+<pre><code class="hljs language-sh">sudo trust anchor ~/.mitmproxy/mitmproxy-ca-cert.pem
+</code></pre>
+<p>Then the <code>curl</code> command should work without <code>--insecure</code>!</p>
+<h3 id="short-version" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#short-version"><span>Short version</span></a></h3>
+<p>Finally, if you don’t want to bother running <code>local/graftcp-local</code> and
+<code>./graftcp</code> separately, you can instead use <code>local/mgraftcp</code>. If you
+still use the SOCKS5 proxy on port 1080:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/mgraftcp curl https://www.codejam.info/
+</code></pre>
+<p>Or with a HTTP proxy on port 8080:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">local</span>/mgraftcp --http_proxy localhost:8080 --select_proxy_mode only_http_proxy curl https://www.codejam.info/
+</code></pre>
+<p>This is useful if you only want to use graftcp for a single command, or
+don’t mind configure the proxy settings every single time. Otherwise the
+graftcp server method with <code>local/graftcp-local</code> works better as you
+only have to configure your proxy once and any call to <code>./graftcp</code> will
+use it!</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html#conclusion"><span>Conclusion</span></a></h2>
+<p>graftcp is a really powerful tool that allows you to redirect HTTPS
+traffic through a proxy of your choice, even in situations where this
+wouldn’t be allowed or planned for.</p>
+<p>Because I love inspecting programs’ network traffic to know how they
+work, and it’s not always easy to get access to their requests logs,
+graftcp is now a go-to of mine for this kind of task, as it’s proven to
+work flawlessly and very reliably, even with statically linked binaries
+and programs that don’t link against libc like it’s the case with Go!</p>
+<p>I hope you learnt something with this post, and I wish you a happy
+network sniffing. 🤘</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Install the Vanta agent on a M1 Mac without Rosetta (and more)</title>
+    <link href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html" />
+    <id>https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html</id>
+    <updated>2022-04-30T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Did you recently get asked to install the Vanta agent on your M1 Mac and
+got prompted to install Rosetta for it to run?</p>
+<p>Do you like running a Rosetta-free system?</p>
+<p>Then this post is for you.</p>
+<p>Also if you also don’t like running (benevolent) spyware with <code>root</code>
+permissions, and want to monitor what the spyware is precisely spying
+about you, read on, I have a few other things for you. 😉</p>
+<h2 id="the-rosetta-thing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-rosetta-thing"><span>The Rosetta thing</span></a></h2>
+<p>I wrote <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html">a more generic post</a>
+about this, and I encourage you to read it if you want to learn about
+all the technical details, but for the purpose of this Vanta-specific
+article, I’ll keep it short. The objective is to:</p>
+<ol>
+<li>Extract the <code>vanta.pkg</code> installer to access its contents.</li>
+<li>Update the <code>Distribution</code> XML file to flag ARM support (removes the
+Rosetta prompt).</li>
+<li>Extract the <code>vanta-raw.pkg/Payload</code> archive and replace the x86-64
+<code>osqueryd</code> binary by the universal binary from <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
+(or greater).</li>
+<li>Repackage the whole thing.</li>
+</ol>
+<p>Assuming you have <code>vanta.pkg</code> already downloaded (otherwise you can get
+it from <a href="https://github.com/VantaInc/vanta-agent-scripts/blob/b4e421f11d51896d274ae5782884c90f6ba5ce27/install-macos.sh#L8%5D">here</a>),
+run the following commands:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Create a directory to extract the package into</span>
+<span class="hljs-built_in">mkdir</span> vanta
+<span class="hljs-built_in">cd</span> vanta
+
+<span class="hljs-comment"># Extract the package in the current directory</span>
+xar -xf ../vanta.pkg
+
+<span class="hljs-comment"># Go in the subpackage</span>
+<span class="hljs-built_in">cd</span> vanta-raw.pkg
+
+<span class="hljs-comment"># Create a directory to extract the payload into</span>
+<span class="hljs-built_in">mkdir</span> PayloadOut
+<span class="hljs-built_in">cd</span> PayloadOut
+
+<span class="hljs-comment"># Extract the payload in the current directory</span>
+cpio -i &lt; ../Payload
+
+<span class="hljs-comment"># Stream the tar archive for `osqueryd` 5.2.2 (follow redirects) and extract it to the current directory</span>
+curl --location <span class="hljs-string">&#x27;https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz&#x27;</span> | tar xf -
+
+<span class="hljs-comment"># We now have a `osqueryd` binary that we can move to the right location</span>
+<span class="hljs-built_in">mv</span> osqueryd usr/local/vanta
+
+<span class="hljs-comment"># Recreate the cpio archive</span>
+find . | cpio -oz --owner 0:80 &gt; ../Payload
+
+<span class="hljs-comment"># Go back to the parent directory and remove our temporary `PayloadOut` directory</span>
+<span class="hljs-built_in">cd</span> ..
+<span class="hljs-built_in">rm</span> -rf PayloadOut
+
+<span class="hljs-comment"># Go back to the parent directory</span>
+<span class="hljs-built_in">cd</span> ..
+
+<span class="hljs-comment"># Flag ARM support in the `Distribution` file</span>
+sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s/&lt;allowed-os-versions&gt;/&lt;options hostArchitectures=&quot;arm64,x86_64&quot; \/&gt;\n    &lt;allowed-os-versions&gt;/&#x27;</span> Distribution
+
+<span class="hljs-comment"># Alternative with GNU sed</span>
+<span class="hljs-comment"># gsed -i &#x27;/&lt;installer-gui-script/a \    &lt;options hostArchitectures=&quot;arm64,x86_64&quot; /&gt;&#x27; Distribution</span>
+
+<span class="hljs-comment"># Repackage the main installer</span>
+xar --compression none -cf ../vanta-new.pkg .
+</code></pre>
+<p>This will give you a <code>vanta-new.pkg</code> installer that now has proper ARM
+support and won’t prompt you to install Rosetta!</p>
+<p>Again if you want to know precisely how this works, check out my
+<a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html">detailed article on the topic</a>.</p>
+<p>But while having native M1 support is great, there’s still a few things
+that concern me about this program.</p>
+<p>For example, I didn’t actually run that installer on my machine because
+it requires <code>root</code> permissions and I don’t want to run untrusted code as
+<code>root</code>. I still tested the package in a macOS VM (which is <a href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html">surprisingly easy to do nowdays</a>)
+to confirm that the script works end-to-end. But for a machine I care
+about, how do we install and run that thing with only user privileges?</p>
+<h2 id="installing-and-running-vanta-without-root-privilege" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#installing-and-running-vanta-without-root-privilege"><span>Installing and running Vanta without <code>root</code> privilege</span></a></h2>
+<p>It’s unclear what the this program does concretely, but it
+<a href="https://help.vanta.com/hc/en-us/articles/360060881051-Getting-Started-with-the-Vanta-Agent">claims</a>
+to be read-only (“it will <strong>not</strong> change anything on your machine”),
+despite their installer and other commands requesting <code>root</code> access
+(this is fishy AF).</p>
+<p>I don’t like running as <code>root</code> anything that wasn’t shipped by Apple
+as part of the macOS base system, with the exception of some specific
+open-source programs in very particular cases (e.g. some <code>nmap</code>
+invocations and such), or programs like nginx that I trust to properly
+drop privileges after starting and binding to a reserved port.</p>
+<p>This is definitely not the case of this Agent, and there’s no way this
+thing is going to run as <code>root</code>.</p>
+<p>So how do we run it without giving it superuser privileges? First, we
+need to dissect the package a bit and install it manually.</p>
+<p>In the <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-rosetta-thing">first part</a>, we already extracted the
+installer as well as the <code>Payload</code> archive, in a <code>PayloadOut</code> directory.
+We’ll start from there, and go in the <code>PayloadOut</code> directory to manually
+install everything we need.</p>
+<p>First we’ll copy <code>Library/LaunchDaemons/com.vanta.metalauncher.plist</code>
+to <code>~/Library/LaunchAgents/com.vanta.metalauncher.plist</code>. Why? Launch
+daemons are systematically run as <code>root</code> while launch agents are user
+services. Their format is otherwise compatible so that makes things easy
+for us.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> Library/LaunchDaemons/com.vanta.metalauncher.plist ~/Library/LaunchAgents
+</code></pre>
+<p>We also replace the error log path in that file to point to a location
+where we actually have write permission:</p>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s,/var/log/vanta_stderr.log,/usr/local/vanta/log/vanta_stderr.log,&#x27;</span> ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<p>Then we can copy <code>etc/vanta.conf</code> and <code>usr/local/vanta</code> to <code>/etc/</code> and
+<code>/usr/local</code> respectively.</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cp</span> etc/vanta.conf /etc
+sudo <span class="hljs-built_in">cp</span> -r usr/local/vanta /usr/local
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> OK I lied earlier, we do need <code>root</code> permission for this step.
+But at no point in this section we’ll run third-party code as <code>root</code>,
+and that’s what I intended by “without <code>root</code> privilege”.</p>
+<p>Also, keep in mind that we need to copy the <code>vanta</code> directory to
+<code>/usr/local</code> because that path is actually hardcoded everywhere in the
+software binaries so we can’t easily run it from another location.</p>
+</div>
+<p>Vanta asserts that some binaries are owned by <code>root</code>, and refuses to run
+otherwise. Once owned by <code>root</code> though, the program runs just fine
+even from a user account.</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/launcher
+sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/osqueryd
+</code></pre>
+<p>Then, edit the <code>/etc/vanta.conf</code> file to set your agent key and email.</p>
+<p>Finally we can start the service:</p>
+<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<p>You can alternatively start the agent from any CLI instead of using
+<a href="https://en.wikipedia.org/wiki/Launchd">launchd</a>:</p>
+<pre><code class="hljs language-sh">/usr/local/vanta/metalauncher
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the agent needs to be started using an absolute path if you
+want the <code>vanta-cli</code> and the Vanta app in the tray to report that the
+agent is running. If you <code>cd /usr/local/vanta</code> and run <code>./metalauncher</code>,
+those other tools will think it’s not running even though the agent is
+actually running and reporting properly. 😅</p>
+</div>
+<p>And we’re up! The logs are happily reporting that everything is running
+fine, and the menu bar app (if you chose to run it) also reports the
+agent is running.</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t want your menu bar to be “polluted” by the Vanta
+icon, I think there’s a setting to hide it, or even better, just get rid
+of <code>/usr/local/vanta/Vanta Agent.app</code> and you won’t see it ever again!</p>
+<p>All that apps seems to be really doing is <code>ps aux | grep /usr/local/vanta/metalauncher</code>
+to check that the agent is running, so you can easily do that yourself
+if you want.</p>
+</div>
+<blockquote>
+<p>But Val, how do you know that the agent is working properly after you
+installed it in such an esoteric way?</p>
+</blockquote>
+<p>Well, thanks to <a href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html">the VM</a> I mentioned
+earlier, I could test that the network traffic of the agent installed
+with the original x86-64 package is identical to that of my method
+without <code>root</code>. 😁</p>
+<blockquote>
+<p>But Val, how do you see the network traffic of the app? It’s all HTTPS
+and stuff.</p>
+</blockquote>
+<p>Well…</p>
+<h2 id="spying-on-the-spyware-and-monitoring-its-network-traffic" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic"><span>Spying on the spyware and monitoring its network traffic</span></a></h2>
+<p>This agent is essentially a spyware that employees willingly install on
+their work computer (or employers secretly install in some less ethical
+cases) to spy on them with good intentions.</p>
+<p>I’m more comfortable being spied on when I know precisely what is
+captured and what is not. A salesperson can always say “don’t worry, we
+respect your privacy”, but I tend to trust HTTPS traffic logs better. 😏</p>
+<h3 id="ways-to-sniff-packets" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#ways-to-sniff-packets"><span>Ways to sniff packets</span></a></h3>
+<p>There’s a multitude of ways to sniff network traffic from an app. If all
+you care about is transport layer data (e.g. raw TCP or UDP traffic),
+you can easily monitor it with tools like <a href="https://linux.die.net/man/8/tcpdump"><code>tcpdump(8)</code></a>
+or Wireshark. But for encrypted HTTPS traffic, that won’t cut it (and
+that’s the whole point of HTTPS).</p>
+<p>When you have some control over the application you want to monitor, or
+if it natively supports running through a proxy, a logging HTTPS proxy
+like <a href="https://mitmproxy.org/">mitmproxy</a> is really useful. Some software
+support communicating over a proxy through the pretty common
+<code>http_proxy</code> and <code>https_proxy</code> environment variables. Others support
+configuring a proxy via configuration files, UI, or command line
+arguments. If this is your case, you’re in luck, and you can use those
+means to make that program run its HTTPS traffic through mitmproxy!</p>
+<p>Otherwise, you need to dig deeper and tools like
+<a href="https://linux.die.net/man/8/tsocks"><code>tsocks(1)</code></a>,
+<a href="https://github.com/haad/proxychains">ProxyChains</a>,
+<a href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a> and
+<a href="https://github.com/hmgle/graftcp">graftcp</a> (my personal favorite),
+can really help. I wrote a <a href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html">dedicated article on the matter</a>
+if you’re interested!</p>
+<h3 id="the-proxy-hostname-argument" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-proxy-hostname-argument"><span>The <code>--proxy_hostname</code> argument</span></a></h3>
+<p>In our case, it turns out that Vanta uses the open-source
+<a href="https://github.com/osquery/osquery">osquery</a> program, which allows
+defining a custom proxy (see <code>--proxy_hostname</code> on <a href="https://osquery.readthedocs.io/en/stable/deployment/remote/">this page</a>)!</p>
+<p>So all we need to do is add our own <code>--proxy_hostname</code> to the <code>osqueryd</code>
+arguments. While we don’t control the invocation of <code>osqueryd</code> (it’s in
+the Vanta launcher binary), we can easily achieve this by wrapping the
+<code>osqueryd</code> binary with a shell script:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mv</span> osqueryd osqueryd-orig
+
+<span class="hljs-built_in">cat</span> &lt;&lt; <span class="hljs-string">EOF &gt; osqueryd
+#!/bin/sh -e
+
+exec /usr/local/vanta/osqueryd-orig --proxy_hostname=localhost:1337 &quot;$@&quot;
+EOF</span>
+
+<span class="hljs-built_in">chmod</span> +x osqueryd
+</code></pre>
+<p>With that shell script, we invoke the original <code>osqueryd</code> binary,
+passing our custom <code>--proxy_hostname</code> option (here with a proxy running
+on port 1337), and otherwise forwarding all other arguments.</p>
+<h3 id="what-about-certificates" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#what-about-certificates"><span>What about certificates?</span></a></h3>
+<p>In order to intercept HTTPS traffic, mitmproxy uses its own certificate,
+that you can find in <code>~/.mitmproxy/mitmproxy-ca-cert.pem</code>. You can add
+it to your system’s trusted certificates list, and as long as the
+software you’re monitoring uses the system CA certificates list, you
+should be good!</p>
+<p>However Vanta pins their own certificate chain (using the
+<code>--tls_server_certs</code> option), ignoring the certificates trusted at the
+OS level.</p>
+<p>The good news is that this pinned certificate is stored in
+<code>/usr/local/vanta/cert.pem</code>, and we can just replace it with the
+mitmproxy certificate!</p>
+<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cat</span> ~/.mitmproxy/mitmproxy-ca-cert.pem &gt; /usr/local/vanta/cert.pem
+</code></pre>
+<p>After that, and restarting the service, we should be able to monitor the
+traffic:</p>
+<pre><code class="hljs language-sh">launchctl unload ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+launchctl load ~/Library/LaunchAgents/com.vanta.metalauncher.plist
+</code></pre>
+<h3 id="dump-with-mitmdump" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#dump-with-mitmdump"><span>Dump with mitmdump</span></a></h3>
+<p>mitmproxy is great to interactively monitor the intercepted traffic, but
+you don’t want to be watching that all the time. Instead, mitmdump can
+be used to log the captured traffic to a file. Then you can parse that
+file and query it the way you like.</p>
+<pre><code class="hljs language-sh">mitmdump -w +/path/to/dump/file --listen-host 127.0.0.1 --listen-port 1337
+</code></pre>
+<p>To start it as a launch agent the same way we start the Vanta agent, we
+can add the following to <code>~/Library/LaunchAgents/mitmdump.plist</code>:</p>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
+<span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">plist</span> <span class="hljs-keyword">PUBLIC</span> <span class="hljs-string">&quot;-//Apple//DTD PLIST 1.0//EN&quot;</span> <span class="hljs-string">&quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">plist</span> <span class="hljs-attr">version</span>=<span class="hljs-string">&quot;1.0&quot;</span>&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>KeepAlive<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>Label<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>ProgramArguments<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">array</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>/path/to/mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>-w<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>+/path/to/dump/file<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-host<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>127.0.0.1<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-port<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>1337<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
+  <span class="hljs-tag">&lt;/<span class="hljs-name">array</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>RunAtLoad<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">plist</span>&gt;</span>
+</code></pre>
+<p>And enable it with:</p>
+<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/mitmdump.plist
+</code></pre>
+<h2 id="check-that-it-all-worked" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#check-that-it-all-worked"><span>Check that it all worked</span></a></h2>
+<p>Finally, you can confirm that the agent is registered properly after all
+those tweaks by checking the following link:</p>
+<pre><code class="hljs">https://app.vanta.com/agent/info?uuid=YOUR-HARDWARE-UUID
+</code></pre>
+<p>Where <code>YOUR-HARDWARE-UUID</code> is your hardware UUID as it can be found in
+<kbd>About This Mac</kbd>, <kbd>System Report…</kbd>, <kbd>Hardware
+UUID</kbd>.</p>
+<p>And that’s all for today! I hope you found on this page what is it you
+were looking for, and that you learnt a thing or two along the way! Or
+at least that you enjoyed reading through my adventures messing around
+with this program. 😂</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to repackage a macOS .pkg installer for M1 support without Rosetta</title>
+    <link href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html" />
+    <id>https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html</id>
+    <updated>2022-04-30T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>To start with, some basis that you might already know:</p>
+<ul>
+<li><a href="https://en.wikipedia.org/wiki/Apple_M1">Apple M1</a> is an
+<a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>-based
+CPU/GPU chip that ships with the latest Apple devices.</li>
+<li><a href="https://en.wikipedia.org/wiki/Rosetta_(software)">Rosetta</a> is a
+compatibility layer to translate <a href="https://en.wikipedia.org/wiki/X86-64">x86-64</a>
+instructions to <a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>
+instructions.</li>
+</ul>
+<p>Until recently, x86-64 was happily ruling the market (and still is by
+orders of magnitude, let’s be honest), but since Apple dropped those
+<strong>LIT</strong> 🔥 M1 chips that are basically killing the game in terms of
+performance, things are changing.</p>
+<p>This means that Mac software that was previously only targeting x86-64
+now needs to ship <strong>universal</strong> binaries that support both x86-64 and
+ARM if they want native performance.</p>
+<p>But some vendors didn’t catch up yet, and in those cases, you’ll need to
+rely on Rosetta for the while being to run those programs.</p>
+<p>That being said, there’s a thin chance that the program you install can
+be repackaged in a way that can run natively, <em>without Rosetta</em>! In this
+post we’ll explore the Vanta agent, that claims it requires Rosetta, but
+can easily be patched to run natively.</p>
+<p>If you’re in luck, you might be able to apply this knowledge to other
+macOS installers.</p>
+<h2 id="the-case-of-the-vanta-agent" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-case-of-the-vanta-agent"><span>The case of the Vanta agent</span></a></h2>
+<p>As part of a security policy, my employer requires me to install an
+agent program on my work laptop. This program is provided by a company
+called Vanta.</p>
+<p>I won’t go in details about what is this program, but if you care, you
+can checkout my <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html">detailed post on the topic</a>!</p>
+<p>Anyways, they ship a <code>vanta.pkg</code> installer, that, when opened, claims to
+be incompatible with the M1 architecture and requests to install
+Rosetta. Not good.</p>
+<h2 id="why-not-install-rosetta" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#why-not-install-rosetta"><span>Why not install Rosetta?</span></a></h2>
+<p>I don’t like installing garbage on my computer, and when I’m required to
+install garbage on my computer, I don’t like when on top of that the
+garbage requires me to emulate another CPU architecture in order to run
+it.</p>
+<p>Also the challenge is fun, and a bit of software golfing here and there
+is always enjoyable. I know it’s common practice to golf on production
+code these days in the industry, but I personally prefer to keep it
+contained and isolated. Golfing is a personal pleasure and, like
+masturbating, you shouldn’t impose it on your colleagues.</p>
+<h2 id="how-is-a-macos-installer-pkg-made" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#how-is-a-macos-installer-pkg-made"><span>How is a macOS installer (<code>.pkg</code>) made?</span></a></h2>
+<p>Let’s ask <a href="https://linux.die.net/man/1/file"><code>file(1)</code></a> for some
+information.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file vanta.pkg</span>
+vanta.pkg: xar archive compressed TOC: 4838, SHA-1 checksum
+</code></pre>
+<p>It looks like we’re looking at a wild archive format, mostly
+used on Darwin: <a href="https://linux.die.net/man/1/xar"><code>xar(1)</code></a>.
+Its arguments are pretty similar to <a href="https://linux.die.net/man/1/tar"><code>tar(1)</code></a>.</p>
+<p>Let’s make a directory to extract the archive in:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> vanta</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">xar -xf ../vanta.pkg</span>
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 8
+-rw-r--r--  1 val  staff   1.1K 13 Apr 16:50 Distribution
+drwx------  3 val  staff    96B 31 Dec  1969 Resources
+drwx------  6 val  staff   192B 31 Dec  1969 vanta-raw.pkg
+</code></pre>
+<p>So we have a file, <code>Distribution</code> and two directories, <code>Resources</code> and
+<code>vanta-raw.pkg</code>. Let’s investigate.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file Distribution</span>
+Distribution: XML 1.0 document text, ASCII text
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">vim Distribution</span>
+</code></pre>
+<p><code>Distribution</code> is a XML document, and when we look at it, we can see a
+bunch of metadata for the macOS installer, where vendors can customize
+background, logos, images and so on of the installer. In our case, it
+also references the <code>vanta-raw.pkg</code> directory.</p>
+<p>We’ll see <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt">later</a> that’s also where we
+can specify whether or not the package supports universal binaries!</p>
+<p>But first, let’s inspect that <code>vanta-raw.pkg</code>.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta-raw.pkg</span>
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 75880
+-rw-r--r--  1 val  staff    42K  4 Jan 16:32 Bom
+-rw-r--r--  1 val  staff   920B 13 Apr 16:50 PackageInfo
+-rw-r--r--  1 val  staff    36M  4 Jan 16:32 Payload
+-rw-r--r--  1 val  staff   1.2K  4 Jan 16:32 Scripts
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">file *</span>
+Bom:         Mac OS X bill of materials (BOM) file
+PackageInfo: XML 1.0 document text, ASCII text
+Payload:     gzip compressed data, from Unix, original size modulo 2^32 104344576
+Scripts:     gzip compressed data, from Unix, original size modulo 2^32 3072
+</code></pre>
+<p>So, another XML, two gzipped files, and a BOM file that we won’t care
+about in the scope of this article.</p>
+<p>The XML specifies “bundles” as well as <code>preinstall</code> and <code>postinstall</code>
+scripts. Nothing really interesting in there.</p>
+<p>Let’s look at the gzipped data. This doesn’t tell us anything other than
+the fact that it’s compressed with gzip… but let’s ask <code>file</code> for its
+opinion on the decompressed data.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">gunzip &lt; Payload | file -</span>
+/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">gunzip &lt; Scripts | file -</span>
+/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
+</code></pre>
+<p>Another archive format? And another obscure (at least to me) one on top
+of that? Alright.</p>
+<p>According to <a href="https://linux.die.net/man/1/cpio"><code>cpio(1)</code></a>, we’ll use
+<code>cpio -i</code> to extract it (it knows to handle gzipped data so we don’t
+need to uncompress it first).</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> PayloadOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> PayloadOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Payload</span>
+203798 blocks
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 0
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 Library
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 etc
+drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 usr
+</code></pre>
+<p>Looks like this is the tree of files to be copied to the target system
+during the installation. We can do the same thing with <code>Scripts</code>:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> ScriptsOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> ScriptsOut</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Scripts</span>
+6 blocks
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
+total 16
+-rwxr-xr-x  1 val  staff   1.7K 13 Apr 18:40 postinstall
+-rwxr-xr-x  1 val  staff   890B 13 Apr 18:40 preinstall
+</code></pre>
+<p>Those are two shell scripts that the install runs respectively before
+and after the installation.</p>
+<p>We don’t need to mess with those in the scope of this article, but in
+general, I like to read those scripts prior to running any macOS <code>.pkg</code>
+installer to get an idea of what it’s going to do to my system.</p>
+<h2 id="finding-the-non-arm-binaries" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#finding-the-non-arm-binaries"><span>Finding the non-ARM binaries</span></a></h2>
+<p>Let’s go back to the extracted <code>Payload</code> and find all the executables in
+there to see which ones are not ARM-compatible.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . <span class="hljs-built_in">type</span> f -perm +111 | xargs file</span>
+./usr/local/vanta/launcher:          Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/launcher (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/launcher (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/osquery-vanta.ext: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/osquery-vanta.ext (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/osquery-vanta.ext (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/autoupdater:       Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/autoupdater (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/autoupdater (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/vanta-cli:         Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/vanta-cli (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/vanta-cli (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/metalauncher:      Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
+- Mach-O 64-bit executable x86_64] [arm64]
+./usr/local/vanta/metalauncher (for architecture x86_64):	Mach-O 64-bit executable x86_64
+./usr/local/vanta/metalauncher (for architecture arm64):	Mach-O 64-bit executable arm64
+./usr/local/vanta/osqueryd:          Mach-O 64-bit executable x86_64
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> in GNU <code>find</code>, this would be <code>find . -type f -executable</code> but
+BSD <code>find</code> doesn’t support <code>-executable</code>. Instead we can pass <code>-perm</code>
+with an expression for matching the permission bits, where <code>+</code> means
+we’re passing a bitmask where at least one of the bits must match, and
+<code>111</code> is the bitmask to match executable permissions (for owner, group
+and others).</p>
+<p>See <a href="https://stackoverflow.com/a/4458361">this thread</a> for details.</p>
+</div>
+<p>By scanning this output we see that <code>usr/local/vanta/osqueryd</code> isn’t
+compatible with ARM. We can sort through this output to confirm we
+didn’t miss anything (by printing only the files where <code>file(1)</code> didn’t
+give the string <code>universal</code>):</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> $(find . -<span class="hljs-built_in">type</span> f -perm +111 | grep -v <span class="hljs-string">&#x27;\.app&#x27;</span>); <span class="hljs-keyword">do</span> file <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q universal || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span></span>
+./usr/local/vanta/osqueryd
+</code></pre>
+<p>So we identified our culprit.</p>
+<p>If this binary wasn’t essential to the program (or what we specifically
+want to do with it), we could just ignore it and jump to the <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt">last step</a>
+to prevent the installer from prompting to install Rosetta.</p>
+<h2 id="replacing-the-binary" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#replacing-the-binary"><span>Replacing the binary</span></a></h2>
+<p>Because in our case it’s actually an essential binary, we need to
+replace it with an ARM-compatible version. This is not always going to
+be possible, in which case you might have to resort to Rosetta (or
+deciding to not install this package after all).</p>
+<p>For this specific program, we’re in luck because
+<a href="https://github.com/osquery/osquery">osquery</a> is actually an
+open source program!</p>
+<p>This means that even if they don’t provide an ARM version, hopefully
+with little work we can compile from source for ARM and use that for our
+package.</p>
+<p>But for us it’s even better, because they released <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
+a few months ago with Apple silicon support. Dope!</p>
+<p>So we can just fetch <a href="https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz">the <code>osqueryd</code> binary from this release</a>
+and replace the one from the original Vanta package.</p>
+<p>In my case I <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#installing-and-running-vanta-without-root-privilege">did a few</a>
+<a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">other tweaks</a>
+because I didn’t want to give this program <code>root</code> privileges and I also
+wanted to monitor its HTTPS traffic, but that’s off-topic for this
+article.</p>
+<h2 id="preventing-the-rosetta-prompt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt"><span>Preventing the Rosetta prompt</span></a></h2>
+<p>Or in other words, marking the package as ARM-compatible.</p>
+<p>If we were to <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#repackaging-the-installer">repackage the installer</a>
+right now, even though all the binaries in the payload are
+ARM-compatible, we would still be greeted by a prompt to install Rosetta
+when running it!</p>
+<p>We can find the solution as part of <a href="https://stackoverflow.com/a/11487658">this answer</a>
+(the “Apple silicon” part). By adding the following line in the
+<code>Distribution</code> XML file inside our package, we claim that the installer
+supports ARM64 natively and hence doesn’t need Rosetta:</p>
+<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">options</span> <span class="hljs-attr">hostArchitectures</span>=<span class="hljs-string">&quot;arm64,x86_64&quot;</span> /&gt;</span>
+</code></pre>
+<p>It can be added anywhere inside the <code>installer-gui-script</code> node.</p>
+<h2 id="repackaging-the-installer" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#repackaging-the-installer"><span>Repackaging the installer</span></a></h2>
+<p>Now we made sure all the binaries we needed are compatible with ARM,
+and the <code>Distribution</code> file reflects that, we’re ready to repackage the
+installer!</p>
+<p>This is done in two steps.</p>
+<ol>
+<li>Recreate the <code>Payload</code> cpio archive from our updated content.</li>
+<li>Recreate the <code>.pkg</code> archive containing the whole structure.</li>
+</ol>
+<p>All the necessary instructions are in <a href="https://stackoverflow.com/questions/11298855/how-to-unpack-and-pack-pkg-file">this thread</a>
+but I’ll detail the specific ones I used below.</p>
+<h3 id="the-payload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-payload"><span>The payload</span></a></h3>
+<p>For the <code>Payload</code>, that we extracted and updated in a temporary
+<code>PayloadOut</code> directory next to it, we’ll run the following command from
+the <code>PayloadOut</code> directory:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . | cpio -oz --owner 0:80 &gt; ../Payload</span>
+203798 blocks
+</code></pre>
+<p>Here, <code>cpio -o</code> archives the file list from <code>stdin</code> and outputs the
+archive in <code>stdout</code>. <code>-z</code> was added for built-in gzip compression (could
+also be achieved by piping the output to <code>gzip -c</code>). <code>--owner 0:80</code> is
+used to archive the files with <code>root:admin</code> ownership (instead of my own
+user and group), which was necessary for this particular program.</p>
+<div class="note">
+<p><strong>Note:</strong> there’s also a <code>Bom</code> file next to our <code>Payload</code> and <code>Scripts</code>
+archives, which is effectively a BOM (bill of materials), containing a
+bunch of information about the files in the package.</p>
+<p>In my experience I didn’t need to touch this file despite some of the
+contents of the package changing, but your mileage may vary, in which
+case you might want to regenerate the BOM from our extracted
+<code>PayloadOut</code> directory by running <code>mkbom PayloadOut Bom</code>.</p>
+</div>
+<h3 id="the-package" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-package"><span>The package</span></a></h3>
+<p>Before repackaging don’t forget to remove our temporary <code>PayloadOut</code> and
+<code>ScriptsOut</code> directories.</p>
+<p>Then, from the root of the extracted package, we can run the following
+command to create a new package:</p>
+<pre><code class="hljs language-sh">xar --compression none -cf ../vanta-new.pkg .
+</code></pre>
+<p>The <code>--compression none</code> part turned out to be important because if the
+XAR archive is compressed, we encounter the following error during the
+installation:</p>
+<pre><code class="hljs">Error Domain=BOMCopierFatalError Code=1 &quot;cpio read error: bad file format&quot;
+</code></pre>
+<p>This error is kinda misleading because it points to the cpio archive
+where the issue is really with the top-level XAR archive.</p>
+<p>It’s even more confusing that the macOS installer was able to extract
+the XAR archive to read the metadata from it (and can happily show files
+of the nested <code>Payload</code> archive), yet somehow fails to proceed with
+the rest of the installation because the archive it’s already reading
+from is compressed?</p>
+<p>I’m not gonna try to understand why that is, but just know that
+<code>--compression none</code> is necessary for this to work!</p>
+<h2 id="what-about-the-package-signature" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#what-about-the-package-signature"><span>What about the package signature?</span></a></h2>
+<p>You might have noticed that we didn’t sign that newly created package.</p>
+<p>It turns out that this is fine. Sure, we’re now lacking the lock icon on
+the top right corner of the installer, but for our own usage, this isn’t
+a big deal. It doesn’t prevent the installation from completing
+whatsoever.</p>
+<p>So how come we get a security warning when we try to run an unsigned
+installer downloaded from the internet? That’s because Apple flags
+downloaded files as quarantined. You can see it by running e.g. <code>xattr vanta.pkg</code> and seeing it includes <code>com.apple.quarantine</code>.</p>
+<p>When opening a quarantined installer, macOS will check for a valid
+signature and print a security warning otherwise.</p>
+<p>But the archive we just created on our own is not quarantined, because
+we didn’t download it, so macOS is happy to let us run it without
+signature, which is pretty useful here.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Was it worth going through all that trouble to keep running my software
+as natively as possible? Definitely not.</p>
+<p>Did I learn a lot about macOS installers in the process, and how they
+handle universal binaries? Hell yeah.</p>
+<p>So in the end, I’m happy I dug through this, and if you ended up on this
+article somehow, I hope this was useful to you too!</p>
+<p>Wishing you a happy Rosetta-free Mac!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Run macOS inside Docker on Linux, with Wayland</title>
     <link href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html" />
@@ -71,7 +829,7 @@ but they didn’t appear to be needed for me.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1514368088531247108">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>
@@ -299,7 +1057,7 @@ they list they support a number of protocols, including <strong>SFTP, SCP,
 BorgBackup, and rsync over SSH</strong>.</p>
 <p>All of those protocols happen over a SSH connection, yet Hetzner doesn’t
 give us SSH access to the box:</p>
-<pre><code class="hljs">$ ssh u123456@u123456.your-storagebox.de
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh u123456@u123456.your-storagebox.de</span>
 PTY allocation request failed on channel 0
 
 +-------------------------------------------------------------------------------+
@@ -318,43 +1076,43 @@ simplicity, so that we can just <code>ssh hetzner</code>:</p>
 </code></pre>
 <p>While interactive SSH is not allowed, we can try running a command
 directly:</p>
-<pre><code class="hljs">$ ssh hetzner ls
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span></span>
 file1
 file2
 file3
 </code></pre>
 <p>Interesting. What other commands do they allow?</p>
-<pre><code class="hljs">$ ssh hetzner cp file3 file4
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cp</span> file3 file4</span>
 Command not found
-
-$ ssh hetzner cat file1
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cat</span> file1</span>
 Command not found
-
-$ ssh hetzner du -sh .
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">du</span> -sh .</span>
 Command not found
-
-$ ssh hetzner pwd
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">pwd</span></span>
 Command not found
-
-$ ssh hetzner whoami
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">whoami</span></span>
 Command not found
-
-$ ssh hetzner rm file3
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">rm</span> file3</span>
 Command not found
 </code></pre>
 <p>Well, not much. So by what sorcery are SFTP, SCP, BorgBackup and rsync
 able to work over this connection?</p>
-<pre><code class="hljs">$ sftp hetzner
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp hetzner</span>
 Connected to hetzner.
-sftp&gt;
-
-$ scp file4 hetzner:
+<span class="hljs-meta prompt_">sftp&gt;</span><span class="language-bash">
+</span><span class="hljs-meta prompt_">
+$ </span><span class="language-bash">scp file4 hetzner:</span>
 file4
-
-$ rsync -v file5 hetnzer:
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">rsync -v file5 hetnzer:</span>
 file5
-
-$ ssh hetzner ls file4 file5
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span> file4 file5</span>
 file4
 file5
 </code></pre>
@@ -365,7 +1123,7 @@ rsync.</p>
 nevertheless.</p>
 <p>Using <code>-v</code> to enable debug output gives one interesting line near the
 end of the log:</p>
-<pre><code class="hljs">$ sftp -v hetzner
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp -v hetzner</span>
 ...
 debug1: Sending subsystem: sftp
 ...
@@ -380,7 +1138,7 @@ configured on the server as:</p>
 <p>From the <a href="https://linux.die.net/man/1/ssh"><code>ssh(1)</code></a> man page, we can
 see that <code>ssh -s</code> allows to pass a subsystem where we would normally
 pass a command, e.g:</p>
-<pre><code class="hljs">$ ssh hetzner -s sftp
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner -s sftp</span>
 </code></pre>
 <p>This command hangs, meanings the remote server is waiting for SFTP
 commands. Since it’s a binary protocol, we won’t be able to play with it
@@ -388,7 +1146,7 @@ directly, but this is the connection over which a normal SFTP client
 would be able to do its magic. Sweet!</p>
 <h2 id="scp" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#scp"><span>SCP</span></a></h2>
 <p>Let’s use the verbose/debug mode trick like we did previously with SFTP:</p>
-<pre><code class="hljs">$ scp -v file4 hetzner:
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v file4 hetzner:</span>
 ...
 debug1: Sending command: scp -v -t .
 ...
@@ -413,7 +1171,7 @@ where they parse the command line arguments:</p>
 mode. Because in our case we were sending a file to the remote host, we
 entered <code>-t</code> mode, but if we were downloading a file form the host, we
 would likely see <code>-f</code>. Let’s try:</p>
-<pre><code class="hljs">$ scp -v hetzner:file4 .
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v hetzner:file4 .</span>
 ...
 debug1: Sending command: scp -v -f file4
 ...
@@ -422,13 +1180,13 @@ debug1: Sending command: scp -v -f file4
 local <code>scp</code> is able to transfer files. But how is that possible? We saw
 earlier that basically every command but <code>ls</code> was returning “command not
 found”! And we can confirm <code>scp</code> is not present on the remote host:</p>
-<pre><code class="hljs">$ ssh hetzner scp
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp</span>
 Command not found
 </code></pre>
 <p>Or is it? Let’s try the full command that <code>scp</code> would normally run on
 the remote host…</p>
-<pre><code class="hljs">$ ssh hetzner scp -t .
-$ ssh hetzner scp -f file4
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -t .</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -f file4</span>
 </code></pre>
 <p>Both those commands hang, meaning that Hetzner actually ran them, and we
 now have a communication channel with the remote <code>scp</code> process!</p>
@@ -439,13 +1197,13 @@ to start the remote process. Smart.</p>
 <p>Now we know the pattern, it’s easy to confirm that they do the same
 whitelisting for BorgBackup. We can see that <a href="https://borgbackup.readthedocs.io/en/stable/usage/serve.html"><code>borg serve</code></a>
 is used to start the remote process.</p>
-<pre><code class="hljs">$ ssh hetzner borg
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner borg</span>
 Command not found
-
-$ ssh hetzner borg --help
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner borg --<span class="hljs-built_in">help</span></span>
 Command not found
-
-$ ssh hetzner borg serve
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner borg serve</span>
 </code></pre>
 <p>The last command hangs, and again we exposed the way Borg internally
 opens a communication channel with a Borg implementation on the remote
@@ -453,20 +1211,20 @@ server!</p>
 <h2 id="rsync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#rsync"><span>rsync</span></a></h2>
 <p>One more time, we leverage the verbose mode, this time with <code>-vv</code> to get
 extra debug output, to see what rsync does internally:</p>
-<pre><code class="hljs">$ rsync -vv file5 hetzner:
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">rsync -vv file5 hetzner:</span>
 opening connection using: ssh hetzner rsync --server -vve.LsfxCIvu . .  (7 args)
 delta-transmission enabled
 file5
 ...
 </code></pre>
 <p>Sweet. Let’s try to run this manually:</p>
-<pre><code class="hljs">$ ssh hetzner rsync
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner rsync</span>
 Command not found
-
-$ ssh hetzner rsync --help
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner rsync --<span class="hljs-built_in">help</span></span>
 Command not found
-
-$ ssh hetzner rsync --server -vve.LsfxCIvu . .
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">ssh hetzner rsync --server -vve.LsfxCIvu . .</span>
 </code></pre>
 <p>And again, Hetzner allowed the last command and we have an open
 communication channel with the remote rsync process!</p>
@@ -2322,298 +3080,6 @@ similar issue, that helped you sort this problem out as well!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1459909788041682952">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Yearly Hackintosh upgrade: macOS Monterey with OpenCore</title>
-    <link href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html" />
-    <id>https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html</id>
-    <updated>2021-11-16T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Exactly a year ago, I <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">migrated my Hackintosh from Catalina to Big Sur,
-and from Clover to OpenCore</a>. Apple recently released
-Monterey, so it’s the first time for me doing a major upgrade since I’m
-using OpenCore.</p>
-<p>So far, OpenCore has been a breeze to work with. I’m not sure if it’s
-because it’s a really high quality piece of software and ecosystem in
-general, or if it’s because it forced me to learn a lot of low-level
-details in order to have a working Hackintosh, but both probably have a
-lot to do with this.</p>
-<p>I’ve been upgrading seamlessly all year long through Big Sur updates
-as smoothly as if I was using a “real Mac”. Upgrading to Monterey might
-have been as easy (with the addition of upgrading OpenCore and all kexts
-to their latest version, which I should probably do on minor updates
-even though I’ve been getting away perfectly fine by ignoring that all
-year long), but I like to take a new major version as an opportunity to
-reinstall my system from scratch and start from a clean slate.</p>
-<h2 id="my-paranoid-upgrade-procedure" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#my-paranoid-upgrade-procedure"><span>My paranoid upgrade procedure</span></a></h2>
-<p>I don’t do cowboy-style upgrades or installations anymore, because I’ve
-bricked my system too many times and while I’ve always managed to fix it
-more or less gracefully, it’s always been a somewhat stressful,
-uncomfortable and time-consuming experience.</p>
-<p>I’m also constantly scared of losing critical data by mistake, so
-I tend to back up everything more often than not. Here’s the procedure I
-follow to upgrade my system making sure I always have a bootable machine
-and without risking data loss.</p>
-<ul>
-<li>I make space for an empty partition on one of my drives to test the
-new system.</li>
-<li>I make sure that my current system has a full up-to-date backup on an
-external drive <em>that I keep unplugged</em> until I’m back in a fully
-stable state.</li>
-<li>Because I make the above backup with Time Machine and I don’t trust
-myself (nor macOS) to 100% reliably set up Time Machine on the new
-system without fucking up the previous backups, I also do a second
-(manual) backup on another drive. That step is probably unnecessary.</li>
-<li>I install the new system to the test partition, tweaking the OpenCore
-configuration, drivers and kexts as necessary.</li>
-<li>Once the test system is installed and running, I check that everything
-I need works as expected (display, audio, network, sleep) or otherwise
-find how to fix it, documenting everything along the way especially
-for fixes that live outside the EFI directory.</li>
-<li>When all is well, I reboot and perform the install on my main
-partition.</li>
-<li>After the install, I restore whatever I need from my previous backup.
-I still keep the rest of the backup (or at least parts of it) for 6
-months or so just in case. That came handy a couple of times in the
-past. I also wipe the temporary test installation.</li>
-<li>Finally, I write a blog post. 😄</li>
-</ul>
-<p>This is a bit more time-consuming than straight up performing the
-installation, and some of those steps might be a bit overkill, but I
-like going the extra length to make sure everything is backed up and
-redundant to prevent any unexpected issue and minimize the impact of a
-program or human error.</p>
-<h2 id="upgrade-log" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#upgrade-log"><span>Upgrade log</span></a></h2>
-<p>I’ll list all the steps I took in that upgrade, which are very similar
-to my <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">Big Sur post</a>, but I’ll note here the differences.
-Here’s the relevant details of my machine:</p>
-<dl>
-<dt>Motherboard</dt>
-<dd><a href="https://www.newegg.ca/p/N82E16813130924">MSI H110M PRO-D</a> (RTL8111H Ethernet chipset,  Realtek ALC887 audio chipset)</dd>
-<dt>CPU</dt>
-<dd><a href="https://www.newegg.ca/p/N82E16819117563">Intel Core i5-6500 Skylake</a></dd>
-<dt>GPU</dt>
-<dd><a href="https://www.newegg.ca/p/N82E16814932247">GIGABYTE Radeon RX 580</a></dd>
-</dl>
-<p>Still following <a href="https://dortania.github.io/OpenCore-Install-Guide/">the OpenCore guide</a>,
-I:</p>
-<ul>
-<li>downloaded the latest <a href="https://github.com/acidanthera/OpenCorePkg/releases"><code>OpenCorePkg</code></a>
-(0.7.5 in my case),</li>
-<li>downloaded <a href="https://github.com/corpnewt/ProperTree">ProperTree</a> to edit <code>.plist</code> files,</li>
-<li>downloaded Monterey from the App Store,</li>
-<li>formatted a USB drive as Mac OS Extended (HFS+) with a GUID partition
-map,</li>
-<li>ran <code>sudo /Applications/Install\ macOS\ Monterey.app/Contents/Resources/createinstallmedia --volume /Volumes/MyVolume</code>
-(where <code>MyVolume</code> was… my volume) to create the installation media,</li>
-<li>mounted the EFI partition of the USB key by running <code>sudo diskutil mount /dev/diskXsY</code>
-where <code>X</code> was the drive number and <code>Y</code> the partition number (found
-using <code>diskutil list</code>),</li>
-<li>copied OpenCore <code>DEBUG</code> version to it and removed unneeded files as
-instructed by the guide,</li>
-<li>added <code>HfsPlus.efi</code> from the <a href="https://github.com/acidanthera/OcBinaryData/blob/master/Drivers/HfsPlus.efi"><code>OcBinaryData</code> repo</a>,</li>
-<li>added <a href="https://github.com/acidanthera/VirtualSMC/releases">VirtualSMC</a>,
-<a href="https://github.com/acidanthera/Lilu/releases">Lilu</a>,
-<a href="https://github.com/acidanthera/WhateverGreen/releases">WhateverGreen</a>,
-<a href="https://github.com/acidanthera/AppleALC/releases">AppleALC</a> and
-<a href="https://github.com/Mieze/RTL8111_driver_for_OS_X/releases">RealtekRTL8111</a>
-kexts.</li>
-</ul>
-<p>Now here’s what got easier than my first OpenCore installation.</p>
-<h3 id="ssdts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#ssdts"><span>SSDTs</span></a></h3>
-<p>I just had to copy <code>SSDT-PLUG.aml</code>, <code>SSDT-EC.aml</code> and <code>SSDT-USBX.aml</code>
-from the <code>ACPI</code> directory of my <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">previous installation</a>,
-the <a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/plug.html">first</a>
-<a href="https://dortania.github.io/Getting-Started-With-ACPI/Universal/ec-fix.html">two</a>
-which I had built back then with
-<a href="https://github.com/corpnewt/SSDTTime">SSDTTime</a>, and the latter being
-the <a href="https://github.com/dortania/OpenCore-Post-Install/blob/master/extra-files/SSDT-USBX.aml">prebuilt one</a>
-that didn’t need to be updated.</p>
-<h3 id="usb-map" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#usb-map"><span>USB map</span></a></h3>
-<p>I could just copy <code>USBMap.kext</code> <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#generating-the-usb-map">from my previous installation</a>
-to have my USB ports supported right away without having to generate it
-again or to deal with <code>XhciPortLimit</code> and USBInjectAll. Sweet.</p>
-<h3 id="making-the-config-plist" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#making-the-config-plist"><span>Making the <code>config.plist</code></span></a></h3>
-<p>I started again from OpenCore’s <code>Sample.plist</code> and applied the same
-tweaks from the <a href="https://dortania.github.io/OpenCore-Install-Guide/config.plist/skylake.html#deviceproperties">Skylake</a>
-guide. I’m not sure if I could have reused my previous <code>config.plist</code> or
-not, but I wanted to start fresh and up-to-date.</p>
-<p>Everything was the same as <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#installing-macos-big-sur-with-opencore-and-the-issues-i-encountered">my previous installation</a>
-so I won’t include it here.</p>
-<p>The only difference was that I left <code>XhciPortLimit</code> to <code>False</code> as the
-guide mentions to disable it if running macOS 11.3 or newer, plus I
-already have my USB map so it shouldn’t be needed either way.</p>
-<p>I also had <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#booting-on-macos-installer-just-reboots-into-recovery">an issue last time</a>
-where I needed to set <code>SecureBootModel</code> to <code>Disabled</code> instead of the
-<code>Default</code> mentioned in the guide, but just to check, I left it to
-<code>Default</code> this time and didn’t have any issue, meaning I can now benefit
-from Apple Secure Boot!</p>
-<h3 id="removing-previous-fixes" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#removing-previous-fixes"><span>Removing previous fixes</span></a></h3>
-<p>For Big Sur, I <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#no-wi-fi-on-big-sur">needed to add</a>
-<code>IO80211HighSierra.kext</code> to get my Wi-Fi to work but I’m now connected
-over Ethernet so I didn’t need to include it. It’s a good thing because
-<a href="https://github.com/khronokernel/IO80211-Patches/issues/4">it doesn’t work on Monterey</a>
-(at least for now, I tried and had the same issue).</p>
-<p>Also I’ve had <a href="https://www.codejam.info/2021/..2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#can-t-find-my-sata-drives-in-the-macos-installer">an issue last time</a>
-that required a <code>CtlnaAHCIPort.kext</code> in order to see my SATA drives in
-the installer, but that wasn’t required anymore so I left it alone (it
-actually prevented the installer to boot if it was there).</p>
-<h3 id="finalizing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#finalizing"><span>Finalizing</span></a></h3>
-<p>Once everything was working, I copied OpenCore to my SSD’s EFI directory,
-and applied the <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html#cosmetic-tweaks">cosmetic tweaks</a>
-including putting the files from the OpenCore <code>RELEASE</code> version,
-removing the debug and verbose settings, and adding <code>OpenCanopy.efi</code> for
-a nice UI.</p>
-<p>I still needed to <a href="https://www.codejam.info/2020/10/too-much-contrast-external-screen-macos-catalina.html">patch the EDID of my screen to force it in RBG mode</a>,
-and the <a href="https://gist.github.com/adaugherity/7435890"><code>patch-edid.rb</code></a>
-method still works!</p>
-<p>After that, I didn’t need to do <em>any</em> tweak at the system configuration
-level, everything works out of the box including CPU power management
-and sleep. Power Nap also works like a charm but I turned it off just
-because it’s not useful to me.</p>
-<p>Since my system drive was named the same as my previous installation,
-Time Machine was able to continue the existing backup and I kept my full
-Time Machine history! Had I renamed the drive, it seems that I could
-have used <code>tmutil inheritbackup</code> and <code>tmutil associatedisk</code> to help with
-that.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>If it wasn’t for a <a href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html">totally unrelated hardware issue</a> that happened
-around the same time I performed the upgrade, migrating to Monterey with
-OpenCore was a straightforward and painless procedure and I didn’t
-encounter any hiccup.</p>
-<p>If you too are upgrading your Hackintosh to Monterey, I hope it went as
-smooth for you as it did for me!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Standalone userland SSH server</title>
-    <link href="https://www.codejam.info/2021/11/standalone-userland-ssh-server.html" />
-    <id>https://www.codejam.info/2021/11/standalone-userland-ssh-server.html</id>
-    <updated>2021-11-09T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I guess I have pretty unusual software needs sometimes. I’ve been
-wanting to spawn a one-off SSH server on one of my computers so that I
-can <code>rsync</code> something to it from another machine.</p>
-<p>I didn’t want to enable SSH connections systemwide on this host.
-Ideally, I wanted to start a server from my unprivileged user, that
-would only allow access to that particular user, and only to the
-specific SSH key of my other machine.</p>
-<p>Turns out with a simple <code>sshd_config</code>, <a href="https://sourceware.org/legacy-ml/cygwin/2008-04/msg00363.html">this is possible</a>!</p>
-<div class="note">
-<p><strong>Edit:</strong> this is now automated in a easy to use Git repository,
-<a href="https://github.com/valeriangalliat/sshd-on-the-go">go check it out</a>!</p>
-</div>
-<p>First, let’s make a directory to contain our server files.</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> standalone-sshd
-<span class="hljs-built_in">cd</span> standalone-sshd
-</code></pre>
-<p>In there, we generate our host RSA key (the <code>-N ''</code> part specifies an
-empty passphrase).</p>
-<pre><code class="hljs language-sh">ssh-keygen -f ssh_host_rsa_key -N <span class="hljs-string">&#x27;&#x27;</span>
-</code></pre>
-<p>Then, add your public key to a <code>authorized_keys</code> file in this same
-directory (same format as a regular <code>~/.ssh/authorized_keys</code>), and add
-the following configuration in a <code>sshd_config</code> file.</p>
-<pre><code class="hljs language-apache"><span class="hljs-attribute">Port</span> <span class="hljs-number">2222</span>
-<span class="hljs-attribute">HostKey</span> /path/to/standalone-sshd/ssh_host_rsa_key
-<span class="hljs-attribute">PidFile</span> /path/to/standalone-sshd/sshd.pid
-
-<span class="hljs-comment"># Don&#x27;t allow interactive authentication.</span>
-<span class="hljs-attribute">KbdInteractiveAuthentication</span> no
-
-<span class="hljs-comment"># Same as above but for older SSH versions.</span>
-<span class="hljs-attribute">ChallengeResponseAuthentication</span> no
-
-<span class="hljs-comment"># Don&#x27;t allow password authentication.</span>
-<span class="hljs-attribute">PasswordAuthentication</span> no
-
-<span class="hljs-comment"># Only allow my own user.</span>
-<span class="hljs-attribute">AllowUsers</span> val
-
-<span class="hljs-comment"># Only allow my own key.</span>
-<span class="hljs-attribute">AuthorizedKeysFile</span> /path/to/standalone-sshd/authorized_keys
-</code></pre>
-<p>Tweak the port, user, and other settings to your liking, but that should
-give you a good base!</p>
-<p>With that, you can run the server with the following command (the <code>-D</code>
-option starts the server in the foreground instead of the default daemon
-mode).</p>
-<pre><code class="hljs language-sh">/usr/sbin/sshd -f sshd_config -D
-</code></pre>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1458282446659653634">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>ImageMagick crop with percentage like CSS background-position</title>
-    <link href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html" />
-    <id>https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html</id>
-    <updated>2021-11-08T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Another one of those posts that are probably only useful to me, but who
-knows!</p>
-<p>I’ve been wanting to crop images with ImageMagick in a way that mimics
-what the CSS <code>background-position</code> property does.</p>
-<h2 id="how-does-background-position-behave" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#how-does-background-position-behave"><span>How does <code>background-position</code> behave?</span></a></h2>
-<p>Let’s say I have a picture that I’m making shorter, e.g. a 1:1 picture
-that I want to make 16:9, and I want to make sure to keep it centered
-both horizontally and vertically. I would use the following:</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-class">.element</span> {
-  <span class="hljs-attribute">background-position</span>: <span class="hljs-number">50%</span> <span class="hljs-number">50%</span>;
-}
-</code></pre>
-<p>In this particular case, we can easily mimic that with ImageMagick.
-Let’s assume <code>input.jpg</code> is currently a 1080x1080 square picture, and we
-want to scale it down to a 640x360 16:9 landscape:</p>
-<pre><code class="hljs language-sh">convert input.jpg -resize 640x -gravity center -crop 640x360+0+0 output.jpg
-</code></pre>
-<p>But <code>-gravity</code> only allows us to align top (<code>north</code>), center or bottom
-(<code>south</code>). What if we wanted a percentage in between?</p>
-<p>In the case of <code>background-position</code>, 0% would align the picture at the
-top, and 100% at the bottom. Anything in between would allow to navigate
-in that range.</p>
-<h2 id="applying-it-to-imagemagick" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#applying-it-to-imagemagick"><span>Applying it to ImageMagick</span></a></h2>
-<p>Let’s pretend we can’t do <code>-gravity south</code> to align the crop at the bottom,
-and convert our 100% offset to a pixels offset. It would be equal to the
-original picture height minus the target crop height, or in the case of
-our example, <code>640 - 360</code>, which is 280 pixels.</p>
-<pre><code class="hljs language-sh">convert input.jpg -resize 640x -crop 640x360+0+280 output.jpg
-</code></pre>
-<p>Similarly, our 75% becomes <code>75 / 100 * (640 - 360)</code>, which is 210.</p>
-<p>But it gets a bit annoying to calculate that manually every time.
-Instead, let me introduce the <code>magick</code> command!</p>
-<h2 id="the-magick-command" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/imagemagick-crop-percentage-css-background-position.html#the-magick-command"><span>The <code>magick</code> command</span></a></h2>
-<p><code>magick</code> behaves very similarly to <code>convert</code>, but supports some extra
-features like the ability to embed calculations directly in the cropping
-options!</p>
-<pre><code class="hljs language-sh">magick input.jpg -resize 640x -crop <span class="hljs-string">&#x27;640x360+0+%[fx:75/100*(h-360)]&#x27;</span> output.jpg
-</code></pre>
-<p>Here, the only variable we have to manually write down is the cropped
-height, which we already need to know to perform the crop in the first
-place.</p>
-<p>With that, it gets easy to adjust the percentage in a way that’s
-consistent with what <code>background-position</code> would otherwise do, without
-having to do the math by hand.</p>
-<p>It was already possible to do this by combining <code>identify</code> and a command
-line calculator like <code>bc</code>, but having the option to do that so easily in
-the <code>-crop</code> option is definitely nicer!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1457849255855542279">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

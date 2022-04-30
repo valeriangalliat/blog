@@ -9,6 +9,9 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
+* [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>
+* [How to repackage a macOS `.pkg` installer for M1 support without Rosetta](2022/04/repackage-macos-app-m1-support-without-rosetta.md) <small>April 30, 2022</small>
 * [Run macOS inside Docker on Linux, with Wayland](2022/04/macos-docker-linux-wayland.md) <small>April 13, 2022</small>
 * [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
@@ -21,9 +24,6 @@ A blog about tech, programming and other things.
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
 * [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
-* [Static DHCP server on Arch Linux in 2021, two ways](2021/11/static-dhcp-server-arch-linux.md) <small>November 26, 2021</small>
-* [Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector](2021/11/emoji-variation-selector.md) <small>November 19, 2021</small>
-* [Using Homebrew on a multi-user system (don't)](2021/11/homebrew-multi-user.md) <small>November 17, 2021</small>
 
 [All the posts](posts.md)
 

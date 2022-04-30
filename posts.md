@@ -8,6 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
+* [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>
+* [How to repackage a macOS `.pkg` installer for M1 support without Rosetta](2022/04/repackage-macos-app-m1-support-without-rosetta.md) <small>April 30, 2022</small>
 * [Run macOS inside Docker on Linux, with Wayland](2022/04/macos-docker-linux-wayland.md) <small>April 13, 2022</small>
 * [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>

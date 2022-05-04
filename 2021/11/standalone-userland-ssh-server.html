@@ -110,19 +110,19 @@ the following configuration in a <code>sshd_config</code> file.</p>
 <span class="hljs-attribute">HostKey</span> /path/to/standalone-sshd/ssh_host_rsa_key
 <span class="hljs-attribute">PidFile</span> /path/to/standalone-sshd/sshd.pid
 
-<span class="hljs-comment"># Don&#x27;t allow interactive authentication.</span>
+<span class="hljs-comment"># Don&#x27;t allow interactive authentication</span>
 <span class="hljs-attribute">KbdInteractiveAuthentication</span> no
 
-<span class="hljs-comment"># Same as above but for older SSH versions.</span>
+<span class="hljs-comment"># Same as above but for older SSH versions</span>
 <span class="hljs-attribute">ChallengeResponseAuthentication</span> no
 
-<span class="hljs-comment"># Don&#x27;t allow password authentication.</span>
+<span class="hljs-comment"># Don&#x27;t allow password authentication</span>
 <span class="hljs-attribute">PasswordAuthentication</span> no
 
-<span class="hljs-comment"># Only allow my own user.</span>
+<span class="hljs-comment"># Only allow my own user</span>
 <span class="hljs-attribute">AllowUsers</span> val
 
-<span class="hljs-comment"># Only allow my own key.</span>
+<span class="hljs-comment"># Only allow my own key</span>
 <span class="hljs-attribute">AuthorizedKeysFile</span> /path/to/standalone-sshd/authorized_keys
 </code></pre>
 <p>Tweak the port, user, and other settings to your liking, but that should
@@ -132,6 +132,39 @@ option starts the server in the foreground instead of the default daemon
 mode).</p>
 <pre><code class="hljs language-sh">/usr/sbin/sshd -f sshd_config -D
 </code></pre>
+<h2 id="alternative-with-password" tabindex="-1"><a class="header-anchor" href="#alternative-with-password"><span>Alternative with password</span></a></h2>
+<p>Alternatively, if you want to enable password authentication (with your
+user’s Unix login password), you can get away with an even simpler
+config:</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">Port</span> <span class="hljs-number">2222</span>
+<span class="hljs-attribute">HostKey</span> /path/to/standalone-sshd/ssh_host_rsa_key
+<span class="hljs-attribute">PidFile</span> /path/to/standalone-sshd/sshd.pid
+
+<span class="hljs-comment"># PAM is necessary for password authentication on Debian-based systems</span>
+<span class="hljs-attribute">UsePAM</span> yes
+
+<span class="hljs-comment"># Allow interactive authentication (default value)</span>
+<span class="hljs-comment">#KbdInteractiveAuthentication yes</span>
+
+<span class="hljs-comment"># Same as above but for older SSH versions (default value)</span>
+<span class="hljs-comment">#ChallengeResponseAuthentication yes</span>
+
+<span class="hljs-comment"># Allow password authentication (default value)</span>
+<span class="hljs-comment">#PasswordAuthentication yes</span>
+
+<span class="hljs-comment"># Only allow my own user</span>
+<span class="hljs-attribute">AllowUsers</span> val
+</code></pre>
+<p>I included but commented out the settings that are necessary but whose
+default value is already what we want (essentially, password
+authentication is enabled by default).</p>
+<p>We only need <code>UsePAM yes</code> on Debian-based systems for password
+authentication to work. As pointed out in <a href="https://unix.stackexchange.com/a/673581/521108">this answer</a>,
+contrary to what the <a href="https://linux.die.net/man/5/sshd_config"><code>sshd_config(5)</code></a>
+man page says (“If <code>UsePAM</code> is enabled, you will not be able to run
+<code>sshd(8)</code> as a non-root user”), it’s not actually a problem when running
+in userland, and it’s even required if we want to support password
+authentication.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

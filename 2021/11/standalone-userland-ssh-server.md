@@ -46,19 +46,19 @@ Port 2222
 HostKey /path/to/standalone-sshd/ssh_host_rsa_key
 PidFile /path/to/standalone-sshd/sshd.pid
 
-# Don't allow interactive authentication.
+# Don't allow interactive authentication
 KbdInteractiveAuthentication no
 
-# Same as above but for older SSH versions.
+# Same as above but for older SSH versions
 ChallengeResponseAuthentication no
 
-# Don't allow password authentication.
+# Don't allow password authentication
 PasswordAuthentication no
 
-# Only allow my own user.
+# Only allow my own user
 AllowUsers val
 
-# Only allow my own key.
+# Only allow my own key
 AuthorizedKeysFile /path/to/standalone-sshd/authorized_keys
 ```
 
@@ -72,3 +72,42 @@ mode).
 ```sh
 /usr/sbin/sshd -f sshd_config -D
 ```
+
+## Alternative with password
+
+Alternatively, if you want to enable password authentication (with your
+user's Unix login password), you can get away with an even simpler
+config:
+
+```apache
+Port 2222
+HostKey /path/to/standalone-sshd/ssh_host_rsa_key
+PidFile /path/to/standalone-sshd/sshd.pid
+
+# PAM is necessary for password authentication on Debian-based systems
+UsePAM yes
+
+# Allow interactive authentication (default value)
+#KbdInteractiveAuthentication yes
+
+# Same as above but for older SSH versions (default value)
+#ChallengeResponseAuthentication yes
+
+# Allow password authentication (default value)
+#PasswordAuthentication yes
+
+# Only allow my own user
+AllowUsers val
+```
+
+I included but commented out the settings that are necessary but whose
+default value is already what we want (essentially, password
+authentication is enabled by default).
+
+We only need `UsePAM yes` on Debian-based systems for password
+authentication to work. As pointed out in [this answer](https://unix.stackexchange.com/a/673581/521108),
+contrary to what the [`sshd_config(5)`](https://linux.die.net/man/5/sshd_config)
+man page says ("If `UsePAM` is enabled, you will not be able to run
+`sshd(8)` as a non-root user"), it's not actually a problem when running
+in userland, and it's even required if we want to support password
+authentication.

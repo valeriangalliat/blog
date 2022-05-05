@@ -5,10 +5,113 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-04-30T22:20:04.051Z</updated>
+  <updated>2022-05-05T16:52:30.618Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Firefox credit card autofill not working on Linux</title>
+    <link href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html" />
+    <id>https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html</id>
+    <updated>2022-05-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Firefox 79 <a href="https://techdows.com/2020/07/firefox-autofiil-credit-card.html">introduced</a>
+credit card autofill capability back in summer 2020. The feature is
+limited to a few regions, starting with US, and now supporting US, CA,
+UK, FR and DE.</p>
+<p>Today, I’m using Firefox 101 in Canada, and I noticed this feature
+wasn’t working on my Linux computer. In this post I’ll show what the
+problem was, how I debugged it and especially how I fixed it!</p>
+<h2 id="symptoms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#symptoms"><span>Symptoms</span></a></h2>
+<p>I know I have a few credit cards saved in my Firefox Sync account, they
+work perfectly on macOS and Android versions of Firefox, and Firefox was
+configured to sync them. Yet, the “saved credit cards” window in the
+privacy preferences pane was empty!</p>
+<figure class="center">
+  <img alt="Empty credit cards window" src="https://www.codejam.info/img/2022/05/firefox-saved-credit-cards.png">
+</figure>
+<p>Also if I clicked the <kbd>Add…</kbd> button and try to add a credit
+card (e.g. <code>4111111111111111</code> for a Visa card to pass the validation for
+testing), the <kbd>Save</kbd> button was completely unresponsive.</p>
+<h2 id="debugging" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#debugging"><span>Debugging</span></a></h2>
+<p>I opened the browser console from “more tools” in the application menu.
+Every time I clicked <kbd>Save</kbd>, an error would pop: “User canceled
+OS unlock entry”.</p>
+<pre><code class="hljs">[Exception... &quot;User canceled OS unlock entry&quot; nsresult: &quot;0x80004004 (NS_ERROR_ABORT)&quot; location: &quot;JS frame :: resource://gre/modules/OSKeyStore.jsm :: encrypt :: line 332&quot; data: no] OSKeyStore.jsm:332:24
+</code></pre>
+<p>Luckily this problem is already reported <a href="https://bugs.archlinux.org/task/74373">on the Arch Linux bug tracker</a>,
+and the solution seems to be to install a software providing
+<code>org.freedesktop.secrets</code>, which as of today is either <code>gnome-keyring</code>
+or <code>keepassxc</code>.</p>
+<p>I installed <code>gnome-keyring</code> and had to reboot for it to start
+automatically (ain’t no time to figure how this thing work under the
+hood for now). Yet the bug persisted, despite people on that thread
+mentioning this solves the issue for them!</p>
+<p>The “User canceled OS unlock entry” exception is thrown
+during the <a href="https://github.com/mozilla/gecko-dev/blob/bf243bc817f97b0bb74af710bd9d874370468e8b/toolkit/modules/OSKeyStore.jsm#L333"><code>OSKeyStore.encrypt</code></a>
+call, because the <code>ensureLoggedIn</code> function determined we were not
+authenticated. The underlying reason seemed to be the
+<a href="https://github.com/mozilla/gecko-dev/blob/bf243bc817f97b0bb74af710bd9d874370468e8b/toolkit/modules/OSKeyStore.jsm#L254"><code>nativeOSKeyStore.asyncGenerateSecret</code></a>
+call returning <code>NS_ERROR_FAILURE</code>.</p>
+<p>More likely Firefox wasn’t able to generate a secret in GNOME Keyring.
+So I installed <a href="https://en.wikipedia.org/wiki/Seahorse_(software)">Seahorse</a>
+to test it myself, and indeed, I couldn’t store new secrets from there
+either, it would fail with <code>No such secret collection at path: /</code>. This
+bug is also <a href="https://wiki.archlinux.org/title/GNOME/Keyring#No_such_secret_collection_at_path:_/">documented</a>
+on the ArchWiki, but sadly the solution there didn’t work for me.</p>
+<h2 id="the-underlying-issue" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#the-underlying-issue"><span>The underlying issue</span></a></h2>
+<p>I use LightDM autologin to automatically start my compositor on boot
+(where I <a href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html">greet myself with a lock screen</a>).
+It turns out GNOME Keyring doesn’t play well with autologin. From the
+<a href="https://wiki.archlinux.org/title/GNOME/Keyring#Using_the_keyring">ArchWiki</a>:</p>
+<blockquote>
+<p>To use automatic unlocking with automatic login, you can set a blank
+password for the default keyring. Note that the contents of the
+keyring are stored unencrypted in this case.</p>
+</blockquote>
+<p>That’s not ideal. And I already have a primary password configured in
+Firefox so it would suck to set a second one on GNOME Keyring just for
+Firefox to deal with credit cards differently…</p>
+<p>In the end I decided to ditch my automatic login and go back to TTY
+login and <a href="https://wiki.archlinux.org/title/Sway#Automatically_on_TTY_login">starting Sway automatically upon login on TTY1</a>.
+This is the recommended way to start Sway anyway, and they officially
+don’t support display managers, so that definitely can’t hurt.</p>
+<p>All I had to do was to edit <code>/etc/pam.d/login</code> according to the “when
+using console-based login” instructions of the <a href="https://wiki.archlinux.org/title/GNOME/Keyring#PAM_step">PAM
+step</a> in the
+GNOME Keyring page on ArchWiki, appending the following:</p>
+<pre><code class="hljs">auth       optional     pam_gnome_keyring.so
+session    optional     pam_gnome_keyring.so auto_start
+</code></pre>
+<h2 id="the-keepassxc-alternative" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#the-keepassxc-alternative"><span>The KeePassXC alternative</span></a></h2>
+<p>In the bug tracker there’s also <a href="https://bugs.archlinux.org/task/74373#comment207641">an answer</a>
+describing how to fix this issue with KeePassXC:</p>
+<blockquote>
+<ol>
+<li>KeePassXC needs to be running.</li>
+<li>The secret service integration must be enabled in settings.</li>
+<li>A database must be setup where at least one group is accessible to the secret service.</li>
+</ol>
+</blockquote>
+<p>That’s a solid alternative, but then if I want secrets to be properly
+secured, I need to add another password to that KeePassXC database, on
+top of my encrypted filesystem password, login password and Firefox
+primary password. That starts to be quite a lot of passwords… so I’ll
+stick with GNOME Keyring for now because it’s able to reuse my login
+password for that purpose.</p>
+<h2 id="final-words" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#final-words"><span>Final words</span></a></h2>
+<p>I now have a successful credit card sync and autofill in Firefox on
+Linux! I hope this becomes a bit simpler in the future, but at least I
+learnt a thing or two about the underlying implementation and the
+technical challenges and tradeoffs it involves.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>graftcp: inspect any program’s HTTPS traffic through a proxy!</title>
     <link href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html" />
@@ -2920,169 +3023,6 @@ inspired you to document your base setup in a similar way. Cheers!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136814400577537">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Desktop power button not responding and random sleep issues</title>
-    <link href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html" />
-    <id>https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html</id>
-    <updated>2021-11-16T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>A few days ago I started having issues with my computer. When I was
-putting it to sleep (or hibernating), it would either crash and turn off
-immediately, or would fail to power the GPU and USB ports after waking up,
-leaving me with a black screen and unresponsive keyboard and mouse,
-and forcing me to hard reset it.</p>
-<p>More notably, when it crashed instantly as it entered sleep state, the
-power button didn’t work anymore and I needed to unplug the machine for
-a minute or so before being able to start it again. This didn’t always
-work the first shot though but usually after doing it a few times, it
-would eventually boot up again.</p>
-<p>It’s something that had already happened to me in rare occurrences
-during the past year, enough to get me frustrated and somewhat anxious
-when my machine effectively appeared to be bricked (that’s how I found
-the unplug replug trick by despair), but not to a point where I spent
-the time to understand and fix the root cause, as it always kinda fixed
-itself without my intervention.</p>
-<p>I remember one time where the unplug replug trick didn’t work to a point
-where I decided to open the machine and see what I can do inside, but
-interestingly just the sheer fact of opening it and moving it around so
-that I can work on it fixed the problem, so I was just happy to have a
-working computer again and didn’t question it much.</p>
-<p>That’s until this week, coincidentally right before I <a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">upgrade to macOS Monterey</a>.</p>
-<h2 id="kernel-panic-sleep-wake-failure-in-efi" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html#kernel-panic-sleep-wake-failure-in-efi"><span>Kernel panic: sleep wake failure in EFI</span></a></h2>
-<p>I was still running Big Sur back then and it’s been running smooth the
-whole year, but the day before I decide to upgrade to Monterey, I get
-those sleep issues again, mainly lack of GPU and USB power on wake
-(manifested by a black screen and unresponsive keyboard and mouse).</p>
-<p>I figured it wasn’t worth fixing it now, and I might as well upgrade and
-see if it still happens. And while <a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">the upgrade goes smooth AF</a>,
-I notice even more of those sleep issues after the fact. They’re not
-occasional anymore, they happen pretty much 90% of the time the computer
-sleeps, seemingly at random. It either fails to power the connected
-devices on wake or just crashes right away when being put to sleep and
-causes the unresponsive power button issue.</p>
-<p>At that point I assume that it comes from the upgrade to Monterey,
-especially because I’m running a Hackintosh and I suspect that it must
-be for sure the culprit. After all, there’s “hack” in the name, even
-though it’s been impressively stable <a href="https://www.codejam.info/2020/11/upgrading-hackintosh-catalina-big-sur-clover-opencore.html">since I use OpenCore</a>.</p>
-<p>I spend more time than I’m willing to admit trying everything to fix
-<a href="https://dortania.github.io/OpenCore-Post-Install/universal/pm.html">power management</a>
-and <a href="https://dortania.github.io/OpenCore-Post-Install/universal/sleep.html">sleep</a>,
-including using <a href="https://github.com/acidanthera/CPUFriend/releases">CPUFriend</a>
-and <a href="https://github.com/corpnewt/CPUFriendFriend">CPUFriendFriend</a> to
-fix the “sleep wake failure in EFI” system panics. But none of that
-changes anything. I try to understand the different macOS sleep modes
-and <a href="https://dortania.github.io/OpenCore-Post-Install/universal/sleep.html#preparations">various</a>
-<code>pmset</code> <a href="https://github.com/li3p/dell-optiplex-9020-hackintosh-opencore#sleep">settings</a>
-to tune them and make things work but without any luck.</p>
-<p>I also try to see if it’s related to any of my external devices, and
-while the issues seem to happen less frequently when I unplug my 3
-external drives and my external sound card, they still happen somewhat
-randomly in a way that I can’t reliably isolate any of those as being
-the problem.</p>
-<h2 id="questioning-the-hardware" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html#questioning-the-hardware"><span>Questioning the hardware</span></a></h2>
-<p>At that point I lost more than 12 hours on this issue and I’m going on
-my second day of relentless debugging. I feel like I’ve tried everything
-possible and documented online about fixing sleep at the software,
-drivers and configuration level, and the precise issues and symptoms I
-run into don’t seem to exactly match any of the topics I find online.</p>
-<p>I have a TP-Link PCI Wi-Fi card in there and I’m thinking maybe it’s
-unsupported in a way that somehow causes the crashes with the new OS? I
-open the case and remove it, but this doesn’t seem to change anything.</p>
-<p>I start questioning my actual hardware, looking more precisely at the
-ssue where the power button is unresponsive. I find a
-<a href="https://www.reddit.com/r/buildapc/comments/3wn2d8/discussion_just_a_reminder_that_a_dead_bios/">number</a>
-<a href="https://www.quora.com/Can-a-dead-CMOS-battery-stop-a-computer-from-booting">of</a>
-<a href="https://steamcommunity.com/discussions/forum/11/618460171318429760/">pages</a>
-stating that a weak or dead CMOS battery could cause it (or also a
-faulty power supply 😅).</p>
-<p>The CMOS battery is easier to test and cheaper to replace than the power
-supply, so I start with that. My machine is now 5 years old so it’s not
-exactly brand new, even though I’ve kept desktop computers much longer
-than that in the past without needing to replace a CMOS battery once in
-my life. Regardless, I take it out and test it with a multimeter only to
-find that it delivers a solid 3 volts as it’s supposed to. I even test a
-brand new battery to compare and get the same results! Not the issue
-here, even though I wish it would have been as easy as replacing a
-CR2032 battery.</p>
-<p>But when I put the battery back in place, my computer still doesn’t
-start! And turning off and on the PSU again doesn’t seem to work
-anymore. Did I accidentally fry the motherboard while manipulating the
-battery? I try one more time to be relieved by the sound of my machine
-booting, and welcoming me with a fresh BIOS reset screen. I configure
-everything again and boot macOS. At that point, all the USB devices are
-unplugged and I’m on a freshly configured BIOS. I try the sleep again
-but sadly it keeps crashing.</p>
-<h2 id="very-specific-googling-and-final-fix" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html#very-specific-googling-and-final-fix"><span>Very specific googling, and final fix</span></a></h2>
-<p>As a last resort, I try searching the very specific symptom I’m having
-and the hack I found to work around it: “need to unplug and replug
-computer for it to start”. This sound so ridiculous and far fetched that
-I’ve never thought about searching just that before, but I’m pretty
-desperate at that point.</p>
-<p>To my whole surprise, I’m <a href="https://www.ifixit.com/Answers/View/255569/Why+do+I+have+to+first+unplug+my+computer+to+start">not the only one</a>
-to <a href="https://forums.tomshardware.com/threads/computer-shuts-off-and-wont-turn-back-on-until-i-unplug-it.217732/">have this issue</a>,
-and in those two pages from respectively 5 and 10 years ago, the pinned
-solution is the same:</p>
-<blockquote>
-<p>Open up the computer and look at all the extra cables inside make sure
-they’re all neatly bundled away from any part of the case they may be
-shorting it out.</p>
-<p>— <a href="https://www.ifixit.com/Answers/View/255569/Why+do+I+have+to+first+unplug+my+computer+to+start#answer256519">Why do I have to first unplug my computer to start?</a></p>
-</blockquote>
-<blockquote>
-<p>After trying just about everything software wise (except a complete
-Windows reinstall) I was able to track the problem down to my PSU as
-many forums had suggested. It tuned out that some of the many extra
-connectors I had on my PSU I had stuffed into an extra empty drive bay
-in order to reduce the clutter inside the case. Somehow one of them
-had been causing a short. After moving the cables around and tiding
-them up neat and proper the problem has completely gone away (went
-from daily occurrence to two weeks so far with no problem).</p>
-<p>— <a href="https://forums.tomshardware.com/threads/computer-shuts-off-and-wont-turn-back-on-until-i-unplug-it.217732/#post-11597639">Computer shuts off and won’t turn back on until I unplug it</a></p>
-</blockquote>
-<p>I did also stuff all my dangling PSU cables in an empty bay, and I
-thought I was doing myself a service by doing so, preventing a mess of
-cables in the middle of the case! I took the cables out of there, tidied
-them up differently and put them back in there in a way where they
-shouldn’t move around too much or touch anything.</p>
-<p>After that? The computer boots just fine and I haven’t noticed a single
-crash or any of the issues I was having around sleep and wake. I
-progressively started to plug my sound card, then my external drives,
-testing the sleep every time (to more easily identify a culprit if it
-wasn’t fixed), and it kept working. I’ve restored all of my original
-“clean” drivers, bootloader and system configuration (that I had
-modified during my attempts to fix the issue earlier), none of them
-caused any problem again.</p>
-<p>I’ve performed more than 20 successful sleep and wake cycles since then,
-whether I explicitly put the computer to sleep or let it hibernates by
-itself after a period of inactivity.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/computer-sleep-issues-power-button-not-responding.html#conclusion"><span>Conclusion</span></a></h2>
-<p>At that point I’m somewhat confident that like in the two posts above,
-the dangling PSU cables in the unit were shorting and causes those
-issues. The fact they caused instability specifically at the sleep and
-wake level were probably very specific to me and the precise way the
-cables where shorting each other.</p>
-<p>And the reason why the problem appeared to fix itself when unplugging
-and replugging the machine, or sometimes by just opening it and looking
-at it, doing no particular change inside? Those mere manipulations
-probably bumped the dangling wires inside just enough so that they
-weren’t shorting anymore, until they do again.</p>
-<p>It’s still hard for me to precisely explain why this was happening
-especially around sleep, and how the machine would otherwise be
-perfectly stable and never crash as long as it didn’t hit a sleep and
-wake cycle. Maybe something to do with the fans slightly moving the
-dangling cables while blowing at them? I’m not technical enough in
-hardware and electronics to make sense of that, so if any of you reading
-that have a better idea, please <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
-<p>And at the very least I hope that if you’re reading this because of a
-similar issue, that helped you sort this problem out as well!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1459909788041682952">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

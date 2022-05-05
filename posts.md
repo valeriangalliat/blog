@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>
 * [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
 * [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>

@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>
 * [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
 * [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
 * [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
-* [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
 
 [All the posts](posts.md)
 

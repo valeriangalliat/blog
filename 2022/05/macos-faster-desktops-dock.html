@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>macOS faster switch between desktops and faster Dock</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="macOS faster switch between desktops and faster Dock">
+  <meta property="og:description" content="Quick tip for macOS! I’ve always found the animation to switch between desktops and spaces quite slow, when using Ctrl + Left or Right, or using the 3 fingers swipe on a trackpad.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>macOS faster switch between desktops and faster Dock</h1>
+<p class="date">May 5, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Quick tip for macOS! I’ve always found the animation to switch between
+desktops and spaces quite slow, when using <kbd>Ctrl</kbd> +
+<kbd>Left</kbd> or <kbd>Right</kbd>, or using the 3 fingers swipe on a
+trackpad.</p>
+<p>Same thing when configuring the Dock to hide by default and only show
+when the mouse is near it. There’s a slight delay that just drives me
+nuts and caused me to keep the Dock visible at all times, wasting
+precious vertical screen real estate! But luckily, I’ve found solutions
+for those two problems.</p>
+<div class="note">
+<p><strong>Note:</strong> initially I shared those on Twitter,
+<a href="https://twitter.com/valeriangalliat/status/1519696597940158464">here</a>
+for the Dock and
+<a href="https://twitter.com/valeriangalliat/status/1519698499927158787">here</a>
+for switching between desktops.</p>
+</div>
+<p>For the Dock, the delay can be removed with this command:</p>
+<pre><code class="hljs language-sh">defaults write com.apple.dock autohide-delay -<span class="hljs-built_in">float</span> 0; killall Dock
+</code></pre>
+<p>And to switch faster between desktops, I found that macOS provides
+Mission Control shortcuts to switch to a specific desktop directly. It’s
+just not enabled by default, and you need to have multiple <em>active</em>
+desktops in order for those shortcuts to be even shown in the
+preferences!</p>
+<p>For example with 3 active desktops, opening the keyboard shortcut
+preferences, in the Mission Control section:</p>
+<figure class="center">
+  <img alt="macOS keyboard shortcuts" src="../../img/2022/05/macos-keyboard-shortcuts.png">
+</figure>
+<p>We see we can activate <kbd>Ctrl</kbd> and the number keys to directly
+switch to a given desktop.</p>
+<p>And it turns out the animation when using those shortcuts is noticeably
+faster than <kbd>Ctrl</kbd> + <kbd>Left</kbd> and <kbd>Right</kbd>! And
+on top of that instead of having to navigate through all the desktops
+one by one, we can jump to the one we want directly, which makes the
+flow even faster.</p>
+<p>Sadly this doesn’t work with spaces (e.g. full screen windows), only
+with desktops. Because of that, I switched from using iTerm2 and Visual
+Studio Code in full screen, and I instead use them as a maximized window
+in a new desktop. I lose a tiny bit of vertical space because of the top
+bar, but I gained even more vertical space with the Dock trick earlier
+that this is not a big deal!</p>
+<p>I hope this tip was useful to you. 🥰</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/05/macos-faster-desktops-dock.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

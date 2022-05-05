@@ -131,6 +131,13 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 
 * In **keyboard** I set "key repeat" and "delay until repeat" to the
   fastest possible. I like my keyboard to be snappy.
+* Also in **keyboard**, this time in the **text** tab, I untick
+  everything, and delete the built-in `omw` abbreviation. See
+  [before](../../img/2021/11/keyboard-before.png)
+  and [after](../../img/2021/11/keyboard-after.png). I'm always
+  staggered when I forget to do this and `omw` gets replaced by `On my
+  way!`, or when I press space twice and it inserts a colon instead
+  *while I code in Visual Studio Code*! 🤦‍♀️
 * For the **dock & menu bar**, I leave only **Time Machine** and **fast
   user switching** if I'm on a multi-user system, and I set the
   **clock** to 24 hours format.

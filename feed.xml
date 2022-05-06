@@ -5,10 +5,75 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-05-05T21:38:09.466Z</updated>
+  <updated>2022-05-06T00:32:11.935Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>The disk wasn’t ejected because one or more programs may be using it</title>
+    <link href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html" />
+    <id>https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html</id>
+    <updated>2022-05-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>If you run macOS, you might have run in the following error message when
+trying to eject a removable device:</p>
+<figure class="center">
+  <img alt="The disk wasn’t ejected because one or more programs may be using it" src="https://www.codejam.info/img/2022/05/macos-disk-eject.png">
+</figure>
+<p>In some cases, even waiting a few minutes doesn’t solve the problem.
+Often, it happens after deleting files from the device just before
+ejecting, and Quick Look is often the culprit. Let’s see.</p>
+<p><em>Inspired by <a href="https://mycyberuniverse.com/macos/how-fix-volume-cant-be-ejected-because-currently-use-user.html">this post</a>
+and <a href="https://mycyberuniverse.com/macos/how-fix-volume-cant-be-ejected-because-currently-use.html">this post</a>.</em></p>
+<h2 id="investigating" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#investigating"><span>Investigating</span></a></h2>
+<p>To know what program is currently using the volume you’re trying to
+eject, you can use the <a href="https://linux.die.net/man/8/lsof"><code>lsof(8)</code></a>
+command. In my case the volume is <code>/Volumes/LUMIX</code>:</p>
+<pre><code class="hljs language-console"> lsof +c0 /Volumes/LUMIX
+COMMAND            PID USER   FD   TYPE DEVICE   SIZE/OFF   NODE NAME
+QuickLookUIService 611  val    3r   REG   1,31 2970637594     51 /Volumes/LUMIX/.Trashes/501/P2770021.MP4
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the <code>+c0</code> option here is to display the full command string.
+By default, it only shows 9 characters.</p>
+</div>
+<p>You can see that <code>QuickLookUIService</code> is still doing something with the
+file <code>P2770021.MP4</code> that I deleted… and it’s probably stuck and
+confused because the file is not there anymore.</p>
+<h2 id="killing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#killing"><span>Killing</span></a></h2>
+<p>To fix that, we can kill the <code>QuickLookUIService</code> process (or whatever
+process was blocking in your case).</p>
+<div class="note">
+<p><strong>Note:</strong> in the case of <code>QuickLookUIService</code>, it’s safe to kill, but if
+you’re dealing with a different program preventing you to eject your
+drive, it’s up to your own judgment whether it’s a good idea or not to
+kill it!</p>
+</div>
+<p>There’s essentially two methods we’ll talk about: soft kill, which would
+be<code>pkill QuickLookUIService</code> and hard kill, with <code>pkill -9 QuickLookUIService</code>.</p>
+<p>In the case of this bug, it looks like we need to resort to hard kill,
+as a soft kill doesn’t terminate the hanging process:</p>
+<pre><code class="hljs language-sh">pkill -9 QuickLookUIService
+</code></pre>
+<p>Now you should be able to eject your device!</p>
+<h2 id="restarting-quick-look" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#restarting-quick-look"><span>Restarting Quick Look</span></a></h2>
+<p>Quick Look is the macOS service responsible for computing file previews
+for various UI components. After we killed it, it might or might not
+restart by itself, so if you notice that new file previews and
+thumbnails don’t appear anymore in your Finder, you can restart Quick
+Look with the following command:</p>
+<pre><code class="hljs language-sh">qlmanage -r
+</code></pre>
+<p>It won’t hurt to run it either way after killing the process and
+ejecting the drive.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>macOS faster switch between desktops and faster Dock</title>
     <link href="https://www.codejam.info/2022/05/macos-faster-desktops-dock.html" />
@@ -2716,164 +2781,6 @@ noticing those inconsistencies, and how to fix them. Cheers! ✌️</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461856790602264579">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using Homebrew on a multi-user system (don’t)</title>
-    <link href="https://www.codejam.info/2021/11/homebrew-multi-user.html" />
-    <id>https://www.codejam.info/2021/11/homebrew-multi-user.html</id>
-    <updated>2021-11-17T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I’ve recently <a href="https://twitter.com/valeriangalliat/status/1460337357094326275">started working at a new company</a>,
-where I’ve got the freedom to use my own rig, which is especially nice
-if I want to work while travelling without having to bring two laptops
-with me.</p>
-<p>But setting up a work environment on my personal computer actually
-brings a number of concerns, mainly about:</p>
-<ul>
-<li>Environment variables.</li>
-<li>Development tools and configurations.</li>
-<li>Shell history.</li>
-</ul>
-<p>Whether it’s my personal Google Cloud context leaking in my work
-environment, work SSH keys being available in my personal projects,
-various unrelated developer tokens and credentials cohabiting in the
-same environment, and work-specific commands popping in my personal
-shell history and making me press the up arrow even more than I already
-do, it quickly feels like poor hygiene to keep everything under the same
-user.</p>
-<p>And while some of those tools allow to authenticate with multiple
-accounts and offer ways to configure them individually and switch
-between contexts, I’ve seen enough mistakes happen by juggling between
-staging and production environments in the same session that adding my
-personal credentials to the mix sounds like a recipe for disaster.</p>
-<p>So after realizing that merging my personal projects with my
-professional environment was a bad idea, I decided to create a dedicated
-user for work, this way everything would be neatly contained. Meet the
-multi-user system.</p>
-<h2 id="sharing-a-homebrew-is-nice-but-brew-not-so-much" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#sharing-a-homebrew-is-nice-but-brew-not-so-much"><span>Sharing a homebrew is nice 🍺, but <code>brew</code> not so much</span></a></h2>
-<p>The main issue I ran doing that was about running <a href="https://brew.sh/">Homebrew</a>,
-the tool I install macOS packages with, and which I happen to use both
-personally and for work.</p>
-<p>Out of the box, if you install it from one user, it’ll just fail to do
-anything when run from another user because of permission issues.</p>
-<h3 id="the-evil-shared-group-writable-permissions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-evil-shared-group-writable-permissions"><span>The evil: shared group writable permissions</span></a></h3>
-<p>Turns out I’m
-<a href="https://medium.com/@leifhanack/homebrew-multi-user-setup-e10cb5849d59">not</a>
-<a href="https://stackoverflow.com/questions/41840479/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">the</a>
-<a href="https://gist.github.com/jaibeee/9a4ea6aa9d428bc77925">only</a>
-<a href="https://newbedev.com/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup">one</a>
-to try to do this, a simple search for this yields a fuckton of results!
-And they all mostly share the same “tip” which is some variant of:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">chgrp</span> -R admin /usr/local/*
-<span class="hljs-built_in">chmod</span> -R g+w /usr/local/*
-</code></pre>
-<p>Some variants use <code>brew --prefix</code> instead of hardcoding <code>/usr/local</code>,
-some use a custom group instead of <code>admin</code>. Either way, it’s all the
-same, and it appears to work at first, until it doesn’t.</p>
-<p>The problem is that Homebrew is <em>not</em> designed to be used by multiple
-Unix users. A given Homebrew installation is only meant to be used by a
-single non-root user.</p>
-<p>By giving write access to a given group (in the above example, <code>admin</code>),
-that is shared by all the users you want to call <code>brew</code> from, you get
-the illusion that you allowed <code>brew</code> to be used by multiple users.</p>
-<p>But the issue is that the default <a href="https://en.wikipedia.org/wiki/Umask"><code>umask</code></a>
-that <code>brew</code> uses doesn’t add group write access, meaning that as you
-use <code>brew</code>, more and more parts of the state will not be writable by the
-other users in your group.</p>
-<p>For example if after running the earlier hack, you run <code>brew install some-package</code> as user <code>foo</code>, then you won’t be able to <code>brew uninstall some-package</code> or <code>brew update some-package</code> as user <code>bar</code>, because the
-permission for the newly created files won’t have group write access.</p>
-<p>This means that if you instal packages from different users, <code>brew update</code> will very quickly fail to run on <em>any</em> of those users because
-none have access to <em>everything</em> anymore. Sure, you can solve that by
-running the <code>chmod</code> hack again, but that’s flaky and won’t event prevent
-every edge cases.</p>
-<p>You see setups as crazy as running the <code>chmod</code> command in <code>~/.zshrc</code> or
-similar to prevent this, which will still fall apart if you don’t open a
-new terminal session every time right before running <code>brew</code>, on top of
-being a performance nightmare!</p>
-<h3 id="the-bad-separate-homebrew-installations" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-bad-separate-homebrew-installations"><span>The bad: separate Homebrew installations</span></a></h3>
-<p>Another approach that’s <a href="https://stackoverflow.com/a/55021458/4324668">not</a>
-<a href="https://docs.brew.sh/Installation#alternative-installs">as</a>
-<a href="https://code.roygreenfeld.com/cookbook/homebrew-multi-user-setup.html">widespread</a>
-as the first one is to maintain a separate <code>brew</code> installation per user,
-e.g. somewhere under the home directory as opposed to the default global
-location.</p>
-<p>That sounds like a great idea and would be my favorite way if it wasn’t
-for the fact that <strong>pretty much every package I wanted to install needed
-to be compiled from source because the prebuilt binaries only works with
-the default global prefix</strong>!</p>
-<p>This makes <code>brew</code> effectively unusable as it can take ages to compile
-complete dependency trees that way.</p>
-<p>On top of that you can read the following in the <a href="https://docs.brew.sh/Installation#alternative-installs">official documentation</a>
-which definitely doesn’t make me want to go that way:</p>
-<blockquote>
-<p>However do yourself a favour and use the installer to install to the
-default prefix. Some things may not build when installed elsewhere.
-One of the reasons Homebrew just works relative to the competition is
-<strong>because</strong> we recommend installing here. <em>Pick another prefix at your
-peril!</em></p>
-</blockquote>
-<p>This confirms my first feeling about this method: Homebrew is <em>not</em>
-designed to be installed outside of its default prefix and you’ll run
-into all sort of issues if you do. I don’t like spending my time fixing
-issues like these so I’ll pass.</p>
-<h3 id="the-good-dedicate-a-single-user-account-to-homebrew" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#the-good-dedicate-a-single-user-account-to-homebrew"><span>The good: dedicate a single user account to Homebrew</span></a></h3>
-<p>This is what’s recommended for multi-user systems
-<a href="https://docs.brew.sh/FAQ#why-does-homebrew-say-sudo-is-bad">in the Homebrew FAQ</a>.
-Sadly this page is not well ranked when looking for how to to use
-Homebrew in a multi-user system (unlike the previous hacks) and I only
-found it write writing this post. The fun thing is that it’s also the
-approach that I decided to use for myself and was about to document
-here!</p>
-<blockquote>
-<p>If you need to run Homebrew in a multi-user environment, consider
-creating a separate user account especially for use of Homebrew.</p>
-</blockquote>
-<p>So while I’m in fact not inventing anything new here, hopefully I can
-help this solution to be better ranked and prevent people from running
-into the issues that are guaranteed to happen with the earlier hacks!</p>
-<p>The solution is simple. Because <strong>Homebrew is not designed to be used by
-multiple users</strong>, and it’s <strong>not designed to be installed anywhere else than
-the default location</strong>, what you want to do instead is to install
-Homebrew in its <strong>default location</strong> with a <strong>dedicated user</strong> that you
-switch to in order to use it.</p>
-<p>Sounds annoying? Just use <code>sudo</code>! While Homebrew
-<a href="https://docs.brew.sh/FAQ#why-does-homebrew-say-sudo-is-bad">documents</a>
-that it &quot;refuses to work using <code>sudo</code>&quot;, this is not exactly true.
-Homebrew refuses to work as root, but you can still use <code>sudo</code> to use it
-as another, non-root user!</p>
-<p>Typically, if you installed Homebrew in its default location from the
-user <code>foo</code>, and now you’re user <code>bar</code> and want to run <code>brew update</code>:</p>
-<pre><code class="hljs language-sh">sudo -Hu foo brew update
-</code></pre>
-<ul>
-<li>The <code>-H</code> option will make sure that the <code>HOME</code> directory is set
-to that of the impersonated user (here <code>foo</code>) instead of the
-<em>impersonating user</em> (here <code>bar</code>), so that Homebrew can maintain its
-cache and other local state in the proper user’s home.</li>
-<li>The <code>-u</code> option allows to specify the user to impersonate instead of
-the default of <code>root</code>.</li>
-</ul>
-<p>This will effectively run <code>brew update</code> like if you had switched to user
-<code>foo</code> prior to running it, but without going through the hassle of
-actually switching users every single time.</p>
-<p>And for what it’s worth, you don’t need to create a new, dedicated user
-for <code>brew</code>. In my case, since both my users are effectively, me, I
-simply installed Homebrew from my personal user and use <code>sudo</code> to run
-<code>brew</code> commands from my work user.</p>
-<p>To make things even nicer, you can even add an alias in the <code>~/.zshrc</code>
-of the user that needs to use <code>sudo</code>:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">alias</span> brew=<span class="hljs-string">&#x27;sudo -Hu foo brew&#x27;</span>
-</code></pre>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/homebrew-multi-user.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>That’s all for today. I hope this helped you figure your bug-free,
-multi-user Homebrew situation! Peace. ✌️</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461136995544096773">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

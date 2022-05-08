@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>
 * [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>

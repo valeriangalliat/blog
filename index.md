@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>
 * [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Migrating `.xmodmaprc` to Wayland: remap arbitrary keys](2022/04/xmodmaprc-wayland.md) <small>April 5, 2022</small>
 * [Google Apps Script: sorry, unable to open the file at this time](2022/04/google-apps-script-unable-to-open-the-file.md) <small>April 1, 2022</small>
 * [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
-* [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 
 [All the posts](posts.md)
 

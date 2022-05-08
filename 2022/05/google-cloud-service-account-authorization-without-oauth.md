@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1523114655698554880
+---
+
 # Google Cloud service account authorization without OAuth
 May 7, 2022
 

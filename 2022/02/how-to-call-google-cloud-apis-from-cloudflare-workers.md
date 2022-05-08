@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/Hookdeck/status/1496535899257118720
+---
+
 # How to Call Google Cloud APIs from Cloudflare Workers
 February 16, 2022
 

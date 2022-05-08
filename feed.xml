@@ -5,10 +5,195 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-05-06T00:32:11.935Z</updated>
+  <updated>2022-05-08T01:32:33.862Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Google Cloud service account authorization without OAuth</title>
+    <link href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html" />
+    <id>https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html</id>
+    <updated>2022-05-07T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Google’s <a href="https://developers.google.com/identity/protocols/oauth2/service-account">OAuth documentation</a>
+goes in length about how to sign a JWT with the service account key in
+order to call their token endpoint <code>https://oauth2.googleapis.com/token</code>
+to get an OAuth token so that you can call actual Google Cloud APIs,
+only to mention at the end in a small addendum that you can skip the
+token endpoint step altogether and
+<a href="https://developers.google.com/identity/protocols/oauth2/service-account#jwt-auth">just use your self-signed JWT directly</a>. 😬</p>
+<p>In this blog post we’ll develop this last step, because it’s so much
+more convenient, reliable, and there’s a few undocumented things about
+it.</p>
+<h2 id="the-normal-flow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-normal-flow"><span>The normal flow</span></a></h2>
+<p>But before, let’s quickly look at the “normal” recommended OAuth flow.
+Borrowing this diagram from their documentation:</p>
+<figure class="center">
+  <img alt="JWT OAuth flow" src="https://www.codejam.info/img/2022/05/jwt-flow.png">
+</figure>
+<ol>
+<li>Create a self-signed JWT using your service account key.</li>
+<li>Use it to authenticate to <code>https://oauth2.googleapis.com/token</code> to
+request an OAuth token.</li>
+<li>Use that OAuth token to call Google APIs.</li>
+</ol>
+<p>This is not bad, but having to go over the network to authenticate and
+refresh tokens before they expire adds extra overhead, delay, error
+handling, retry logic, and in general just an extra few things that can
+go wrong.</p>
+<p>And I don’t like things out of my control that can go wrong.</p>
+<h2 id="the-better-flow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-better-flow"><span>The better flow</span></a></h2>
+<p>On the other hand, the poorly documented “service account authorization
+without OAuth method” consists in:</p>
+<ol>
+<li>Create a self-signed JWT using your service account key.</li>
+<li>Use it directly to call Google APIs.</li>
+<li>Profit.</li>
+</ol>
+<p>Same amount of steps, but you can imagine why I like this method better.</p>
+<h2 id="implementing-direct-authorization-from-scratch" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#implementing-direct-authorization-from-scratch"><span>Implementing direct authorization from scratch</span></a></h2>
+<p>Typically, the Google Cloud SDK in the language of your choice takes
+care of this for you (and most of the time uses this self-signed method,
+because they too realize it’s a much superior method). But in some
+cases, you have to reimplement the authorization step, for example
+<a href="https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers">when running on Cloudflare Workers</a>,
+which I wrote about in details in that article.</p>
+<p>As of today their <a href="https://developers.google.com/identity/protocols/oauth2/service-account#jwt-auth">documentation</a>
+mentions the JWT must have the following header and payload:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;alg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;RS256&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;typ&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;JWT&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;kid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_PRIVATE_KEY_ID&quot;</span>
+<span class="hljs-punctuation">}</span>
+.
+<span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;iss&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;aud&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://SERVICE.googleapis.com/&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;iat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511900000</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511903600</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Where the parts in all caps are variables to adapt to your situation.
+Then the JWT can be signed with RS256 (RSA signature with SHA-256), and
+used in a <code>Authorization: Bearer</code> header against the service you
+included in the <code>aud</code> field.</p>
+<p>And it does work most of the time (again checkout <a href="https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers">my post</a>
+to see the vanilla JavaScript implementation), but in some cases like
+with Google Cloud Storage, <a href="https://stackoverflow.com/q/63222450">it breaks down</a>.</p>
+<h2 id="when-it-breaks-down" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#when-it-breaks-down"><span>When it breaks down</span></a></h2>
+<p>With Google Cloud Storage, when using the documented method with a <code>aud</code>
+field of <code>https://storage.googleapis.com/</code>, we sadly <a href="https://stackoverflow.com/q/63222450">get an error</a>
+when calling the API, e.g. when trying to get a file:</p>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>AuthenticationRequired<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>Authentication required.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
+</code></pre>
+<p>Or when trying to upload a file:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;error&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">401</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid Credentials&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;errors&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+      <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid Credentials&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;domain&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;global&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;reason&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;authError&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;locationType&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;header&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;location&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Authorization&quot;</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">]</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>But the exact same code to generate a JWT works seamlessly with Pub/Sub,
+Datastore and other services! Why is that? Should we fallback to using
+the OAuth endpoint for those problematic services?</p>
+<p>No.</p>
+<h2 id="the-new-undocumented-jwt-payload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-new-undocumented-jwt-payload"><span>The new, undocumented JWT payload</span></a></h2>
+<p>It turns out that you need to remove the <code>aud</code> field and replace it with
+a <code>scope</code> field, akin to the one we would pass to the main OAuth token
+endpoint.</p>
+<p>In the case of Google Cloud Storage, our JWT payload would now look like
+this:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;iss&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://www.googleapis.com/auth/iam https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/devstorage.full_control&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;iat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511900000</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511903600</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>You can find the <a href="https://developers.google.com/identity/protocols/oauth2/scopes">full list of OAuth scopes</a>
+in the Google Cloud OAuth 2.0 documentation.</p>
+<p>It turns out the <code>scope</code> field is also accepted by Pub/Sub and other
+services that were working fine with <code>aud</code>, so we can just make our
+generic implementation use the <code>scope</code> field and be done with it. Sweet!</p>
+<h2 id="bonus-how-did-i-find-out-about-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#bonus-how-did-i-find-out-about-that"><span>Bonus: how did I find out about that?</span></a></h2>
+<p>This is the story about <a href="https://stackoverflow.com/a/71834557">this answer</a>
+I posted on the Stack Overflow question I linked earlier.</p>
+<p>First, I dug in the <a href="https://github.com/googleapis/google-cloud-node">Google Cloud Node.js SDK</a>
+to see how they implemented the service account authentication.</p>
+<p>It turns out they do use the <a href="https://github.com/googleapis/google-auth-library-nodejs/blob/b48254490768799e465a8fa4aae13296ddceea53/src/auth/jwtclient.ts#L126">self-signed JWT method</a>,
+in their shared auth library, but it’s conditional to a variable
+<code>useJWTAccessWithScope</code> being set to <code>true</code> by the client SDK. For
+example, this is <a href="https://github.com/googleapis/nodejs-pubsub/blob/ba333c2284b802cdd43df7568b553b2a90dba8d8/src/v1/publisher_client.ts#L139">where Pub/Sub sets it</a>,
+and this is
+<a href="https://github.com/googleapis/nodejs-storage/search?q=useJWTAccessWithScope">where GCS <strong>doesn’t</strong> set it</a>
+(as of today).</p>
+<p>But what if we force this variable to <code>true</code>?</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Storage</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@google-cloud/storage&#x27;</span>
+
+<span class="hljs-keyword">const</span> storage = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Storage</span>()
+
+storage.<span class="hljs-property">authClient</span>.<span class="hljs-property">useJWTAccessWithScope</span> = <span class="hljs-literal">true</span>
+
+<span class="hljs-keyword">const</span> file = <span class="hljs-keyword">await</span> storage.<span class="hljs-title function_">bucket</span>(<span class="hljs-string">&#x27;bucket&#x27;</span>).<span class="hljs-title function_">file</span>(<span class="hljs-string">&#x27;file&#x27;</span>).<span class="hljs-title function_">get</span>()
+</code></pre>
+<p>By running this script with <code>NODE_DEBUG=https</code>, we can see that without
+the <code>useJWTAccessWithScope</code> line, the client makes a call to
+<code>https://www.googleapis.com/oauth2/v4/token</code> first, then calls
+<code>https://storage.googleapis.com/storage/v1/b/bucket/o/file</code>, but with
+<code>useJWTAccessWithScope</code>, it skips the first token call (and everything
+works still)!</p>
+<p>We can also notice that the token from the OAuth token endpoint contains
+hundreds of dots (<code>.</code>) at the end, whereas the self-signed token is just
+the usual 3 parts Base64URL JWT. Not an useful information, but
+interesting.</p>
+<p>Either way, this proved that despite not working with the method in the
+documentation, self-signed authentication was effectively supported by
+Google Cloud Storage. So how did that SDK-generated token differ? The
+easiest is to copy that token from our <code>NODE_DEBUG=https</code> output and
+parse the payload segment:</p>
+<pre><code class="hljs language-sh">pbpaste | <span class="hljs-built_in">cut</span> -d. -f2 | <span class="hljs-built_in">base64</span> --decode
+</code></pre>
+<p>Or in Node.js:</p>
+<pre><code class="hljs language-js"><span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(token.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;.&#x27;</span>)[<span class="hljs-number">1</span>], <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>()
+</code></pre>
+<p>There we see they use a <code>scope</code> parameter as opposed to <code>aud</code>.</p>
+<p>We can track it down to the <a href="https://github.com/googleapis/google-auth-library-nodejs/blob/b48254490768799e465a8fa4aae13296ddceea53/src/auth/jwtclient.ts#L191">code of the authentication library</a>,
+and we can also see where the Google Cloud Storage client
+<a href="https://github.com/googleapis/nodejs-storage/blob/c3240060b3dc905013ab6fa219e975631b41f5c4/src/storage.ts#L653">defines the necessary OAuth scopes</a>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#conclusion"><span>Conclusion</span></a></h2>
+<p>With some investigation in the Google Cloud Node.js SDK source code and
+some <code>NODE_DEBUG=https</code> debugging, we can dissect their implementation
+of the self-signed service account authentication, and replicate it on
+our side.</p>
+<p>This enables us to use this simpler and superior mechanism that Google
+uses internally, instead of the method that’s widely documented of
+calling their OAuth endpoint.</p>
+<p>I hope that you learnt something thanks to this article, and that it
+helps you build great things! And as always, keep hacking! 🚀</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>The disk wasn’t ejected because one or more programs may be using it</title>
     <link href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html" />
@@ -2482,305 +2667,6 @@ don’t override it.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector</title>
-    <link href="https://www.codejam.info/2021/11/emoji-variation-selector.html" />
-    <id>https://www.codejam.info/2021/11/emoji-variation-selector.html</id>
-    <updated>2021-11-19T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Are you wondering why some specific emoji are sometimes displayed as
-black and white symbols instead of a colored glyph? And even more
-confusing, you notice it happens on one device but looks perfect on
-another? Look no further, you’ll find all the answers in this article!</p>
-<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#tldr"><span>TLDR</span></a></h2>
-<p>Some symbols can be displayed either as text (black and white glyph) or
-as a color emoji. Using Unicode <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selectors</a>,
-we can hint at whether to use one or the other, but when no variation
-selector is specified, it’s up to the system to decide which one to
-pick, introducing inconsistencies.</p>
-<p>Most emoji pickers will include the emoji variation selector to symbols
-that would otherwise be ambiguous, but others won’t and that’s probably
-how you ended up here.</p>
-<p>If you want to make sure your emoji are always displayed in their color
-version, the default macOS emoji picker does just that, otherwise
-copy/pasting from <a href="https://emojipedia.org/">Emojipedia</a> also works, as
-they both don’t leave room for ambiguity.</p>
-<h2 id="the-story" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#the-story"><span>The story</span></a></h2>
-<p>I initially noticed that some emoji that I added from my Linux machine
-using <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a> or <a href="https://github.com/fdw/rofimoji"><code>rofimoji</code></a>
-were displayed as black and white symbols on macOS and Android.</p>
-<p>For a while I just fixed them by inserting them again from another
-device, or copy/pasting them from <a href="https://emojipedia.org/">Emojipedia</a>,
-but I eventually got tired of this and decided to understand why this
-was happening in the first place.</p>
-<h2 id="what-i-learnt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#what-i-learnt"><span>What I learnt</span></a></h2>
-<p>Unicode defines two <a href="https://en.wikipedia.org/wiki/Variation_Selectors_(Unicode_block)">variation selector characters</a>,
-<a href="https://codepoints.net/U+FE0E">U+FE0E</a> and <a href="https://codepoints.net/U+FE0F">U+FE0F</a>,
-also respectively known as VS15 and VS16.</p>
-<p>When VS15 is appended to a symbol, it forces it to be displayed as text
-(black and white glyph). Contrarily, when VS16 is appended, it forces
-the color version to be displayed (emoji).</p>
-<p>Now here’s the fun part. What happens when a symbol has both a text and
-a color variant, and no variant selector is specified?
-<a href="https://en.wikipedia.org/wiki/Emoticons_(Unicode_block)#Variant_forms">According to Wikipedia</a>,
-the emoji variant is selected:</p>
-<blockquote>
-<p>If there is no variation selector appended, the default is the
-emoji-style.</p>
-</blockquote>
-<p>But <a href="https://www.codejam.info/2021/11/emoji-variation-selector.html#concrete-tests">in reality</a>, it appears that macOS and Android
-will in fact default to the text symbol if there’s one available! So
-should we just append the VS16 code point on every single emoji? From
-<a href="https://emojipedia.org/variation-selector-16/">its Emojipedia page</a>:</p>
-<blockquote>
-<p>[VS16 is] an invisible code point which specifies that the preceding
-character should be displayed with emoji presentation. Only required
-if the preceding character defaults to text presentation.</p>
-</blockquote>
-<p>Alright. But we just saw that this is system-specific. Still, how do we
-know which character <em>can</em> default to a text presentation? An
-interesting hint is in the <a href="https://unicode.org/faq/vs.html">unicode.org FAQ</a>.</p>
-<blockquote>
-<p><strong>What variation sequences are valid?</strong></p>
-<p>Only those listed in <a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>StandardizedVariants.txt</code></a>,
-<a href="http://unicode.org/Public/UCD/latest/ucd/StandardizedVariants.txt"><code>emoji-variation-sequences.txt</code></a>,
-or the registered sequences listed in the <a href="http://www.unicode.org/ivd/">Ideographic Variation Database (IVD)</a>.</p>
-</blockquote>
-<p>Here, we specifically care about <a href="http://www.unicode.org/Public/emoji/5.0/emoji-variation-sequences.txt"><code>emoji-variation-sequences.txt</code></a>,
-the other sources not being related to emoji. This file lists all the
-symbols that have both a monochrome glyph and a color emoji available.</p>
-<p>It’s only for those symbols that we need to append the VS16 code point
-to make sure that they’re displayed consistently on every system. And it
-looks like that’s precisely what the macOS and Android emoji pickers
-seem to be doing!</p>
-<h2 id="concrete-tests" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#concrete-tests"><span>Concrete tests</span></a></h2>
-<p>Let’s look at a few concrete examples to highlight the inconsistencies.</p>
-<table>
-<thead>
-<tr>
-<th>Unicode code points</th>
-<th>Command</th>
-<th>Result</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>U+1F60A</td>
-<td><code>printf '\U0001f60A'</code></td>
-<td>😊</td>
-</tr>
-<tr>
-<td>U+1F60A, U+FE0E</td>
-<td><code>printf '\U0001f60A\ufe0e'</code></td>
-<td>😊︎</td>
-</tr>
-<tr>
-<td>U+1F60A, U+FE0F</td>
-<td><code>printf '\U0001f60A\ufe0f'</code></td>
-<td>😊️</td>
-</tr>
-<tr>
-<td>U+1F610</td>
-<td><code>printf '\U0001f610'</code></td>
-<td>😐</td>
-</tr>
-<tr>
-<td>U+1F610, U+FE0E</td>
-<td><code>printf '\U0001f610\ufe0e'</code></td>
-<td>😐︎</td>
-</tr>
-<tr>
-<td>U+1F610, U+FE0F</td>
-<td><code>printf '\U0001f610'\ufe0f</code></td>
-<td>😐️</td>
-</tr>
-<tr>
-<td>U+2639</td>
-<td><code>printf '\u2639'</code></td>
-<td>☹</td>
-</tr>
-<tr>
-<td>U+2639, U+FE0E</td>
-<td><code>printf '\u2639\ufe0e'</code></td>
-<td>☹︎</td>
-</tr>
-<tr>
-<td>U+2639, U+FE0F</td>
-<td><code>printf '\u2639\ufe0f'</code></td>
-<td>☹️</td>
-</tr>
-<tr>
-<td>U+270D</td>
-<td><code>printf '\u270d'</code></td>
-<td>✍</td>
-</tr>
-<tr>
-<td>U+270D, U+FE0E</td>
-<td><code>printf '\u270d\ufe0e'</code></td>
-<td>✍︎</td>
-</tr>
-<tr>
-<td>U+270D, U+FE0F</td>
-<td><code>printf '\u270d\ufe0f'</code></td>
-<td>✍️</td>
-</tr>
-</tbody>
-</table>
-<p>Or put another way:</p>
-<table>
-<thead>
-<tr>
-<th>Default</th>
-<th>Text</th>
-<th>Emoji</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>😊</td>
-<td>😊︎</td>
-<td>😊️</td>
-</tr>
-<tr>
-<td>😐</td>
-<td>😐︎</td>
-<td>😐️</td>
-</tr>
-<tr>
-<td>☹</td>
-<td>☹︎</td>
-<td>☹️</td>
-</tr>
-<tr>
-<td>✍</td>
-<td>✍︎</td>
-<td>✍️</td>
-</tr>
-</tbody>
-</table>
-<p>Your mileage may vary, but when I compare that table on my different
-devices, while they all display the emoji variant properly, there’s a
-few inconsistencies for the default (no variant) and explicit text
-variant.</p>
-<table>
-<thead>
-<tr>
-<th>System</th>
-<th>Emoji</th>
-<th>Default</th>
-<th>Text</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Linux</td>
-<td>😊️</td>
-<td>Emoji</td>
-<td>Emoji</td>
-</tr>
-<tr>
-<td>Linux</td>
-<td>😐️</td>
-<td>Emoji</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>Linux</td>
-<td>☹️</td>
-<td>Emoji</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>Linux</td>
-<td>✍️</td>
-<td>Emoji</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>macOS</td>
-<td>😊️</td>
-<td>Emoji</td>
-<td>Emoji</td>
-</tr>
-<tr>
-<td>macOS</td>
-<td>😐️</td>
-<td>Emoji</td>
-<td>Emoji</td>
-</tr>
-<tr>
-<td>macOS</td>
-<td>☹️</td>
-<td>Text</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>macOS</td>
-<td>✍️</td>
-<td>Text</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>Android</td>
-<td>😊️</td>
-<td>Emoji</td>
-<td>Emoji</td>
-</tr>
-<tr>
-<td>Android</td>
-<td>😐️</td>
-<td>Emoji</td>
-<td>Emoji</td>
-</tr>
-<tr>
-<td>Android</td>
-<td>☹️</td>
-<td>Text</td>
-<td>Text</td>
-</tr>
-<tr>
-<td>Android</td>
-<td>✍️</td>
-<td>Text</td>
-<td>Text</td>
-</tr>
-</tbody>
-</table>
-<p>While the font on my Linux machine doesn’t have a text representation of
-the blush emoji, it does for all the other ones. Regardless, when no
-variant is specified, it always shows an emoji.</p>
-<p>On the other hand, macOS and Android always default to the text variant,
-but they appear to not have one available for the blush and neutral face
-emoji.</p>
-<div class="note">
-<p><strong>Note:</strong> those results are the ones I observed, but you might see
-something different on your side! I’ve got a report from someone also
-on a fresh macOS Monterey who gets different results from me, with the
-frowning face showing as text even when explicitly requested as emoji,
-and only for this site! And their default writing hand is an emoji even
-though the text one is supported.</p>
-<p>This might be due to differences in rendering betweem Chrome and
-Firefox, so know that the browser can also affect this kind of things.</p>
-<p><a href="https://twitter.com/valeriangalliat/status/1461856790602264579">Let me know</a>
-if you observe something even different, I’m curious! 😁</p>
-</div>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2021/11/emoji-variation-selector.html#conclusion"><span>Conclusion</span></a></h2>
-<p>In today’s article, we looked more closely at the Unicode standard and
-the emoji specification to understand how to deal with symbols that have
-both a text and emoji style available. We learnt about the VS15 and VS16
-code points to select a specific variant, instead of leaving it for the
-system to decide. Finally, we found out what symbols need an explicit
-variant to be specified in order to avoid being rendered inconsistently.</p>
-<p>I hope you now have everything you need to understand why you might be
-noticing those inconsistencies, and how to fix them. Cheers! ✌️</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1461856790602264579">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

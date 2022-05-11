@@ -5,10 +5,103 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-05-08T01:32:33.862Z</updated>
+  <updated>2022-05-11T21:52:03.441Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Notion: import CSV with Markdown page content</title>
+    <link href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html" />
+    <id>https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html</id>
+    <updated>2022-05-11T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>As I was <a href="https://github.com/valeriangalliat/github-to-notion">migrating a GitHub project to Notion</a>,
+one of the solutions I considered was to import a CSV using the native
+import feature.</p>
+<p>Sadly, there was no way to set the page content from the rows in the CSV
+file. All the columns are imported as custom attributes and we
+can’t pick one to be used as page content.</p>
+<p>So I ended up making a <a href="https://github.com/valeriangalliat/github-to-notion/blob/master/import-to-notion.js">custom script</a>
+using the <a href="https://developers.notion.com/">Notion API</a>. And while this
+script is very specific to my use case, I figured it would be good to
+generalize it and go back to my original CSV idea, this way other people
+can leverage it for their own projects!</p>
+<h2 id="the-way-it-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#the-way-it-works"><span>The way it works</span></a></h2>
+<p>The idea is simple. First, we import a CSV using the native import
+feature, which results in our “content” column being imported as a page
+attribute. Then we run a simple scripts that goes through all the pages
+with a non-empty “content” column, and moves it to the page body
+instead!</p>
+<p>I named this script <a href="https://github.com/valeriangalliat/notion-property-to-content">Notion property to content</a>
+(I know, I suck at naming things), and with a bit terminal fu, you can
+use it on your own Notion imports!</p>
+<h2 id="running-the-script" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#running-the-script"><span>Running the script</span></a></h2>
+<p>It requires <a href="https://nodejs.org/">Node.js</a> version 18 or later.</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/valeriangalliat/notion-property-to-content
+<span class="hljs-built_in">cd</span> notion-property-to-content
+npm install
+</code></pre>
+<p>From there, we need a Notion token. For this, you need to
+<a href="https://www.notion.so/my-integrations">create a new integration</a>. The
+default parameters should do. At the end Notion will give you a token
+that we’ll set in an environment variable (lines starting with <code>$</code> means
+an actual command that you run, but don’t type the <code>$</code>):</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">read</span> NOTION_TOKEN</span>
+Paste the token here
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">export</span> NOTION_TOKEN</span>
+</code></pre>
+<p>Now you need to share the database you’re working on with your newly
+created integration. On the top right corner of your database page, hit
+the “share” button:</p>
+<figure class="center">
+  <img src="https://www.codejam.info/img/2022/05/notion-share.png">
+</figure>
+<p>Click on the search field to reveal your integration, and click
+“invite”:</p>
+<figure class="center">
+  <img src="https://www.codejam.info/img/2022/05/notion-invite.png">
+</figure>
+<p>While you’re on the database page, copy its ID from the URL bar, for
+example if the current URL is:</p>
+<pre><code class="hljs">https://www.notion.so/513bff94c55a4cf09a66a336c87e7964?v=0eb7b11463c94c3a84786bd3191e4032
+</code></pre>
+<p>Copy this part:</p>
+<pre><code class="hljs">513bff94c55a4cf09a66a336c87e7964
+</code></pre>
+<p>Finally, back to the terminal, you can run the following command to
+move the property of your choice to the page content:</p>
+<pre><code class="hljs language-sh">node property-to-content.js &lt;database-id&gt; &lt;property&gt; --remove
+</code></pre>
+<p>Where <code>&lt;database-id&gt;</code> is the ID of your database and <code>&lt;property&gt;</code> is the
+name of the property you want to use as page content. For example if
+your database ID is <code>513bff94c55a4cf09a66a336c87e7964</code> and your property
+is named “Page Content”, run:</p>
+<pre><code class="hljs language-sh">node property-to-content.js 513bff94c55a4cf09a66a336c87e7964 <span class="hljs-string">&#x27;Page Content&#x27;</span> --remove
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I recommend you to run this on a test database first just to
+make sure it behaves the way you want with your data!</p>
+</div>
+<p>The <code>--remove</code> part is to empty the property after writing its value to
+the actual page content. It is useful so that if you were to run the
+script again, it doesn’t copy the content a second time at the end of
+the page, as the script only goes through non-empty content values.</p>
+<p>If you plan to only run this once and want to keep the content in its
+original property, don’t add the <code>--remove</code> part.</p>
+<h2 id="need-some-help" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#need-some-help"><span>Need some help?</span></a></h2>
+<p>If you need help with this, or importing data to your Notion workspace
+and working with the Notion API in general, don’t hesitate to
+<a href="https://www.codejam.info/val.html#contact">shoot me an email</a>, I’ll be happy to help you on a
+consulting basis! You’ll even get a 20% discount if you tell me you’re
+coming from this article. 😜</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Google Cloud service account authorization without OAuth</title>
     <link href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html" />
@@ -188,7 +281,7 @@ helps you build great things! And as always, keep hacking! 🚀</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1523114655698554880">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>
@@ -2636,37 +2729,6 @@ solution for this problem, so you can actually have it all!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1486539328373374977">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Static DHCP server on Arch Linux in 2021, two ways</title>
-    <link href="https://www.codejam.info/2021/11/static-dhcp-server-arch-linux.html" />
-    <id>https://www.codejam.info/2021/11/static-dhcp-server-arch-linux.html</id>
-    <updated>2021-11-26T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Turns out it’s 2021 and configuring a static server on at least some
-Linux flavours isn’t as easy as editing <code>/etc/resolv.conf</code> anymore, at
-least if you want it to persist across reboots.</p>
-<p>Depending on your network stack, I’ll suggest two ways, one might work
-for you, both work in my case.</p>
-<p>In <code>/etc/resolvconf.conf</code>, add the following:</p>
-<pre><code class="hljs">name_servers=&quot;1.1.1.1 1.0.0.1&quot;
-</code></pre>
-<p>Or in <code>/etc/dhcpcd.conf</code>, add the following:</p>
-<pre><code class="hljs">static domain_name_servers=1.1.1.1 1.0.0.1
-</code></pre>
-<p>Obviously replace <code>1.1.1.1</code> and <code>1.0.0.1</code> by the DNS servers of you
-choosing.</p>
-<p>But that being said, as far as I’m concerned, I went with the third
-option which is to configure it at the router level! This way every
-device that connects to it benefits from this configuration if they
-don’t override it.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -332,7 +332,7 @@ support posts that include a <code>&lt;small&gt;</code> element in the title.</p
     <span class="hljs-keyword">return</span> li
   }
 
-  <span class="hljs-comment">// Fallback to fetching `&lt;h1&gt;` from actual page.</span>
+  <span class="hljs-comment">// Fall back to fetching `&lt;h1&gt;` from actual page.</span>
   <span class="hljs-keyword">const</span> html = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">res</span> =&gt;</span> res.<span class="hljs-title function_">text</span>())
   <span class="hljs-keyword">const</span> pageDocument = parser.<span class="hljs-title function_">parseFromString</span>(html, <span class="hljs-string">&#x27;text/html&#x27;</span>)
 

@@ -62,7 +62,7 @@ async function searchBlog (form) {
       return li
     }
 
-    // Fallback to fetching `<h1>` from actual page.
+    // Fall back to fetching `<h1>` from actual page.
     const html = await fetch(url).then(res => res.text())
     const pageDocument = parser.parseFromString(html, 'text/html')
 

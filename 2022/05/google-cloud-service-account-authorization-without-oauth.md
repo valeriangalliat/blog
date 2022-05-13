@@ -121,7 +121,7 @@ Or when trying to upload a file:
 ```
 
 But the exact same code to generate a JWT works seamlessly with Pub/Sub,
-Datastore and other services! Why is that? Should we fallback to using
+Datastore and other services! Why is that? Should we fall back to using
 the OAuth endpoint for those problematic services?
 
 No.

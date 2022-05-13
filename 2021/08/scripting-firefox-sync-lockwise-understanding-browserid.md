@@ -600,7 +600,7 @@ module!
 
 There were some incompatibilities with DSA that we needed to work
 around, especially the fact that it is not supported by JWK, forcing us
-to fallback to the OpenSSL CLI to extract the key parameters, and also
+to fall back to the OpenSSL CLI to extract the key parameters, and also
 that common JWT libraries don't support it either, leading us to write
 our own (dead simple) JWT implementation.
 

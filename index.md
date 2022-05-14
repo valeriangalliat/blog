@@ -9,6 +9,8 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
+* [Debugging a GitHub Actions workflow via SSH](2022/05/debugging-github-actions-workflow-ssh.md) <small>May 14, 2022</small>
 * [Notion: import CSV with Markdown page content](2022/05/notion-csv-markdown-page-content.md) <small>May 11, 2022</small>
 * [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>
@@ -22,8 +24,6 @@ A blog about tech, programming and other things.
 * [How can rsync work on a host without shell access? 🤔](2022/04/rsync-without-shell-access.md) <small>April 9, 2022</small>
 * [Make a bootable Windows USB from Linux in 2022](2022/04/bootable-windows-usb-from-linux.md) <small>April 9, 2022</small>
 * [xfce4-terminal vs. foot](2022/04/xfce4-terminal-vs-foot.md) <small>April 5, 2022</small>
-* [Migrating `.xmodmaprc` to Wayland: remap arbitrary keys](2022/04/xmodmaprc-wayland.md) <small>April 5, 2022</small>
-* [Google Apps Script: sorry, unable to open the file at this time](2022/04/google-apps-script-unable-to-open-the-file.md) <small>April 1, 2022</small>
 
 [All the posts](posts.md)
 

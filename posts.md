@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
+* [Debugging a GitHub Actions workflow via SSH](2022/05/debugging-github-actions-workflow-ssh.md) <small>May 14, 2022</small>
 * [Notion: import CSV with Markdown page content](2022/05/notion-csv-markdown-page-content.md) <small>May 11, 2022</small>
 * [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>

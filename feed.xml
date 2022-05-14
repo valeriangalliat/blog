@@ -5,10 +5,535 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-05-11T21:52:03.441Z</updated>
+  <updated>2022-05-14T19:10:23.785Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>How to make a GitHub Action that exposes a SSH server</title>
+    <link href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html" />
+    <id>https://www.codejam.info/2022/05/github-action-expose-ssh-server.html</id>
+    <updated>2022-05-14T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>In the <a href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html">first post</a>, I
+explained how to use <a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>,
+a GitHub Action that I wrote to easily SSH to a GitHub workflow
+container and debug it efficiently. I gave a precise explanation of
+<a href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#details-of-the-client-connect-commands">what the client commands do</a>,
+and I <a href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#what-about-action-upterm-and-action-tmate">compared it to similar alternatives</a>.</p>
+<p>In this post, we’ll go through the details of the server (the code that
+runs inside the GitHub workflow). We’ll see how to make a simple GitHub
+Action that runs a shell script (or anything <em>executable</em>), a couple
+useful environment variables, and most importantly, what’s the recipe to
+run a SSH server there and expose it over the internet despite the
+container not being publicly addressable.</p>
+<h2 id="making-the-simplest-github-action-possible" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#making-the-simplest-github-action-possible"><span>Making the simplest GitHub Action possible</span></a></h2>
+<p>All we need to turn a simple GitHub repository in a GitHub Action is to
+add a valid <code>action.yml</code> at the top level.</p>
+<p>GitHub can run
+<a href="https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action">Docker actions</a>,
+<a href="https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action">JavaScript actions</a>,
+but the one we care about is the <a href="https://docs.github.com/en/actions/creating-actions/creating-a-composite-action">composite action</a>.
+A composite action allows us to run simple <em>commands</em> in a <em>shell</em> and
+that’s exactly what we need. 👍</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">Debug</span> <span class="hljs-string">via</span> <span class="hljs-string">SSH</span>
+<span class="hljs-attr">description:</span> <span class="hljs-string">Setup</span> <span class="hljs-string">a</span> <span class="hljs-string">SSH</span> <span class="hljs-string">server</span> <span class="hljs-string">with</span> <span class="hljs-string">a</span> <span class="hljs-string">tunnel</span> <span class="hljs-string">to</span> <span class="hljs-string">access</span> <span class="hljs-string">it</span> <span class="hljs-string">to</span> <span class="hljs-string">debug</span> <span class="hljs-string">your</span> <span class="hljs-string">action</span> <span class="hljs-string">via</span> <span class="hljs-string">SSH.</span>
+<span class="hljs-attr">runs:</span>
+  <span class="hljs-attr">using:</span> <span class="hljs-string">composite</span>
+  <span class="hljs-attr">steps:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">run:</span> <span class="hljs-string">$GITHUB_ACTION_PATH/setup-ssh</span>
+      <span class="hljs-attr">shell:</span> <span class="hljs-string">bash</span>
+</code></pre>
+<p>Unlike in a normal workflow YAML, the <code>run</code> command must also include an
+explicit shell. We can use any of the <a href="https://docs.github.com/en/actions/learn-github-actions/environment-variables">GitHub Actions environment variables</a>
+directly in there, which is convenient because we have
+<code>GITHUB_ACTION_PATH</code>, the path to our action repository (by default the
+working directory is the one containing the user’s code, not our action
+code).</p>
+<p>From there, the <a href="https://github.com/valeriangalliat/action-sshd-cloudflared/blob/master/setup-ssh"><code>setup-ssh</code> script</a>
+can be broken down in 9 simple steps:</p>
+<ol>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#download-cloudflared">Download the latest <code>cloudflared</code> binary</a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#fetch-the-actor-keys">Fetch the public SSH keys</a> of the GitHub user
+who triggered the workflow to a <code>authorized_keys</code> file.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#set-a-password">If there was no SSH key, set a password</a> for the
+<code>runner</code> user so that there’s alternative way to connect.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#generate-a-server-key">Generate a server key</a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#create-the-sshd-config">Create the <code>sshd</code> config</a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-sshd">Start <code>sshd</code></a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-a-tmux-session">Start a tmux session</a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-cloudflared">Start <code>cloudflared</code></a> to expose the <code>sshd</code> port on the internet.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#output-the-client-instructions">Output the client instructions</a>.</li>
+<li><a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#watch-for-session-end">Wait for the tmux session to end and stop everything</a>.</li>
+</ol>
+<h2 id="download-cloudflared" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#download-cloudflared"><span>Download <code>cloudflared</code></span></a></h2>
+<p>We start simple and easy.</p>
+<pre><code class="hljs language-sh">curl --location --silent --output cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+<span class="hljs-built_in">chmod</span> +x cloudflared
+</code></pre>
+<h2 id="fetch-the-actor-keys" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#fetch-the-actor-keys"><span>Fetch the actor keys</span></a></h2>
+<p>In GitHub Actions, the user who trigger the workflow is called an
+“actor”. Their username is set in the <code>GITHUB_ACTOR</code> environment
+variable.</p>
+<p>As you may know, <a href="https://github.com/settings/keys">you configured</a> a
+number of SSH keys on GitHub to be able to push to repositories over
+SSH. Those keys are public knowledge, and we can fetch them via the
+public GitHub API, which is convenient here to automatically give the
+actor SSH access to that server.</p>
+<pre><code class="hljs language-sh">curl -s <span class="hljs-string">&quot;https://api.github.com/users/<span class="hljs-variable">$GITHUB_ACTOR</span>/keys&quot;</span> | jq -r <span class="hljs-string">&#x27;.[].key&#x27;</span> &gt; authorized_keys
+</code></pre>
+<p>The GitHub API response is in JSON, but we use a simple <a href="https://stedolan.github.io/jq/">jq</a>
+script to extract the raw key, one per line, to put it in a valid
+<code>authorized_keys</code> file.</p>
+<h2 id="set-a-password" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#set-a-password"><span>Set a password</span></a></h2>
+<p>If there was no SSH keys for that user, we set a password as a fallback,
+so they still have a means to connect.</p>
+<p>To test whether or not there was any SSH key, we use:</p>
+<pre><code class="hljs language-sh">grep -q . authorized_keys
+</code></pre>
+<p><code>-q</code> makes <code>grep</code> quiet (we don’t need to display the output), <code>.</code> is
+the regular expression to match (any character), and <code>authorized_keys</code>
+is the file we use as input.</p>
+<p>If there’s any character in that file, <code>grep</code> will exit with 0
+(success). Otherwise with a nonzero code, which means nothing was
+matched.</p>
+<p>We can conveniently use it in a <code>if</code> condition:</p>
+<pre><code class="hljs language-sh"><span class="hljs-keyword">if</span> grep -q . authorized_keys; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Configured SSH key(s) for user: <span class="hljs-variable">$GITHUB_ACTOR</span>&quot;</span>
+<span class="hljs-keyword">else</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;No SSH key found for user: <span class="hljs-variable">$GITHUB_ACTOR</span>&quot;</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Setting SSH password...&quot;</span>
+<span class="hljs-keyword">fi</span>
+</code></pre>
+<p>It’s in that <code>else</code> branch that we generate and set the password. To
+generate it, we fetch 16 characters from <code>/dev/urandom</code>:</p>
+<pre><code class="hljs language-sh">password=$(<span class="hljs-built_in">base64</span> &lt; /dev/urandom | <span class="hljs-built_in">tr</span> -<span class="hljs-built_in">cd</span> <span class="hljs-string">&#x27;[:alnum:]&#x27;</span> | <span class="hljs-built_in">head</span> -c16)
+</code></pre>
+<ul>
+<li><code>base64 &lt; /dev/urandom</code> encodes as Base64 the stream of random bytes
+from <code>/dev/urandom</code>. The stream is infinite but the pipleine is
+“lazy”.</li>
+<li><code>tr -cd '[:alnum:]'</code> keeps only alphanumeric characters.</li>
+<li><code>head -c16</code> keeps only the first 16 characters (or should I say,
+bytes, to be accurate) and terminates the stream as soon as it has
+them.</li>
+</ul>
+<p>This gives us a password that we can set for the current user.</p>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>; <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>) | sudo passwd <span class="hljs-string">&quot;<span class="hljs-variable">$USER</span>&quot;</span>
+</code></pre>
+<p>We can’t use the <code>passwd</code> command directly because it first prompts us
+for our own current password (which we don’t know), but we have <code>root</code>
+access in this VM through <code>sudo</code>, and <code>root</code> doesn’t need confirmation
+to change anyone’s password.</p>
+<p>We echo the password twice because <code>passwd</code> typically asks to input the
+password first, then a second time for confirmation.</p>
+<h2 id="generate-a-server-key" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#generate-a-server-key"><span>Generate a server key</span></a></h2>
+<p><code>ssh-keygen</code> is a cool utility to generate SSH keys. It defaults to a
+RSA key which is fine with me.</p>
+<ul>
+<li><code>-q</code> makes it quiet (we don’t need the logs).</li>
+<li><code>-f</code> indicates the output file to write the key to (the public key
+will be in a file with a <code>.pub</code> suffix).</li>
+<li><code>-N ''</code> is to set an empty passphrase (otherwise <code>ssh-keygen</code> will
+prompt to set a passphrase).</li>
+</ul>
+<pre><code class="hljs language-sh">ssh-keygen -q -f ssh_host_rsa_key -N <span class="hljs-string">&#x27;&#x27;</span>
+</code></pre>
+<h2 id="create-the-sshd-config" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#create-the-sshd-config"><span>Create the <code>sshd</code> config</span></a></h2>
+<p>We copy it from a template file, where we just replace the <code>$PWD</code> and
+<code>$USER</code> symbols by the corresponding environment variable.</p>
+<pre><code class="hljs language-sh">sed <span class="hljs-string">&quot;s,\$PWD,<span class="hljs-variable">$PWD</span>,;s,\$USER,<span class="hljs-variable">$USER</span>,&quot;</span> sshd_config.template &gt; sshd_config
+</code></pre>
+<p>This is a good time to review the template. It’s heavily based on my
+<a href="https://www.codejam.info/2021/11/standalone-userland-ssh-server.html">standalone userland SSH server</a>
+config I <a href="https://github.com/valeriangalliat/sshd-on-the-go">published</a>
+last year!</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">Port</span> <span class="hljs-number">2222</span>
+<span class="hljs-attribute">HostKey</span> $PWD/ssh_host_rsa_key
+<span class="hljs-attribute">PidFile</span> $PWD/sshd.pid
+</code></pre>
+<p>First we set the port to 2222, and we define the host key and process ID
+file. We could have written <code>PidFile none</code> to prevent the default of
+<code>/run/sshd.pid</code>, because we don’t actually use it, but it doesn’t hurt.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">UsePAM</span> yes
+</code></pre>
+<p>We enable PAM (pluggable authentication module). Not going in details
+with this, but keep in mind it’s required for this to work at least on
+Debian-based systems.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">KbdInteractiveAuthentication</span> yes
+<span class="hljs-attribute">ChallengeResponseAuthentication</span> yes
+<span class="hljs-attribute">PasswordAuthentication</span> yes
+</code></pre>
+<p>This enables interactive password authentication. They’re actually
+enabled by default so we could leave them out.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">AllowUsers</span> $USER
+<span class="hljs-attribute">AuthorizedKeysFile</span> $PWD/authorized_keys
+</code></pre>
+<p>We only allow the Unix user who the workflow is running as, and we allow
+the SSH keys we fetched earlier in <code>authorized_keys</code>. Remember that we
+replace those <code>$USER</code> and <code>$PWD</code> symbols with a <code>sed</code> command before
+starting the server, you can’t actually use variables in here otherwise.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">ForceCommand</span> tmux attach
+</code></pre>
+<p>Finally we force the <code>tmux attach</code> command to run upon login. This makes
+sure the user is connecting to the tmux session we’ll start in the
+following steps, and it’s important because we monitor the status of
+this session to determine when to stop the server.</p>
+<h2 id="start-sshd" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-sshd"><span>Start <code>sshd</code></span></a></h2>
+<pre><code class="hljs language-sh">/usr/sbin/sshd -f sshd_config -D &amp;
+sshd_pid=$!
+</code></pre>
+<ul>
+<li>We need to start it with an absolute path (it is required when
+starting an ad hoc SSH server like this).</li>
+<li><code>-f</code> lets us specify the configuration file to use.</li>
+<li><code>-D</code> starts it as foreground (by default it starts as a daemon).</li>
+<li><code>&amp;</code> makes it a background process in this script so that we can fetch
+its process ID with <code>$!</code> right after, and kill it at the end.</li>
+</ul>
+<p>We could avoid <code>-D</code> and <code>&amp;</code> altogether by using the <code>sshd.pid</code> file that
+we configured in <code>PidFile</code> to retrieve the process ID instead. Whatever
+works.</p>
+<h2 id="start-a-tmux-session" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-a-tmux-session"><span>Start a tmux session</span></a></h2>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-variable">$GITHUB_WORKSPACE</span>&quot;</span> &amp;&amp; tmux new-session -d -s debug)
+</code></pre>
+<p>We start a subshell (the parens around the command), so that <code>cd</code> only
+affects the subshell and not our top-level environment.</p>
+<p>We effectively change the current directory to the main workflow
+directory, defined in <code>GITHUB_WORKSPACE</code>, and start a tmux session.</p>
+<p>With <code>tmux new-session</code>, <code>-d</code> disables the default behaviour of
+attaching the session to the current terminal, and <code>-s</code> allows us to
+give it a name.</p>
+<h2 id="start-cloudflared" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#start-cloudflared"><span>Start <code>cloudflared</code></span></a></h2>
+<pre><code class="hljs language-sh">./cloudflared tunnel --no-autoupdate --url tcp://localhost:2222 &amp;
+cloudflared_pid=$!
+</code></pre>
+<p>We run the <code>cloudflared</code> binary that we downloaded to the current
+directory earlier. This command allows us to start a tunnel forwarding
+to port 2222, where our SSH server is listening.</p>
+<p>And again, we terminate with <code>&amp;</code> to start it as a background process so
+that we can keep running commands and kill it at the end.</p>
+<p>But there’s a few more things we need to add to this command:</p>
+<pre><code class="hljs language-sh">./cloudflared tunnel ... 2&gt;&amp;1 | <span class="hljs-built_in">tee</span> cloudflared.log | sed -u <span class="hljs-string">&#x27;s/^/cloudflared: /&#x27;</span> &amp;
+</code></pre>
+<ul>
+<li><code>2&gt;&amp;1</code> redirects the <code>stderr</code> output to <code>stdout</code>, so that we can
+<code>tee</code> it to <code>cloudflared.log</code> file.</li>
+<li><code>tee</code> will write the input to the given file, but also keep outputting
+it to <code>stdout</code> at the same time.</li>
+<li>This is great because we can now use a simple <code>sed</code> command to prefix
+it with <code>cloudflared:</code> (so that the logs have some context).</li>
+</ul>
+<p>This log file is useful for us to retrieve the relay URL that
+<code>cloudflared</code> will output, which we do right after:</p>
+<pre><code class="hljs language-sh">url=$(<span class="hljs-built_in">head</span> -1 &lt;(<span class="hljs-built_in">tail</span> -f cloudflared.log | grep --line-buffered -o <span class="hljs-string">&#x27;https://.*\.trycloudflare.com&#x27;</span>))
+</code></pre>
+<ul>
+<li><code>tail -f cloudflared.log</code> <em>follows</em> the file, meaning that it keeps
+watching for new lines indefinitely, and outputs them as they come.</li>
+<li>The <code>grep</code> command has a simple regex to identify the relay URL.
+<ul>
+<li><code>--line-buffered</code> is important here because we want to work <em>lazily</em>
+and exit as soon as we find a match. If <code>grep</code> was buffering more
+than one line of data, this could just hang forever.</li>
+<li><code>-o</code> will print only the text matched by the regex instead of the
+whole matching line.</li>
+</ul>
+</li>
+<li>We put all of that in a subshell that we use as input to the <code>head</code>
+command with the <code>&lt;()</code> syntax.</li>
+<li><code>head -1</code> will exit the whole pipeline after one line is outputted,
+allowing us to continue running the script.</li>
+</ul>
+<div class="note">
+<p><strong>Note:</strong> we can’t put <code>head -1</code> at the end of the pipeline even though
+that would seem intuitive, because it would take <code>grep</code> to try to
+<em>write</em> to the <code>head</code> input after it was closed to notice that the pipe
+was broken, and then it would take another line output from <code>tail</code> to
+notice that <code>grep</code> exited.</p>
+<p>In practice this just means this would hang indefinitely because
+<code>cloudflared</code> doesn’t output the relay host twice.</p>
+<p>See more details <a href="https://stackoverflow.com/questions/45326901/lazy-non-buffered-processing-of-shell-pipeline">here</a>.</p>
+</div>
+<h2 id="output-the-client-instructions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#output-the-client-instructions"><span>Output the client instructions</span></a></h2>
+<p>We already have the <code>url</code> variable as well as an optional <code>password</code>
+variable.</p>
+<p>With that, all we need is the SSH server public key to include it as
+part of the connection command that the user will paste.</p>
+<pre><code class="hljs language-sh">public_key=$(<span class="hljs-built_in">cut</span> -d<span class="hljs-string">&#x27; &#x27;</span> -f1,2 &lt; ssh_host_rsa_key.pub)
+</code></pre>
+<p>Thanks to the <code>cut</code> command, we split the single line in the given file
+by space, and output only fields 1 and 2. This file normally has 3
+fields: the key type, the actual key, and a comment. We don’t need the
+comment.</p>
+<p>We can then display those variables in a friendly and convenient way to
+the user. I already detailed that in <a href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#details-of-the-client-connect-commands">the first part</a>
+focusing on the client side, check it out if you didn’t already!</p>
+<h2 id="watch-for-session-end" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#watch-for-session-end"><span>Watch for session end</span></a></h2>
+<pre><code class="hljs language-sh">tmux wait-for channel
+</code></pre>
+<p>This commands waits for a channel named <code>channel</code> to be “woken up” by a
+matching <code>tmux wait-for -S channel</code>.</p>
+<p>We don’t actually ever run this last command, and we don’t really care
+about the channel either, but the effect this have if we never “wake up”
+the channel, is that it will hang until the tmux session itself is over.</p>
+<p>That’s exactly what we need: when the user is done debugging, they’ll
+typically end the tmux session, and this is our way to know we can tear
+down the servers:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">kill</span> <span class="hljs-string">&quot;<span class="hljs-variable">$cloudflared_pid</span>&quot;</span>
+<span class="hljs-built_in">kill</span> <span class="hljs-string">&quot;<span class="hljs-variable">$sshd_pid</span>&quot;</span>
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>And just like that, you know everything about
+<a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>!</p>
+<p>This script is simple enough to be explained in depth in a blog post,
+and builds on top of rock solid programs like <code>sshd</code>, <code>cloudflared</code> and
+tmux.</p>
+<p>Thanks to Cloudflare Tunnel guest mode, we don’t even need an API key or
+token to set up the relay, and because GitHub already exposes the actor
+public SSH keys, we can preconfigure them so that everything just works
+out of the box.</p>
+<p>I hope GitHub introduces a SSH feature natively at some point, that
+would make actions like this obsolete. In the meantime, I hope this
+helps you debug your GitHub workflows!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Debugging a GitHub Actions workflow via SSH</title>
+    <link href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html" />
+    <id>https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html</id>
+    <updated>2022-05-14T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Since GitHub introduced <a href="https://github.com/features/actions">Actions</a>,
+it’s more and more common to use them for CI/CD tasks, because of the
+tight integration with GitHub, and its simplicity.</p>
+<p>Coming from <a href="https://circleci.com/">CircleCI</a>, I was used to their
+<a href="https://circleci.com/docs/2.0/ssh-access-jobs/">“rerun job with SSH” feature</a>,
+which allowed to rerun a job while exposing a SSH server, to debug the
+live test environment, and I was surprised to not find a similar feature
+on GitHub Actions.</p>
+<h2 id="why-ssh-to-the-ci-environment" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#why-ssh-to-the-ci-environment"><span>Why SSH to the CI environment?</span></a></h2>
+<p>SSHing to CI is extremely handy in scenarios where <strong>a bug happens only
+on CI</strong> and can’t be reproduced locally or on other staging servers we
+have control over.</p>
+<p>It can also be useful <strong>when initially setting up a GitHub Action</strong> for
+your app when you’re not sure exactly what’s available in the GitHub
+image, what versions, etc. and want to <strong>quickly fiddle around</strong> to find
+the right instructions to set up the environment for success.</p>
+<h2 id="what-about-containers" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#what-about-containers"><span>What about containers?</span></a></h2>
+<p>The advent of containers should mitigate part of the problem, with more
+and more apps being <a href="https://en.wiktionary.org/wiki/dockerize">“dockerized”</a>,
+but the reality is that your GitHub Actions workflow
+<a href="https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners">likely runs on <code>ubuntu-latest</code></a>
+because that’s far more convenient, and that’s the main way that’s
+documented basically everywhere. You’re still running in a container,
+but that’s GitHub’s container, and it’s (very) different from your
+development, staging and production containers.</p>
+<p>And even if you <a href="https://docs.github.com/en/actions/using-jobs/running-jobs-in-a-container">bring your own container</a>,
+you’re still likely to encounter <strong>differences inherent to running in a
+CI environment</strong>: are the volumes and ports configured exactly the same?
+What about the services you depend on like PostgreSQL, Redis, etc.? How
+do you manage your environment variables? Are they any different from
+your local environment? (They probably should.)</p>
+<p>Also did you ever encounter timing-based bugs that <strong>only happen on a
+slow machine</strong> (or network), or inversely, only happen <strong>when the code
+runs too fast</strong>? I did. Both of those.</p>
+<h2 id="introducing-action-sshd-cloudflared" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#introducing-action-sshd-cloudflared"><span>Introducing action-sshd-cloudflared</span></a></h2>
+<p>This is why I created <a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>.</p>
+<p>The idea? Find the <strong>simplest way to run a SSH server</strong> in a GitHub
+Action and somehow connect to it. The last part can be a challenge
+because as you can expect, the VM the workflow runs in <strong>doesn’t have a
+public IP</strong>, and not even IPv6. No way to directly bind a port publicly
+accessible from the internet.</p>
+<p>That’s why we need to <strong>resort to a relay host</strong>. I chose
+<a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/">Cloudflare Tunnel</a>
+for that, which is convenient because it includes a way to
+<a href="https://developers.cloudflare.com/cloudflare-one/applications/non-http/arbitrary-tcp/">forward abritrary TCP</a>,
+and happily runs as guest (no need to be authenticated).</p>
+<p>In the end, it takes <a href="https://github.com/valeriangalliat/action-sshd-cloudflared/blob/master/setup-ssh">100 lines of commented shell script</a>,
+and if you’re interested in the details, I encourage you to read my
+<a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html">explanation of how the server works</a>.</p>
+<p>But for now, I’ll start by <strong>showing you how to use it</strong>, then I’ll
+break down <strong>what the client-side commands do</strong>, and finally I’ll
+compare it to other options.</p>
+<h2 id="usage" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#usage"><span>Usage</span></a></h2>
+<p>Here’s an example workflow YAML file that does nothing but checking out
+your repository and starting a SSH server.</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">CI</span>
+<span class="hljs-attr">on:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">push</span>
+<span class="hljs-attr">jobs:</span>
+  <span class="hljs-attr">build:</span>
+    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-latest</span>
+    <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">valeriangalliat/action-sshd-cloudflared@v1</span>
+</code></pre>
+<p>More likely you already have a workflow YAML and the only part you care
+about is to add this to your <code>steps</code> array:</p>
+<pre><code class="hljs language-yaml">      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">valeriangalliat/action-sshd-cloudflared@v1</span>
+</code></pre>
+<p>From there, here’s an example output you’ll find on your workflow logs:</p>
+<pre><code class="hljs">Downloading `cloudflared` from &lt;https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64&gt;...
+Configured SSH key(s) for user: valeriangalliat
+Creating SSH server key...
+Creating SSH server config...
+Starting SSH server...
+Starting tmux session...
+Starting Cloudflare tunnel...
+
+Run the following command to connect:
+
+    ssh-keygen -R action-sshd-cloudflared &amp;&amp; echo &#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27; &gt;&gt; ~/.ssh/known_hosts &amp;&amp; ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; runner@action-sshd-cloudflared
+
+What the one-liner does:
+
+    # Remove old SSH server public key for `action-sshd-cloudflared`
+    ssh-keygen -R action-sshd-cloudflared
+
+    # Trust the public key for this session
+    echo &#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27; &gt;&gt; ~/.ssh/known_hosts
+
+    # Connect using `cloudflared` as a transport (SSH is end-to-end encrpted over this tunnel)
+    ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; runner@action-sshd-cloudflared
+
+    # Alternative if you don&#x27;t want to verify the host key
+    ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=accept-new runner@action-sshd-cloudflared
+</code></pre>
+<p>From there you can copy the (long, I know) one-liner that will connect
+you to the VM. As you can see I also a commented version of the commands
+for people to have a better understanding of what’s happening. Let’s go
+through it in even more details.</p>
+<h2 id="details-of-the-client-connect-commands" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#details-of-the-client-connect-commands"><span>Details of the client connect commands</span></a></h2>
+<h3 id="remove-keys-from-previous-debugging-sessions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#remove-keys-from-previous-debugging-sessions"><span>Remove keys from previous debugging sessions</span></a></h3>
+<p>The first step is to remove all the keys matching host
+<code>action-sshd-cloudflared</code> in <code>~/.ssh/known_hosts</code>. This is where your
+SSH client stores the public keys of all the server you connected to.</p>
+<pre><code class="hljs language-sh">ssh-keygen -R action-sshd-cloudflared
+</code></pre>
+<p>The reason we need to do this is because the fact the action generates a
+new key every time it runs, we need to “forget” any previous key as they
+won’t be valid anymore. Otherwise SSH is confused and will prevent you
+to connect to a host whose key is not the one it expects.</p>
+<div class="note">
+<p><strong>Note:</strong> an alternative would be to use a unique host every time (as
+we’ll see later, because of the way use a proxy command, we could put
+any host in there), for example the same one that Cloudflare generated
+for us (<code>https://recycling-currently-enjoy-pregnant.trycloudflare.com</code>
+in the earlier example).</p>
+<p>What I don’t like about that is every time you debug a GitHub workflow,
+a new host will be added to your <code>~/.ssh/known_hosts</code> and this can
+quickly pollute it. Sure, you can garbage collect them manually at some
+point, but I’m still not a big fan of this idea.</p>
+</div>
+<h3 id="trust-the-key-for-the-current-session" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#trust-the-key-for-the-current-session"><span>Trust the key for the current session</span></a></h3>
+<p>This step is not technically required, for if we don’t do it, the SSH
+client will prompt you to trust the key when it first encounters it
+(trust on first use model).</p>
+<p>But here we’re already copy/pasting quite a long one-liner, so might as
+well include an extra step to include the server public key and put it
+in the known hosts file.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27;</span> &gt;&gt; ~/.ssh/known_hosts
+</code></pre>
+<p>Trust on first use is fine, but this is better; would you really check
+that the server key fingerprint matches what was shown in the server
+logs otherwise?</p>
+<h3 id="connect-to-the-cloudflare-tunnel" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#connect-to-the-cloudflare-tunnel"><span>Connect to the Cloudflare Tunnel</span></a></h3>
+<p>It is the command we use as SSH <code>ProxyCommand</code>:</p>
+<pre><code class="hljs language-sh">cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com
+</code></pre>
+<p>This command if run by itself, will open a TCP connection to our SSH
+server inside the GitHub VM, on port 2222 (the one we configured from
+the other side of the Cloudflare Tunnel), through the relay that
+Cloudflare gave us (the random subdomain on <code>trycloudflare.com</code>).</p>
+<p>Everything written on <code>stdin</code> will be sent over the TCP socket, and
+everything received will go to <code>stdout</code>. Simple as that.</p>
+<p>The good thing is that this simple interface is supported by the <code>ssh</code>
+command configure the underlying connection, with the <code>-o ProxyCommand</code>
+flag.</p>
+<h3 id="ssh-through-the-proxy" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#ssh-through-the-proxy"><span>SSH through the proxy</span></a></h3>
+<p>This is the final piece of the puzzle:</p>
+<pre><code class="hljs language-sh">ssh -o ProxyCommand=<span class="hljs-string">&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27;</span> runner@action-sshd-cloudflared
+</code></pre>
+<p>We explained already what the <code>cloudflared access tcp</code> command does, so
+we’ll focus on the rest:</p>
+<pre><code class="hljs language-sh">ssh -o ProxyCommand=<span class="hljs-string">&#x27;...&#x27;</span> runner@action-sshd-cloudflared
+</code></pre>
+<p>Here we issue a SSH connection to host <code>action-sshd-cloudflared</code> with
+user <code>runner</code>. But because of the <code>ProxyCommand</code> we configured, the
+given host is not actually used, and we could put anything in there.</p>
+<p>We could even connect to <code>runner@</code> (effectively no hostname), and that
+would work. That being said this is not an ideal solution because it
+would leave an entry in <code>~/.ssh/known_hosts</code> for a “empty string” host,
+and that’s not really useful. Putting <code>action-sshd-cloudflared</code> here is
+more clear on what this key is related to.</p>
+<p>The combination of both those commands effectively connects you to the
+remote SSH server in the GitHub VM.</p>
+<h2 id="what-about-action-upterm-and-action-tmate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#what-about-action-upterm-and-action-tmate"><span>What about action-upterm and action-tmate?</span></a></h2>
+<p>When I first tried to debug a GitHub workflow via SSH, I stumbled upon
+two actions: <a href="https://github.com/marketplace/actions/debugging-with-ssh">debugging with SSH</a>
+and <a href="https://github.com/marketplace/actions/debugging-with-tmate">debugging with tmate</a>,
+also named <a href="https://github.com/lhotari/action-upterm">action-upterm</a>
+and <a href="https://github.com/mxschmitt/action-tmate">action-tmate</a> in their
+respective repos.</p>
+<p>They’re both great and work perfectly for the task at hand, and can do
+even more than that, because both <a href="https://upterm.dev/">Upterm</a>
+and <a href="https://tmate.io/">tmate</a> are designed to <em>share</em> a terminal
+session amongst multiple clients.</p>
+<p>They both work by providing a client “host” software, and a public relay
+server. The host uses the client to connect to the relay server and
+share a terminal input and output with it, and other users can SSH to
+that relay to access the shared session.</p>
+<p>The advantage of the relay server in a world where most computers don’t
+have a public IP address and probably not public IPv6 either, is to
+enable <a href="https://en.wikipedia.org/wiki/NAT_traversal">NAT traversal</a> to
+share a local service with the internet despite not being publicly
+routable to. This is the problem that the famous
+<a href="https://ngrok.com/">ngrok</a> is solving, or more simply, SSH TCP
+forwarding (with the <code>-L</code> and <code>-R</code> options).</p>
+<h3 id="the-problem-with-the-relay-server" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#the-problem-with-the-relay-server"><span>The problem with the relay server</span></a></h3>
+<p>There’s one thing that bugs me very much with the way they both designed
+the relay server: it’s not just acting as a TCP relay to enable NAT
+traversal! Not only the server contains business logic, but for this
+business logic to work, it needs plaintext access to the SSH connection
+(as opposed to only forwarding encrypted TCP traffic).</p>
+<p>This is very much a no-no for me. The good thing is that they both
+provide a way to <a href="https://upterm.dev/#deploy-uptermd">host</a> your
+<a href="https://tmate.io/#host">own</a> relay server, where it’s not as much of a
+big deal that the relay sees plaintext traffic (it moves the trust from
+“random strangers on the internet” to the entity you pay to host your
+server, which is arguably an improvement, although far from end-to-end
+encryption).</p>
+<p>But I’m lazy, and that’s too much work anyways. Especially when I know a
+bare <code>sshd</code> and a “dumb” (here used in a positive sense) TCP relay would
+do the job for me.</p>
+<p>I would have been more keep to using Upterm or tmate if they moved all
+the business logic to the host client software, and let the relay be…
+a (dumb) TCP relay happily breaking NAT and forwarding encrypted traffic
+around. But I reckon this can be a challenge especially with the
+extended feature set those tools want to support.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/debugging-github-actions-workflow-ssh.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Overall, <code>sshd</code> and <code>cloudflared</code> work perfectly hand in hand to allow
+SSHing in an otherwise unroutable GitHub workflow container.</p>
+<p>This is the beauty of the Unix philosophy: tools that do one thing, and
+do it well, and are <em>composable</em> through <em>universal interfaces</em>.</p>
+<p>If you liked this post, you will definitely enjoy the second part where
+I <a href="https://www.codejam.info/2022/05/github-action-expose-ssh-server.html">explain how action-sshd-cloudflared works internally</a>.
+Cheers!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Notion: import CSV with Markdown page content</title>
     <link href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html" />
@@ -201,7 +726,7 @@ when calling the API, e.g. when trying to get a file:</p>
 <span class="hljs-punctuation">}</span>
 </code></pre>
 <p>But the exact same code to generate a JWT works seamlessly with Pub/Sub,
-Datastore and other services! Why is that? Should we fallback to using
+Datastore and other services! Why is that? Should we fall back to using
 the OAuth endpoint for those problematic services?</p>
 <p>No.</p>
 <h2 id="the-new-undocumented-jwt-payload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-new-undocumented-jwt-payload"><span>The new, undocumented JWT payload</span></a></h2>
@@ -2651,84 +3176,6 @@ pharmacy treatments or other suggestions found on the internet.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How to Call Google Cloud APIs from Cloudflare Workers</title>
-    <link href="https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers" />
-    <id>https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers</id>
-    <updated>2022-02-16T05:00:00.000Z</updated>
-  </entry>
-  <entry>
-    <title>A second .gitignore that ignores itself 🤯</title>
-    <link href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html" />
-    <id>https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html</id>
-    <updated>2022-01-26T05:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>When collaborating on a project, it’s quite frequent that I create extra
-scratch files to fiddle locally. This is your ad hoc <code>test.js</code> and alike.</p>
-<p>I usually don’t want to commit those files, and I don’t necessarily want
-to add them to the project’s <code>.gitignore</code> either, because they’re only
-a product of my local workflow and that shouldn’t leak in the shared
-repository. What I wanted was like <strong>a second <code>.gitignore</code> file</strong>, but
-that wouldn’t be committed to the repository, essentially <em>ignoring
-itself</em> (and my scratch files).</p>
-<p>For a long time I’ve just let those files unstaged, carefully avoiding
-them every time I make a commit (never using <code>git add .</code> and such). But
-there is actually a better way.</p>
-<h2 id="all-the-ways-to-ignore-files-in-git" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#all-the-ways-to-ignore-files-in-git"><span>All the ways to ignore files in Git</span></a></h2>
-<p>As mentioned in the <a href="https://git-scm.com/docs/gitignore"><code>.gitignore</code> man page</a>,
-there’s actually multiple layers for Git to ignore files in a repository:</p>
-<ul>
-<li>Patterns passed as command line arguments.</li>
-<li>Patterns from the <code>.gitignore</code> file (most common way).</li>
-<li>Patterns from <code>.git/info/exclude</code>.</li>
-<li>Patterns from the file configured in <code>core.excludesFile</code>, and
-defaulting to <code>~/.config/git/ignore</code>.</li>
-</ul>
-<h2 id="introducing-git-info-exclude" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#introducing-git-info-exclude"><span>Introducing <code>.git/info/exclude</code></span></a></h2>
-<p>I didn’t know it existed, but it was there that whole time! Every Git
-repo have an empty <code>.git/info/exclude</code> file, which works exactly like a
-<code>.gitignore</code> file, except it’s not committed, and it’s only local to
-the current copy of the repository.</p>
-<p>That’s exactly what I wanted! I can add my scratch files to it and I
-don’t have to worry about accidentally committing them anymore, and I
-can finally <code>git add .</code> again!</p>
-<h2 id="the-original-trick-with-core-excludesfiles" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/01/a-second-gitignore-that-ignores-itself.html#the-original-trick-with-core-excludesfiles"><span>The original trick with <code>core.excludesFiles</code></span></a></h2>
-<p>The fun thing is that I only learnt about <code>.git/info/exclude</code> while
-writing this article, I actually didn’t go that far in my prior
-research. I first discovered the <code>core.excludesFile</code> option, which
-allowed me to solved my problem, so I stopped at that. It’s only when I
-started to write about it that I noticed there was an even better
-option. This is yet another example of the power of writing, and the
-reason why I like to share every little bit of knowledge like this.</p>
-<p>Anyways, my original trick was to use the <code>core.excludesFile</code> option. As
-we saw, we can configure it to an additional <code>.gitignore</code> file that can
-live anywhere on the system. If set in the global Git config
-(<code>git config --global core.excludesFile</code>, targeting <code>~/.gitconfig</code>),
-it’ll affect every repository, but if set in the local Git config (<code>git config core.excludesFile</code>, targeting <code>.git/config</code>) in a specific repo,
-we can add a second <code>.gitignore</code> file only for that repo!</p>
-<p>So what I did was:</p>
-<pre><code class="hljs language-sh">git config core.excludesFile .valignore
-</code></pre>
-<p>And I added a new file, <code>.valignore</code>, with the following content:</p>
-<pre><code class="hljs language-gitignore">/.valignore
-/test.js
-</code></pre>
-<p>Effectively ignoring itself, as well as my scratch file!</p>
-<p>The downside is there can only be a single <code>core.excludesFile</code>, meaning
-this is potentially shadowing a global <code>core.excludesFile</code>. If you rely
-on that, e.g. you use <code>~/.config/git/ignore</code>, you would have to
-duplicate its content in the <code>.valignore</code> or whatever you called it.</p>
-<p>But as I mentioned earlier, <code>.git/info/exclude</code> is an even better
-solution for this problem, so you can actually have it all!</p>
-<p>Happy hacking, and keep learning! 😜</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1486539328373374977">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

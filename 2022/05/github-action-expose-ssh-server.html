@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How to make a GitHub Action that exposes a SSH server</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="How to make a GitHub Action that exposes a SSH server">
+  <meta property="og:description" content="In the first post, I explained how to use action-sshd-cloudflared, a GitHub Action that I wrote to easily SSH to a GitHub workflow container and debug it efficiently. I gave a precise explanation of what the client commands do, and I compared it to similar alternatives.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>How to make a GitHub Action that exposes a SSH server</h1>
+<p class="date">May 14, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>In the <a href="debugging-github-actions-workflow-ssh.html">first post</a>, I
+explained how to use <a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>,
+a GitHub Action that I wrote to easily SSH to a GitHub workflow
+container and debug it efficiently. I gave a precise explanation of
+<a href="debugging-github-actions-workflow-ssh.html#details-of-the-client-connect-commands">what the client commands do</a>,
+and I <a href="debugging-github-actions-workflow-ssh.html#what-about-action-upterm-and-action-tmate">compared it to similar alternatives</a>.</p>
+<p>In this post, we’ll go through the details of the server (the code that
+runs inside the GitHub workflow). We’ll see how to make a simple GitHub
+Action that runs a shell script (or anything <em>executable</em>), a couple
+useful environment variables, and most importantly, what’s the recipe to
+run a SSH server there and expose it over the internet despite the
+container not being publicly addressable.</p>
+<h2 id="making-the-simplest-github-action-possible" tabindex="-1"><a class="header-anchor" href="#making-the-simplest-github-action-possible"><span>Making the simplest GitHub Action possible</span></a></h2>
+<p>All we need to turn a simple GitHub repository in a GitHub Action is to
+add a valid <code>action.yml</code> at the top level.</p>
+<p>GitHub can run
+<a href="https://docs.github.com/en/actions/creating-actions/creating-a-docker-container-action">Docker actions</a>,
+<a href="https://docs.github.com/en/actions/creating-actions/creating-a-javascript-action">JavaScript actions</a>,
+but the one we care about is the <a href="https://docs.github.com/en/actions/creating-actions/creating-a-composite-action">composite action</a>.
+A composite action allows us to run simple <em>commands</em> in a <em>shell</em> and
+that’s exactly what we need. 👍</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">Debug</span> <span class="hljs-string">via</span> <span class="hljs-string">SSH</span>
+<span class="hljs-attr">description:</span> <span class="hljs-string">Setup</span> <span class="hljs-string">a</span> <span class="hljs-string">SSH</span> <span class="hljs-string">server</span> <span class="hljs-string">with</span> <span class="hljs-string">a</span> <span class="hljs-string">tunnel</span> <span class="hljs-string">to</span> <span class="hljs-string">access</span> <span class="hljs-string">it</span> <span class="hljs-string">to</span> <span class="hljs-string">debug</span> <span class="hljs-string">your</span> <span class="hljs-string">action</span> <span class="hljs-string">via</span> <span class="hljs-string">SSH.</span>
+<span class="hljs-attr">runs:</span>
+  <span class="hljs-attr">using:</span> <span class="hljs-string">composite</span>
+  <span class="hljs-attr">steps:</span>
+    <span class="hljs-bullet">-</span> <span class="hljs-attr">run:</span> <span class="hljs-string">$GITHUB_ACTION_PATH/setup-ssh</span>
+      <span class="hljs-attr">shell:</span> <span class="hljs-string">bash</span>
+</code></pre>
+<p>Unlike in a normal workflow YAML, the <code>run</code> command must also include an
+explicit shell. We can use any of the <a href="https://docs.github.com/en/actions/learn-github-actions/environment-variables">GitHub Actions environment variables</a>
+directly in there, which is convenient because we have
+<code>GITHUB_ACTION_PATH</code>, the path to our action repository (by default the
+working directory is the one containing the user’s code, not our action
+code).</p>
+<p>From there, the <a href="https://github.com/valeriangalliat/action-sshd-cloudflared/blob/master/setup-ssh"><code>setup-ssh</code> script</a>
+can be broken down in 9 simple steps:</p>
+<ol>
+<li><a href="#download-cloudflared">Download the latest <code>cloudflared</code> binary</a>.</li>
+<li><a href="#fetch-the-actor-keys">Fetch the public SSH keys</a> of the GitHub user
+who triggered the workflow to a <code>authorized_keys</code> file.</li>
+<li><a href="#set-a-password">If there was no SSH key, set a password</a> for the
+<code>runner</code> user so that there’s alternative way to connect.</li>
+<li><a href="#generate-a-server-key">Generate a server key</a>.</li>
+<li><a href="#create-the-sshd-config">Create the <code>sshd</code> config</a>.</li>
+<li><a href="#start-sshd">Start <code>sshd</code></a>.</li>
+<li><a href="#start-a-tmux-session">Start a tmux session</a>.</li>
+<li><a href="#start-cloudflared">Start <code>cloudflared</code></a> to expose the <code>sshd</code> port on the internet.</li>
+<li><a href="#output-the-client-instructions">Output the client instructions</a>.</li>
+<li><a href="#watch-for-session-end">Wait for the tmux session to end and stop everything</a>.</li>
+</ol>
+<h2 id="download-cloudflared" tabindex="-1"><a class="header-anchor" href="#download-cloudflared"><span>Download <code>cloudflared</code></span></a></h2>
+<p>We start simple and easy.</p>
+<pre><code class="hljs language-sh">curl --location --silent --output cloudflared https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64
+<span class="hljs-built_in">chmod</span> +x cloudflared
+</code></pre>
+<h2 id="fetch-the-actor-keys" tabindex="-1"><a class="header-anchor" href="#fetch-the-actor-keys"><span>Fetch the actor keys</span></a></h2>
+<p>In GitHub Actions, the user who trigger the workflow is called an
+“actor”. Their username is set in the <code>GITHUB_ACTOR</code> environment
+variable.</p>
+<p>As you may know, <a href="https://github.com/settings/keys">you configured</a> a
+number of SSH keys on GitHub to be able to push to repositories over
+SSH. Those keys are public knowledge, and we can fetch them via the
+public GitHub API, which is convenient here to automatically give the
+actor SSH access to that server.</p>
+<pre><code class="hljs language-sh">curl -s <span class="hljs-string">&quot;https://api.github.com/users/<span class="hljs-variable">$GITHUB_ACTOR</span>/keys&quot;</span> | jq -r <span class="hljs-string">&#x27;.[].key&#x27;</span> &gt; authorized_keys
+</code></pre>
+<p>The GitHub API response is in JSON, but we use a simple <a href="https://stedolan.github.io/jq/">jq</a>
+script to extract the raw key, one per line, to put it in a valid
+<code>authorized_keys</code> file.</p>
+<h2 id="set-a-password" tabindex="-1"><a class="header-anchor" href="#set-a-password"><span>Set a password</span></a></h2>
+<p>If there was no SSH keys for that user, we set a password as a fallback,
+so they still have a means to connect.</p>
+<p>To test whether or not there was any SSH key, we use:</p>
+<pre><code class="hljs language-sh">grep -q . authorized_keys
+</code></pre>
+<p><code>-q</code> makes <code>grep</code> quiet (we don’t need to display the output), <code>.</code> is
+the regular expression to match (any character), and <code>authorized_keys</code>
+is the file we use as input.</p>
+<p>If there’s any character in that file, <code>grep</code> will exit with 0
+(success). Otherwise with a nonzero code, which means nothing was
+matched.</p>
+<p>We can conveniently use it in a <code>if</code> condition:</p>
+<pre><code class="hljs language-sh"><span class="hljs-keyword">if</span> grep -q . authorized_keys; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Configured SSH key(s) for user: <span class="hljs-variable">$GITHUB_ACTOR</span>&quot;</span>
+<span class="hljs-keyword">else</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;No SSH key found for user: <span class="hljs-variable">$GITHUB_ACTOR</span>&quot;</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Setting SSH password...&quot;</span>
+<span class="hljs-keyword">fi</span>
+</code></pre>
+<p>It’s in that <code>else</code> branch that we generate and set the password. To
+generate it, we fetch 16 characters from <code>/dev/urandom</code>:</p>
+<pre><code class="hljs language-sh">password=$(<span class="hljs-built_in">base64</span> &lt; /dev/urandom | <span class="hljs-built_in">tr</span> -<span class="hljs-built_in">cd</span> <span class="hljs-string">&#x27;[:alnum:]&#x27;</span> | <span class="hljs-built_in">head</span> -c16)
+</code></pre>
+<ul>
+<li><code>base64 &lt; /dev/urandom</code> encodes as Base64 the stream of random bytes
+from <code>/dev/urandom</code>. The stream is infinite but the pipleine is
+“lazy”.</li>
+<li><code>tr -cd '[:alnum:]'</code> keeps only alphanumeric characters.</li>
+<li><code>head -c16</code> keeps only the first 16 characters (or should I say,
+bytes, to be accurate) and terminates the stream as soon as it has
+them.</li>
+</ul>
+<p>This gives us a password that we can set for the current user.</p>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>; <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>) | sudo passwd <span class="hljs-string">&quot;<span class="hljs-variable">$USER</span>&quot;</span>
+</code></pre>
+<p>We can’t use the <code>passwd</code> command directly because it first prompts us
+for our own current password (which we don’t know), but we have <code>root</code>
+access in this VM through <code>sudo</code>, and <code>root</code> doesn’t need confirmation
+to change anyone’s password.</p>
+<p>We echo the password twice because <code>passwd</code> typically asks to input the
+password first, then a second time for confirmation.</p>
+<h2 id="generate-a-server-key" tabindex="-1"><a class="header-anchor" href="#generate-a-server-key"><span>Generate a server key</span></a></h2>
+<p><code>ssh-keygen</code> is a cool utility to generate SSH keys. It defaults to a
+RSA key which is fine with me.</p>
+<ul>
+<li><code>-q</code> makes it quiet (we don’t need the logs).</li>
+<li><code>-f</code> indicates the output file to write the key to (the public key
+will be in a file with a <code>.pub</code> suffix).</li>
+<li><code>-N ''</code> is to set an empty passphrase (otherwise <code>ssh-keygen</code> will
+prompt to set a passphrase).</li>
+</ul>
+<pre><code class="hljs language-sh">ssh-keygen -q -f ssh_host_rsa_key -N <span class="hljs-string">&#x27;&#x27;</span>
+</code></pre>
+<h2 id="create-the-sshd-config" tabindex="-1"><a class="header-anchor" href="#create-the-sshd-config"><span>Create the <code>sshd</code> config</span></a></h2>
+<p>We copy it from a template file, where we just replace the <code>$PWD</code> and
+<code>$USER</code> symbols by the corresponding environment variable.</p>
+<pre><code class="hljs language-sh">sed <span class="hljs-string">&quot;s,\$PWD,<span class="hljs-variable">$PWD</span>,;s,\$USER,<span class="hljs-variable">$USER</span>,&quot;</span> sshd_config.template &gt; sshd_config
+</code></pre>
+<p>This is a good time to review the template. It’s heavily based on my
+<a href="../../2021/11/standalone-userland-ssh-server.html">standalone userland SSH server</a>
+config I <a href="https://github.com/valeriangalliat/sshd-on-the-go">published</a>
+last year!</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">Port</span> <span class="hljs-number">2222</span>
+<span class="hljs-attribute">HostKey</span> $PWD/ssh_host_rsa_key
+<span class="hljs-attribute">PidFile</span> $PWD/sshd.pid
+</code></pre>
+<p>First we set the port to 2222, and we define the host key and process ID
+file. We could have written <code>PidFile none</code> to prevent the default of
+<code>/run/sshd.pid</code>, because we don’t actually use it, but it doesn’t hurt.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">UsePAM</span> yes
+</code></pre>
+<p>We enable PAM (pluggable authentication module). Not going in details
+with this, but keep in mind it’s required for this to work at least on
+Debian-based systems.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">KbdInteractiveAuthentication</span> yes
+<span class="hljs-attribute">ChallengeResponseAuthentication</span> yes
+<span class="hljs-attribute">PasswordAuthentication</span> yes
+</code></pre>
+<p>This enables interactive password authentication. They’re actually
+enabled by default so we could leave them out.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">AllowUsers</span> $USER
+<span class="hljs-attribute">AuthorizedKeysFile</span> $PWD/authorized_keys
+</code></pre>
+<p>We only allow the Unix user who the workflow is running as, and we allow
+the SSH keys we fetched earlier in <code>authorized_keys</code>. Remember that we
+replace those <code>$USER</code> and <code>$PWD</code> symbols with a <code>sed</code> command before
+starting the server, you can’t actually use variables in here otherwise.</p>
+<pre><code class="hljs language-apache"><span class="hljs-attribute">ForceCommand</span> tmux attach
+</code></pre>
+<p>Finally we force the <code>tmux attach</code> command to run upon login. This makes
+sure the user is connecting to the tmux session we’ll start in the
+following steps, and it’s important because we monitor the status of
+this session to determine when to stop the server.</p>
+<h2 id="start-sshd" tabindex="-1"><a class="header-anchor" href="#start-sshd"><span>Start <code>sshd</code></span></a></h2>
+<pre><code class="hljs language-sh">/usr/sbin/sshd -f sshd_config -D &amp;
+sshd_pid=$!
+</code></pre>
+<ul>
+<li>We need to start it with an absolute path (it is required when
+starting an ad hoc SSH server like this).</li>
+<li><code>-f</code> lets us specify the configuration file to use.</li>
+<li><code>-D</code> starts it as foreground (by default it starts as a daemon).</li>
+<li><code>&amp;</code> makes it a background process in this script so that we can fetch
+its process ID with <code>$!</code> right after, and kill it at the end.</li>
+</ul>
+<p>We could avoid <code>-D</code> and <code>&amp;</code> altogether by using the <code>sshd.pid</code> file that
+we configured in <code>PidFile</code> to retrieve the process ID instead. Whatever
+works.</p>
+<h2 id="start-a-tmux-session" tabindex="-1"><a class="header-anchor" href="#start-a-tmux-session"><span>Start a tmux session</span></a></h2>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-variable">$GITHUB_WORKSPACE</span>&quot;</span> &amp;&amp; tmux new-session -d -s debug)
+</code></pre>
+<p>We start a subshell (the parens around the command), so that <code>cd</code> only
+affects the subshell and not our top-level environment.</p>
+<p>We effectively change the current directory to the main workflow
+directory, defined in <code>GITHUB_WORKSPACE</code>, and start a tmux session.</p>
+<p>With <code>tmux new-session</code>, <code>-d</code> disables the default behaviour of
+attaching the session to the current terminal, and <code>-s</code> allows us to
+give it a name.</p>
+<h2 id="start-cloudflared" tabindex="-1"><a class="header-anchor" href="#start-cloudflared"><span>Start <code>cloudflared</code></span></a></h2>
+<pre><code class="hljs language-sh">./cloudflared tunnel --no-autoupdate --url tcp://localhost:2222 &amp;
+cloudflared_pid=$!
+</code></pre>
+<p>We run the <code>cloudflared</code> binary that we downloaded to the current
+directory earlier. This command allows us to start a tunnel forwarding
+to port 2222, where our SSH server is listening.</p>
+<p>And again, we terminate with <code>&amp;</code> to start it as a background process so
+that we can keep running commands and kill it at the end.</p>
+<p>But there’s a few more things we need to add to this command:</p>
+<pre><code class="hljs language-sh">./cloudflared tunnel ... 2&gt;&amp;1 | <span class="hljs-built_in">tee</span> cloudflared.log | sed -u <span class="hljs-string">&#x27;s/^/cloudflared: /&#x27;</span> &amp;
+</code></pre>
+<ul>
+<li><code>2&gt;&amp;1</code> redirects the <code>stderr</code> output to <code>stdout</code>, so that we can
+<code>tee</code> it to <code>cloudflared.log</code> file.</li>
+<li><code>tee</code> will write the input to the given file, but also keep outputting
+it to <code>stdout</code> at the same time.</li>
+<li>This is great because we can now use a simple <code>sed</code> command to prefix
+it with <code>cloudflared:</code> (so that the logs have some context).</li>
+</ul>
+<p>This log file is useful for us to retrieve the relay URL that
+<code>cloudflared</code> will output, which we do right after:</p>
+<pre><code class="hljs language-sh">url=$(<span class="hljs-built_in">head</span> -1 &lt;(<span class="hljs-built_in">tail</span> -f cloudflared.log | grep --line-buffered -o <span class="hljs-string">&#x27;https://.*\.trycloudflare.com&#x27;</span>))
+</code></pre>
+<ul>
+<li><code>tail -f cloudflared.log</code> <em>follows</em> the file, meaning that it keeps
+watching for new lines indefinitely, and outputs them as they come.</li>
+<li>The <code>grep</code> command has a simple regex to identify the relay URL.
+<ul>
+<li><code>--line-buffered</code> is important here because we want to work <em>lazily</em>
+and exit as soon as we find a match. If <code>grep</code> was buffering more
+than one line of data, this could just hang forever.</li>
+<li><code>-o</code> will print only the text matched by the regex instead of the
+whole matching line.</li>
+</ul>
+</li>
+<li>We put all of that in a subshell that we use as input to the <code>head</code>
+command with the <code>&lt;()</code> syntax.</li>
+<li><code>head -1</code> will exit the whole pipeline after one line is outputted,
+allowing us to continue running the script.</li>
+</ul>
+<div class="note">
+<p><strong>Note:</strong> we can’t put <code>head -1</code> at the end of the pipeline even though
+that would seem intuitive, because it would take <code>grep</code> to try to
+<em>write</em> to the <code>head</code> input after it was closed to notice that the pipe
+was broken, and then it would take another line output from <code>tail</code> to
+notice that <code>grep</code> exited.</p>
+<p>In practice this just means this would hang indefinitely because
+<code>cloudflared</code> doesn’t output the relay host twice.</p>
+<p>See more details <a href="https://stackoverflow.com/questions/45326901/lazy-non-buffered-processing-of-shell-pipeline">here</a>.</p>
+</div>
+<h2 id="output-the-client-instructions" tabindex="-1"><a class="header-anchor" href="#output-the-client-instructions"><span>Output the client instructions</span></a></h2>
+<p>We already have the <code>url</code> variable as well as an optional <code>password</code>
+variable.</p>
+<p>With that, all we need is the SSH server public key to include it as
+part of the connection command that the user will paste.</p>
+<pre><code class="hljs language-sh">public_key=$(<span class="hljs-built_in">cut</span> -d<span class="hljs-string">&#x27; &#x27;</span> -f1,2 &lt; ssh_host_rsa_key.pub)
+</code></pre>
+<p>Thanks to the <code>cut</code> command, we split the single line in the given file
+by space, and output only fields 1 and 2. This file normally has 3
+fields: the key type, the actual key, and a comment. We don’t need the
+comment.</p>
+<p>We can then display those variables in a friendly and convenient way to
+the user. I already detailed that in <a href="debugging-github-actions-workflow-ssh.html#details-of-the-client-connect-commands">the first part</a>
+focusing on the client side, check it out if you didn’t already!</p>
+<h2 id="watch-for-session-end" tabindex="-1"><a class="header-anchor" href="#watch-for-session-end"><span>Watch for session end</span></a></h2>
+<pre><code class="hljs language-sh">tmux wait-for channel
+</code></pre>
+<p>This commands waits for a channel named <code>channel</code> to be “woken up” by a
+matching <code>tmux wait-for -S channel</code>.</p>
+<p>We don’t actually ever run this last command, and we don’t really care
+about the channel either, but the effect this have if we never “wake up”
+the channel, is that it will hang until the tmux session itself is over.</p>
+<p>That’s exactly what we need: when the user is done debugging, they’ll
+typically end the tmux session, and this is our way to know we can tear
+down the servers:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">kill</span> <span class="hljs-string">&quot;<span class="hljs-variable">$cloudflared_pid</span>&quot;</span>
+<span class="hljs-built_in">kill</span> <span class="hljs-string">&quot;<span class="hljs-variable">$sshd_pid</span>&quot;</span>
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>And just like that, you know everything about
+<a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>!</p>
+<p>This script is simple enough to be explained in depth in a blog post,
+and builds on top of rock solid programs like <code>sshd</code>, <code>cloudflared</code> and
+tmux.</p>
+<p>Thanks to Cloudflare Tunnel guest mode, we don’t even need an API key or
+token to set up the relay, and because GitHub already exposes the actor
+public SSH keys, we can preconfigure them so that everything just works
+out of the box.</p>
+<p>I hope GitHub introduces a SSH feature natively at some point, that
+would make actions like this obsolete. In the meantime, I hope this
+helps you debug your GitHub workflows!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/05/github-action-expose-ssh-server.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Debugging a GitHub Actions workflow via SSH</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Debugging a GitHub Actions workflow via SSH">
+  <meta property="og:description" content="Since GitHub introduced Actions, it’s more and more common to use them for CI/CD tasks, because of the tight integration with GitHub, and its simplicity.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Debugging a GitHub Actions workflow via SSH</h1>
+<p class="date">May 14, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Since GitHub introduced <a href="https://github.com/features/actions">Actions</a>,
+it’s more and more common to use them for CI/CD tasks, because of the
+tight integration with GitHub, and its simplicity.</p>
+<p>Coming from <a href="https://circleci.com/">CircleCI</a>, I was used to their
+<a href="https://circleci.com/docs/2.0/ssh-access-jobs/">“rerun job with SSH” feature</a>,
+which allowed to rerun a job while exposing a SSH server, to debug the
+live test environment, and I was surprised to not find a similar feature
+on GitHub Actions.</p>
+<h2 id="why-ssh-to-the-ci-environment" tabindex="-1"><a class="header-anchor" href="#why-ssh-to-the-ci-environment"><span>Why SSH to the CI environment?</span></a></h2>
+<p>SSHing to CI is extremely handy in scenarios where <strong>a bug happens only
+on CI</strong> and can’t be reproduced locally or on other staging servers we
+have control over.</p>
+<p>It can also be useful <strong>when initially setting up a GitHub Action</strong> for
+your app when you’re not sure exactly what’s available in the GitHub
+image, what versions, etc. and want to <strong>quickly fiddle around</strong> to find
+the right instructions to set up the environment for success.</p>
+<h2 id="what-about-containers" tabindex="-1"><a class="header-anchor" href="#what-about-containers"><span>What about containers?</span></a></h2>
+<p>The advent of containers should mitigate part of the problem, with more
+and more apps being <a href="https://en.wiktionary.org/wiki/dockerize">“dockerized”</a>,
+but the reality is that your GitHub Actions workflow
+<a href="https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#choosing-github-hosted-runners">likely runs on <code>ubuntu-latest</code></a>
+because that’s far more convenient, and that’s the main way that’s
+documented basically everywhere. You’re still running in a container,
+but that’s GitHub’s container, and it’s (very) different from your
+development, staging and production containers.</p>
+<p>And even if you <a href="https://docs.github.com/en/actions/using-jobs/running-jobs-in-a-container">bring your own container</a>,
+you’re still likely to encounter <strong>differences inherent to running in a
+CI environment</strong>: are the volumes and ports configured exactly the same?
+What about the services you depend on like PostgreSQL, Redis, etc.? How
+do you manage your environment variables? Are they any different from
+your local environment? (They probably should.)</p>
+<p>Also did you ever encounter timing-based bugs that <strong>only happen on a
+slow machine</strong> (or network), or inversely, only happen <strong>when the code
+runs too fast</strong>? I did. Both of those.</p>
+<h2 id="introducing-action-sshd-cloudflared" tabindex="-1"><a class="header-anchor" href="#introducing-action-sshd-cloudflared"><span>Introducing action-sshd-cloudflared</span></a></h2>
+<p>This is why I created <a href="https://github.com/valeriangalliat/action-sshd-cloudflared">action-sshd-cloudflared</a>.</p>
+<p>The idea? Find the <strong>simplest way to run a SSH server</strong> in a GitHub
+Action and somehow connect to it. The last part can be a challenge
+because as you can expect, the VM the workflow runs in <strong>doesn’t have a
+public IP</strong>, and not even IPv6. No way to directly bind a port publicly
+accessible from the internet.</p>
+<p>That’s why we need to <strong>resort to a relay host</strong>. I chose
+<a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-apps/">Cloudflare Tunnel</a>
+for that, which is convenient because it includes a way to
+<a href="https://developers.cloudflare.com/cloudflare-one/applications/non-http/arbitrary-tcp/">forward abritrary TCP</a>,
+and happily runs as guest (no need to be authenticated).</p>
+<p>In the end, it takes <a href="https://github.com/valeriangalliat/action-sshd-cloudflared/blob/master/setup-ssh">100 lines of commented shell script</a>,
+and if you’re interested in the details, I encourage you to read my
+<a href="github-action-expose-ssh-server.html">explanation of how the server works</a>.</p>
+<p>But for now, I’ll start by <strong>showing you how to use it</strong>, then I’ll
+break down <strong>what the client-side commands do</strong>, and finally I’ll
+compare it to other options.</p>
+<h2 id="usage" tabindex="-1"><a class="header-anchor" href="#usage"><span>Usage</span></a></h2>
+<p>Here’s an example workflow YAML file that does nothing but checking out
+your repository and starting a SSH server.</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">CI</span>
+<span class="hljs-attr">on:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-string">push</span>
+<span class="hljs-attr">jobs:</span>
+  <span class="hljs-attr">build:</span>
+    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">ubuntu-latest</span>
+    <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v2</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">valeriangalliat/action-sshd-cloudflared@v1</span>
+</code></pre>
+<p>More likely you already have a workflow YAML and the only part you care
+about is to add this to your <code>steps</code> array:</p>
+<pre><code class="hljs language-yaml">      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">valeriangalliat/action-sshd-cloudflared@v1</span>
+</code></pre>
+<p>From there, here’s an example output you’ll find on your workflow logs:</p>
+<pre><code class="hljs">Downloading `cloudflared` from &lt;https://github.com/cloudflare/cloudflared/releases/latest/download/cloudflared-linux-amd64&gt;...
+Configured SSH key(s) for user: valeriangalliat
+Creating SSH server key...
+Creating SSH server config...
+Starting SSH server...
+Starting tmux session...
+Starting Cloudflare tunnel...
+
+Run the following command to connect:
+
+    ssh-keygen -R action-sshd-cloudflared &amp;&amp; echo &#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27; &gt;&gt; ~/.ssh/known_hosts &amp;&amp; ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; runner@action-sshd-cloudflared
+
+What the one-liner does:
+
+    # Remove old SSH server public key for `action-sshd-cloudflared`
+    ssh-keygen -R action-sshd-cloudflared
+
+    # Trust the public key for this session
+    echo &#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27; &gt;&gt; ~/.ssh/known_hosts
+
+    # Connect using `cloudflared` as a transport (SSH is end-to-end encrpted over this tunnel)
+    ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; runner@action-sshd-cloudflared
+
+    # Alternative if you don&#x27;t want to verify the host key
+    ssh -o ProxyCommand=&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27; -o UserKnownHostsFile=/dev/null -o StrictHostKeyChecking=accept-new runner@action-sshd-cloudflared
+</code></pre>
+<p>From there you can copy the (long, I know) one-liner that will connect
+you to the VM. As you can see I also a commented version of the commands
+for people to have a better understanding of what’s happening. Let’s go
+through it in even more details.</p>
+<h2 id="details-of-the-client-connect-commands" tabindex="-1"><a class="header-anchor" href="#details-of-the-client-connect-commands"><span>Details of the client connect commands</span></a></h2>
+<h3 id="remove-keys-from-previous-debugging-sessions" tabindex="-1"><a class="header-anchor" href="#remove-keys-from-previous-debugging-sessions"><span>Remove keys from previous debugging sessions</span></a></h3>
+<p>The first step is to remove all the keys matching host
+<code>action-sshd-cloudflared</code> in <code>~/.ssh/known_hosts</code>. This is where your
+SSH client stores the public keys of all the server you connected to.</p>
+<pre><code class="hljs language-sh">ssh-keygen -R action-sshd-cloudflared
+</code></pre>
+<p>The reason we need to do this is because the fact the action generates a
+new key every time it runs, we need to “forget” any previous key as they
+won’t be valid anymore. Otherwise SSH is confused and will prevent you
+to connect to a host whose key is not the one it expects.</p>
+<div class="note">
+<p><strong>Note:</strong> an alternative would be to use a unique host every time (as
+we’ll see later, because of the way use a proxy command, we could put
+any host in there), for example the same one that Cloudflare generated
+for us (<code>https://recycling-currently-enjoy-pregnant.trycloudflare.com</code>
+in the earlier example).</p>
+<p>What I don’t like about that is every time you debug a GitHub workflow,
+a new host will be added to your <code>~/.ssh/known_hosts</code> and this can
+quickly pollute it. Sure, you can garbage collect them manually at some
+point, but I’m still not a big fan of this idea.</p>
+</div>
+<h3 id="trust-the-key-for-the-current-session" tabindex="-1"><a class="header-anchor" href="#trust-the-key-for-the-current-session"><span>Trust the key for the current session</span></a></h3>
+<p>This step is not technically required, for if we don’t do it, the SSH
+client will prompt you to trust the key when it first encounters it
+(trust on first use model).</p>
+<p>But here we’re already copy/pasting quite a long one-liner, so might as
+well include an extra step to include the server public key and put it
+in the known hosts file.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;action-sshd-cloudflared ssh-rsa (public key goes here)&#x27;</span> &gt;&gt; ~/.ssh/known_hosts
+</code></pre>
+<p>Trust on first use is fine, but this is better; would you really check
+that the server key fingerprint matches what was shown in the server
+logs otherwise?</p>
+<h3 id="connect-to-the-cloudflare-tunnel" tabindex="-1"><a class="header-anchor" href="#connect-to-the-cloudflare-tunnel"><span>Connect to the Cloudflare Tunnel</span></a></h3>
+<p>It is the command we use as SSH <code>ProxyCommand</code>:</p>
+<pre><code class="hljs language-sh">cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com
+</code></pre>
+<p>This command if run by itself, will open a TCP connection to our SSH
+server inside the GitHub VM, on port 2222 (the one we configured from
+the other side of the Cloudflare Tunnel), through the relay that
+Cloudflare gave us (the random subdomain on <code>trycloudflare.com</code>).</p>
+<p>Everything written on <code>stdin</code> will be sent over the TCP socket, and
+everything received will go to <code>stdout</code>. Simple as that.</p>
+<p>The good thing is that this simple interface is supported by the <code>ssh</code>
+command configure the underlying connection, with the <code>-o ProxyCommand</code>
+flag.</p>
+<h3 id="ssh-through-the-proxy" tabindex="-1"><a class="header-anchor" href="#ssh-through-the-proxy"><span>SSH through the proxy</span></a></h3>
+<p>This is the final piece of the puzzle:</p>
+<pre><code class="hljs language-sh">ssh -o ProxyCommand=<span class="hljs-string">&#x27;cloudflared access tcp --hostname https://recycling-currently-enjoy-pregnant.trycloudflare.com&#x27;</span> runner@action-sshd-cloudflared
+</code></pre>
+<p>We explained already what the <code>cloudflared access tcp</code> command does, so
+we’ll focus on the rest:</p>
+<pre><code class="hljs language-sh">ssh -o ProxyCommand=<span class="hljs-string">&#x27;...&#x27;</span> runner@action-sshd-cloudflared
+</code></pre>
+<p>Here we issue a SSH connection to host <code>action-sshd-cloudflared</code> with
+user <code>runner</code>. But because of the <code>ProxyCommand</code> we configured, the
+given host is not actually used, and we could put anything in there.</p>
+<p>We could even connect to <code>runner@</code> (effectively no hostname), and that
+would work. That being said this is not an ideal solution because it
+would leave an entry in <code>~/.ssh/known_hosts</code> for a “empty string” host,
+and that’s not really useful. Putting <code>action-sshd-cloudflared</code> here is
+more clear on what this key is related to.</p>
+<p>The combination of both those commands effectively connects you to the
+remote SSH server in the GitHub VM.</p>
+<h2 id="what-about-action-upterm-and-action-tmate" tabindex="-1"><a class="header-anchor" href="#what-about-action-upterm-and-action-tmate"><span>What about action-upterm and action-tmate?</span></a></h2>
+<p>When I first tried to debug a GitHub workflow via SSH, I stumbled upon
+two actions: <a href="https://github.com/marketplace/actions/debugging-with-ssh">debugging with SSH</a>
+and <a href="https://github.com/marketplace/actions/debugging-with-tmate">debugging with tmate</a>,
+also named <a href="https://github.com/lhotari/action-upterm">action-upterm</a>
+and <a href="https://github.com/mxschmitt/action-tmate">action-tmate</a> in their
+respective repos.</p>
+<p>They’re both great and work perfectly for the task at hand, and can do
+even more than that, because both <a href="https://upterm.dev/">Upterm</a>
+and <a href="https://tmate.io/">tmate</a> are designed to <em>share</em> a terminal
+session amongst multiple clients.</p>
+<p>They both work by providing a client “host” software, and a public relay
+server. The host uses the client to connect to the relay server and
+share a terminal input and output with it, and other users can SSH to
+that relay to access the shared session.</p>
+<p>The advantage of the relay server in a world where most computers don’t
+have a public IP address and probably not public IPv6 either, is to
+enable <a href="https://en.wikipedia.org/wiki/NAT_traversal">NAT traversal</a> to
+share a local service with the internet despite not being publicly
+routable to. This is the problem that the famous
+<a href="https://ngrok.com/">ngrok</a> is solving, or more simply, SSH TCP
+forwarding (with the <code>-L</code> and <code>-R</code> options).</p>
+<h3 id="the-problem-with-the-relay-server" tabindex="-1"><a class="header-anchor" href="#the-problem-with-the-relay-server"><span>The problem with the relay server</span></a></h3>
+<p>There’s one thing that bugs me very much with the way they both designed
+the relay server: it’s not just acting as a TCP relay to enable NAT
+traversal! Not only the server contains business logic, but for this
+business logic to work, it needs plaintext access to the SSH connection
+(as opposed to only forwarding encrypted TCP traffic).</p>
+<p>This is very much a no-no for me. The good thing is that they both
+provide a way to <a href="https://upterm.dev/#deploy-uptermd">host</a> your
+<a href="https://tmate.io/#host">own</a> relay server, where it’s not as much of a
+big deal that the relay sees plaintext traffic (it moves the trust from
+“random strangers on the internet” to the entity you pay to host your
+server, which is arguably an improvement, although far from end-to-end
+encryption).</p>
+<p>But I’m lazy, and that’s too much work anyways. Especially when I know a
+bare <code>sshd</code> and a “dumb” (here used in a positive sense) TCP relay would
+do the job for me.</p>
+<p>I would have been more keep to using Upterm or tmate if they moved all
+the business logic to the host client software, and let the relay be…
+a (dumb) TCP relay happily breaking NAT and forwarding encrypted traffic
+around. But I reckon this can be a challenge especially with the
+extended feature set those tools want to support.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Overall, <code>sshd</code> and <code>cloudflared</code> work perfectly hand in hand to allow
+SSHing in an otherwise unroutable GitHub workflow container.</p>
+<p>This is the beauty of the Unix philosophy: tools that do one thing, and
+do it well, and are <em>composable</em> through <em>universal interfaces</em>.</p>
+<p>If you liked this post, you will definitely enjoy the second part where
+I <a href="github-action-expose-ssh-server.html">explain how action-sshd-cloudflared works internally</a>.
+Cheers!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/05/debugging-github-actions-workflow-ssh.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

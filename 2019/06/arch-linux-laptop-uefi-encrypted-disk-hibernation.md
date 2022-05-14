@@ -317,6 +317,14 @@ systemctl start bluetooth
 In practice I usually don't enable Bluetooth and I `systemctl start
 bluetooth` and `systemctl stop bluetooth` as I need it.
 
+I also load the `switch-on-connect` PulseAudio module, to make sure the
+default sink switches to a newly connected Bluetooth speaker, as
+highlighted [here](https://forum.manjaro.org/t/audio-doesnt-switch-to-newly-connected-bluetooth-speaker/90834).
+
+```sh
+echo 'load-module module-switch-on-connect' > /etc/pulse/default.pa.d/switch-on-connect.pa
+```
+
 ### Touchpad
 
 I add the following to `/etc/X11/xorg.conf.d/40-libinput.conf` to have

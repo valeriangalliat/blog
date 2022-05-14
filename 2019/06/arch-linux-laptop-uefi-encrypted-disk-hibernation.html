@@ -301,6 +301,11 @@ display manager.</p>
 systemctl start bluetooth
 </code></pre>
 <p>In practice I usually don’t enable Bluetooth and I <code>systemctl start bluetooth</code> and <code>systemctl stop bluetooth</code> as I need it.</p>
+<p>I also load the <code>switch-on-connect</code> PulseAudio module, to make sure the
+default sink switches to a newly connected Bluetooth speaker, as
+highlighted <a href="https://forum.manjaro.org/t/audio-doesnt-switch-to-newly-connected-bluetooth-speaker/90834">here</a>.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;load-module module-switch-on-connect&#x27;</span> &gt; /etc/pulse/default.pa.d/switch-on-connect.pa
+</code></pre>
 <h3 id="touchpad" tabindex="-1"><a class="header-anchor" href="#touchpad"><span>Touchpad</span></a></h3>
 <p>I add the following to <code>/etc/X11/xorg.conf.d/40-libinput.conf</code> to have
 the touchpad work the way I like it to (natural scrolling and having the

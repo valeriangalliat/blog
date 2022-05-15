@@ -6,7 +6,8 @@ FEED = dist/feed.xml
 
 build: dist $(HTML) $(ASSETS)
 
-publish: dist $(HTML) $(ASSETS) $(FEED)
+publish: build
+	./scripts/generate-feed > $(FEED)
 
 dist:
 	git worktree add dist gh-pages
@@ -51,9 +52,6 @@ dist/index.html: index.md head.html foot.html
 dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
 	./scripts/render $< > $@
-
-dist/feed.xml: feed.xml dist/posts.html
-	./scripts/generate-feed > $@
 
 dist/css/normalize.css: node_modules/normalize.css/normalize.css
 	cp $< $@

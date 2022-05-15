@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Migrating from X11 to Wayland and from i3 to Sway](2022/05/migrating-x11-wayland-i3-sway.md) <small>May 15, 2022</small>
 * [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
 * [Debugging a GitHub Actions workflow via SSH](2022/05/debugging-github-actions-workflow-ssh.md) <small>May 14, 2022</small>
 * [Notion: import CSV with Markdown page content](2022/05/notion-csv-markdown-page-content.md) <small>May 11, 2022</small>

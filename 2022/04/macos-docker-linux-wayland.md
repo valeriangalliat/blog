@@ -42,8 +42,9 @@ docker run -it \
 
 ## Making it work on Wayland
 
-I recently moved to Wayland, so setting `DISPLAY=:0.0` and mount binding
-`/tmp/.X11-unix` is not gonna do much. 😬
+I recently [moved to Wayland](../05/migrating-x11-wayland-i3-sway.md),
+so setting `DISPLAY=:0.0` and mount binding `/tmp/.X11-unix` is not
+gonna do much. 😬
 
 At the time of writing, there's no official instructions in the readme
 to run with Wayland, but the task turned out to be fairly easy!

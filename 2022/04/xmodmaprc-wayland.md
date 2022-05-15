@@ -1,8 +1,9 @@
 # Migrating `.xmodmaprc` to Wayland: remap arbitrary keys
 April 5, 2022
 
-I recently moved from X11 to Wayland, and one of my challenges that came with it was to find an alternative for my `.xmodmaprc`, that I used for
-two purposes:
+I recently [moved from X11 to Wayland](../05/migrating-x11-wayland-i3-sway.md),
+and one of my challenges that came with it was to find an alternative
+for my `.xmodmaprc`, that I used for two purposes:
 
 1. [Invert the left <kbd>Alt</kbd> and <kbd>Ctrl</kbd> keys](https://github.com/valeriangalliat/dotfiles/blob/1d2098a7da513dab195554997efaac22a0d77a02/x11/xmodmaprc).
 1. [Invert the behavior of the function keys](../../2019/06/software-fn-lock.html),

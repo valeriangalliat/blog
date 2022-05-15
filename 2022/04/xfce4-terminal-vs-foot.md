@@ -9,12 +9,12 @@ as my terminal emulator on Linux for quite a while now, and I like it.
 It's lightweight, supports emojis and has transparency, and it just
 works for me.
 
-Recently I switched to Wayland, and saw that [Sway](https://swaywm.org/)
-(the Wayland alternative to [i3](https://i3wm.org/)) was using
-[foot](https://codeberg.org/dnkl/foot) as their default terminal
-emulator. I didn't know about it, but it's described as "a fast,
-lightweight and minimalistic Wayland terminal emulator", which sounds
-like music to my ears, so I decided to try it!
+Recently I [switched to Wayland](../05/migrating-x11-wayland-i3-sway.md),
+and saw that [Sway](https://swaywm.org/) (the Wayland alternative to
+[i3](https://i3wm.org/)) was using [foot](https://codeberg.org/dnkl/foot)
+as their default terminal emulator. I didn't know about it, but it's
+described as "a fast, lightweight and minimalistic Wayland terminal
+emulator", which sounds like music to my ears, so I decided to try it!
 
 Here's my feedback after using it for a couple of weeks, in particular
 the issues I encountered and the fixes I found.

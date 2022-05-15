@@ -112,8 +112,9 @@ and work out of the box! Example for Monterey:</p>
     sickcodes/docker-osx:monterey
 </code></pre>
 <h2 id="making-it-work-on-wayland" tabindex="-1"><a class="header-anchor" href="#making-it-work-on-wayland"><span>Making it work on Wayland</span></a></h2>
-<p>I recently moved to Wayland, so setting <code>DISPLAY=:0.0</code> and mount binding
-<code>/tmp/.X11-unix</code> is not gonna do much. 😬</p>
+<p>I recently <a href="../05/migrating-x11-wayland-i3-sway.html">moved to Wayland</a>,
+so setting <code>DISPLAY=:0.0</code> and mount binding <code>/tmp/.X11-unix</code> is not
+gonna do much. 😬</p>
 <p>At the time of writing, there’s no official instructions in the readme
 to run with Wayland, but the task turned out to be fairly easy!</p>
 <p>Luckily I’m not the first one to try to do that, and there’s already two

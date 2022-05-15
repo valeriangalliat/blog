@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Migrating from X11 to Wayland and from i3 to Sway</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Migrating from X11 to Wayland and from i3 to Sway">
+  <meta property="og:description" content="Finally. After so long. I switched to Wayland. 🎉">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Migrating from X11 to Wayland and from i3 to Sway</h1>
+<p class="date">May 15, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Finally. After so long. I switched to Wayland. 🎉</p>
+<p>I remember back when I started using Linux, more than 10 years ago now,
+I was already reading about Wayland, and seeing early adopters on forums
+using it and loving it despite running into all kinds of issues… this
+wasn’t for me. X11, while old and outdated, was well supported for
+everything I wanted to do, and that was awesome.</p>
+<p>But the other day, I was bored or something, and I asked myself: is
+Wayland mainstream enough for me to use it yet?</p>
+<p>The answer was… nearly yes. Yes enough for me to switch. And that’s a
+fucking good news.</p>
+<p>In this post I’ll share with you what was needed to <strong>get a usable Wayland
+server running with Sway</strong>, all the Wayland alternatives to the X11
+programs I was previously using, and finally how I completely purged
+X11 from my system.</p>
+<p>I’m a Arch Linux user, so the commands will be adapted to that system.</p>
+<h2 id="installing-wayland-and-sway" tabindex="-1"><a class="header-anchor" href="#installing-wayland-and-sway"><span>Installing Wayland and Sway</span></a></h2>
+<p>Being a long time <a href="https://i3wm.org/">i3</a> user,
+<a href="https://swaywm.org/">Sway</a> was the obvious choice as a Wayland
+compositor. The fact it’s compatible with my existing i3 config should
+ease the transition quite a lot.</p>
+<pre><code class="hljs language-sh">pacman -S wayland sway
+</code></pre>
+<p>Then from a TTY I could just run <code>sway</code>, and end up in an environment
+pretty close to my habitual i3! Good start.</p>
+<h2 id="figuring-all-the-wayland-alternatives" tabindex="-1"><a class="header-anchor" href="#figuring-all-the-wayland-alternatives"><span>Figuring all the Wayland alternatives</span></a></h2>
+<p>There’s a number of X11 programs that I was using, that just don’t work
+on Wayland. The good thing is that the Wayland ecosystem is mature
+enough nowadays that there was a solid alternative for all of them!</p>
+<ul>
+<li><a href="https://tools.suckless.org/dmenu/">dmenu</a>, the great simple dynamic menu
+is now <a href="https://github.com/Cloudef/bemenu">bemenu</a>.</li>
+<li><a href="https://feh.finalrewind.org/">feh</a>, the fast and light image
+viewer, is now <a href="https://sr.ht/~exec64/imv/">imv</a>.</li>
+<li><a href="https://github.com/naelstrof/maim">maim</a> (the improved
+<a href="https://github.com/resurrecting-open-source-projects/scrot">scrot</a>)
+to take screenshots is replaced by <a href="https://sr.ht/~emersion/grim/">grim</a>,
+with <a href="https://github.com/emersion/slurp">slurp</a> to select a region.</li>
+<li><a href="https://github.com/astrand/xclip">xclip</a> and <a href="https://vergenet.net/~conrad/software/xsel/">XSel</a>
+that allow to manipulate the selection and clipboard from the terminal
+are replaced by <a href="https://github.com/bugaevc/wl-clipboard">wl-clipboard</a>
+(providing <code>wl-copy</code> and <code>wl-paste</code>).</li>
+<li><code>xbacklight</code> that helps controlling the screen backlight is now
+<a href="https://github.com/haikarainen/light">Light</a>.</li>
+<li><a href="https://www.semicomplete.com/projects/xdotool/">xdotool</a> that I
+<a href="https://github.com/valeriangalliat/dmenumoji/blob/997e48c69315131b32f9e3368b88151f811d14eb/dmenumoji#L24">use to type an emoji</a>
+in my <a href="https://github.com/valeriangalliat/dmenumoji">dmenumoji</a> emoji
+picker is now <a href="https://github.com/atx/wtype">wtype</a> (and I made a
+<a href="https://github.com/valeriangalliat/dotfiles/blob/14bcdb5d9e7c9d14f15cf3af33c0c862e18bdfb2/bin/bemenumoji"><code>bemenumoji</code></a>
+script instead).</li>
+<li><a href="http://jonls.dk/redshift/">Redshift</a> that gives an orange tint to the
+screen in the evening, is now <a href="https://gitlab.com/chinstrap/gammastep">Gammastep</a>.</li>
+</ul>
+<p>There’s also a number of programs that are no longer needed:</p>
+<ul>
+<li><a href="https://bitbucket.org/raymonad/xss-lock">xss-lock</a> that I used to
+lock the screen on suspend and hibernate is superseded by
+<a href="https://github.com/swaywm/swayidle">swayidle</a>.</li>
+<li><a href="https://gitlab.com/jD91mZM2/xidlehook">xidlehook</a> (the replacement
+for <a href="https://linux.die.net/man/1/xautolock">xautolock</a>) allowing to
+execute commands after a certain idle period (like dim screen, lock,
+suspend), is superseded by <a href="https://github.com/swaywm/swayidle">swayidle</a>
+too.</li>
+<li><code>xset</code> that I used to set to lower the keyboard repeat delay is
+replaced by the <code>repeat_delay</code> Sway option.</li>
+<li><a href="https://github.com/yshui/picom">picom</a>, the compositor I used with
+X11 is no longer needed because Sway itself is a compositor.</li>
+</ul>
+<p>So in the end, this leaves us with the following commands:</p>
+<pre><code class="hljs language-sh">pacman -S bemenu-wayland imv grim slurp wl-clipboard light wtype gammastep
+pacman -Rns dmenu feh maim xclip xsel xorg-xbacklight xdotool redshift xss-lock xidlehook xorg-xset picom
+</code></pre>
+<p>Because <a href="https://codeberg.org/dnkl/foot">foot</a> is the default terminal
+emulator of Sway, I <a href="../04/xfce4-terminal-vs-foot.html">decided to try it</a>
+instead of my usual <a href="https://docs.xfce.org/apps/terminal/start">xfce4-terminal</a>.
+That wasn’t a complete success for me and I rolled back to
+xfce4-terminal since it works just fine on Wayland anyways!</p>
+<p>Finally, I had a few <code>.xmodmaprc</code> modifications that I use to
+<a href="https://github.com/valeriangalliat/dotfiles/blob/1d2098a7da513dab195554997efaac22a0d77a02/x11/xmodmaprc">invert <kbd>Alt</kbd> and <kbd>Ctrl</kbd></a>
+and also <a href="../../2019/06/software-fn-lock.html">emulate <kbd>Fn Lock</kbd></a>
+because it’s not supported on my laptop.</p>
+<p>xmodmap is a X11-only thing, and I had to <a href="../04/xmodmaprc-wayland.html">configure XKB directly</a>
+to reproduce this behavior. XKB stands for “X keyboard extension” but it
+is also <a href="https://wayland-book.com/seat/xkb.html">used by Wayland</a>.</p>
+<h2 id="full-diff" tabindex="-1"><a class="header-anchor" href="#full-diff"><span>Full diff</span></a></h2>
+<p>If you want to see the details, here’s
+<a href="https://github.com/valeriangalliat/dotfiles/commit/537f9e14f332b6591a7d932aee056d4d412ec873#diff-d46a2e36b87ce6bb331477a420580121b2fe0c856f81fd5176053ffc4e0828af">the link to the full diff in my dotfiles</a>.</p>
+<p>I anchored it to the conversion from <code>~/.config/i3/config</code> to
+<code>~/.config/sway/config</code> but feel free to move around and see the other
+changes I did.</p>
+<p>I took this as an opportunity to change a few unrelated things in there
+so not all the modifications were strictly necessary.</p>
+<h2 id="cleaning-up" tabindex="-1"><a class="header-anchor" href="#cleaning-up"><span>Cleaning up</span></a></h2>
+<p>Now we have a working Wayland and Sway installation, we can remove X11
+altogether from the system! Or can we?</p>
+<pre><code class="hljs language-sh">pacman -Rns xorg-server i3
+</code></pre>
+<p>Turns out this didn’t work for me. VLC, <a href="https://mpv.io/">mpv</a>, Chromium
+and <a href="https://calibre-ebook.com/">calibre</a> all required some X11
+dependency that would be removed by this command. Bummer.</p>
+<p>So what I did instead:</p>
+<pre><code class="hljs language-sh">pacman -Rns xorg-server i3 vlc mpv chromium calibre
+pacman -S vlc mpv chromium calibre
+</code></pre>
+<h2 id="quirks" tabindex="-1"><a class="header-anchor" href="#quirks"><span>Quirks</span></a></h2>
+<h3 id="qt-and-wayland" tabindex="-1"><a class="header-anchor" href="#qt-and-wayland"><span>Qt and Wayland</span></a></h3>
+<p>VLC and calibre both use Qt, and as <a href="https://wiki.archlinux.org/title/wayland#Qt">documented on the ArchWiki</a>,
+we need to install <code>qt5-wayland</code> for Qt to work.</p>
+<h3 id="special-flags-for-chromium" tabindex="-1"><a class="header-anchor" href="#special-flags-for-chromium"><span>Special flags for Chromium</span></a></h3>
+<p>Programs built on Chromium (including Chromium itself obviously) support
+Wayland <em>nearly</em> out of the box, but they require some kind of flag to
+enable the support. Not really sure why this is a thing, but basically I
+need to start Chromium and Visual Studio Code like this:</p>
+<pre><code class="hljs language-sh">chromium --ozone-platform-hint=auto
+code --enable-features=UseOzonePlatform --ozone-platform=wayland
+</code></pre>
+<p>I use those programs once in a blue moon anyways, so I don’t really
+care.</p>
+<h3 id="idle-inhibitor" tabindex="-1"><a class="header-anchor" href="#idle-inhibitor"><span>Idle inhibitor</span></a></h3>
+<p>I used to use <code>xidlehook --not-when-audio</code> to prevent dimming the
+screen, disconnecting the screen, or locking the computer after an idle
+period if there’s audio playing.</p>
+<p>This is great for example when watching a movie… you don’t necessarily
+actively use the computer but you don’t want it to lock and suspend or
+hibernate while it’s playing either!</p>
+<p>Some programs like mpv support inhibiting idle while playing, which
+is great, but others like VLC and Firefox don’t.</p>
+<p>In general, the “not when audio” trick was a pretty good fallback that
+didn’t require any custom implementation in existing programs.</p>
+<p>Luckily, there’s <a href="https://github.com/ErikReider/SwayAudioIdleInhibit">SwayAudioIdleInhibit</a>
+(<a href="https://aur.archlinux.org/packages/sway-audio-idle-inhibit-git">on the AUR</a>)
+that does exactly that. Fantastic.</p>
+<p>The only quirk I noticed with it is that in Firefox, some very specific
+sites like <a href="https://artlist.io/">Artlist</a> (the only one I identified so
+far) manage to register an active audio channel at all times even if
+they’re not playing anything, and as long as the tab is open, idle will
+be inhibited. This is not good as I tend to keep tabs around for days if
+not weeks!</p>
+<p>To be able to notice when this happens more easily, I
+<a href="https://github.com/valeriangalliat/dotfiles/commit/2fd9359a6a0e76891b6b10fe1ef97f7aec35f926">modified my i3blocks volume block</a>
+to display a different icon whether or not there’s any PulseAudio sink
+in state <code>RUNNING</code>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Migrating to Wayland was a pretty smooth transition at the end of the
+day, and I’m glad I finally did it! Everything works great, it seems
+like Wayland programs are usually more recent and have better UX than
+their X11 equivalent that I was previously using.</p>
+<p>For example I love the <em>slurp</em> screen selection, and I don’t have to
+<a href="../../2021/08/dmenu-libxft-bgra-emoji-support.html">patch dmenu</a> anymore
+in order to support emojis, since they natively work with bemenu, and
+basically everything else?</p>
+<p>Also I realized that Wayland allowed me to zoom in on any part of the
+screen with my trackpad out of the box, and that’s pretty useful. One of
+the features I was kinda missing from MacBooks but never spent the time
+to figure if I could do it or not with X11.</p>
+<p>If you’ve been thinking about migrating to Wayland, it’s probably a good
+time to do so!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/05/migrating-x11-wayland-i3-sway.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
+* [Using a GoPro in the Canadian winter ❄️](2022/05/gopro-canadian-winter.md) <small>May 25, 2022</small>
 * [Migrating from X11 to Wayland and from i3 to Sway](2022/05/migrating-x11-wayland-i3-sway.md) <small>May 15, 2022</small>
 * [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
 * [Debugging a GitHub Actions workflow via SSH](2022/05/debugging-github-actions-workflow-ssh.md) <small>May 14, 2022</small>

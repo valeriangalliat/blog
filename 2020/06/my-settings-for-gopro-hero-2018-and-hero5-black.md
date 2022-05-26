@@ -91,7 +91,7 @@ slow motion with.
 
 ### Field of view (FOV)
 
-I like shooting in Wide. I like the, well, wideness of the Wide setting.
+I like shooting in wide. I like the, well, wideness of the wide setting.
 I find SuperView a bit *too* wide, too much distortion to my taste.
 
 If I'm shooting a farther subject, I might put it in Linear mode so that

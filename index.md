@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Empty body vs. no body in HTTP/2](2022/06/empty-body-no-body-http2.md) <small>June 1, 2022</small>
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
 * [Using a GoPro in the Canadian winter ❄️](2022/05/gopro-canadian-winter.md) <small>May 25, 2022</small>
 * [Migrating from X11 to Wayland and from i3 to Sway](2022/05/migrating-x11-wayland-i3-sway.md) <small>May 15, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>
 * [How to repackage a macOS `.pkg` installer for M1 support without Rosetta](2022/04/repackage-macos-app-m1-support-without-rosetta.md) <small>April 30, 2022</small>
 * [Run macOS inside Docker on Linux, with Wayland](2022/04/macos-docker-linux-wayland.md) <small>April 13, 2022</small>
-* [Make floats and lists collaborate 🙈](2022/04/make-floats-and-lists-collaborate.md) <small>April 11, 2022</small>
 
 [All the posts](posts.md)
 

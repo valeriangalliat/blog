@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Empty body vs. no body in HTTP/2](2022/06/empty-body-no-body-http2.md) <small>June 1, 2022</small>
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
 * [Using a GoPro in the Canadian winter ❄️](2022/05/gopro-canadian-winter.md) <small>May 25, 2022</small>
 * [Migrating from X11 to Wayland and from i3 to Sway](2022/05/migrating-x11-wayland-i3-sway.md) <small>May 15, 2022</small>

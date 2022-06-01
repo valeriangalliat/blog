@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Empty body vs. no body in HTTP/2</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github.css">
+  <link rel="stylesheet" href="/css/main-20220411.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Empty body vs. no body in HTTP/2">
+  <meta property="og:description" content="TIL there’s a (subtle) difference in HTTP/2 between sending an empty body, and sending no body at all.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+    </ul>
+    <ul class="social">
+      <li>
+        <a href="https://www.youtube.com/FunkyVal">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>YouTube</title>
+            <use href="/img/icons/414-youtube.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://www.instagram.com/funkyval_/">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Instagram</title>
+            <use href="/img/icons/403-instagram.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://twitter.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Twitter</title>
+            <use href="/img/icons/407-twitter.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://github.com/valeriangalliat">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>GitHub</title>
+            <use href="/img/icons/433-github.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="https://ko-fi.com/funkyval">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>Buy me a coffee!</title>
+            <use href="/img/icons/219-heart.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+      <li>
+        <a href="/feed.xml">
+          <svg width="16" height="16" viewBox="0 0 16 16">
+            <title>RSS</title>
+            <use href="/img/icons/412-rss.svg#icon"></use>
+          </svg>
+        </a>
+      </li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Empty body vs. no body in HTTP/2</h1>
+<p class="date">June 1, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p><abbr title="Today I learnt">TIL</abbr> there’s a (subtle) difference
+in HTTP/2 between sending an empty body, and sending no body at all.</p>
+<p>In this post we’ll look at <strong>how that can happen</strong>, how to <strong>test it
+with cURL</strong>, and the <strong>subtleties of HTTP/2</strong> that make this distinction
+possible.</p>
+<p>But as usual, I’ll start by telling you the story of how I ended up with
+such a hairy bug again <em>(I’m really, really good at getting myself in
+this kind of fucked up situations for some reason)</em>.</p>
+<h2 id="cloudflare-workers-and-the-content-length-header" tabindex="-1"><a class="header-anchor" href="#cloudflare-workers-and-the-content-length-header"><span>Cloudflare Workers and the <code>Content-Length</code> header</span></a></h2>
+<p>At <a href="https://hookdeck.com/">Hookdeck</a>, we work heavily with <a href="https://workers.cloudflare.com/">Cloudflare
+Workers</a>. And we also work heavily with
+HTTP payloads.</p>
+<p>One thing we asserted in the past, while it doesn’t seem to be
+officially documented, is that Cloudflare computes the <code>Content-Length</code>
+header if necessary before hitting the worker.</p>
+<p>For example when sending a HTTP/1.1 <code>Transfer-Encoding: chunked</code> payload
+(typically not including <code>Content-Length</code>), Cloudflare <strong>buffers the
+whole body</strong> and sets the <code>Content-Length</code> header before calling the
+worker, despite that header not being set by the client!</p>
+<p>We observe a similar behavior in HTTP/2 (whose <code>DATA</code> frames
+<a href="https://stackoverflow.com/questions/62439557/are-chunk-extensions-supported-by-http-2-and-if-so-how">resemble chunked encoding quite a bit</a>),
+when the client omits the <code>Content-Length</code> header.</p>
+<div class="note">
+<p><strong>Note:</strong> even if we send a payload with an invalid <code>Content-Length</code>
+(e.g. claiming a size much smaller than what we actually send),
+Cloudflare catches it and refuses the request!</p>
+</div>
+<p>This is especially useful: because of that observation, we can actually
+trust the <code>Content-Length</code> header, and rely on it to decide what to do
+next in the worker.</p>
+<h2 id="the-mysterious-requests-without-content-length" tabindex="-1"><a class="header-anchor" href="#the-mysterious-requests-without-content-length"><span>The mysterious requests without <code>Content-Length</code></span></a></h2>
+<p>How then, during an incident response, do I find myself dealing with
+<code>POST</code> requests that manifestly don’t have a <code>Content-Length</code> header?</p>
+<p>My blind guess was to look at empty payloads. It’s the only edge case I
+could think of that could, maybe, in some cases, result in Cloudflare
+not enforcing a <code>Content-Length</code> header.</p>
+<p>At first, I try the following:</p>
+<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
+  -X POST \
+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+  --data <span class="hljs-string">&#x27;&#x27;</span> \
+  --verbose
+</code></pre>
+<p>But I notice in the verbose logs that cURL nicely computed and sent
+<code>Content-Length: 0</code>. Luckily we can turn that off by passing an empty
+<code>Content-Length</code> header (which makes cURL omit the header altogether in
+its request):</p>
+<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
+  -X POST \
+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+  -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
+  --data <span class="hljs-string">&#x27;&#x27;</span> \
+  --verbose
+</code></pre>
+<p>But somehow, Cloudflare is still able to catch this and forces a
+<code>Content-Length: 0</code> to be passed to my worker.</p>
+<p>I try something else, which in my understanding <em>should</em> be the same
+thing (omitting the <code>--data</code> parameter altogether):</p>
+<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
+  -X POST \
+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+  --verbose
+</code></pre>
+<p>To my surprise, although the verbose logs from cURL look <em>identical</em>,
+<strong>this results in the request hitting my worker without a
+<code>Content-Length</code> header</strong>, bypassing Cloudflare’s “enforcement”. Bingo!</p>
+<p>This is a good step forward, but I’m even more confused. To my knowledge
+those two commands <em>should</em> result in the exact same HTTP requests over
+the wire. 🤔</p>
+<div class="note">
+<p><strong>Note:</strong> at that point I had a confirmation that having no
+<code>Content-Length</code> header here was, in fact, possible (in the case of some
+obscure empty payloads that are different from “normal” empty payloads
+<em>somehow</em>).</p>
+<p>I went on and made sure that the code could handle that, but I wasn’t
+exactly <em>satisfied</em>. The <em>“somehow”</em> part of my previous sentence was
+itching me in a particular manner.</p>
+</div>
+<h2 id="digging-deeper-with-trace" tabindex="-1"><a class="header-anchor" href="#digging-deeper-with-trace"><span>Digging deeper with <code>--trace</code></span></a></h2>
+<p>I tried adding <code>--trace</code>, and <code>--trace-ascii</code> to the previous cURL
+commands, in order to dump the raw protocol data and compare it:</p>
+<pre><code class="hljs language-diff"> curl https://events.hookdeck.com/e/source-id-goes-here \
+   -X POST \
+   -H &#x27;Content-Type: text/plain&#x27; \
+   -H &#x27;Content-Length:&#x27; \
+<span class="hljs-deletion">-  --data &#x27;&#x27;</span>
+<span class="hljs-addition">+  --data &#x27;&#x27; \</span>
+<span class="hljs-addition">+  --trace empty-body.txt</span>
+ 
+ curl https://events.hookdeck.com/e/source-id-goes-here \
+   -X POST \
+<span class="hljs-deletion">-  -H &#x27;Content-Type: text/plain&#x27;</span>
+<span class="hljs-addition">+  -H &#x27;Content-Type: text/plain&#x27; \</span>
+<span class="hljs-addition">+  --trace no-body.txt</span>
+</code></pre>
+<p>Then diffing it with:</p>
+<pre><code class="hljs language-sh">git diff --no-index empty-body.txt no-body.txt
+</code></pre>
+<p>(I like the output of <code>git diff</code> more than plain old
+<a href="https://linux.die.net/man/1/diff"><code>diff(1)</code></a>.)</p>
+<p>But this shows no relevant differences. Only the “SSL data” bits change,
+but those are unintelligible. It otherwise appears that cURL sends
+<em>exactly</em> the same thing.</p>
+<p>How in hell could Cloudflare distinguish those two different yet
+identical cURL invocations? <em>Hint: probably in the unintelligible
+bits…</em></p>
+<h2 id="what-about-http-1-1" tabindex="-1"><a class="header-anchor" href="#what-about-http-1-1"><span>What about HTTP/1.1</span></a></h2>
+<p>So far, cURL defaulted to use HTTP/2, which is great. Maybe it’s a
+HTTP/2-specific thing? (I know, I kinda spoiled it in the title of this
+post.)</p>
+<p>I add <code>--http1.1</code> to the earlier cURL commands to try: both requests
+don’t have the <code>Content-Length</code> header after going through Cloudflare.
+Interesting.</p>
+<p>So there’s absolutely no difference between “no data” and “empty body”
+in HTTP/1.1, which makes a lot of sense based on my understanding of the
+HTTP protocol. There’s, finally, some sanity in this world.</p>
+<p>So my quest is now to figure <strong>how the f*** is Cloudflare able to
+distinguish between “no body” and “empty body” in HTTP/2 specifically</strong>.</p>
+<div class="note">
+<p><strong>Note:</strong> the attentive reader might have noticed that there’s virtually
+no business value in answering that question.</p>
+<p>I already knew a few ways to trigger an undefined <code>Content-Length</code> header,
+and that was enough information for me to fix the bug and replay
+whatever requests needed to.</p>
+<p>At that point I’m only trying to quench my thirst of knowledge for sheer
+pleasure.</p>
+</div>
+<h2 id="making-a-poc-in-c" tabindex="-1"><a class="header-anchor" href="#making-a-poc-in-c"><span>Making a PoC in C</span></a></h2>
+<p>I decide to go a bit lower level and instead of using the cURL command,
+I make a C program using <code>libcurl</code> to try and reproduce that behavior.</p>
+<pre><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;curl/curl.h&gt;</span></span>
+
+<span class="hljs-type">int</span> <span class="hljs-title function_">main</span> <span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
+    curl_global_init(CURL_GLOBAL_ALL);
+
+    CURL *curl = curl_easy_init();
+
+    curl_easy_setopt(curl, CURLOPT_URL, <span class="hljs-string">&quot;https://events.hookdeck.com/e/source-id-goes-here&quot;</span>);
+    curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
+    curl_easy_setopt(curl, CURLOPT_VERBOSE, <span class="hljs-number">1</span>);
+
+    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">curl_slist</span> *<span class="hljs-title">list</span> =</span> <span class="hljs-literal">NULL</span>;
+
+    <span class="hljs-built_in">list</span> = curl_slist_append(<span class="hljs-built_in">list</span>, <span class="hljs-string">&quot;Content-Type: text/plain&quot;</span>);
+    <span class="hljs-built_in">list</span> = curl_slist_append(<span class="hljs-built_in">list</span>, <span class="hljs-string">&quot;Content-Length:&quot;</span>);
+
+    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, <span class="hljs-built_in">list</span>);
+
+    <span class="hljs-comment">// Empty body</span>
+    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, <span class="hljs-string">&quot;&quot;</span>);
+
+    <span class="hljs-comment">// No body</span>
+    <span class="hljs-comment">// curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, &quot;POST&quot;);</span>
+
+    curl_easy_perform(curl);
+
+    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
+}
+</code></pre>
+<p>Here, the <code>CURLOPT_POSTFIELDS</code> method will result in the “empty body”
+path (where Cloudflare can set <code>Content-Length: 0</code> by itself), while
+the “no body” version will let the request go through all the way
+without <code>Content-Length</code>.</p>
+<p>It can be compiled and run with:</p>
+<pre><code class="hljs language-sh">gcc test.c -o <span class="hljs-built_in">test</span> -lcurl
+./test
+</code></pre>
+<p>But this repro doesn’t really lead me anywhere. This is not
+low-level enough.</p>
+<h2 id="digging-even-deeper-with-netcat" tabindex="-1"><a class="header-anchor" href="#digging-even-deeper-with-netcat"><span>Digging even deeper with netcat</span></a></h2>
+<p>If I can’t find on the client side what distinguishes those requests,
+let’s analyze the server side.</p>
+<p>My first bet is to use <a href="https://linux.die.net/man/1/nc"><code>nc(1)</code></a>
+(netcat) in listen mode and send my two <code>curl</code> requests to it. Then I’ll
+be able to see the raw data sent by cURL the underlying socket and
+hopefully tell them apart:</p>
+<pre><code class="hljs language-sh">nc -l -k -p 8888
+</code></pre>
+<p>(This makes netcat listen on port 8888: <code>-l</code> to listen, <code>-k</code> to keep
+listening after the first connection, and <code>-p</code> to specify the port.)</p>
+<p>Then I can hit it:</p>
+<pre><code class="hljs language-diff"><span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
+<span class="hljs-addition">+curl http://localhost:8888/ \</span>
+   -X POST \
+   -H &#x27;Content-Type: text/plain&#x27; \
+   -H &#x27;Content-Length:&#x27; \
+   --data &#x27;&#x27;
+ 
+<span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
+<span class="hljs-addition">+curl http://localhost:8888/ \</span>
+   -X POST \
+   -H &#x27;Content-Type: text/plain&#x27;
+</code></pre>
+<p>Sadly this results in the same HTTP/1.1 request in both cases:</p>
+<pre><code class="hljs language-http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/</span> <span class="hljs-meta">HTTP/1.1</span>
+<span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>localhost:8888
+<span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>&lt;3
+<span class="hljs-attribute">Accept</span><span class="hljs-punctuation">: </span>*/*
+<span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>text/plain
+
+</code></pre>
+<p>(Yes <a href="https://github.com/valeriangalliat/dotfiles/blob/40ca54c1d6fdfca33e8dcc4e56807f9bf060de8e/net/curlrc#L1">my user agent is a heart in ASCII</a>,
+what r u gonna do?)</p>
+<p>And adding the <code>--http2</code> flag makes cURL ask for an upgrade to HTTP/2,
+but can’t just send its HTTP/2 traffic right through:</p>
+<pre><code class="hljs language-http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/</span> <span class="hljs-meta">HTTP/1.1</span>
+<span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>localhost:8888
+<span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>&lt;3
+<span class="hljs-attribute">Accept</span><span class="hljs-punctuation">: </span>*/*
+<span class="hljs-attribute">Connection</span><span class="hljs-punctuation">: </span>Upgrade, HTTP2-Settings
+<span class="hljs-attribute">Upgrade</span><span class="hljs-punctuation">: </span>h2c
+<span class="hljs-attribute">HTTP2-Settings</span><span class="hljs-punctuation">: </span>AAMAAABkAAQCAAAAAAIAAAAA
+<span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>text/plain
+
+</code></pre>
+<p>Looks like some <em>negotiation</em> needs to happen prior to using HTTP/2.
+Bummer.</p>
+<h2 id="making-a-http-2-server-with-nodes-js" tabindex="-1"><a class="header-anchor" href="#making-a-http-2-server-with-nodes-js"><span>Making a HTTP/2 server with Nodes.js</span></a></h2>
+<p>If we can’t <em>netcat</em> our way out of this, let’s make a real HTTP/2
+server with Node.js.</p>
+<p>First we’ll generate a TLS key and certificate for <code>localhost</code> because
+it appears that the HTTP/2 negotiation happens over TLS. Although it
+doesn’t seem that the HTTP/2 spec <em>requires</em> TLS per se, I couldn’t make
+it work without.</p>
+<pre><code class="hljs language-sh">openssl req -x509 -newkey rsa:2048 -nodes -subj <span class="hljs-string">&#x27;/CN=localhost&#x27;</span> -keyout key.pem -out cert.pem
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> in this command, <code>-nodes</code> <a href="https://stackoverflow.com/a/5087138/4324668">means “no DES” and not “nodes”</a>
+and is used to leave the private key unencrypted. Without it, OpenSSL
+will prompt for a passphrase.</p>
+<p>Also the <code>-subj</code> argument is required otherwise OpenSSL will prompt for
+all the certificate fields.</p>
+</div>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http2 <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:http2&#x27;</span>
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
+
+<span class="hljs-keyword">const</span> server = http2.<span class="hljs-title function_">createSecureServer</span>({
+  <span class="hljs-attr">key</span>: <span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;key.pem&#x27;</span>),
+  <span class="hljs-attr">cert</span>: <span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;cert.pem&#x27;</span>)
+})
+
+server.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;stream&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">stream, headers, flags, rawHeaders</span>) =&gt;</span> {
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(flags, rawHeaders)
+
+  stream.<span class="hljs-title function_">respond</span>({
+    <span class="hljs-string">&#x27;:status&#x27;</span>: <span class="hljs-number">200</span>,
+    <span class="hljs-string">&#x27;content-type&#x27;</span>: <span class="hljs-string">&#x27;text/plain&#x27;</span>
+  })
+
+  stream.<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Hello&#x27;</span>)
+})
+
+server.<span class="hljs-title function_">listen</span>(<span class="hljs-number">8888</span>)
+</code></pre>
+<p>For each new HTTP/2 stream, this server will log the
+<a href="https://nodejs.org/api/http2.html#event-stream">“associated flags”</a> as
+well as the raw headers, in the hope to find the key difference there.</p>
+<p>As before, we hit it, with the addition of <code>--insecure</code> because we don’t
+want cURL to reject our self-signed certificate:</p>
+<pre><code class="hljs language-diff"> curl http://localhost:8888/ \
+   -X POST \
+   -H &#x27;Content-Type: text/plain&#x27; \
+   -H &#x27;Content-Length:&#x27; \
+<span class="hljs-deletion">-  --data &#x27;&#x27;</span>
+<span class="hljs-addition">+  --data &#x27;&#x27; \</span>
+<span class="hljs-addition">+  --insecure</span>
+ 
+ curl http://localhost:8888/ \
+   -X POST \
+<span class="hljs-deletion">-  -H &#x27;Content-Type: text/plain&#x27;</span>
+<span class="hljs-addition">+  -H &#x27;Content-Type: text/plain&#x27; \</span>
+<span class="hljs-addition">+  --insecure</span>
+</code></pre>
+<p>And while the raw headers are exactly the same, the flag is different:
+in the first case (empty body) it’s set to <strong>4</strong>, while for the second
+one (no body) it’s <strong>5</strong>. Bingo!</p>
+<p>So what are those flags about anyway? The <a href="https://nodejs.org/api/http2.html#event-stream">Node.js documentation</a>
+doesn’t say much…</p>
+<blockquote>
+<p><code>flags</code> <code>&lt;number&gt;</code> The associated numeric flags.</p>
+</blockquote>
+<h2 id="understanding-the-http-2-flags" tabindex="-1"><a class="header-anchor" href="#understanding-the-http-2-flags"><span>Understanding the HTTP/2 flags</span></a></h2>
+<p>We get a hint of the available flags in <code>http2.constants</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-title class_">Object</span>.<span class="hljs-title function_">keys</span>(http2.<span class="hljs-property">constants</span>)
+  .<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">name</span> =&gt;</span> name.<span class="hljs-title function_">includes</span>(<span class="hljs-string">&#x27;_FLAG_&#x27;</span>))
+  .<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">name</span> =&gt;</span> <span class="hljs-string">`<span class="hljs-subst">${name}</span>: <span class="hljs-subst">${http2.constants[name]}</span>`</span>)
+  .<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;\n&#x27;</span>)
+</code></pre>
+<pre><code class="hljs">NGHTTP2_FLAG_NONE: 0
+NGHTTP2_FLAG_END_STREAM: 1
+NGHTTP2_FLAG_END_HEADERS: 4
+NGHTTP2_FLAG_ACK: 1
+NGHTTP2_FLAG_PADDED: 8
+NGHTTP2_FLAG_PRIORITY: 32
+</code></pre>
+<p>We’re in the presence of bitwise flags. Let’s “flatten” all of that in
+binary, and pad them with zeroes up to 5 digits for display. This can be
+done with:</p>
+<pre><code class="hljs language-js">(number).<span class="hljs-title function_">toString</span>(<span class="hljs-number">2</span>).<span class="hljs-title function_">padStart</span>(<span class="hljs-number">5</span>, <span class="hljs-number">0</span>)
+</code></pre>
+<p>(Parentheses around <code>number</code> required when putting a literal number in
+there.)</p>
+<p>This gives us:</p>
+<pre><code class="hljs">00100 (4) empty body
+00101 (5) no body
+</code></pre>
+<p>And the <code>http2.constants</code> flags:</p>
+<pre><code class="hljs">00000 (0) NGHTTP2_FLAG_NONE
+00001 (1) NGHTTP2_FLAG_END_STREAM
+00100 (4) NGHTTP2_FLAG_END_HEADERS
+00001 (1) NGHTTP2_FLAG_ACK
+01000 (8) NGHTTP2_FLAG_PADDED
+10000 (32) NGHTTP2_FLAG_PRIORITY
+</code></pre>
+<p>Here we can clearly see that “empty body” is just the <code>END_HEADERS</code>
+flag, whereas “no body” is a combination of <code>END_HEADERS</code> <em>and</em>
+<code>END_STREAM</code>.</p>
+<p>This is what makes Cloudflare behave in two different ways based on
+those cURL requests!</p>
+<p>If we go to <a href="https://datatracker.ietf.org/doc/html/rfc7540">the HTTP/2 RFC</a>
+we get extra information in <a href="https://datatracker.ietf.org/doc/html/rfc7540#section-6.2">section 6.2</a>:</p>
+<blockquote>
+<p><code>END_STREAM</code> (0x1): When set, bit 0 indicates that the header block
+is the last that the endpoint will send for the identified stream.</p>
+<p><code>END_HEADERS</code> (0x4): When set, bit 2 indicates that this frame
+contains an entire header block and is not followed by any
+<code>CONTINUATION</code> frames.</p>
+</blockquote>
+<h2 id="in-short" tabindex="-1"><a class="header-anchor" href="#in-short"><span>In short</span></a></h2>
+<p>While in HTTP/1.1 a request with no body (<code>curl -X POST</code>) is strictly
+equivalent to a request with an empty body (<code>curl -X POST --data ''</code>),
+there’s a subtle difference when using HTTP/2:</p>
+<p>A “no body” requests sets the <code>END_HEADERS &amp; END_STREAM</code> flags on the
+HTTP/2 stream, whereas an “empty body” will result in only <code>END_HEADERS</code>
+(at least in the cURL implementation).</p>
+<p>This can lead to those requests being treated slightly differently,
+especially when they don’t include a <code>Content-Length</code> header. In the
+case of Cloudflare Workers, here’s a table of <strong>whether or not
+Cloudflare computed the <code>Content-Length</code> header for us</strong> despite not
+being set by the client:</p>
+<table>
+<thead>
+<tr>
+<th>Request</th>
+<th>HTTP/1.1</th>
+<th>HTTP/2</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>non-empty body (chunked)</td>
+<td>Yes</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>non-empty body (not chunked)</td>
+<td>Illegal</td>
+<td>Body is always “chunked” in HTTP/2</td>
+</tr>
+<tr>
+<td>empty body</td>
+<td>No</td>
+<td>Yes</td>
+</tr>
+<tr>
+<td>no body</td>
+<td>No</td>
+<td>No</td>
+</tr>
+</tbody>
+</table>
+<div class="note">
+<p><strong>Note:</strong> in the case of the <code>POST</code> body lacking <code>Content-Length</code> and
+<code>Transfer-Encoding: chunked</code>, this is effectively <a href="https://stackoverflow.com/questions/14758729/http-post-content-length-header-required">forbidden</a>
+in HTTP/1.1.</p>
+<p>Cloudflare still accepts those requests, but the <code>Content-Length</code> header
+will definitely not be set, and the worker will see the body as being
+empty (despite the client sending actual data).</p>
+<p>Not really supposed to happen but good to know.</p>
+</div>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>This was a fun issue to dig into. It wasn’t necessary to go that deep in
+the rabbit hole, but it was definitely a fun challenge, plus it made me
+learnt quite a bit about HTTP/2 which I wasn’t really up-to-date with.</p>
+<p>I hope you enjoyed the read. Stay curious! 🤙</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <p>
+      Made with 🧡 by <a href="/val.html">Val</a> in Montreal.<br>
+      Generated from a <a href="https://github.com/valeriangalliat/blog/tree/master/2022/06/empty-body-no-body-http2.md">public repository</a>. Feel free to <a href="/val.html#contact">contact me</a>, I'd love to hear your thoughts!
+    </p>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20210719.js"></script>
+</body>
+</html>

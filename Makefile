@@ -70,6 +70,7 @@ dist/css/main-20220617.css: \
 	css/components/nav.css \
 	css/components/note.css \
 	css/components/oversized.css \
+	css/components/social.css \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@

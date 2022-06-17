@@ -55,14 +55,3 @@ nav a:hover {
     text-decoration: none;
 }
 
-nav .social svg {
-    vertical-align: middle;
-}
-
-nav .social svg {
-    --color-fill: var(--gray-6);
-}
-
-nav .social a:hover svg {
-    --color-fill: var(--black);
-}

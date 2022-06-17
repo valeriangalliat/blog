@@ -1,0 +1,11 @@
+.social svg {
+    vertical-align: middle;
+}
+
+.social svg {
+    --color-fill: var(--gray-6);
+}
+
+.social a:hover svg {
+    --color-fill: var(--black);
+}

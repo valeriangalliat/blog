@@ -83,7 +83,8 @@
     --pink-9: #6d224f;
 }
 html {
-    font: 1.25em/1.5 "Georgia", serif;
+    /* font: 1.25em/1.5 "Georgia", serif; */
+    font: 1.25em/1.5 "Helvetica Neue", sans-serif;
     background: var(--white);
     color: var(--black);
 }

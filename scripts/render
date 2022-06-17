@@ -12,7 +12,6 @@ const meta = {}
 const file = process.argv[2]
 const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
-const social = fs.readFileSync(path.resolve(__dirname, '../social.html'), 'utf8').trim()
 const markdown = fs.readFileSync(file, 'utf8')
 const env = {}
 const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
@@ -183,7 +182,6 @@ process.stdout.write(
     .replace('</header>', heroCredit)
     .replace('<div class="content">', `<div class="content">\n${header}`)
     .replace(/<div class="content">/g, `<div class="content"${lang}>`)
-    .replace('<!-- social.html -->', social)
 )
 
 process.stdout.write(body)
@@ -207,5 +205,4 @@ if (bodyClass === 'post') {
 process.stdout.write(
   foot
     .replace('https://github.com/valeriangalliat/blog', `https://github.com/valeriangalliat/blog/tree/master/${file}`)
-    .replace('<!-- social.html -->', social)
 )

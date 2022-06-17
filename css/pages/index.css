@@ -53,13 +53,13 @@
 }
 
 .posts li:not(:last-child) {
-    border-bottom: 1px solid var(--gray-1);
+    border-bottom: 1px solid var(--color-canvas-subtle);
 }
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only
  * the one used for the date. */
 .posts li > small {
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
     white-space: nowrap;
 }
 

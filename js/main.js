@@ -95,3 +95,25 @@ function onSearchSubmit (form) {
 
   return false
 }
+
+const isBrowserDark = matchMedia && matchMedia('(prefers-color-scheme: dark)').matches
+
+for (const button of Array.from(document.querySelectorAll('.change-color-theme'))) {
+  if (isBrowserDark || localStorage.dark) {
+    button.textContent = '🌞'
+  }
+
+  button.addEventListener('click', () => {
+    if (isBrowserDark || localStorage.dark) {
+      document.documentElement.classList.remove('dark')
+      document.documentElement.classList.add('light')
+      button.textContent = '🌝'
+      delete localStorage.dark
+    } else {
+      document.documentElement.classList.remove('light')
+      document.documentElement.classList.add('dark')
+      button.textContent = '🌞'
+      localStorage.dark = true
+    }
+  })
+}

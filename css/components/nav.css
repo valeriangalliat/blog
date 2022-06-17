@@ -47,11 +47,19 @@ nav li {
 }
 
 nav a, nav a:visited {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
 }
 
 nav a:hover {
-    color: var(--black);
+    color: var(--color-fg-default);
     text-decoration: none;
 }
 
+.change-color-theme, .change-color-theme:hover {
+    /* Reset button styles */
+    background: none;
+    font-size: initial;
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+}

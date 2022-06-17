@@ -88,7 +88,7 @@ dist/img/freelance.jpg:
 	magick IMG_7587.jpeg -resize 1280x -crop '1280x512+0+%[fx:50/100*(h-512)]' $@
 
 dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
-	cat $< | sed 's/<svg /<svg id="icon" /;s/fill="#000000"/style="fill: var(--color-fill)"/' > $@
+	cat $< | sed 's/<svg /<svg id="icon" /;s/ fill="#000000"//' > $@
 
 dist/img/icons/instagram.png:
 	curl 'https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png' | convert - -resize 16x $@
@@ -106,11 +106,4 @@ dist/img/icons/ko-fi.png:
 	curl 'https://ko-fi.com/favicon.png' | convert - -resize 16x $@
 
 css/colors.css:
-	echo ':root {' > $@
-	curl -s 'https://raw.githubusercontent.com/cdnjs/cdnjs/master/ajax/libs/Primer/17.4.0/base.css' \
-		| grep -o '@media (prefers-color-scheme: light){[^}]*}}' \
-		| head -1 \
-		| npx prettier --stdin-filepath base.css \
-		| grep color-scale | sed 's/.*color-scale-/    --/' \
-		>> $@
-	echo '}' >> $@
+	./scripts/colors > $@

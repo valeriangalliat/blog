@@ -1,7 +1,8 @@
 .note {
     margin: 0 0 var(--vertical-margin, 2rem);
-    background: var(--blue-0);
-    border-top: .25rem solid var(--blue-5);
+    background: var(--color-accent-subtle);
+    border-top: .25rem solid var(--color-accent-muted);
+    border-radius: .25rem;
     padding: 1em;
 }
 

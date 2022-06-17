@@ -12,10 +12,10 @@
 }
 
 .post .date {
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
 }
 
 .post-footer {
     padding-top: 2rem;
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
 }

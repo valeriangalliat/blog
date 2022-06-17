@@ -7,7 +7,7 @@ footer {
     max-width: 45rem;
     margin: 10em auto 5em auto;
     padding: 2em .5em 0;
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -34,7 +34,7 @@ footer figure {
 .footer-content {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
     text-align: center;
     --vertical-margin: 1rem;
 }
@@ -51,10 +51,10 @@ footer li {
 }
 
 footer a, footer a:visited {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
 }
 
 footer a:hover {
-    color: var(--black);
+    color: var(--color-fg-default);
     text-decoration: none;
 }

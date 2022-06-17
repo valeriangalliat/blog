@@ -29,15 +29,15 @@
 
 .hero h1 {
     text-shadow: 1px 2px rgba(0, 0, 0, .1);
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
 }
 
 .post .hero .tagline {
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
 }
 
 .post .hero .date {
-    color: var(--gray-2);
+    color: var(--color-scale-gray-2);
 }
 
 .hero code {
@@ -60,10 +60,10 @@
 
 .hero-credit,
 .hero-credit:visited {
-    color: var(--gray-2);
+    color: var(--color-scale-gray-2);
 }
 
 .hero-credit:hover {
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
     text-decoration: none;
 }

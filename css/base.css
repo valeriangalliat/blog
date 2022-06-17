@@ -1,8 +1,11 @@
+/* Find color names from <https://primer.style/primitives/colors> */
+
 html {
     /* font: 1.25em/1.5 "Georgia", serif; */
     font: 1.25em/1.5 "Helvetica Neue", sans-serif;
-    background: var(--white);
-    color: var(--black);
+    background: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    transition: background-color 100ms;
 }
 
 .content {
@@ -14,7 +17,7 @@ html {
 }
 
 h2 {
-    border-bottom: 1px solid var(--gray-2);
+    border-bottom: 1px solid var(--color-border-default);
     padding-bottom: .5rem;
 }
 
@@ -71,19 +74,19 @@ table {
 
 th, td {
     padding: .5em 1em;
-    border: 1px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
     text-align: left;
 }
 
 tr:nth-child(even) {
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
 }
 
 blockquote {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
     margin-left: 0;
     padding: 0 1em;
-    border-left: .25rem solid var(--blue-5);
+    border-left: .25rem solid var(--color-accent-emphasis);
 }
 
 dt {
@@ -93,28 +96,28 @@ dt {
 code, kbd, samp {
     font-family: "Courier New", monospace;
     font-size: .8em;
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
     padding: .25em .5em;
 }
 
 .hljs {
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
 }
 
 kbd {
     font-size: .7em;
-    border: 1px solid var(--gray-2);
-    border-bottom: 2px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
+    border-bottom: 2px solid var(--color-border-default);
     border-radius: .75em;
 }
 
 hr {
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
     border-bottom: 0;
 }
 
 a {
-    color: var(--blue-5);
+    color: var(--color-accent-fg);
     text-decoration: none;
 }
 
@@ -127,7 +130,7 @@ a:hover {
 }
 
 a:visited {
-    color: var(--purple-5);
+    color: var(--color-done-fg);
 }
 
 a[title] {
@@ -150,13 +153,15 @@ img, video {
 
 button, input, optgroup, select, textarea {
     background: transparent;
-    color: var(--black);
+    color: var(--color-fg-default);
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     line-height: normal;
     padding: .5em 1em;
-    border: 1px solid var(--gray-3);
+    border: 1px solid var(--color-border-default);
     border-radius: .25em;
+    outline: 2px solid transparent;
+    transition: outline 100ms;
 }
 
 /* Visible focus for everything, need to explicitly override `normalize.css`
@@ -170,22 +175,24 @@ input:focus,
 optgroup:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid var(--blue-3);
+    outline: 2px solid var(--color-accent-muted);
 }
 
 button {
-    background: var(--blue-5);
-    color: var(--white);
-    border: 1px solid var(--blue-6);
+    background: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
+    border: 1px solid var(--color-accent-emphasis);
+    transition: background-color 100ms, border-color 100ms;
 }
 
 button:hover {
-    background: var(--blue-6);
+    background: var(--color-scale-blue-6);
+    border: 1px solid var(--color-scale-blue-6);
     cursor: pointer;
 }
 
 iframe {
-    border: 1px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
 }
 
 .float-wrapper::after {

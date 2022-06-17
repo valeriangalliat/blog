@@ -1,0 +1,56 @@
+#!/usr/bin/env node
+
+const fs = require('fs')
+const cp = require('child_process')
+
+function parse (content) {
+  const lines = content.split('\n')
+  const colors = {}
+
+  for (let line of lines) {
+    line = line.trim()
+
+    if (line.startsWith('--color-')) {
+      const [name, color] = line.slice(0, -1).split(': ')
+      colors[name] = color
+    }
+  }
+
+  return colors
+}
+
+function compile (colors, used) {
+  const lines = []
+  for (const name of used) {
+    lines.push(`${name}: ${colors[name]};`)
+  }
+
+  return lines.join('\n')
+}
+
+const lightColors = parse(fs.readFileSync(require.resolve('@primer/primitives/dist/scss/colors/_light.scss'), 'utf8'))
+const darkColors = parse(fs.readFileSync(require.resolve('@primer/primitives/dist/scss/colors/_dark.scss'), 'utf8'))
+
+const used = cp.execSync('grep -Rho "var(--color[^)]*)" css | sort | uniq')
+  .toString()
+  .split('\n')
+  .filter(line => line !== '')
+  .map(line => line.slice(4, -1))
+
+const light = compile(lightColors, used)
+const dark = compile(darkColors, used)
+
+// Logic from <https://stackoverflow.com/a/68824350>
+console.log(`:root, .light, .hero {
+  ${light.replaceAll('\n', '\n  ')}
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    ${light.replaceAll('\n', '\n    ')}
+  }
+}
+
+.dark {
+  ${dark.replaceAll('\n', '\n  ')}
+}`)

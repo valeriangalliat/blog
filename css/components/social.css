@@ -1,11 +1,9 @@
 .social svg {
     vertical-align: middle;
-}
-
-.social svg {
-    --color-fill: var(--gray-6);
+    transition: fill 100ms;
+    fill: var(--color-fg-muted);
 }
 
 .social a:hover svg {
-    --color-fill: var(--black);
+    fill: var(--color-fg-default);
 }

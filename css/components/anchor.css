@@ -1,11 +1,11 @@
 .header-anchor {
-    color: var(--black);
+    color: var(--color-fg-default);
     margin-left: -1.5ch;
     padding-left: 1.5ch;
 }
 
 .header-anchor:visited {
-    color: var(--black);
+    color: var(--color-fg-default);
 }
 
 .header-anchor:hover {
@@ -15,7 +15,7 @@
 .header-anchor:hover::before,
 .header-anchor:focus::before {
     content: '#';
-    color: var(--blue-5);
+    color: var(--color-accent-fg);
     position: relative;
     float: left;
     left: -1.5ch;

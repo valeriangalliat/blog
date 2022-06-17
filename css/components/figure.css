@@ -15,8 +15,8 @@ figcaption {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     padding: .25em .75em;
-    background-color: var(--blue-5);
-    color: var(--white);
+    background-color: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
 }
 
 figure img {

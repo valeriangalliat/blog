@@ -410,21 +410,56 @@ figure.center, figure.grid {
         width: calc((100% - .25rem) / 2);
     }
 }
+.footnotes p {
+    margin: 0;
+}
+
 footer {
     /* Match content container width. */
     max-width: 45rem;
-    margin: 10em auto 3em auto;
-    padding: 0 .5em;
-    text-align: center;
+    margin: 10em auto 5em auto;
+    padding: 2em .5em 0;
+    border-top: 1px solid var(--gray-2);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 }
 
-footer p {
+footer figure {
+    border-radius: 100%;
+    overflow: hidden;
+    width: 8em;
+}
+
+@media (min-width: 42em) {
+    footer {
+        flex-direction: row;
+    }
+
+    footer figure {
+        margin-right: 2em;
+        margin-bottom: 0;
+    }
+}
+
+.footer-content {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     color: var(--gray-4);
-    padding: 2em 0;
-    margin: 0;
-    border-top: 1px solid var(--gray-2);
+    text-align: center;
+    --vertical-margin: 1rem;
+}
+
+footer ul {
+    list-style-type: none;
+    padding-left: 0;
+    display: flex;
+    justify-content: center;
+}
+
+footer li {
+    padding: 0 1em;
 }
 
 footer a, footer a:visited {
@@ -434,10 +469,6 @@ footer a, footer a:visited {
 footer a:hover {
     color: var(--black);
     text-decoration: none;
-}
-
-.footnotes p {
-    margin: 0;
 }
 @media (min-width: 42em) {
     header .content {
@@ -565,17 +596,6 @@ nav a:hover {
     text-decoration: none;
 }
 
-nav .social svg {
-    vertical-align: middle;
-}
-
-nav .social svg {
-    --color-fill: var(--gray-6);
-}
-
-nav .social a:hover svg {
-    --color-fill: var(--black);
-}
 .note {
     margin: 0 0 var(--vertical-margin, 2rem);
     background: var(--blue-0);
@@ -607,6 +627,17 @@ nav .social a:hover svg {
         margin-left: -7.5rem;
         margin-right: -7.5rem;
     }
+}
+.social svg {
+    vertical-align: middle;
+}
+
+.social svg {
+    --color-fill: var(--gray-6);
+}
+
+.social a:hover svg {
+    --color-fill: var(--black);
 }
 .index .header-inner {
     display: flex;

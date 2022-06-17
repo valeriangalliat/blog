@@ -16,6 +16,7 @@ nav {
 }
 
 nav ul {
+    width: 100%;
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
     list-style-type: none;
@@ -44,6 +45,10 @@ nav ul {
 
 nav li {
     padding: 0 1em;
+}
+
+nav li.pull {
+    margin-left: auto;
 }
 
 nav a, nav a:visited {

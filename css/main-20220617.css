@@ -1,92 +1,69 @@
-:root {
-    --black: #1b1f23;
-    --white: #ffffff;
-    --gray-0: #fafbfc;
-    --gray-1: #f6f8fa;
-    --gray-2: #e1e4e8;
-    --gray-3: #d1d5da;
-    --gray-4: #959da5;
-    --gray-5: #6a737d;
-    --gray-6: #586069;
-    --gray-7: #444d56;
-    --gray-8: #2f363d;
-    --gray-9: #24292e;
-    --blue-0: #f1f8ff;
-    --blue-1: #dbedff;
-    --blue-2: #c8e1ff;
-    --blue-3: #79b8ff;
-    --blue-4: #2188ff;
-    --blue-5: #0366d6;
-    --blue-6: #005cc5;
-    --blue-7: #044289;
-    --blue-8: #032f62;
-    --blue-9: #05264c;
-    --green-0: #f0fff4;
-    --green-1: #dcffe4;
-    --green-2: #bef5cb;
-    --green-3: #85e89d;
-    --green-4: #34d058;
-    --green-5: #28a745;
-    --green-6: #22863a;
-    --green-7: #176f2c;
-    --green-8: #165c26;
-    --green-9: #144620;
-    --yellow-0: #fffdef;
-    --yellow-1: #fffbdd;
-    --yellow-2: #fff5b1;
-    --yellow-3: #ffea7f;
-    --yellow-4: #ffdf5d;
-    --yellow-5: #ffd33d;
-    --yellow-6: #f9c513;
-    --yellow-7: #dbab09;
-    --yellow-8: #b08800;
-    --yellow-9: #735c0f;
-    --orange-0: #fff8f2;
-    --orange-1: #ffebda;
-    --orange-2: #ffd1ac;
-    --orange-3: #ffab70;
-    --orange-4: #fb8532;
-    --orange-5: #f66a0a;
-    --orange-6: #e36209;
-    --orange-7: #d15704;
-    --orange-8: #c24e00;
-    --orange-9: #a04100;
-    --red-0: #ffeef0;
-    --red-1: #ffdce0;
-    --red-2: #fdaeb7;
-    --red-3: #f97583;
-    --red-4: #ea4a5a;
-    --red-5: #d73a49;
-    --red-6: #cb2431;
-    --red-7: #b31d28;
-    --red-8: #9e1c23;
-    --red-9: #86181d;
-    --purple-0: #f5f0ff;
-    --purple-1: #e6dcfd;
-    --purple-2: #d1bcf9;
-    --purple-3: #b392f0;
-    --purple-4: #8a63d2;
-    --purple-5: #6f42c1;
-    --purple-6: #5a32a3;
-    --purple-7: #4c2889;
-    --purple-8: #3a1d6e;
-    --purple-9: #29134e;
-    --pink-0: #ffeef8;
-    --pink-1: #fedbf0;
-    --pink-2: #f9b3dd;
-    --pink-3: #f692ce;
-    --pink-4: #ec6cb9;
-    --pink-5: #ea4aaa;
-    --pink-6: #d03592;
-    --pink-7: #b93a86;
-    --pink-8: #99306f;
-    --pink-9: #6d224f;
+:root, .light, .hero {
+  --color-accent-emphasis: #0969da;
+  --color-accent-fg: #0969da;
+  --color-accent-muted: rgba(84,174,255,0.4);
+  --color-accent-subtle: #ddf4ff;
+  --color-border-default: #d0d7de;
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-done-fg: #8250df;
+  --color-fg-default: #24292f;
+  --color-fg-muted: #57606a;
+  --color-fg-on-emphasis: #ffffff;
+  --color-fg-subtle: #6e7781;
+  --color-scale-blue-6: #0550ae;
+  --color-scale-gray-1: #eaeef2;
+  --color-scale-gray-2: #d0d7de;
+  --color-scale-gray-4: #8c959f;
 }
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-accent-emphasis: #0969da;
+    --color-accent-fg: #0969da;
+    --color-accent-muted: rgba(84,174,255,0.4);
+    --color-accent-subtle: #ddf4ff;
+    --color-border-default: #d0d7de;
+    --color-canvas-default: #ffffff;
+    --color-canvas-subtle: #f6f8fa;
+    --color-done-fg: #8250df;
+    --color-fg-default: #24292f;
+    --color-fg-muted: #57606a;
+    --color-fg-on-emphasis: #ffffff;
+    --color-fg-subtle: #6e7781;
+    --color-scale-blue-6: #0550ae;
+    --color-scale-gray-1: #eaeef2;
+    --color-scale-gray-2: #d0d7de;
+    --color-scale-gray-4: #8c959f;
+  }
+}
+
+.dark {
+  --color-accent-emphasis: #1f6feb;
+  --color-accent-fg: #58a6ff;
+  --color-accent-muted: rgba(56,139,253,0.4);
+  --color-accent-subtle: rgba(56,139,253,0.15);
+  --color-border-default: #30363d;
+  --color-canvas-default: #0d1117;
+  --color-canvas-subtle: #161b22;
+  --color-done-fg: #a371f7;
+  --color-fg-default: #c9d1d9;
+  --color-fg-muted: #8b949e;
+  --color-fg-on-emphasis: #ffffff;
+  --color-fg-subtle: #6e7681;
+  --color-scale-blue-6: #1158c7;
+  --color-scale-gray-1: #c9d1d9;
+  --color-scale-gray-2: #b1bac4;
+  --color-scale-gray-4: #6e7681;
+}
+/* Find color names from <https://primer.style/primitives/colors> */
+
 html {
     /* font: 1.25em/1.5 "Georgia", serif; */
     font: 1.25em/1.5 "Helvetica Neue", sans-serif;
-    background: var(--white);
-    color: var(--black);
+    background: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    transition: background-color 100ms;
 }
 
 .content {
@@ -98,7 +75,7 @@ html {
 }
 
 h2 {
-    border-bottom: 1px solid var(--gray-2);
+    border-bottom: 1px solid var(--color-border-default);
     padding-bottom: .5rem;
 }
 
@@ -155,19 +132,19 @@ table {
 
 th, td {
     padding: .5em 1em;
-    border: 1px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
     text-align: left;
 }
 
 tr:nth-child(even) {
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
 }
 
 blockquote {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
     margin-left: 0;
     padding: 0 1em;
-    border-left: .25rem solid var(--blue-5);
+    border-left: .25rem solid var(--color-accent-emphasis);
 }
 
 dt {
@@ -177,28 +154,28 @@ dt {
 code, kbd, samp {
     font-family: "Courier New", monospace;
     font-size: .8em;
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
     padding: .25em .5em;
 }
 
 .hljs {
-    background: var(--gray-1);
+    background: var(--color-canvas-subtle);
 }
 
 kbd {
     font-size: .7em;
-    border: 1px solid var(--gray-2);
-    border-bottom: 2px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
+    border-bottom: 2px solid var(--color-border-default);
     border-radius: .75em;
 }
 
 hr {
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
     border-bottom: 0;
 }
 
 a {
-    color: var(--blue-5);
+    color: var(--color-accent-fg);
     text-decoration: none;
 }
 
@@ -211,7 +188,7 @@ a:hover {
 }
 
 a:visited {
-    color: var(--purple-5);
+    color: var(--color-done-fg);
 }
 
 a[title] {
@@ -234,13 +211,15 @@ img, video {
 
 button, input, optgroup, select, textarea {
     background: transparent;
-    color: var(--black);
+    color: var(--color-fg-default);
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     line-height: normal;
     padding: .5em 1em;
-    border: 1px solid var(--gray-3);
+    border: 1px solid var(--color-border-default);
     border-radius: .25em;
+    outline: 2px solid transparent;
+    transition: outline 100ms;
 }
 
 /* Visible focus for everything, need to explicitly override `normalize.css`
@@ -254,22 +233,24 @@ input:focus,
 optgroup:focus,
 select:focus,
 textarea:focus {
-    outline: 2px solid var(--blue-3);
+    outline: 2px solid var(--color-accent-muted);
 }
 
 button {
-    background: var(--blue-5);
-    color: var(--white);
-    border: 1px solid var(--blue-6);
+    background: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
+    border: 1px solid var(--color-accent-emphasis);
+    transition: background-color 100ms, border-color 100ms;
 }
 
 button:hover {
-    background: var(--blue-6);
+    background: var(--color-scale-blue-6);
+    border: 1px solid var(--color-scale-blue-6);
     cursor: pointer;
 }
 
 iframe {
-    border: 1px solid var(--gray-2);
+    border: 1px solid var(--color-border-default);
 }
 
 .float-wrapper::after {
@@ -282,13 +263,13 @@ iframe {
     overflow: hidden;
 }
 .header-anchor {
-    color: var(--black);
+    color: var(--color-fg-default);
     margin-left: -1.5ch;
     padding-left: 1.5ch;
 }
 
 .header-anchor:visited {
-    color: var(--black);
+    color: var(--color-fg-default);
 }
 
 .header-anchor:hover {
@@ -298,7 +279,7 @@ iframe {
 .header-anchor:hover::before,
 .header-anchor:focus::before {
     content: '#';
-    color: var(--blue-5);
+    color: var(--color-accent-fg);
     position: relative;
     float: left;
     left: -1.5ch;
@@ -333,8 +314,8 @@ figcaption {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     padding: .25em .75em;
-    background-color: var(--blue-5);
-    color: var(--white);
+    background-color: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
 }
 
 figure img {
@@ -419,7 +400,7 @@ footer {
     max-width: 45rem;
     margin: 10em auto 5em auto;
     padding: 2em .5em 0;
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -446,7 +427,7 @@ footer figure {
 .footer-content {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .75em;
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
     text-align: center;
     --vertical-margin: 1rem;
 }
@@ -463,11 +444,11 @@ footer li {
 }
 
 footer a, footer a:visited {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
 }
 
 footer a:hover {
-    color: var(--black);
+    color: var(--color-fg-default);
     text-decoration: none;
 }
 @media (min-width: 42em) {
@@ -501,15 +482,15 @@ footer a:hover {
 
 .hero h1 {
     text-shadow: 1px 2px rgba(0, 0, 0, .1);
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
 }
 
 .post .hero .tagline {
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
 }
 
 .post .hero .date {
-    color: var(--gray-2);
+    color: var(--color-scale-gray-2);
 }
 
 .hero code {
@@ -532,11 +513,11 @@ footer a:hover {
 
 .hero-credit,
 .hero-credit:visited {
-    color: var(--gray-2);
+    color: var(--color-scale-gray-2);
 }
 
 .hero-credit:hover {
-    color: var(--white);
+    color: var(--color-fg-on-emphasis);
     text-decoration: none;
 }
 nav {
@@ -588,18 +569,27 @@ nav li {
 }
 
 nav a, nav a:visited {
-    color: var(--gray-6);
+    color: var(--color-fg-muted);
 }
 
 nav a:hover {
-    color: var(--black);
+    color: var(--color-fg-default);
     text-decoration: none;
 }
 
+.change-color-theme, .change-color-theme:hover {
+    /* Reset button styles */
+    background: none;
+    font-size: initial;
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+}
 .note {
     margin: 0 0 var(--vertical-margin, 2rem);
-    background: var(--blue-0);
-    border-top: .25rem solid var(--blue-5);
+    background: var(--color-accent-subtle);
+    border-top: .25rem solid var(--color-accent-muted);
+    border-radius: .25rem;
     padding: 1em;
 }
 
@@ -630,14 +620,12 @@ nav a:hover {
 }
 .social svg {
     vertical-align: middle;
-}
-
-.social svg {
-    --color-fill: var(--gray-6);
+    transition: fill 100ms;
+    fill: var(--color-fg-muted);
 }
 
 .social a:hover svg {
-    --color-fill: var(--black);
+    fill: var(--color-fg-default);
 }
 .index .header-inner {
     display: flex;
@@ -694,13 +682,13 @@ nav a:hover {
 }
 
 .posts li:not(:last-child) {
-    border-bottom: 1px solid var(--gray-1);
+    border-bottom: 1px solid var(--color-canvas-subtle);
 }
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only
  * the one used for the date. */
 .posts li > small {
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
     white-space: nowrap;
 }
 
@@ -732,10 +720,10 @@ nav a:hover {
 }
 
 .post .date {
-    color: var(--gray-4);
+    color: var(--color-fg-subtle);
 }
 
 .post-footer {
     padding-top: 2rem;
-    border-top: 1px solid var(--gray-2);
+    border-top: 1px solid var(--color-border-default);
 }

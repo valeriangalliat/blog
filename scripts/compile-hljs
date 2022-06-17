@@ -1,0 +1,12 @@
+#!/bin/sh -e
+
+light=$1; shift
+dark=$1; shift
+
+strip() {
+    node -p "fs.readFileSync('/dev/stdin', 'utf8').replace(/\/\*[^*]*\*\//, '')"
+}
+
+echo "$(strip < "$light")"
+echo "@media(prefers-color-scheme:dark){$(strip < "$dark")}"
+echo ".dark $(strip < "$dark" | sed 's/\([},]\)/\1.dark /g' | sed 's/\.dark $//')"

@@ -100,7 +100,8 @@ code, kbd, samp {
     padding: .25em .5em;
 }
 
-.hljs {
+/* Need to increase specificity to override highlight.js default background in dark mode */
+.hljs, .dark .hljs {
     background: var(--color-canvas-subtle);
 }
 

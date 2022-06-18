@@ -98,6 +98,7 @@ code, kbd, samp {
     font-size: .8em;
     background: var(--color-canvas-subtle);
     padding: .25em .5em;
+    border-radius: .25rem;
 }
 
 /* Need to increase specificity to override highlight.js default background in dark mode */
@@ -109,7 +110,7 @@ kbd {
     font-size: .7em;
     border: 1px solid var(--color-border-default);
     border-bottom: 2px solid var(--color-border-default);
-    border-radius: .75em;
+    border-radius: .5rem;
 }
 
 hr {

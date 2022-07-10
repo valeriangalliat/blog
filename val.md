@@ -5,7 +5,7 @@ image: img/val.jpg
 # Val <small>(Valérian Galliat)</small>
 
 <figure class="center">
-  <img alt="Val" src="img/val.jpg">
+  <img alt="Val" src="img/val-summer.jpg">
 </figure>
 
 ## About

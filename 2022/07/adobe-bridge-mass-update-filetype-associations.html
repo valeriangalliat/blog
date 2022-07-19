@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Adobe Bridge mass update filetype associations</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Adobe Bridge mass update filetype associations">
+  <meta property="og:description" content="Bridge is a pretty powerful file explorer by Adobe, that now ships for free since the 2022 version. Sweet.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Adobe Bridge mass update filetype associations</h1>
+<p class="date">July 19, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Bridge is a pretty powerful file explorer by Adobe, that
+<a href="https://prodesigntools.com/free-adobe-bridge-cc.html">now ships for free since the 2022 version</a>.
+Sweet.</p>
+<p>But there’s always one thing that bugs me with it: it keeps opening
+photos in Photoshop, and Photoshop is sloooooow to start. When I
+double-click on a picture, I most often just want to see it in Preview.</p>
+<h2 id="the-manual-solution" tabindex="-1"><a class="header-anchor" href="#the-manual-solution"><span>The manual solution</span></a></h2>
+<p>The solution, is to go in <kbd>Preferences</kbd>, <kbd>File Type
+Associations</kbd> and associate pictures with Preview form there.</p>
+<p>The problem is that there’s <em>countless</em> different extensions for
+pictures and we need to update them one by one! Bummer.</p>
+<figure class="center">
+  <img alt="Bridge filetype associations" src="../../img/2022/07/bridge-preferences.png">
+</figure>
+<p>It would be fine if it only had to happen once, but on any new Bridge
+installation, or even after a major update, it resets and I have to
+start over.</p>
+<h2 id="the-automated-solution" tabindex="-1"><a class="header-anchor" href="#the-automated-solution"><span>The automated solution</span></a></h2>
+<p>Luckily there’s a quick way to take everything that’s currently
+associated to Photoshop and replace it with Preview!</p>
+<p>First, we need to manually associate at least one filetype in the
+previous dialog. This will make sure that Bridge creates the file
+<code>~/Library/Application Support/Adobe/Bridge 2022/Adobe Bridge Opener Preferences.xml</code>,
+where it stores the filetype associations.</p>
+<p>From there, we can open it and using a text editor, replace every
+occurrence of <code>Photoshop</code> with <code>/System/Applications/Preview.app</code>.</p>
+<p>If you want a one-liner to paste, this can even be done with <code>sed</code>:</p>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s,&quot;Photoshop&quot;,&quot;/System/Applications/Preview.app&quot;,g&#x27;</span> ~/Library/Application\ Support/Adobe/Bridge\ 2022/Adobe\ Bridge\ Opener\ Preferences.xml
+</code></pre>
+<p>After that, just restart Bridge and don’t ever be scared of a file
+randomly opening in Photoshop again!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) looking at a beer glass shining in the beautiful sun" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2022/07/adobe-bridge-mass-update-filetype-associations.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

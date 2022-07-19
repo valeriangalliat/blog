@@ -5,10 +5,55 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2022-06-01T14:33:40.691Z</updated>
+  <updated>2022-07-19T21:24:18.464Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Adobe Bridge mass update filetype associations</title>
+    <link href="https://www.codejam.info/2022/07/adobe-bridge-mass-update-filetype-associations.html" />
+    <id>https://www.codejam.info/2022/07/adobe-bridge-mass-update-filetype-associations.html</id>
+    <updated>2022-07-19T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Bridge is a pretty powerful file explorer by Adobe, that
+<a href="https://prodesigntools.com/free-adobe-bridge-cc.html">now ships for free since the 2022 version</a>.
+Sweet.</p>
+<p>But there’s always one thing that bugs me with it: it keeps opening
+photos in Photoshop, and Photoshop is sloooooow to start. When I
+double-click on a picture, I most often just want to see it in Preview.</p>
+<h2 id="the-manual-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/07/adobe-bridge-mass-update-filetype-associations.html#the-manual-solution"><span>The manual solution</span></a></h2>
+<p>The solution, is to go in <kbd>Preferences</kbd>, <kbd>File Type
+Associations</kbd> and associate pictures with Preview form there.</p>
+<p>The problem is that there’s <em>countless</em> different extensions for
+pictures and we need to update them one by one! Bummer.</p>
+<figure class="center">
+  <img alt="Bridge filetype associations" src="https://www.codejam.info/img/2022/07/bridge-preferences.png">
+</figure>
+<p>It would be fine if it only had to happen once, but on any new Bridge
+installation, or even after a major update, it resets and I have to
+start over.</p>
+<h2 id="the-automated-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/07/adobe-bridge-mass-update-filetype-associations.html#the-automated-solution"><span>The automated solution</span></a></h2>
+<p>Luckily there’s a quick way to take everything that’s currently
+associated to Photoshop and replace it with Preview!</p>
+<p>First, we need to manually associate at least one filetype in the
+previous dialog. This will make sure that Bridge creates the file
+<code>~/Library/Application Support/Adobe/Bridge 2022/Adobe Bridge Opener Preferences.xml</code>,
+where it stores the filetype associations.</p>
+<p>From there, we can open it and using a text editor, replace every
+occurrence of <code>Photoshop</code> with <code>/System/Applications/Preview.app</code>.</p>
+<p>If you want a one-liner to paste, this can even be done with <code>sed</code>:</p>
+<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s,&quot;Photoshop&quot;,&quot;/System/Applications/Preview.app&quot;,g&#x27;</span> ~/Library/Application\ Support/Adobe/Bridge\ 2022/Adobe\ Bridge\ Opener\ Preferences.xml
+</code></pre>
+<p>After that, just restart Bridge and don’t ever be scared of a file
+randomly opening in Photoshop again!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Empty body vs. no body in HTTP/2</title>
     <link href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html" />
@@ -3466,144 +3511,6 @@ other way around, I’m moving back to xfce4-terminal.</p>
 <p>I like lightweight and minimalist programs, but I like convenience as
 well. xfce4-terminal is the perfect balance for me, and it’s pretty
 strongly on the lightweight side already!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Migrating .xmodmaprc to Wayland: remap arbitrary keys</title>
-    <link href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html" />
-    <id>https://www.codejam.info/2022/04/xmodmaprc-wayland.html</id>
-    <updated>2022-04-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I recently <a href="https://www.codejam.info/2022/05/migrating-x11-wayland-i3-sway.html">moved from X11 to Wayland</a>,
-and one of my challenges that came with it was to find an alternative
-for my <code>.xmodmaprc</code>, that I used for two purposes:</p>
-<ol>
-<li><a href="https://github.com/valeriangalliat/dotfiles/blob/1d2098a7da513dab195554997efaac22a0d77a02/x11/xmodmaprc">Invert the left <kbd>Alt</kbd> and <kbd>Ctrl</kbd> keys</a>.</li>
-<li><a href="https://www.codejam.info/2019/06/software-fn-lock.html">Invert the behavior of the function keys</a>,
-(to emulate <kbd>Fn Lock</kbd> which is not supported on my laptop).</li>
-</ol>
-<p>Since <code>xmodmap</code> is a X11 thing, I needed to find a Wayland alternative
-to this.</p>
-<p>It seems that the common answer is to directly modify the XKB database
-in <code>/usr/share/X11/xkb</code>, but according to <a href="https://unix.stackexchange.com/a/698044/521108">this Stack Exchange post</a>
-(referencing the <a href="https://xkbcommon.org/doc/current/md_doc_user_configuration.html">XKB docs</a>),
-we learn that we can customize XKB symbols in
-<code>~/.config/xkb/symbols/&lt;name&gt;</code> and XKB rules in
-<code>~/.config/xkb/rules/evdev</code>. Great.</p>
-<h2 id="inverting-alt-and-ctrl" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html#inverting-alt-and-ctrl"><span>Inverting <kbd>Alt</kbd> and <kbd>Ctrl</kbd></span></a></h2>
-<p>This is something commonly done with <code>xmodmap</code>, and there’s very little
-documentation of alternative solutions, but I found <a href="https://askubuntu.com/a/885047">this answer</a>
-showing how to achieve that by modifying the XKB symbols in
-<code>/usr/share/X11/xkb/symbols/ctrl</code>:</p>
-<pre><code class="hljs language-conf">xkb_symbols &quot;swap_ralt_rctl&quot; {
-    replace key &lt;RALT&gt; { [ Control_R, Control_R ] };
-    replace key &lt;RCTL&gt; { [ Alt_R, Meta_R ] };
-};
-</code></pre>
-<p>Because I just learnt I could modify stuff in <code>~/.config/xkb/symbols</code>
-instead, I added this code to <code>~/.config/xkb/symbols/ctrl</code>.</p>
-<p>Then in my Sway config (this will vary depending on your window manager
-or desktop environment), I enabled the <code>ctrl:swap_ralt_rctl</code> option for
-my keyboard:</p>
-<pre><code class="hljs language-conf">input type:keyboard {
-    xkb_options ctrl:swap_lalt_lctl
-}
-</code></pre>
-<p>And this worked! <strong>But it shouldn’t have.</strong> I realized later (when
-adding another option with a different name) that it is <strong>required</strong> to
-also add a matching entry to the <code>xkb/rules/evdev</code> file. So why did it
-work?</p>
-<p>It turns out that there was already a native XKB option with that exact
-name (in <code>/usr/share/X11/xkb/symbols/ctrl</code> and
-<code>/usr/share/X11/xkb/rules/evdev</code>), and that’s why the name was
-recognized. And unsurprisingly, that native option does exactly what I
-want, so I could get rid of that <code>~/.config/xkb/symbols/ctrl</code> file
-altogether and just use <code>ctrl:swap_lalt_lctl</code> in my Sway config. 😆</p>
-<h2 id="emulating-fn-lock" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/xmodmaprc-wayland.html#emulating-fn-lock"><span>Emulating <kbd>Fn Lock</kbd></span></a></h2>
-<p>Now on to the hardest part. My <code>~/.xmodmaprc</code> used to look like this,
-essentially, mapping <kbd>F5</kbd> to what <kbd>Fn</kbd> + <kbd>F5</kbd>
-would do, and inversely, and so on for a number of function keys that I
-use.</p>
-<pre><code class="hljs language-xmodmap">keycode 71  = XF86MonBrightnessDown
-keycode 232 = F5
-keycode 72  = XF86MonBrightnessUp
-keycode 233 = F6
-keycode 73  = XF86ScreenSaver
-keycode 160 = F7
-keycode 76  = XF86AudioMute
-keycode 121 = F10
-keycode 95  = XF86AudioLowerVolume
-keycode 122 = F11
-keycode 96  = XF86AudioRaiseVolume
-keycode 123 = F12
-</code></pre>
-<p>With a bit of trial and error, and looking at the
-<code>/usr/share/X11/xkb/keycodes/evdev</code> file, I could figure what were the
-corresponding XKB keys for the codes above:</p>
-<pre><code class="hljs">&lt;FK01&gt; = 67;
-&lt;FK02&gt; = 68;
-&lt;FK03&gt; = 69;
-&lt;FK04&gt; = 70;
-&lt;FK05&gt; = 71;
-&lt;FK06&gt; = 72;
-&lt;FK07&gt; = 73;
-&lt;FK08&gt; = 74;
-&lt;FK09&gt; = 75;
-&lt;FK10&gt; = 76;
-&lt;FK11&gt; = 95;
-&lt;FK12&gt; = 96;
-...
-&lt;MUTE&gt; = 121;
-&lt;VOL-&gt; = 122;
-&lt;VOL+&gt; = 123;
-...
-alias &lt;I121&gt; = &lt;MUTE&gt;;	// #define KEY_MUTE                113
-alias &lt;I122&gt; = &lt;VOL-&gt;;	// #define KEY_VOLUMEDOWN          114
-alias &lt;I123&gt; = &lt;VOL+&gt;;	// #define KEY_VOLUMEUP            115
-...
-&lt;I160&gt; = 160;		// #define KEY_COFFEE              152
-&lt;I232&gt; = 232;		// #define KEY_BRIGHTNESSDOWN      224
-&lt;I233&gt; = 233;		// #define KEY_BRIGHTNESSUP        225
-</code></pre>
-<p>Leading me to the write following <code>~/.config/xkb/symbols/ctrl</code>:</p>
-<pre><code class="hljs language-conf">partial modifier_keys
-xkb_symbols &quot;swap_fn_keys&quot; {
-    replace key &lt;FK05&gt; { [ XF86MonBrightnessDown ] };
-    replace key &lt;FK06&gt; { [ XF86MonBrightnessUp ] };
-    replace key &lt;FK07&gt; { [ XF86ScreenSaver ] };
-    replace key &lt;FK09&gt; { [ XF86TouchpadToggle ] };
-    replace key &lt;FK10&gt; { [ XF86AudioMute ] };
-    replace key &lt;FK11&gt; { [ XF86AudioLowerVolume ] };
-    replace key &lt;FK12&gt; { [ XF86AudioRaiseVolume ] };
-    replace key &lt;I232&gt; { [ F5 ] };
-    replace key &lt;I233&gt; { [ F6 ] };
-    replace key &lt;I160&gt; { [ F7 ] };
-    replace key &lt;I199&gt; { [ F9 ] };
-    replace key &lt;I121&gt; { [ F10 ] };
-    replace key &lt;I122&gt; { [ F11 ] };
-    replace key &lt;I123&gt; { [ F12 ] };
-};
-</code></pre>
-<p>And this time because <code>swap_fn_keys</code> is a new entry, I did need to add
-it to <code>~/.config/xkb/rules/evdev</code>. According to the
-<a href="https://xkbcommon.org/doc/current/md_doc_user_configuration.html#autotoc_md17">XKB docs</a>,
-this is done with the following pattern:</p>
-<pre><code class="hljs language-conf">! option = symbols
-  ctrl:swap_fn_keys = +ctrl(swap_fn_keys)
-
-! include %S/evdev
-</code></pre>
-<p>And I can finally include it to my Sway keyboard options:</p>
-<pre><code class="hljs language-conf">input type:keyboard {
-    xkb_options ctrl:swap_lalt_lctl,ctrl:swap_fn_keys
-}
-</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

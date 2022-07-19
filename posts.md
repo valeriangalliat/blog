@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
+* [Adobe Bridge mass update filetype associations](2022/07/adobe-bridge-mass-update-filetype-associations.md) <small>July 19, 2022</small>
 * [Empty body vs. no body in HTTP/2](2022/06/empty-body-no-body-http2.md) <small>June 1, 2022</small>
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
 * [Using a GoPro in the Canadian winter ❄️](2022/05/gopro-canadian-winter.md) <small>May 25, 2022</small>

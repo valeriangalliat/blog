@@ -22,7 +22,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
   <tr>
     <td><a href="https://amzn.to/3GwRCAL">Zoom H2n</a></td>
     <td>Portable battery-powered microphone. It's extremely versatile
-    andit's the single microphone I use for everything form recording
+    and it's the single microphone I use for everything form recording
     my motorcycle engine sound while I ride to recording vocals and
     acoustic instruments as well as vlogs when mounted on top of my
     camera. It's probably not the very best at any of those categories

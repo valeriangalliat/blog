@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Going further Docker multi-stage builds</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="canonical" href="https://www.busbud.com/blog/going-docker-multi-stage-builds/">
+  <meta property="og:title" content="Going further Docker multi-stage builds">
+  <meta property="og:description" content="One Dockerfile to rule them all. Note: this is a mirror of the blog post originally published on Busbud blog!">
+  <meta property="og:image" content="https://www.codejam.info/img/2017/05/going-further-docker-multi-stage-builds.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header class="hero" style="background-image: url(../../img/2017/05/going-further-docker-multi-stage-builds.jpg)">
+    <div class="header-inner">
+      <div class="content">
+<h1>Going further Docker multi-stage builds</h1>
+<p class="tagline">One Dockerfile to rule them all</p>
+<p class="date">May 21, 2017</p>
+      </div>
+    </div>
+    <a class="hero-credit" href="https://unsplash.com/photos/t20pc32VbrU">Picture credit: Thomas Kelley</a>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> this is a mirror of the blog post originally published on
+<a href="https://www.busbud.com/blog/going-docker-multi-stage-builds/">Busbud blog</a>!</p>
+</div>
+<p>Yesterday, we <a href="docker-multi-stage.html">learnt about Docker multi-stage builds</a>
+and how awesome they are.</p>
+<p>Today, we’re pushing it even further by combining it with the <code>ONBUILD</code>
+instruction. Fasten your seat belts!</p>
+<h2 id="the-copy-pasted-dockerfile-of-hell" tabindex="-1"><a class="header-anchor" href="#the-copy-pasted-dockerfile-of-hell"><span>The copy-pasted Dockerfile of hell</span></a></h2>
+<p>At the moment we have more than 50 Node.js microservices at Busbud, and
+each of them have a Dockerfile. Except for a couple microservices, this
+Dockerfile is basically the exact same: installs dependencies (including
+system build tools if we have some native dependencies), and add our app.</p>
+<p>We managed to do that in both a time efficient and space efficient
+manner by <a href="dockerfiles-history.html#2017-04-19-multi-stage">using multi-stage builds</a>. But we know
+that having many Dockerfiles that are basically identical is a pain to
+maintain. We’ve experienced this pain first hand over <a href="dockerfiles-history.html">the last two years
+worth of changes</a>.</p>
+<blockquote>
+<p>In the beginning we were editing the Dockerfiles manually, but when we
+had more than 20 it started to be a real pain.</p>
+<p>I started <a href="http://vim.wikia.com/wiki/Run_a_command_in_multiple_buffers"><code>bufdo</code></a>ing Vim macros to ease that, for a bit, but
+by the time we had 40 or more Dockerfiles I was editing them all at
+once through <code>sed -i</code> scripts and checking the <code>git diff</code> to make sure
+it applied the change properly  across all the Dockerfiles that can
+have slight variations (some have build dependencies, some other
+don’t, some have additional dependencies, some require extra
+build steps, etc.).</p>
+</blockquote>
+<p>This is too much work, and as I’m lazy, I decided to refactor out as
+much as I could from the Dockerfiles so we have a single “top-level”
+Dockerfile to edit when we want to make a change in the way we build our
+microservices.</p>
+<h2 id="using-onbuild-instructions" tabindex="-1"><a class="header-anchor" href="#using-onbuild-instructions"><span>Using <code>ONBUILD</code> instructions</span></a></h2>
+<p>That’s where <a href="https://docs.docker.com/engine/reference/builder/#onbuild"><code>ONBUILD</code></a> saves us: we can make a base image that
+not only refactors out the common parts (installing a specific version
+of npm or Yarn, installing build dependencies), but also the
+instructions that are specific to a build, like adding files to the image,
+and any <code>RUN</code> instruction that depends on those files to be added:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-comment"># node:x.x.x-alpine-onbuild</span>
+
+<span class="hljs-keyword">FROM</span> node:x.x.x-alpine
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache --virtual .build-deps python make g++</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /usr/local/bin/yarn &amp;&amp; npm install -g yarn</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json ./yarn.lock /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> yarn --production</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> apk del .build-deps</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<p>Then we can extend that base image in all our Dockerfiles, and have the
+<code>FROM</code> be the only line needed:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-alpine-<span class="hljs-keyword">onbuild</span>
+</code></pre>
+<p>But we also saw how multi-stage builds allowed us to separate the build
+steps from the runtime image to push the smallest image possible to the
+registry. What if we could have both?</p>
+<h2 id="multi-stage-onbuild" tabindex="-1"><a class="header-anchor" href="#multi-stage-onbuild"><span>Multi-stage + <code>ONBUILD</code> = ❤️</span></a></h2>
+<p>I’m not sure if it’s a bug, a feature, or a undefined behavior, but it
+turns out that you can reference a build stage from the <code>ONBUILD</code>
+instructions of a base image. Sounds confusing? It’ll be more clear with
+an example.</p>
+<p>Let’s start by making a base image only for building our app:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-comment"># node:x.x.x-builder</span>
+
+<span class="hljs-keyword">FROM</span> node:x.x.x-alpine
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache --virtual .build-deps python make g++</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /usr/local/bin/yarn &amp;&amp; npm install -g yarn</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json ./yarn.lock /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> yarn --production</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> apk del .build-deps</span>
+</code></pre>
+<p>So far so good, nothing fancy. We can extend it and make a new stage to
+make a small production image:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-builder AS builder
+
+<span class="hljs-keyword">FROM</span> alpine:x.x
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/local/bin/node /usr/local/bin/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/lib/ /usr/lib/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /app/ /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<p>That’s great, but we can go <em>deeper.</em> Let’s extract the second stage that
+defines the runtime image in a base image too:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-comment"># node:x.x.x-runtime</span>
+
+<span class="hljs-keyword">FROM</span> alpine:x.x
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/local/bin/node /usr/local/bin/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/lib/ /usr/lib/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /app/ /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<p>And modify our Dockerfile to use it:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-builder AS builder
+<span class="hljs-keyword">FROM</span> node:x.x.x-runtime
+</code></pre>
+<p>There’s no way this would work, right?</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">docker build -t multi-stage-onbuild-test .</span>
+Sending build context to Docker daemon  1.295MB
+Step 1/2 : FROM node:6-builder as builder
+<span class="hljs-meta prompt_"># </span><span class="language-bash">Executing 3 build triggers...</span>
+Step 1/1 : COPY ./package.json ./yarn.lock /app/
+Step 1/1 : RUN yarn --production
+<span class="hljs-meta prompt_"> ---&gt; </span><span class="language-bash">Running <span class="hljs-keyword">in</span> 2af6b63fe907</span>
+yarn install v0.24.4
+[1/4] Resolving packages...
+[2/4] Fetching packages...
+[3/4] Linking dependencies...
+[4/4] Building fresh packages...
+Done in 1.32s.
+Step 1/1 : RUN apk del .build-deps
+<span class="hljs-meta prompt_"> ---&gt; </span><span class="language-bash">Running <span class="hljs-keyword">in</span> d4d220dec219</span>
+(1/26) Purging .build-deps (0)
+...
+OK: 6 MiB in 13 packages
+<span class="hljs-meta prompt_"> ---&gt; </span><span class="language-bash">ab798b07ef77</span>
+Removing intermediate container fcb4e828e943
+Removing intermediate container 2af6b63fe907
+Removing intermediate container d4d220dec219
+Step 2/2 : FROM node:6-runtime
+<span class="hljs-meta prompt_"># </span><span class="language-bash">Executing 4 build triggers...</span>
+Step 1/1 : COPY --from=builder /usr/local/bin/node /usr/local/bin/
+Step 1/1 : COPY --from=builder /usr/lib/ /usr/lib/
+Step 1/1 : COPY --from=builder /app/ /app/
+Step 1/1 : COPY . /app/
+<span class="hljs-meta prompt_"> ---&gt; </span><span class="language-bash">ba7bd1900b34</span>
+Removing intermediate container b6dd4d376ef6
+Removing intermediate container 9292baa3d600
+Removing intermediate container 2e7364e2c000
+Removing intermediate container 37b69f6ddd38
+Successfully built ba7bd1900b34
+Successfully tagged multi-stage-onbuild-test:latest
+</code></pre>
+<p>As surprising as it can be, this image builds and does exactly what
+we want!</p>
+<figure class="center">
+  <object data="https://blog-assets.busbud.com/wp-content/uploads/2018/05/amazed.gif" type="image/gif">
+    <img alt="Amazed" src="https://i.gifer.com/embedded/download/2IM.gif">
+  </object>
+</figure>
+<p>Now all our Node.js microservices’ Dockerfiles are those exact two
+lines, with optional additional steps in both the builder and runtime if
+needed. But the common part is now factored away from the microservice
+images; it sits cleanly in the base builder and runtime images!</p>
+<h2 id="can-we-go-even-deeper" tabindex="-1"><a class="header-anchor" href="#can-we-go-even-deeper"><span>Can we go even deeper?</span></a></h2>
+<p>Combining <code>ONBUILD</code> and two base images using multi-stage builds allowed
+us to have trivial Dockerfiles and keep common logic in only one place,
+but it requires to maintain two Dockerfiles, in the same way <a href="docker-multi-stage.html#the-smart-but-little-known-hack-aka-the-builder-pattern">the
+builder pattern</a> did until multi-stage builds were
+introduced. We also need two lines in the main Dockerfile, and we have
+to give the build stage the name that is expected by the runtime image.</p>
+<p>This is definitely a hack and could be cleaner by having a way for a
+base image to define multiple stages in the context of the downstream
+build, the same way <code>ONBUILD</code> does for commands. That would allow the
+community to make “buildpack” images, that could build and package
+applications for production, in a generic way, while keeping all the
+benefits of multi-stage builds.</p>
+<p>We could even get rid of Dockerfiles entirely if we want, when the
+buildpack already supports everything we need. Imagine the following:</p>
+<pre><code class="hljs language-sh">docker build --buildpack=node:6 -t myapp .
+</code></pre>
+<p>The buildpack would know how to add your <code>package.json</code>, figure out if
+it needs to run <code>npm install</code> or <code>yarn</code>, and add everything to a small
+runtime image that doesn’t include any build dependencies.</p>
+<p>Turns out this is nearly possible… you can use the <code>--file</code> option to
+use a custom Dockerfile path (that can be the two lines one we just made):</p>
+<pre><code class="hljs language-sh">docker build -f /path/to/buildpacks/node/6 -t myapp .
+</code></pre>
+<p>The downside is that the file can’t be remote, and can’t be managed like
+base images. Also it wouldn’t allow a way to customize the build out of
+the box, so it’s maybe not that of a good solution.</p>
+<p>Even if it looks hacky, the current solution we have of having two
+<code>FROM</code>, one for the bulilder and one for the runtime, allows us to
+customize the build process and the runtime image without any special
+syntax, and those two base images can be pulled from the registry like
+any other image.</p>
+<p>You’re now all caught up on how we use Docker at <a href="https://www.busbud.com/en">Busbud</a> to
+ship fast and build out the world’s largest bus supply. If you’re
+interested in these challenges and more, be sure to reach out, we’re
+<a href="https://www.busbud.com/en/careers">hiring</a>!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2017/05/going-further-docker-multi-stage-builds.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

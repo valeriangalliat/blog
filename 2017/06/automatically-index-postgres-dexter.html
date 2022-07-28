@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Automatically index your Heroku Postgres database with Dexter</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="canonical" href="https://www.busbud.com/blog/automatically-index-heroku-postgres-database-dexter/">
+  <meta property="og:title" content="Automatically index your Heroku Postgres database with Dexter">
+  <meta property="og:description" content="Your database is clever enough to index itself. Note: this is a mirror of the blog post originally published on Busbud blog!">
+  <meta property="og:image" content="https://www.codejam.info/img/2017/06/automatically-index-postgres-dexter.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header class="hero" style="background-image: url(../../img/2017/06/automatically-index-postgres-dexter.jpg); background-position: 50% 25%">
+    <div class="header-inner">
+      <div class="content">
+<h1>Automatically index your Heroku Postgres database with Dexter</h1>
+<p class="tagline">Your database is clever enough to index itself</p>
+<p class="date">June 28, 2017</p>
+      </div>
+    </div>
+    <a class="hero-credit" href="https://unsplash.com/photos/WiSeaZ4E6ZI">Picture credit: Benjamin Pley</a>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> this is a mirror of the blog post originally published on
+<a href="https://www.busbud.com/blog/automatically-index-heroku-postgres-database-dexter/">Busbud blog</a>!</p>
+</div>
+<p><a href="https://github.com/ankane/dexter">Dexter</a> is a new tool that just came out with a mind-blowing idea:
+automatically figuring out the indexes you need based on your database
+logs.</p>
+<blockquote>
+<p>Your database knows which queries are running. It also has a pretty
+good idea of which index is best for a given query.</p>
+<p><a href="https://medium.com/@ankane/introducing-dexter-the-automatic-indexer-for-postgres-5f8fa8b28f27">Introducing Dexter, the Automatic Indexer for Postgres</a> — Andrew Kane</p>
+</blockquote>
+<p>You should read the above introduction if you want to learn more about
+Dexter itself.</p>
+<p>Basically, it uses hypothetical indexes through the <a href="https://github.com/dalibo/hypopg">HypoPG</a> extension
+to test if adding an index on a column would have improved a given query
+performance, based on the logs of your production Postgres server.</p>
+<p>This article won’t cover in details Dexter itself, since the
+<a href="https://medium.com/@ankane/introducing-dexter-the-automatic-indexer-for-postgres-5f8fa8b28f27">introduction</a> is pretty complete. However it
+mentions that <strong>because Dexter needs the HypoPG extension, we can’t use it
+with Heroku or Amazon RDS.</strong></p>
+<p>Today, we’ll see how to use Dexter with Heroku (or RDS with a few
+tweaks).</p>
+<h2 id="the-idea" tabindex="-1"><a class="header-anchor" href="#the-idea"><span>The idea</span></a></h2>
+<p>Dexter only needs access to the database with HypoPG for testing the
+query plan with and without hypothetical indexes, to see if they would
+help speed up some queries. Unless you want to let it automatically add
+indexes to your production database, there’s no real need for it to run
+on directly on production. Only the production <strong>logs</strong> are important.</p>
+<p>Here, we’re going to feed the production logs from Heroku Postgres to
+Dexter, but let it analyze the queries and hypothetical indexes on a
+local Postgres, running with Docker.</p>
+<h2 id="postgres-docker-image-with-hypopg" tabindex="-1"><a class="header-anchor" href="#postgres-docker-image-with-hypopg"><span>Postgres Docker image with HypoPG</span></a></h2>
+<p>We’re going to build the following Dockerfile to use Postgres (9.6 in
+our case) with HypoPG:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> postgres:<span class="hljs-number">9.6</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apt-get update &amp;&amp; apt-get -y install wget build-essential postgresql-server-dev-9.6</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> wget https://github.com/dalibo/hypopg/archive/1.0.0.tar.gz &amp;&amp; \
+    tar xf 1.0.0.tar.gz &amp;&amp; \
+    <span class="hljs-built_in">cd</span> hypopg-1.0.0 &amp;&amp; \
+    make &amp;&amp; \
+    make install</span>
+</code></pre>
+<pre><code class="hljs language-sh">docker build -t postgres-hypo .
+</code></pre>
+<h2 id="preparing-the-data-directory" tabindex="-1"><a class="header-anchor" href="#preparing-the-data-directory"><span>Preparing the data directory</span></a></h2>
+<p>I assume you already have a local database with the same schema as the
+production database, let’s say in <code>/usr/local/var/postgresql</code>. Make
+sure Postgres is stopped, and make a copy to work on it with Dexter:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> -r /usr/local/var/postgresql ~/dexter-postgres
+</code></pre>
+<p>We’re gonna extract the default configuration of the dockerized
+Postgres, because we don’t want to run it with your local config (which
+might listen on an UNIX socket instead of a TCP port, and use a different
+access configuration):</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> ~/postgres-default
+docker run --name=postgres -v ~/postgres-default:/var/lib/postgresql/data postgres-hypo
+^C
+<span class="hljs-built_in">cp</span> ~/postgres-default/*.conf ~/dexter-postgres
+</code></pre>
+<p>This will run the server on an empty data directory in <code>~/postgres-default</code>,
+and let it initialize the default configuration. Then we kill it and copy the
+container configuration to the real data directory.</p>
+<h2 id="run-the-server" tabindex="-1"><a class="header-anchor" href="#run-the-server"><span>Run the server</span></a></h2>
+<pre><code class="hljs language-sh">docker run --name=postgres -v ~/dexter-postgres:/var/lib/postgresql/data -p 5432 postgres-hypo
+</code></pre>
+<p>This will mount your <code>~/dexter-postgres</code> in the container data
+directory, and bind the <code>5432</code> port from the container to your host.</p>
+<p>You can connect to it with:</p>
+<pre><code class="hljs language-sh">docker run -it --<span class="hljs-built_in">rm</span> --<span class="hljs-built_in">link</span> postgres postgres-hypo psql -h postgres -U &lt;user&gt; &lt;db&gt;
+</code></pre>
+<p>Then run the following to enable HypoPG:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE</span> EXTENSION hypopg;
+</code></pre>
+<h2 id="running-dexter" tabindex="-1"><a class="header-anchor" href="#running-dexter"><span>Running Dexter</span></a></h2>
+<p>Install Dexter with:</p>
+<pre><code class="hljs language-sh">gem install pgdexter
+</code></pre>
+<p>Then pipe your production logs to Dexter, and connect it to your local
+copy:</p>
+<pre><code class="hljs language-sh">heroku logs -a your-app -p postgres -t \
+    | sed <span class="hljs-string">&#x27;s/^.*: \[[A-Z0-9_]*] \[[0-9-]*]//&#x27;</span> \
+    | dexter --log-level debug postgres://&lt;user&gt;@localhost:5432/&lt;db&gt; \
+    | <span class="hljs-built_in">tee</span> dexter.log
+</code></pre>
+<p>The <code>sed</code> part is to strip the prefix of Heroku Postgres logs that
+Dexter does not recognize; before stripping it, the logs looks like:</p>
+<pre><code class="hljs">2017-06-28T15:10:02+00:00 app[postgres.13761]: [DATABASE] [7-1]  sql_error_code = 00000 LOG:  duration: 4822.012 ms  statement: BEGIN READ ONLY;
+2017-06-28T15:10:02+00:00 app[postgres.13761]: [DATABASE] [7-2]       SELECT column
+2017-06-28T15:10:02+00:00 app[postgres.13761]: [DATABASE] [7-3]         FROM table
+2017-06-28T15:10:02+00:00 app[postgres.13761]: [DATABASE] [7-4]        WHERE condition
+</code></pre>
+<p>And we need it to be like:</p>
+<pre><code class="hljs">sql_error_code = 00000 LOG:  duration: 4822.012 ms  statement: BEGIN READ ONLY;
+     SELECT column
+       FROM table
+      WHERE condition
+</code></pre>
+<p>I also use <code>--log-level debug</code> so Dexter outputs the queries that would
+be optimized with a given index suggestion, so we can make more sense
+of why that index would help. It also outputs the query cost before and
+after the index which is very neat.</p>
+<p>Finally, I <code>tee</code> the Dexter output to <code>dexter.log</code> (so I can see it live
+but also access it in that file later).</p>
+<p>After a couple minutes, Dexter analyzed a bunch of tables and tried
+different hypothetical indexes based on the slow queries it saw through
+the production logs.</p>
+<p>Here’s an example output for our case:</p>
+<pre><code class="hljs">2017-06-30T11:38:58-04:00 Index found: tickets (reference)
+2017-06-30T11:38:58-04:00 Query 018d8cd6e02ac3fe61bf30cf0ca8f4c8cfb809b0d8 (Cost: 122555.87 -&gt; 16.08)
+
+SELECT stuff FROM tickets WHERE reference = &#x27;some-reference&#x27;;
+</code></pre>
+<p>Dexter tells us that we should add an index on the <code>reference</code> columns
+of the <code>tickets</code> table, and that would change the cost of the given
+query from 122555.87 to 16.08.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Who else better than your database can index your database?</p>
+<p>Even though this is not entirely true, and you should definitely review
+those found indexes and ask if it’s the right thing for your app and the
+queries you want to optimize for, having an automated tool suggesting
+indexes based on the queries you actually run in productions is of great
+value.</p>
+<p>It could even make sense that at some point, database engines add a
+layer that manages indexes automatically, without the need for external
+tooling, by analyzing the queries you run the most and identifying the
+tables where you would benefit more from write or read performance.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2017/06/automatically-index-postgres-dexter.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

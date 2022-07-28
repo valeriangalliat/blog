@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Introducing Docker multi-stage builds</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="canonical" href="https://www.busbud.com/blog/introducing-docker-multi-stage-builds/">
+  <meta property="og:title" content="Introducing Docker multi-stage builds">
+  <meta property="og:description" content="Because we can have both fast builds and small images. Note: this is a mirror of the blog post originally published on Busbud blog!">
+  <meta property="og:image" content="https://www.codejam.info/img/2017/05/docker-multi-stage.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header class="hero" style="background-image: url(../../img/2017/05/docker-multi-stage.jpg); background-position: 50% 25%">
+    <div class="header-inner">
+      <div class="content">
+<h1>Introducing Docker multi-stage builds</h1>
+<p class="tagline">Because we can have both fast builds and small images</p>
+<p class="date">May 15, 2017</p>
+      </div>
+    </div>
+    <a class="hero-credit" href="https://unsplash.com/photos/hjEesK4KSDs">Picture credit: Axel Ahoi</a>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> this is a mirror of the blog post originally published on
+<a href="https://www.busbud.com/blog/introducing-docker-multi-stage-builds/">Busbud blog</a>!</p>
+</div>
+<p>Docker 17.05 (<strong>hipster warning:</strong> at the moment of writing, only in the
+Edge channel, not yet in Stable), among other features, introduced
+<a href="https://docs.docker.com/engine/userguide/eng-image/multistage-build/">multi-stage builds</a>.</p>
+<p>This feature allows to use multiple images in a Dockerfile, that can
+reference each other. Typically, using one image for building your app,
+where you install all the build tools and development dependencies, and
+a second one, trimmed down for production.</p>
+<p>Before multi-stage, we could see a couple patterns to write Dockerfiles
+in the community, that would either optimize for image size or build
+time. Here’s a quick overview:</p>
+<ul>
+<li><a href="#the-everything-but-the-kitchen-sink-image">The everything but the kitchen sink image</a></li>
+<li><a href="#the-my-time-is-cheaper-than-disk-space-one-liner">The “my time is cheaper than disk space” one-liner</a></li>
+<li><a href="#the-smart-but-little-known-hack-aka-the-builder-pattern">The smart but little-known hack, aka the builder pattern</a></li>
+<li><a href="#multi-stage-builds-to-the-rescue">Multi-stage builds to the rescue</a></li>
+</ul>
+<h2 id="the-everything-but-the-kitchen-sink-image" tabindex="-1"><a class="header-anchor" href="#the-everything-but-the-kitchen-sink-image"><span>The everything but the kitchen sink image</span></a></h2>
+<p>That’s <a href="dockerfiles-history.html#2015-12-03-baby-steps-at-docker">where we started</a>,
+and because we had better things to do than optimize disk space image,
+we even <a href="dockerfiles-history.html#2017-01-20-no-base-images">came back to it</a>
+before multi-stage existed.</p>
+<p>The concept is simple: you start from a somewhat clean system, then you
+install a compiler toolchain and a bunch of interpreters that you don’t
+use but that some of your dependencies require to be compiled, the
+package manager(s) of your choice in the version that most suits your
+taste, on top of the one that comes with the base image that you will
+never use, so you can download all your dependencies, maybe even your
+development dependencies if you want to run some build steps for your
+own app too.</p>
+<p>Then you add your app and you push the whole thing to the Docker
+registry, because YOLO and storage is cheap anyway, and your connection
+is fast enough so you can <em>just</em> get a coffee or play a ping pong game
+while you push or pull your images.</p>
+<p>You’re not pushing a container, you’re basically pushing a whole cargo
+ship that carries not only your container but also a whole bunch of
+containers that might have been useful at some point to build your app.</p>
+<p>But you put an extra layer to “cleanup” at the end so you feel like a
+good guy and go back to asking your sysadmin to buy a couple more hard
+drive, even though that extra layer is actually adding a hair to your
+ridiculously massive image.</p>
+<h2 id="the-my-time-is-cheaper-than-disk-space-one-liner" tabindex="-1"><a class="header-anchor" href="#the-my-time-is-cheaper-than-disk-space-one-liner"><span>The “my time is cheaper than disk space” one-liner</span></a></h2>
+<p>This one consists in putting as many commands as you can into a single
+<code>RUN</code> instruction. The rule is that you must install <em>and</em> cleanup
+everything that you don’t need on your production image, in the same
+layer so it doesn’t take useless space.</p>
+<p>Sounds nice, until you realize the intrinsic idea of build dependencies
+is that you <em>need</em> them to build your app but you <em>don’t want them</em> in
+your production image. Installing system packages, dependencies,
+compiling everything, and cleaning up all end up being in the same step
+that you can’t break down into smaller steps that could be cached.</p>
+<p>And you don’t just have to cleanup after yourself, you also need to
+cleanup for every single tool that you used in the process that might
+have created temporary files, or just files that you don’t need
+(<code>/usr/share/man</code>, <code>/tmp</code>, <code>~/.tmp</code>, <code>~/.cache</code>, <code>/var/cache</code>,
+<code>/root/.gnupg</code>, <code>/var/my/package/manager/database</code>,
+<code>/root/.some-build-tool-cache</code> and a whole bunch of other locations that
+you won’t know about or will forget anyway).</p>
+<p>That’s like the complete opposite of the previous pattern: instead of
+carrying everything in the final image, you shove the whole thing into a
+one-liner, and instead of playing a game of ping pong, you participate
+in an entire bracket tournament while your container downloads and
+compiles the whole universe to build your app, after all you did was fix
+a typo in a static file that doesn’t even need to be compiled.</p>
+<p><a href="dockerfiles-history.html#2016-02-24-first-optimizations">We tried it too</a>,
+because we thought it would be useful to start caring, but it got extra
+frustrating to have such slow builds, and watching <code>apt-get install</code>,
+<code>npm install</code> and native dependencies compilations take the vast
+majority of every single build when most of the time you know
+it’s not necessary at all for what you changed.</p>
+<h2 id="the-smart-but-little-known-hack-aka-the-builder-pattern" tabindex="-1"><a class="header-anchor" href="#the-smart-but-little-known-hack-aka-the-builder-pattern"><span>The smart but little-known hack, aka the builder pattern</span></a></h2>
+<p>The <a href="http://blog.alexellis.io/mutli-stage-docker-builds/#whatwasthebuilderpattern">builder pattern</a> is the predecessor of multi-stage
+builds. It’s the DIY version.</p>
+<p>You have a Dockerfile for building, where you do absolutely whatever you
+want with build tools, dependencies, package manager, compilations and
+layers without caring about the size (or really anything), and then you
+have a second Dockerfile for production, off a minimal image, where you
+install and copy only the stuff that you need for runtime from the
+builder image. The best of both worlds!</p>
+<p>To do that, you need a script that’s going to extract files from the
+builder image into a temporary directory, add the given files to the
+production image and remove the temporary directory (between building
+both images).</p>
+<p>That’s cool, but it looks like a hack, feels like a hack (hint: it’s
+probably a hack), and you need two Dockerfiles and a shell script for
+this to work.</p>
+<h2 id="multi-stage-builds-to-the-rescue" tabindex="-1"><a class="header-anchor" href="#multi-stage-builds-to-the-rescue"><span>Multi-stage builds to the rescue</span></a></h2>
+<p>Multi-stage builds is what happens when you take the previous hack and
+put it in Docker’s core so it doesn’t look like a hack anymore. Clever.</p>
+<p>So you don’t need two Dockerfiles, a shell script and a whole bunch of
+duct tape anymore, you can just keep everything cleanly in your
+Dockerfile!</p>
+<p>Want an example? This is the one we use for our Node.js microservices at
+Busbud:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:<span class="hljs-number">6</span>-alpine AS builder
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache --virtual .build-deps python make g++</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /usr/local/bin/yarn &amp;&amp; npm install -g yarn</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json ./yarn.lock /app/</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> yarn --production</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk del .build-deps</span>
+
+<span class="hljs-keyword">FROM</span> alpine:<span class="hljs-number">3.5</span>
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/local/bin/node /usr/local/bin/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/lib/ /usr/lib/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /app/ /app/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<p>See how we base the final image off a bare <code>alpine:3.5</code> and copy only
+the strict minimum from the builder image?</p>
+<p>This way, everything happens with optimal caching in the builder image,
+and we can have a slim production image that contains only what it needs
+to run: the <code>node</code> binary and its system libraries, and the application
+source code and its (compiled) dependencies (no package manager, no
+forgotten cache directories that would have been used during the build,
+no Python and C compiler and so on).</p>
+<p>Multi-stage builds allow us to have the smallest production image
+possible, without any tradeoff with build time.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>With multi-stage builds, Docker effectively understands that a build
+needs…  <em>building,</em> and provides us proper tooling to build
+efficiently our apps without affecting the production images.</p>
+<p>This is an amazing addition to Docker that responds to a crying need,
+and that’s why we jumped on it as soon as it was available in Edge.</p>
+<p>We’d like to extend a heartfelt thank you for putting this together as
+it pretty much solved <a href="dockerfiles-history.html">all our problems</a>.</p>
+<p>I’m proud to work in a company where we have the freedom to experiment
+with cutting edge technologies (and eventually adopt them). If you want
+to join us, don’t forget that we’re <a href="https://www.busbud.com/en/careers">hiring</a>!</p>
+<p>P.S. Hey, we decided to go even further with multi-stage builds! Check
+out how to <a href="going-further-docker-multi-stage-builds.html">make it even more powerful</a>
+when combining it with <code>ONBUILD</code> instructions!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2017/05/docker-multi-stage.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

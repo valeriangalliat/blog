@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>A history of Dockerfiles at Busbud</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="canonical" href="https://www.busbud.com/blog/history-dockerfiles-busbud/">
+  <meta property="og:title" content="A history of Dockerfiles at Busbud">
+  <meta property="og:description" content="The evolution and optimization of our Dockerfiles in the past two years. Note: this is a mirror of the blog post originally published on Busbud blog!">
+  <meta property="og:image" content="https://www.codejam.info/img/2017/05/dockerfiles-history.jpg">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header class="hero" style="background-image: url(../../img/2017/05/dockerfiles-history.jpg)">
+    <div class="header-inner">
+      <div class="content">
+<h1>A history of Dockerfiles at Busbud</h1>
+<p class="tagline">The evolution and optimization of our Dockerfiles in the past two years</p>
+<p class="date">May 13, 2017</p>
+      </div>
+    </div>
+    <a class="hero-credit" href="https://unsplash.com/photos/VmS8VQ0n39Q">Picture credit: Gabriel Ghnassia</a>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> this is a mirror of the blog post originally published on
+<a href="https://www.busbud.com/blog/history-dockerfiles-busbud/">Busbud blog</a>!</p>
+</div>
+<p>At Busbud, we implement hundreds of APIs to integrate the bus companies
+of our constantly growing list of partners on our API and website, so
+that you can search and book those buses in over 60 countries.</p>
+<p>About two years ago, we ran into scaling issues as all those
+integrations were part of our API code, and the whole monolith was
+running on the same Heroku dyno.</p>
+<p>We decided to split the integrations from the API, but at the same time
+to also split them into microservices, so we can scale and deploy them
+independently. That’s when we started looking at Docker.</p>
+<p>This article will focus only on the way we wrote our Dockerfiles, to
+finally find the perfect design to get the fastest build time while
+having the smallest image size.</p>
+<h2 id="2015-12-03-baby-steps-at-docker" tabindex="-1"><a class="header-anchor" href="#2015-12-03-baby-steps-at-docker"><span>2015-12-03 - Baby steps at Docker</span></a></h2>
+<p>The first image was very basic… and not very clever:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-slim
+
+<span class="hljs-comment"># RUN apt-get update</span>
+<span class="hljs-comment"># RUN apt-get -y install build-essential python</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install -g npm@x.x.x</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install --production</span>
+
+<span class="hljs-comment"># RUN apt-get -y remove --purge --auto-remove build-essential python</span>
+<span class="hljs-comment"># RUN apt-get clean</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> -rf /root/.npm</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;npm&quot;</span>, <span class="hljs-string">&quot;start&quot;</span>]</span>
+</code></pre>
+<p>The commented lines would be used when some of our npm dependencies
+would have a native build step (I’ll use this convention for all
+subsequent Dockerfiles).</p>
+<p>This would run <code>npm install</code> every time we change our code, even if we
+didn’t change anything in <code>package.json</code>, and in case we need build
+dependencies, they would be kept as a layer in the final image, thus
+making it even heavier; each image would weight from 250 MB to 500 MB,
+depending on if we needed or not build tools.</p>
+<figure class="center">
+  <object data="https://blog-assets.busbud.com/wp-content/uploads/2018/05/no-idea.jpg" type="image/jpeg">
+    <img alt="I have no idea what I’m doing" src="https://i.kym-cdn.com/photos/images/original/000/234/765/b7e.jpg">
+  </object>
+</figure>
+<h2 id="2016-02-24-first-optimizations" tabindex="-1"><a class="header-anchor" href="#2016-02-24-first-optimizations"><span>2016-02-24 - First optimizations</span></a></h2>
+<p>After a couple months, we realized we could do better:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-slim
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install -g npm@x.x.x &amp;&amp; \
+    <span class="hljs-built_in">rm</span> -rf /root/.npm /root/.node-gyp /usr/lib/node_modules/npm/man /usr/lib/node_modules/npm/doc /usr/lib/node_modules/npm/html</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json /app/package.json</span>
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install --production &amp;&amp; \
+    <span class="hljs-built_in">rm</span> -rf /root/.npm /root/.node-gyp</span>
+
+<span class="hljs-comment"># RUN apt-get -u update &amp;&amp; \</span>
+<span class="hljs-comment">#     apt-get -y install build-essential python &amp;&amp; \</span>
+<span class="hljs-comment">#     npm install --production &amp;&amp; \</span>
+<span class="hljs-comment">#     apt-get -y remove --purge --auto-remove build-essential python &amp;&amp; \</span>
+<span class="hljs-comment">#     apt-get clean &amp;&amp; \</span>
+<span class="hljs-comment">#     rm -rf /root/.npm /root/.node-gyp</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;npm&quot;</span>, <span class="hljs-string">&quot;start&quot;</span>]</span>
+</code></pre>
+<p>The major optimization here is to add only the <code>package.json</code> first and
+then run <code>npm install</code>, this way unless the <code>package.json</code> is modified,
+the <code>npm install</code> step is cached and therefore skipped.</p>
+<p>This saves a lot of time during the build of images when there’s no
+package updates.</p>
+<p>It also introduces installing the  build dependencies and cleaning up
+with multiple instructions in the same <code>RUN</code> so we don’t keep temporary
+layers in the final image that would include development and temporary
+files.</p>
+<p>This is a great optimization for the final image size and has been for a
+long time considered as <a href="https://blog.codeship.com/reduce-docker-image-size/">a good</a>
+<a href="https://developers.redhat.com/blog/2016/03/09/more-about-docker-images-size/">practice</a> <a href="https://blog.replicated.com/engineering/refactoring-a-dockerfile-for-image-size/">in the</a> <a href="https://www.codeproject.com/Articles/1133826/tips-to-reduce-Docker-image-size">Docker</a>
+<a href="https://dzone.com/articles/optimizing-docker-images-for-image-size-and-build">community</a>, but it prevents leveraging the Docker caching
+system, so in our case when we have native dependencies to build, we
+need to run the <code>apt-get install</code> step together with <code>npm install</code> every
+time there’s an update in the <code>package.json</code>.</p>
+<p>But we didn’t know of a better approach to minimize image size at that point,
+and we chose to favor small image size instead of faster builds. That could
+bring image size down to 250 MB even if we needed build dependencies.</p>
+<h2 id="2016-04-04-base-images" tabindex="-1"><a class="header-anchor" href="#2016-04-04-base-images"><span>2016-04-04 - Base images</span></a></h2>
+<p>The poor performance of the previous Dockerfile when we have native
+dependencies and we update <code>package.json</code> (which happened more often
+than we thought) required us to find another solution to try to have
+fast builds while keeping the image size down.</p>
+<p>We identified a recurrent build dependency in most of our microservices:
+<code>libxmljs</code>. It was the bottleneck for each <code>npm install</code> run, because:</p>
+<ol>
+<li>with our previous design, it required running <code>apt-get install</code> on
+every run, and it was the only dependency to require build tools;</li>
+<li>on every <code>npm install</code> even if the <code>libxml</code> version was not modified,
+npm would systematically recompile it, which would take easily 30
+seconds to a minute.</li>
+</ol>
+<p>We decided to build two base images: a generic one, and a <code>libxml</code>
+version that would include a prebuilt <code>libxmljs</code>:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> docker.busbud/alpine-node
+<span class="hljs-comment"># FROM docker.busbud/alpine-node:libxml</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json /app/package.json</span>
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install --production &amp;&amp; \
+    <span class="hljs-built_in">rm</span> -rf /root/.npm /root/.node-gyp</span>
+
+<span class="hljs-comment"># RUN sed -i &#x27;/libxml/d&#x27; package.json &amp;&amp; \</span>
+<span class="hljs-comment">#     npm install --production &amp;&amp; \</span>
+<span class="hljs-comment">#     rm -rf /root/.npm /root/.node-gyp</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;npm&quot;</span>, <span class="hljs-string">&quot;start&quot;</span>]</span>
+</code></pre>
+<p><strong>Note:</strong> we also switched to <a href="https://alpinelinux.org/">Alpine Linux</a> at the same time,
+which brought down the base image to 33 MB instead of 205 MB for the
+Debian base one, so our final images would be around 50 MB.</p>
+<p>This enabled good build performance and minimal image size, but at the
+cost of maintaining the base images since there was no official
+Alpine Node.js image at that time.</p>
+<h2 id="2016-04-27-squash" tabindex="-1"><a class="header-anchor" href="#2016-04-27-squash"><span>2016-04-27 - Squash</span></a></h2>
+<p>Less than a month later, we realized we needed other native dependencies
+than <code>libxmljs</code> and that our solution was not flexible enough; for those
+microservices, we were basically back to the previous iteration, where
+we’d have to install and remove build tools around the <code>npm install</code>
+command, hence losing all the build time gain of the base images.</p>
+<p>That’s when we found about the squashing technique, which looked like
+the silver bullet we’d been searching for.</p>
+<p>Squashing allows you to do whatever you want in the Dockerfile,
+leveraging numerous layers and the caching that comes with it as you
+wish, but the squashing step at the end makes it a single layer that
+doesn’t include the stuff you removed in the final image (as one would
+expect).</p>
+<p>Take a look at this example Dockerfile:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> alpine
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">cat</span> /dev/urandom | <span class="hljs-built_in">head</span> -c 200000000 &gt; /200mb</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /200mb</span>
+</code></pre>
+<p>If you build that image, you’ll get an image of 204 MB, that is, 4 MB
+for the base Alpine image plus the 200 MB file even though it was
+removed.</p>
+<p>Now if you install <a href="https://github.com/goldmann/docker-squash">docker-squash</a> and run it on the generated image,
+you’ll get a 4 MB image.</p>
+<p>This sorcery allowed us to keep all the build tools in our base images
+without having temporary layers including all build tools in the final
+images.</p>
+<p>We just had to remove the cleanup steps from our base images, and add a
+<code>RUN /clean</code> to the end of all our Dockerfiles, a step that would
+cleanup everything, so that when squashing we keep only the needed
+files.</p>
+<h2 id="2016-08-03-no-squash" tabindex="-1"><a class="header-anchor" href="#2016-08-03-no-squash"><span>2016-08-03 - No squash</span></a></h2>
+<p>While squashing looked like a great improvement, it ended up taking a
+significant amount of time that was close to the time we gained by having
+the build tools included and leveraging caching. Worst, the 20 second
+squashing time was required for every build, even if we just fixed a
+typo in the code, while that would be instant otherwise as long as we
+don’t touch the <code>package.json</code>.</p>
+<p>We also realized that even though the total image size as reported per
+<code>docker images</code> was significantly smaller with squashing (after removing
+squashing, we were back to 250 MB images), it had in practice an
+insignificant impact for our use case as all microservices would share
+the base image layer, so it would be stored only once per host and in
+the registry.</p>
+<p>Therefore we dropped docker-squash and the <code>libxml</code> image, and made one
+true base image that would include the build tools.</p>
+<p>As a result, builds were lightning fast when there was no modifications
+in <code>package.json</code>. As a downside, when we had to run <code>npm install</code>, we
+had to systematically compile <code>libxmljs</code> again for the microservices
+that use it.</p>
+<h2 id="2017-01-20-no-base-images" tabindex="-1"><a class="header-anchor" href="#2017-01-20-no-base-images"><span>2017-01-20 - No base images</span></a></h2>
+<p>We dropped our base images as there was now an official Alpine Node.js
+image.</p>
+<p>For the build tools problem, we decided to install them as a layer as
+the first instruction so they can be cached, in order to have a build
+time as fast as possible, giving up on image size as disk space is cheap
+anyway.</p>
+<p>Our Dockerfiles would now look like this:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:x.x.x-alpine
+
+<span class="hljs-comment"># RUN apk add --no-cache python make g++</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json /app/package.json</span>
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> npm install --production &amp;&amp; \
+    <span class="hljs-built_in">rm</span> -rf /root/.npm /root/.node-gyp</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+<span class="hljs-comment"># RUN apk del python make g++</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;npm&quot;</span>, <span class="hljs-string">&quot;start&quot;</span>]</span>
+</code></pre>
+<p>When we need build tools, our images were still around 250 MB, but
+otherwise we would stay closer to 50 MB.</p>
+<p>Since we build Docker images locally on our laptops instead of centrally,
+we couldn’t guarantee that the build tools layer would be the same
+(versions of programs could vary depending on the time the developer
+built the image, and the eventual presence of a cache for that layer).
+This prevented Docker from sharing that layer across all images and
+ended up consuming significantly more space.</p>
+<p>So the layering was still useful for having cache and fast builds
+locally, but it wouldn’t really optimize the size when sharing images
+across hosts.</p>
+<h2 id="2017-04-19-multi-stage" tabindex="-1"><a class="header-anchor" href="#2017-04-19-multi-stage"><span>2017-04-19 - Multi-stage</span></a></h2>
+<p>I was watching closely the <a href="https://docs.docker.com/engine/userguide/eng-image/multistage-build/">multi-stage builds</a> proposition
+to Docker, and when I heard that it reached Docker Edge, I was like,
+guys, this is it.  The silver bullet actually exists.</p>
+<p>I tried it right away, and it blew my mind.</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> node:${NODE_VERSION}-alpine AS builder
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache --virtual .build-deps python make g++</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /usr/local/bin/yarn &amp;&amp; npm install -g yarn</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json ./yarn.lock /app/</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> yarn --production</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk del .build-deps</span>
+
+<span class="hljs-keyword">FROM</span> alpine:${ALPINE_VERSION}
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/local/bin/node /usr/local/bin/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/lib/ /usr/lib/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /app/ /app/</span>
+<span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<p>The build is fast, we <em>never</em> need to run <code>apk add</code> locally once cached
+for the first time, <code>yarn</code> is run only when dependencies changed, and
+the final image ends up being the smallest it can be; there’s no
+temporary building layers, it contains only what’s needed for it to run.</p>
+<p>We based the actual image on <code>alpine</code> instead of <code>node:x.x.x-alpine</code>,
+and copy just the Node.js binary and the libs that it needs, so we don’t
+include npm and Yarn in the production image. We started using <code>node .</code>
+instead of <code>npm start</code> as <code>CMD</code> because of that, because <code>npm start</code> is
+not a good reason to include npm in the final image.</p>
+<p>By not having npm and Yarn in the final image, we gained 16 MB on all
+our images. And not having the temporary build layer included when we
+have native dependencies saved another 200 MB per image, bringing all
+our images down to 50 MB in all cases, while having fast builds and
+being able to completely leverage Docker layering and caching.</p>
+<h2 id="bonus-multi-stage-onbuild-base-images" tabindex="-1"><a class="header-anchor" href="#bonus-multi-stage-onbuild-base-images"><span>Bonus - Multi-stage <code>ONBUILD</code> base images</span></a></h2>
+<p>At the same time we moved to multi-stage builds, we also made trivial
+base images that use <code>ONBUILD</code> instructions so all the logic is
+maintained once in the base images and we have nothing in the
+microservices Dockerfiles (only specific stuff like additional system
+dependencies).</p>
+<p>We have a builder and a runtime base image, that we use like this:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-keyword">FROM</span> docker.busbud/node:x.x.x-builder AS builder
+<span class="hljs-keyword">FROM</span> docker.busbud/node:x.x.x-runtime
+</code></pre>
+<p>The runtime image refers the builder image from <code>ONBUILD</code> instructions
+so you literally have nothing to write.</p>
+<p>And the base images themselves:</p>
+<pre><code class="hljs language-dockerfile"><span class="hljs-comment"># Builder</span>
+<span class="hljs-keyword">FROM</span> node:x.x.x-alpine
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">RUN</span><span class="language-bash"> apk add --no-cache --virtual .build-deps python make g++</span>
+<span class="hljs-keyword">RUN</span><span class="language-bash"> <span class="hljs-built_in">rm</span> /usr/local/bin/yarn &amp;&amp; npm install -g yarn</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> ./package.json ./yarn.lock /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> yarn --production</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">RUN</span><span class="language-bash"> apk del .build-deps</span>
+
+<span class="hljs-comment"># Runtime</span>
+<span class="hljs-keyword">FROM</span> alpine:x.x
+<span class="hljs-keyword">WORKDIR</span><span class="language-bash"> /app/</span>
+
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/local/bin/node /usr/local/bin/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /usr/lib/ /usr/lib/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> --from=builder /app/ /app/</span>
+<span class="hljs-keyword">ONBUILD</span> <span class="hljs-keyword">COPY</span><span class="language-bash"> . /app/</span>
+
+<span class="hljs-keyword">CMD</span><span class="language-bash"> [<span class="hljs-string">&quot;node&quot;</span>, <span class="hljs-string">&quot;.&quot;</span>]</span>
+</code></pre>
+<h2 id="final-word" tabindex="-1"><a class="header-anchor" href="#final-word"><span>Final word</span></a></h2>
+<p>That’s it folks, thanks to multi-stage builds we can finally have
+lightning fast builds while keeping the image size as small as possible!</p>
+<p>After two years of trials, experiments, and mistakes, we finally found a
+way to design our Dockerfiles that we have absolutely no issue with, and
+no tradeoff whatsoever.</p>
+<p>I hope you enjoyed traveling through the Git history of our Dockerfiles,
+and that you’ll enjoy multi-stage builds as much as we do.</p>
+<p>At <a href="https://www.busbud.com/en">Busbud</a> we invest in our productivity on a daily basis and
+stay on top of modern technologies so we can deliver the world’s bus
+schedules to the most people and in the most places faster. If that’s
+right up your alley, join us, we’re <a href="https://www.busbud.com/en/careers">hiring</a>!</p>
+<p>Also if you want to read more about multi-stage builds, please check our
+next <a href="docker-multi-stage.html">article</a>!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2017/05/dockerfiles-history.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

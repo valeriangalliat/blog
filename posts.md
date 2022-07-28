@@ -119,11 +119,15 @@ excerpt: All the posts I've written so far.
 
 ## 2018
 
-What was I even doing those years? Definitely not writing on the blog.
+Yes?
 
 ## 2017
 
-Yes?
+* [Automatically index your Heroku Postgres database with Dexter](https://www.busbud.com/blog/automatically-index-heroku-postgres-database-dexter/) <small>June 28, 2017</small>
+* [Going further Docker multi-stage builds](https://www.busbud.com/blog/going-docker-multi-stage-builds/) <small>May 21, 2017</small>
+* [Introducing Docker multi-stage builds](https://www.busbud.com/blog/introducing-docker-multi-stage-builds/) <small>May 15, 2017</small>
+* [A history of Dockerfiles at Busbud](https://www.busbud.com/blog/history-dockerfiles-busbud/) <small>May 13, 2017</small>
+
 
 ## 2016
 

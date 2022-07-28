@@ -1,5 +1,6 @@
 ---
 tweet: https://twitter.com/Hookdeck/status/1496535899257118720
+canonical: https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers
 ---
 
 # How to Call Google Cloud APIs from Cloudflare Workers

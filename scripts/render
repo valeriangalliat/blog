@@ -129,7 +129,13 @@ const markerIndex = html.indexOf('<hr>')
 const header = html.slice(0, markerIndex).trim().replace(/<h1>([^<]*) <small>/, '<h1 class="has-subtitle"><span>$1</span> <small>')
 const body = html.slice(markerIndex + '<hr>'.length).trim()
 
-let metaTags = `  <meta property="og:title" content="${escape(env.title)}">\n`
+let metaTags = ``
+
+if (meta.canonical) {
+  metaTags += `  <link rel="canonical" href="${escape(meta.canonical)}">\n`
+}
+
+metaTags += `  <meta property="og:title" content="${escape(env.title)}">\n`
 
 if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(md.typographer(meta.excerpt))}">\n`

@@ -1,5 +1,5 @@
 # The disk wasn't ejected because one or more programs may be using it
-To eject the disk immediately, click the force eject button
+To eject the disk immediately, click the force eject button  
 May 5, 2022
 
 If you run macOS, you might have run in the following error message when

@@ -75,6 +75,7 @@ md.core.ruler.push('paragraphsAfterTitle', state => {
     if (token.tag === 'p') { index = i; break }
   }
 
+  // No paragraph found right after main title, add the `<hr>` marker right after.
   if (!index) {
     state.tokens.splice(state.tokens.indexOf(h1) + 3, 0, new state.Token('hr', 'hr', 0))
     state.env.paragraphsAfterTitle = 0
@@ -86,7 +87,7 @@ md.core.ruler.push('paragraphsAfterTitle', state => {
   const paragraphs = [[]]
 
   for (const child of inline.children) {
-    if (child.tag === 'br') {
+    if (child.tag === 'br' && child.type === 'hardbreak') {
       paragraphs.unshift([])
       continue
     }

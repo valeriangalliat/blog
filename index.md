@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [GitHub: disable squash & merge on specific branches](https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches) <small>August 15, 2022</small>
 * [Adobe Bridge mass update filetype associations](2022/07/adobe-bridge-mass-update-filetype-associations.md) <small>July 19, 2022</small>
 * [Empty body vs. no body in HTTP/2](2022/06/empty-body-no-body-http2.md) <small>June 1, 2022</small>
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>
 * [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
 * [Install the Vanta agent on a M1 Mac without Rosetta (and more)](2022/04/vanta-agent-m1-mac-without-rosetta.md) <small>April 30, 2022</small>
-* [How to repackage a macOS `.pkg` installer for M1 support without Rosetta](2022/04/repackage-macos-app-m1-support-without-rosetta.md) <small>April 30, 2022</small>
 
 [All the posts](posts.md)
 

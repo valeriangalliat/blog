@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GitHub: disable squash &amp; merge on specific branches</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="canonical" href="https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches">
+  <meta property="og:title" content="GitHub: disable squash &amp; merge on specific branches">
+  <meta property="og:description" content="Or how to associate different merging strategies to different branches. Note: this is a mirror of the blog post originally published on Hookdeck blog!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>GitHub: disable squash &amp; merge on specific branches</h1>
+<p class="tagline">Or how to associate different merging strategies to different branches</p>
+<p class="date">August 15, 2022</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> this is a mirror of the blog post originally published on
+<a href="https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches">Hookdeck blog</a>!</p>
+</div>
+<p>At Hookdeck, we use a branching flow somewhat similar to the <a href="https://docs.gitlab.com/ee/topics/gitlab_flow.html">GitLab flow</a>,
+where we have <code>staging</code> as our main branch, and regularly merge
+<code>staging</code> into <code>main</code> to deploy to production.</p>
+<p>We like to <strong>squash &amp; merge</strong> feature branches into <code>staging</code>, but we
+want to <strong>create a merge commit</strong> when merging <code>staging</code> into <code>main</code>.</p>
+<figure class="center">
+  <img alt="Selecting between squashing and creating a merge commit" src="../../img/2022/08/contextual-merge/merge-select.png">
+</figure>
+<p>The problem is: <em>GitHub always defaults to the last used merge
+strategy</em>, meaning that after you squash a feature branch into
+<code>staging</code>, you’re guaranteed to have squash &amp; merge selected by default
+when you want to merge <code>staging</code> to <code>main</code>.</p>
+<p>In practice, this leads to accidentally squashing <code>staging</code> into <code>main</code>,
+losing meaningful history, plus causing weird diff issues in the
+subsequent PRs.</p>
+<h2 id="introducing-the-contextual-merge-strategy-extension" tabindex="-1"><a class="header-anchor" href="#introducing-the-contextual-merge-strategy-extension"><span>Introducing the contextual merge strategy extension!</span></a></h2>
+<p>We realized <a href="https://github.com/community/community/discussions/10809">we weren’t the only ones with this issue</a>,
+and decided to build an extension to mitigate it in the meantime GitHub
+addresses it natively.</p>
+<figure class="center">
+  <img alt="Slack thread where we realized there was demand for this feature" src="../../img/2022/08/contextual-merge/slack-thread.png">
+</figure>
+<p>The result: <a href="https://github.com/hookdeck/github-contextual-merge-strategy">GitHub Contextual Merge Strategy</a>.</p>
+<p>We didn’t publish this extension on the Chrome and Firefox store, but
+nevertheless you can easily clone it and install it using the <em>developer
+mode</em> to <em>load unpacked extensions</em>.</p>
+<p>By default, it preselects <strong>create a merge commit</strong> when the source
+branch is any of <code>main</code>, <code>master</code>, <code>staging</code> and <code>preview</code>, and
+otherwise selects <strong>squash &amp; merge</strong>.</p>
+<p>You’ll only need to tweak the URL host and prefix you want it to run on in
+<a href="https://github.com/hookdeck/github-contextual-merge-strategy/blob/main/background.js"><code>background.js</code></a>
+(by default we only run it on the GitHub Hookdeck organization).</p>
+<p>Also feel free to tweak the <a href="https://github.com/hookdeck/github-contextual-merge-strategy/blob/main/script.js"><code>script.js</code></a>
+file accordingly to your own branching conventions and needs!</p>
+<h2 id="how-we-built-it" tabindex="-1"><a class="header-anchor" href="#how-we-built-it"><span>How we built it</span></a></h2>
+<p>Here’s the nitty gritty details of the implementation. The first idea
+was very basic:</p>
+<figure class="center">
+  <img alt="First version of the extension (3 lines of JavaScript) shared in Slack" src="../../img/2022/08/contextual-merge/slack-code.png">
+</figure>
+<p>Run this in your browser console on a GitHub PR page, and it will work
+like a charm.</p>
+<p>But when we tried to put that in a content script as part of an
+extension, it broke down: GitHub loads asynchronously the block at the
+bottom where we get the different merge options! So running at
+<code>document_end</code> is not enough to be able to preselect a merging strategy,
+as the merging strategies element is not loaded yet.</p>
+<h3 id="asynchronous-loading-of-the-merge-block" tabindex="-1"><a class="header-anchor" href="#asynchronous-loading-of-the-merge-block"><span>Asynchronous loading of the merge block</span></a></h3>
+<p>To work around that, we used a <a href="https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver"><code>MutationObserver</code></a>
+in order to watch the parent element for any change to its child tree.
+This allows us to get a callback when the merge options are loaded into
+the DOM, and effectively select the one appropriate to the current
+branch being merged!</p>
+<p>But soon after, we realized this wasn’t enough. The extension seemed to
+be working <em>sometimes, but not all the time</em>. After further
+investigation, it turned out that GitHub uses single-page navigation
+with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/History/pushState"><code>History.pushState</code> API</a>.</p>
+<h3 id="supporting-single-page-navigation" tabindex="-1"><a class="header-anchor" href="#supporting-single-page-navigation"><span>Supporting single-page navigation</span></a></h3>
+<p>The symptoms: if you open a PR page directly, the extension works, but
+if you open any other page on GitHub and then browse your way to a PR
+page, it won’t!</p>
+<p>To my dismay, <a href="https://stackoverflow.com/questions/4570093/how-to-get-notified-about-changes-of-the-history-via-history-pushstate">there’s no web API allowing us to subscribe to the <code>pushState</code> events</a>.</p>
+<p>A common solutions is to <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Proxy">proxy</a>
+the <code>history.pushState</code> function, but this isn’t easily done in an
+extension since we don’t have a shared global object with the page being
+manipulated (<code>unsafeWindow</code> doesn’t seem to be a thing anymore for
+security reasons).</p>
+<p>An alternative is to use the extensions API <a href="https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/webNavigation/onHistoryStateUpdated"><code>webNavigation.onHistoryStateUpdated</code></a>,
+which was music to my ears until I realized that <a href="https://stackoverflow.com/questions/48318004/is-it-possible-to-use-onhistorystateupdated-event-in-content-script">it only works from a background script and not a content script</a>!</p>
+<p>Fair enough, I <a href="https://github.com/hookdeck/github-contextual-merge-strategy/pull/1">refactored the extension to use a background script</a>
+in order to hook into the navigation events and trigger the script
+accordingly.</p>
+<p>I didn’t like the idea of running a background script but it seems that
+browsers optimized them in a way that they only run when triggered by
+specific events, here <code>onHistoryStateUpdated</code>, only on <code>github.com</code> and
+when the path starts with <code>/hookdeck</code>! This means the extension overhead
+is very limited and that’s a good thing.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>After this last change, the extension was finally doing its job
+reliably. We’ve been using it for a few weeks now without any accidental
+squash!</p>
+<p>If you also need to default the merge strategy differently on specific
+branches, go check out the <a href="https://github.com/hookdeck/github-contextual-merge-strategy">GitHub repo</a>
+and adapt it to your organization!</p>
+<p>I hope GitHub will soon support such a setting natively and make this
+extension obsolete (so we don’t have to maintain it 😬), but in the
+meantime, I hope you enjoy it!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2022/08/github-disable-squash-and-merge-on-specific-branches.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

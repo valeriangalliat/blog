@@ -257,7 +257,7 @@ affects the subshell and not our top-level environment.
 We effectively change the current directory to the main workflow
 directory, defined in `GITHUB_WORKSPACE`, and start a tmux session.
 
-With `tmux new-session`, `-d` disables the default behaviour of
+With `tmux new-session`, `-d` disables the default behavior of
 attaching the session to the current terminal, and `-s` allows us to
 give it a name.
 

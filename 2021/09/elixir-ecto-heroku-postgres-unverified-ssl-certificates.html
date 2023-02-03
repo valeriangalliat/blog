@@ -127,6 +127,22 @@ specifically for my Ecto repository to have a log level of <code>:error</code>:<
 <pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, <span class="hljs-title class_">MyApp</span>.<span class="hljs-title class_">Repo</span>,
   <span class="hljs-symbol">ssl_opts:</span> [<span class="hljs-symbol">log_level:</span> <span class="hljs-symbol">:error</span>]
 </code></pre>
+<div class="note">
+<p><strong>Edit:</strong> it was brought to my attention that just two months after I
+wrote this post, Erlang/OTP <a href="https://github.com/erlang/otp/commit/0557d0a6ff123ca80358bf6737ff4c3f3853793d">introduced</a>
+a better <a href="https://www.erlang.org/doc/man/ssl.html#type-client_verify_type">solution</a>
+for this. Now:</p>
+<blockquote>
+<p>A warning will be emitted <strong>unless <code>verify_none</code> is explicitly configured</strong>.</p>
+</blockquote>
+<p>This means that even if <code>ssl_opts: [verify: :verify_none]</code> is the
+default behavior, explicitly setting it will now mute the warning. 🎉</p>
+<pre><code class="hljs language-elixir">config <span class="hljs-symbol">:myapp</span>, <span class="hljs-title class_">MyApp</span>.<span class="hljs-title class_">Repo</span>,
+  <span class="hljs-symbol">ssl_opts:</span> [<span class="hljs-symbol">verify:</span> <span class="hljs-symbol">:verify_none</span>]
+</code></pre>
+<p>This avoids messing around with the logger as I originally explained
+below.</p>
+</div>
 <p>It took more hours than I’m willing to admit to come up with this patch
 that turns out to be trivial. So I’m trying to feel better about myself
 by spending even more hours writing a blog post about it to explain all

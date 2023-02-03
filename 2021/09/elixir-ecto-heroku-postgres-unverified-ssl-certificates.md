@@ -129,6 +129,28 @@ config :myapp, MyApp.Repo,
   ssl_opts: [log_level: :error]
 ```
 
+<div class="note">
+
+**Edit:** it was brought to my attention that just two months after I
+wrote this post, Erlang/OTP [introduced](https://github.com/erlang/otp/commit/0557d0a6ff123ca80358bf6737ff4c3f3853793d)
+a better [solution](https://www.erlang.org/doc/man/ssl.html#type-client_verify_type)
+for this. Now:
+
+> A warning will be emitted **unless `verify_none` is explicitly configured**.
+
+This means that even if `ssl_opts: [verify: :verify_none]` is the
+default behavior, explicitly setting it will now mute the warning. 🎉
+
+```elixir
+config :myapp, MyApp.Repo,
+  ssl_opts: [verify: :verify_none]
+```
+
+This avoids messing around with the logger as I originally explained
+below.
+
+</div>
+
 It took more hours than I'm willing to admit to come up with this patch
 that turns out to be trivial. So I'm trying to feel better about myself
 by spending even more hours writing a blog post about it to explain all

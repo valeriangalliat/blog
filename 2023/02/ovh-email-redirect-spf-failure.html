@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>OVH email redirect causes SPF check failure</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20220617.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="OVH email redirect causes SPF check failure">
+  <meta property="og:description" content="Note: I put OVH in the title but it could happen with any provider that offers email redirects.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>OVH email redirect causes SPF check failure</h1>
+<p class="date">February 26, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> I put OVH in the title but it could happen with any provider
+that offers email redirects.</p>
+</div>
+<p>Let’s say you have an email address <code>foo@foo.com</code>, and you set up a
+redirect with your provider so that it forwards all emails to
+<code>foo@gmail.com</code>, which would be a common scenario to use Gmail with a
+custom domain without paying for Google Workspace (using this as an
+example but the problem is not directly related to Gmail).</p>
+<p>In my case with OVH, this is configured in <code>foo@foo.com</code>'s MX plan,
+under <a href="https://docs.ovh.com/ca/en/emails/email-redirection-guide/">manage redirections</a>.</p>
+<p>It works well most of the time, <strong>except when a sender tells me they
+failed to send me an email</strong>.</p>
+<p>It could be someone sending me an email from, for example,
+<code>bar@gmx.com</code>, who tells me (obviously via another mean) that their
+email was returned, with a message similar to this:</p>
+<blockquote>
+<p><strong>Subject:</strong> Undelivered Mail Returned to Sender<br>
+<strong>From:</strong> <code>MAILER-DAEMON@mo557.mail-out.ovh.net</code></p>
+<p>This is the mail system at host <code>mo557.mail-out.ovh.net</code>.</p>
+<p>I’m sorry to have to inform you that your message could not be
+delivered to one or more recipients. It’s attached below.</p>
+<p>For further assistance, please send mail to postmaster.</p>
+<p>If you do so, please include this problem report. You can delete your
+own text from the attached returned message.</p>
+<p>The mail system</p>
+<p><a href="mailto:foo@gmail.com">foo@gmail.com</a>: host gmail-smtp-in.l.google.com[66.102.1.27] said:
+550-5.7.26 The MAIL FROM domain [gmx.com] has an SPF record with a
+hard fail 550-5.7.26 policy (-all) but it fails to pass SPF checks
+with the ip: 550-5.7.26 [46.105.33.1]. To best protect our users from
+spam and phishing, the 550-5.7.26 message has been blocked. Please
+visit 550-5.7.26 https://support.google.com/mail/answer/81126#authentication
+for more 550 5.7.26 information.
+h21-20020a05600c351500b003eb3caa4d08si2037016wmq.38 - gsmtp (in reply
+to end of DATA command)</p>
+</blockquote>
+<div class="note">
+<p><strong>Note:</strong> I use <a href="https://www.gmx.com/">GMX</a> as an example here because
+it’s a sender domain that I was consistently getting SPF issues with
+because of my redirect setup.</p>
+</div>
+<p>This doesn’t seem to be a very widely encountered problem, yet I could
+find a few occurrences of it in the wild like on <a href="https://www.reddit.com/r/AnonAddy/comments/ju9vgc/ovh_mail_redirection_fails/">this Reddit post</a>
+as well as those Google
+<a href="https://support.google.com/mail/thread/175932116">support</a>
+<a href="https://support.google.com/mail/thread/195729241">threads</a>
+(in French, and sadly locked so I couldn’t post the solution there).</p>
+<h2 id="the-issue" tabindex="-1"><a class="header-anchor" href="#the-issue"><span>The issue</span></a></h2>
+<p>What’s going wrong here? It turns out that the sender domain (in this
+example, <code>gmx.com</code>) had configured a strict <a href="https://en.wikipedia.org/wiki/Sender_Policy_Framework">SPF policy</a>
+that only allowed their own servers to deliver emails from <code>@gmx.com</code>
+addresses.</p>
+<p>We can check this running the following command:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">host -t TXT gmx.com | grep spf</span>
+gmx.com descriptive text &quot;v=spf1 ip4:213.165.64.0/23 ip4:74.208.5.64/26 ip4:74.208.122.0/26 ip4:212.227.126.128/25 ip4:212.227.15.0/24 ip4:212.227.17.0/27 ip4:74.208.4.192/26 ip4:82.165.159.0/24 ip4:217.72.207.0/27 -all&quot;
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> to be clear, this is not a bad thing. It’s totally legitimate
+from GMX to only allow their own servers to deliver emails from
+<code>@gmx.com</code> addresses!</p>
+<p>The reason it doesn’t happen with most sender domains is that it’s
+common to configure SPF with a “soft fail” (<code>~all</code>) instead of a “hard
+fail” (<code>-all</code>) like GMX does. See the difference <a href="https://knowledge.ondmarc.redsift.com/en/articles/1148885-spf-hard-fail-vs-spf-soft-fail">here</a>.</p>
+<p>A soft fail would result in the email being delivered but potentially
+being flagged as spam, whereas a hard fail gets downright rejected.</p>
+</div>
+<p>Since Gmail do check the origin sender SPF policy and enforces it, it
+rejected the <code>@gmx.com</code> email being forwarded by my OVH relay.</p>
+<p>If you want to learn more about this issue, <a href="https://support.tigertech.net/spf">this post from Tiger Technologies</a>
+is a very good read.</p>
+<h2 id="the-fix" tabindex="-1"><a class="header-anchor" href="#the-fix"><span>The fix</span></a></h2>
+<p>Sadly there’s no trivial fix for this. The post linked just above
+mentions a few solutions in the last section but notes that they’re not
+widely available and might cause other issues. Their conclusion is:
+<strong>for now, we’d recommend simply not forwarding important mail to other
+ISPs</strong>.</p>
+<p>What can we do from there? Well in my case, I had to reverse the
+relationship between my OVH address and Gmail: instead of my OVH address
+forwarding emails to Gmail, I removed the redirect and <strong>configured
+Gmail to fetch emails from my OVH address via POP3</strong>.</p>
+<div class="note">
+<p><strong>Note:</strong> this alternative method is not specific to OVH and Gmail. It
+will work as long as:</p>
+<ol>
+<li>Your target email system supports fetching emails from other
+addresses via IMAP or POP3.</li>
+<li>The email hosting provider you use for your intermediary address
+has IMAP or POP3 capabilities, not only redirects.</li>
+</ol>
+</div>
+<p>In order to do this with Gmail, their guide on <a href="https://support.google.com/mail/answer/21289">checking emails from other accounts</a>.</p>
+<p>And if your intermediary (redirect) address is on OVH, you can find the
+proper POP3 settings to use on their configuration guide, either for
+<a href="https://docs.ovh.com/fr/emails/mail-mutualise-guide-configuration-dun-e-mail-mutualise-ovh-sur-linterface-de-gmail/">OVH France</a> or
+<a href="https://docs.ovh.com/ca/en/emails/gmail-configuration/">OVH Canada</a>. In
+short, it’s:</p>
+<table>
+<thead>
+<tr>
+<th>Region</th>
+<th>Host</th>
+<th>Port</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>France</td>
+<td><code>ssl0.ovh.net</code></td>
+<td>995</td>
+</tr>
+<tr>
+<td>Canada</td>
+<td><code>pop.mail.ovh.ca</code></td>
+<td>995</td>
+</tr>
+</tbody>
+</table>
+<h2 id="the-downside" tabindex="-1"><a class="header-anchor" href="#the-downside"><span>The downside</span></a></h2>
+<p>The main downside of this solution is that instead of OVH <em>pushing</em>
+mails to Gmail, Gmail has to <em>pull</em> them from OVH periodically.
+Concretely, this means <strong>increased latency</strong>. Instead of receiving
+emails right away, you’ll have to wait until Gmail decides to fetch
+emails from your external accounts.</p>
+<p>There’s no clear rule on how often Gmail checks external accounts. It
+seems to be proportional to how often you receive new emails: if you
+often receive new emails, it’ll check quite often, but if you receive
+just a few messages per day, <strong>it can wait 10, 20 or even 30 minutes
+between refreshes</strong>.</p>
+<h2 id="forcing-gmail-to-refresh-external-accounts-more-often" tabindex="-1"><a class="header-anchor" href="#forcing-gmail-to-refresh-external-accounts-more-often"><span>Forcing Gmail to refresh external accounts more often</span></a></h2>
+<p>Looking into this I found quite a few smart tricks to get Gmail to check
+your external accounts more often.</p>
+<p>The first one is <a href="https://rakowski.pro/how-to-force-gmail-to-check-your-pop3-account-as-often-as-possible/">described in this post</a>,
+and consists in configuring a server of yours to send you an email (on the
+address you check via POP3) every minute or so. This way, Gmail will
+notice you’re getting a lot of messages and will check more often.</p>
+<p>To avoid your inbox getting flooded by those messages, you can simply
+add a filter that puts them directly to the trash!</p>
+<p>What if you don’t have a server handy to run this script? As described
+in this <a href="https://lifehacker.com/increase-the-frequency-gmail-checks-your-other-email-ac-5580553">Lifehacker post</a>,
+you can run the code as Google Apps Script on Google Sheets. That’s
+pretty rad if you ask me. 😂</p>
+<p>But what if you don’t want to write code at all? <a href="https://webapps.stackexchange.com/questions/1811/can-i-control-how-often-gmail-polls-pop3-accounts-for-incoming-mail#comment2919_2090">This Stack Exchange comment</a>
+got you covered: just create a dummy Google Calendar event repeated every X
+minutes, and set up an email reminder for this event. 🤯</p>
+<h2 id="the-hybrid-approach" tabindex="-1"><a class="header-anchor" href="#the-hybrid-approach"><span>The hybrid approach</span></a></h2>
+<p>With OVH, there’s another option that allows you have the speed of the
+redirect when it works, but still receive the messages even when there’s
+an SPF rejection. The problem of this approach is that it will still
+result in the “Undelivered Mail Returned to Sender” message being sent
+to the sender in case SPF fails (even if you do get the email), which is
+not ideal.</p>
+<p>This solution consists in the OVH email redirect settings to “keep a
+copy of the email at OVHcloud”. This option is only available during the
+initial redirect creation and can’t be modified later on, so if you
+initially configured it as “do not store a copy of the email”, you’ll
+need to delete your redirect and recreate it.</p>
+<div class="note">
+<p><strong>Note:</strong> creating a redirect that keeps a copy of the email on OVH
+materializes as two redirect entries: one from source to source, and one from
+source to destination.</p>
+<p>For example, it’ll show:</p>
+<ul>
+<li><code>foo@foo.com</code> to <code>foo@gmail.com</code></li>
+<li><code>foo@foo.com</code> to <code>foo@foo.com</code></li>
+</ul>
+<p>Just noting that here because it can be confusing.</p>
+</div>
+<p>On top of that, you also configure Gmail to check your OVH emails via
+POP3 <a href="#the-fix">as explained earlier</a>.</p>
+<p>The result is that when the redirect works, you’ll get your emails
+instantly. When case the redirect fails, the message will still end up in
+your OVH inbox, which Gmail will fetch eventually, so you’ll still get
+it that way.</p>
+<p>But as I said, because the redirect failed, the sender will still
+receive back an error email and believe that you didn’t receive their
+email. I don’t know of a way to avoid that with this solution.</p>
+<p>As for the messages that were successfully redirected, be assured that
+<em>they won’t be duplicated</em>! Even though they will be fetched again when
+Gmail refreshes the POP3 inbox, Gmail is able to tell that it’s the same
+message that it already saw and will not show it to you twice. Neat.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>In this post we explored the technical details of a common error that
+happens when an email redirect conflicts with the origin SPF rules.</p>
+<p>We saw that we can mitigate it under certain conditions, by reversing
+the redirect relationship: instead of one email redirecting to another,
+you need to have the second email checks the inbox of the former.</p>
+<p>With Gmail, this can introduce unwanted latency, but there’s a few hacks
+to work around that.</p>
+<p>Finally we saw an hybrid approach that gets “the best of both worlds”,
+except for the error message still being sent back…</p>
+<p>What was your favorite option? Let me know on
+<a href="https://twitter.com/valeriangalliat">Twitter</a>!</p>
+<p>And if you know of other solutions I didn’t mention, please send me an
+email! Even if you do strict SPF checks, don’t worry, I’ll receive it. 😉</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/02/ovh-email-redirect-spf-failure.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20220617.js"></script>
+</body>
+</html>

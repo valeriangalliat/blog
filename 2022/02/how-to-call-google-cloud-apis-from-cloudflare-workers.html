@@ -173,7 +173,7 @@ Base64-encoded format.</p>
 
 <span class="hljs-keyword">const</span> privateKey = crypto.<span class="hljs-title function_">createPrivateKey</span>({
   <span class="hljs-attr">key</span>: serviceAccount.<span class="hljs-property">private_key</span>,
-  <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>,
+  <span class="hljs-attr">format</span>: <span class="hljs-string">&#x27;pem&#x27;</span>
 })
 </code></pre>
 <p>Which allows us to easily convert it to a JWK:</p>
@@ -187,7 +187,7 @@ can import it like this:</p>
 <span class="hljs-keyword">const</span> algorithm = {
   <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;RSASSA-PKCS1-v1_5&#x27;</span>,
   <span class="hljs-attr">hash</span>: {
-    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;SHA-256&#x27;</span>,
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;SHA-256&#x27;</span>
   }
 }
 
@@ -252,7 +252,7 @@ like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> algorithm = {
   <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;RSASSA-PKCS1-v1_5&#x27;</span>,
   <span class="hljs-attr">hash</span>: {
-    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;SHA-256&#x27;</span>,
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;SHA-256&#x27;</span>
   }
 }
 
@@ -304,8 +304,8 @@ the header:</p>
   <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
     <span class="hljs-attr">alg</span>: <span class="hljs-string">&#x27;RS256&#x27;</span>,
     <span class="hljs-attr">typ</span>: <span class="hljs-string">&#x27;JWT&#x27;</span>,
-    <span class="hljs-attr">kid</span>: serviceAccount.<span class="hljs-property">private_key_id</span>,
-  }),
+    <span class="hljs-attr">kid</span>: serviceAccount.<span class="hljs-property">private_key_id</span>
+  })
 )
 </code></pre>
 <p>As we saw earlier, we’re going to use a RSA signature with SHA-256

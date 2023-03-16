@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
 * [OVH email redirect causes SPF check failure](2023/02/ovh-email-redirect-spf-failure.md) <small>February 26, 2023</small>
 * [GitHub: disable squash & merge on specific branches](https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches) <small>August 15, 2022</small>
 * [Adobe Bridge mass update filetype associations](2022/07/adobe-bridge-mass-update-filetype-associations.md) <small>July 19, 2022</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>
 * [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 * [Firefox credit card autofill not working on Linux](2022/05/firefox-credit-card-autofill-not-working-on-linux.md) <small>May 5, 2022</small>
-* [graftcp: inspect any program's HTTPS traffic through a proxy!](2022/04/graftcp-inspect-https-traffic-proxy.md) <small>April 30, 2022</small>
 
 [All the posts](posts.md)
 

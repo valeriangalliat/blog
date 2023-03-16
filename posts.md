@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
 * [OVH email redirect causes SPF check failure](2023/02/ovh-email-redirect-spf-failure.md) <small>February 26, 2023</small>
 
 ## 2022

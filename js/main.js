@@ -40,7 +40,7 @@ async function searchBlog (form) {
       .then(res => res.text())
   ])
 
-  const items = result.items.filter(item => !['index.md', 'posts.md'].includes(item.path))
+  const items = result.items.filter(item => !['index.md', 'posts.md', 'README.md'].includes(item.path) && !item.path.startsWith('1337/'))
 
   if (!items.length) {
     return formMessage(form, 'No matches found on the blog. 🥺')
@@ -49,7 +49,7 @@ async function searchBlog (form) {
   const parser = new DOMParser()
   const postsDocument = parser.parseFromString(posts, 'text/html')
 
-  const lis = await Promise.all(items.map(async item => {
+  const lis = (await Promise.all(items.map(async item => {
     const relativeUrl = item.path.replace(/\.md$/, '.html')
     const url = `/${relativeUrl}`
     const a = postsDocument.querySelector(`a[href="${relativeUrl}"]`)
@@ -62,8 +62,16 @@ async function searchBlog (form) {
       return li
     }
 
-    // Fall back to fetching `<h1>` from actual page.
-    const html = await fetch(url).then(res => res.text())
+    // We find blog post titles in `/posts.html` above, but for pages, we need
+    // to `fall back to fetching `<h1>` from the actual page.
+    const res = await fetch(url)
+
+    if (!res.ok) {
+      // Not found?
+      return
+    }
+
+    const html = await res.text()
     const pageDocument = parser.parseFromString(html, 'text/html')
 
     return el('li', { customSortValue: 0 }, [
@@ -75,7 +83,9 @@ async function searchBlog (form) {
         textContent: '—'
       })
     ])
-  }))
+  })))
+    // Ignore discarded items.
+    .filter(li => li)
 
   lis.sort((a, b) => b.customSortValue - a.customSortValue)
 
@@ -95,8 +105,6 @@ function onSearchSubmit (form) {
 
   return false
 }
-
-const isBrowserDark = matchMedia && matchMedia('(prefers-color-scheme: dark)').matches
 
 for (const button of Array.from(document.querySelectorAll('.change-color-theme'))) {
   if (document.documentElement.classList.contains('dark')) {

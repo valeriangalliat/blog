@@ -240,7 +240,7 @@ Finally we saw an hybrid approach that gets "the best of both worlds",
 except for the error message still being sent back...
 
 What was your favorite option? Let me know on
-[Twitter](https://twitter.com/valeriangalliat)!
+[Twitter](https://twitter.com/valeriangalliat/status/1629899238728499200)!
 
 And if you know of other solutions I didn't mention, please send me an
 email! Even if you do strict SPF checks, don't worry, I'll receive it. 😉

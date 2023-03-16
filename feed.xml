@@ -5,10 +5,379 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-02-26T17:41:14.391Z</updated>
+  <updated>2023-03-16T19:43:08.666Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Google Cloud Functions with a static IP: a guide to high throughput NAT</title>
+    <link href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html" />
+    <id>https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html</id>
+    <updated>2023-03-16T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>One day or another, you’re gonna encounter a firewall with an IP
+whitelist. It only accepts connections from specific IP addresses that
+were explicitly allowed.</p>
+<p>If you have a cloud, serverless and/or autoscaling infrastructure, new
+resources are provisioned and deprovisioned automatically to accommodate
+your load, and public IPs are dynamically allocated when needed. <strong>You
+can’t predict what public IP address are your requests going to be sent
+from</strong>.</p>
+<p>This is a problem I’ve needed to solve in virtually every company I’ve
+worked with in my career.</p>
+<p>The solutions may vary depending on the technologies you use, and your
+load patterns. For example, a simple proxy server (TCP, HTTP or SOCKS,
+maybe load balanced between a few instances) might go a long way before
+you need to resort to more complex solutions.</p>
+<p>In this blog post I’ll focus on Google Cloud, and in particular Cloud
+Functions, but you might find it useful if you have the same use case
+with Cloud Run or Kubernetes, or just need to fine tune a Cloud NAT in
+general.</p>
+<div class="note">
+<p><strong>Note:</strong> this also applies to Firebase Functions, since they’re
+implemented as Cloud Functions.</p>
+</div>
+<h2 id="building-blocks" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#building-blocks"><span>Building blocks</span></a></h2>
+<p>If the proxy server approach doesn’t meet your requirements, or you just
+want a more “cloud native” solution, you’ll need two pieces of
+infrastructure in order to route your Cloud Functions or Cloud Run
+containers traffic through static IPs: a <strong>VPC connector</strong>,
+and a <strong>Cloud NAT</strong>.</p>
+<p>If you run on Kubernetes, you only need the Cloud NAT.</p>
+<h2 id="vpc-connector" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#vpc-connector"><span>VPC connector</span></a></h2>
+<p>The VPC connector, also known as <a href="https://cloud.google.com/vpc/docs/configure-serverless-vpc-access">Serverless VPC Access connector</a>,
+is a piece of Google Cloud infrastructure that lets you route the
+traffic of Cloud Functions and Cloud Run containers to your <abbr title="Virtual Private Cloud">VPC</abbr>.</p>
+<p>This is useful if you want them to access private resources, or in our
+case, if you want them to access the internet through static IPs.</p>
+<p>The VPC connector is backed by 2 to 10 plain old Compute Engine VMs,
+that you can chose from a limited subset of instance sizes (<code>f1-micro</code>,
+<code>e2-micro</code> and <code>e2-standard-4</code>). Not far from the naive proxy approach,
+but it has to its advantage that those VMs are managed by Google, and
+that they have a first-class integration with Cloud Functions and Cloud
+Run.</p>
+<p>Those instances live in a <code>/28</code> subnet that you allocate for them on
+your VPC. <code>/28</code> gives you <a href="https://cloud.google.com/vpc/docs/serverless-vpc-access#ip_address_ranges">14 usable addresses</a>
+which is sufficient for the 10 instances upper limit.</p>
+<p>A few more things to note:</p>
+<ul>
+<li>You configure a minimum and maximum number of instances, between 2 and 10.</li>
+<li>The connector starts with the minimum number of instances, and will
+add more up to the maximum number if your traffic requires it.</li>
+<li>After scaling up, the connector doesn’t scale down and you’ll have to
+recreate it if you want to lower the instances count. 🙈</li>
+</ul>
+<p>Useful links:</p>
+<ul>
+<li><a href="https://cloud.google.com/vpc/docs/serverless-vpc-access">Serverless VPC Access</a></li>
+<li><a href="https://cloud.google.com/vpc/docs/configure-serverless-vpc-access">Configure Serverless VPC Access</a></li>
+</ul>
+<h2 id="cloud-nat" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#cloud-nat"><span>Cloud NAT</span></a></h2>
+<p>Cloud NAT is the second piece of the puzzle. It allows you to perform
+network address translation (NAT) on Compute Engine VMs that don’t have
+an external IP address.</p>
+<p>Even though Cloud NAT depends on a Cloud Router, <a href="https://serverfault.com/q/1078625">it only uses it</a>
+for configuring <a href="https://cloudplatform.googleblog.com/2014/04/enter-andromeda-zone-google-cloud-platforms-latest-networking-stack.html">Google Cloud’s networking stack</a>
+but it’s not involved at the data level: it doesn’t add an extra hop and
+potential bottleneck in your network topology!</p>
+<p>In other words, you can expect an identical network bandwidth and
+performance with Cloud NAT as if your VMs directly had public IPs, as
+long as it’s appropriately configured for your situation (more on that
+later).</p>
+<p>Cloud NAT can be configured to dynamically allocate IP addresses as
+needed, or use a static pool of IP addresses, which is going to be
+useful for us.</p>
+<p>In our case, Cloud NAT works hand in hand with the VPC connector VMs,
+not only to provide them with internet access, but to do so using static
+IPs if we configure the NAT that way!</p>
+<p>Useful links:</p>
+<ul>
+<li><a href="https://cloud.google.com/nat/docs/overview">Cloud NAT overview</a></li>
+<li><a href="https://medium.com/bluekiri/high-availability-nat-gateway-at-google-cloud-platform-with-cloud-nat-8a792b1c4cc4">High availability NAT gateway at Google Cloud Platform with Cloud NAT</a></li>
+</ul>
+<h2 id="configuring-them-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#configuring-them-together"><span>Configuring them together</span></a></h2>
+<p>I’ll skim over this part as there’s already decent coverage online:</p>
+<ul>
+<li><a href="https://dev.to/alvardev/gcp-cloud-functions-with-a-static-ip-3fe9">GCP Cloud Functions with a static IP</a></li>
+<li><a href="https://gist.github.com/brokeyourbike/ee7c5ede900da6f31ced9fe587e0c706">Cloud Functions static outbound IP address</a></li>
+<li><a href="https://stackoverflow.com/q/38811882">Possible to get static IP address for Google Cloud Functions?</a></li>
+<li><a href="https://cloud.google.com/nat/docs/set-up-manage-network-address-translation">Set up and manage network address translation with Cloud NAT</a></li>
+</ul>
+<p>To add my own contribution, I’ll share a <a href="https://www.pulumi.com/">Pulumi</a>
+example to provision everything you need to get a static IP on your
+Cloud Functions. It’ll get you in the same place as the tutorials above.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> gcp = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;@pulumi/gcp&#x27;</span>)
+
+<span class="hljs-keyword">const</span> subnet = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">Subnetwork</span>(<span class="hljs-string">&#x27;subnet&#x27;</span>, {
+  <span class="hljs-attr">network</span>: <span class="hljs-string">&#x27;default&#x27;</span>,
+   <span class="hljs-comment">// Arbitrary range that doesn&#x27;t conflict with other subnets in your VPC</span>
+  <span class="hljs-attr">ipCidrRange</span>: <span class="hljs-string">&#x27;10.8.0.0/28&#x27;</span>
+})
+
+<span class="hljs-keyword">const</span> router = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">Router</span>(<span class="hljs-string">&#x27;router&#x27;</span>, {
+  <span class="hljs-attr">network</span>: <span class="hljs-string">&#x27;default&#x27;</span>
+})
+
+<span class="hljs-keyword">const</span> ip1 = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">Address</span>(<span class="hljs-string">&#x27;ip-1&#x27;</span>, {})
+<span class="hljs-keyword">const</span> ip2 = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">Address</span>(<span class="hljs-string">&#x27;ip-2&#x27;</span>, {})
+
+<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">RouterNat</span>(<span class="hljs-string">&#x27;nat&#x27;</span>, {
+  <span class="hljs-attr">router</span>: router.<span class="hljs-property">name</span>,
+  <span class="hljs-attr">region</span>: router.<span class="hljs-property">region</span>,
+
+  <span class="hljs-attr">natIpAllocateOption</span>: <span class="hljs-string">&#x27;MANUAL_ONLY&#x27;</span>,
+  <span class="hljs-attr">natIps</span>: [ip1.<span class="hljs-property">selfLink</span>, ip2.<span class="hljs-property">selfLink</span>],
+
+  <span class="hljs-attr">sourceSubnetworkIpRangesToNat</span>: <span class="hljs-string">&#x27;LIST_OF_SUBNETWORKS&#x27;</span>,
+  <span class="hljs-attr">subnetworks</span>: [
+    {
+      <span class="hljs-attr">name</span>: subnet.<span class="hljs-property">id</span>,
+      <span class="hljs-attr">sourceIpRangesToNats</span>: [<span class="hljs-string">&#x27;ALL_IP_RANGES&#x27;</span>]
+    }
+  ],
+
+  <span class="hljs-comment">// If not specified, Pulumi enables endpoint-independent mapping by default,</span>
+  <span class="hljs-comment">// even though it&#x27;s not enabled by default when using the Google Cloud</span>
+  <span class="hljs-comment">// console.</span>
+  <span class="hljs-comment">//</span>
+  <span class="hljs-comment">// To be in the same state as if we used the console, we explicitly</span>
+  <span class="hljs-comment">// have to disable it here.</span>
+  <span class="hljs-attr">enableEndpointIndependentMapping</span>: <span class="hljs-literal">false</span>
+
+  <span class="hljs-comment">// More things to go here for optimal performance, see below</span>
+})
+
+<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">vpcaccess</span>.<span class="hljs-title class_">Connector</span>(<span class="hljs-string">&#x27;connector&#x27;</span>, {
+  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;connector&#x27;</span>,
+  <span class="hljs-attr">subnet</span>: {
+    <span class="hljs-attr">name</span>: subnet.<span class="hljs-property">name</span>
+  }
+})
+</code></pre>
+<p>What this code does:</p>
+<ol>
+<li>Provision a <code>/28</code> subnet that is going to be used for the VPC
+connector VMs, and that we’ll attach the NAT to.</li>
+<li>Create the Cloud Router necessary for the NAT to do its
+configurational magic.</li>
+<li>Allocate 2 static public IP addresses.</li>
+<li>Create the Cloud NAT in manual mode with the IPs we just created, and
+attach it to the VPC connector subnet.</li>
+<li>Create the VPC connector in the subnet we prepared for it.</li>
+</ol>
+<p>Finally you can configure your Cloud Functions, Firebase Functions or
+Cloud Run containers to use that VPC connector for all its traffic. In
+the case of a Firebase Function, it looks like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> functions = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-functions&#x27;</span>)
+
+functions.<span class="hljs-title function_">runWith</span>({
+  <span class="hljs-attr">vpcConnector</span>: <span class="hljs-string">&#x27;connector&#x27;</span>,
+  <span class="hljs-attr">vpcConnectorEgressSettings</span>: <span class="hljs-string">&#x27;ALL_TRAFFIC&#x27;</span>
+})
+  <span class="hljs-comment">// Your actual function, for example</span>
+  .<span class="hljs-property">https</span>.<span class="hljs-title function_">onRequest</span>(<span class="hljs-keyword">async</span> (req, res) =&gt; {
+    response.<span class="hljs-title function_">json</span>(<span class="hljs-keyword">await</span> (<span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;https://api.ipify.org?format=json&#x27;</span>)).<span class="hljs-title function_">json</span>())
+  })
+</code></pre>
+<p>And ta-da, you get static IPs! 🎉</p>
+<p>Everything seems to be working smoothly when you perform basic
+connectivity testing (i.e. making a few requests to <a href="https://api.ipify.org"><code>api.ipify.org</code></a>),
+so you pat yourself on the back “nice, it wasn’t that bad after all” and
+you go grab a beer.</p>
+<p>Did you think you were done? Wait. We’re just getting started.</p>
+<h2 id="when-the-trouble-start" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#when-the-trouble-start"><span>When the trouble start</span></a></h2>
+<p>So you happily go on and deploy your Cloud NAT and VPC Connector. To
+your staging environment, obviously, right? Right?</p>
+<figure class="center">
+  <img alt="Meme about deploying to staging" src="https://www.codejam.info/img/2023/03/to-staging-right.jpg">
+</figure>
+<p>But if you have some kind of traffic, you quickly notice something
+wrong.</p>
+<p>Your Cloud Functions’ <strong>execution time</strong> is much higher than
+usual (up to minutes instead of milliseconds), and as a side effect of
+that, your <strong>instance count</strong> is likely higher than normal. On the VPC
+Connector side, everything looks good. But on the Cloud NAT, you notice
+a non-zero <strong>dropped sent packets rate</strong>, with <code>OUT_OF_RESOURCES</code> as a
+reason.</p>
+<p>Maybe you also have a non-zero <strong>dropped received packets rate</strong> but
+that is probably not the concern here (<a href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#what-about-dropped-received-packets-rate">more on that later</a>).</p>
+<p>So what is going on? <a href="https://cloud.google.com/nat/docs/monitoring#gateway_filtering_dimensions">The docs</a>
+tell us that Cloud NAT is running out of NAT IP addresses or ports.</p>
+<div class="note">
+<p><strong>Note:</strong> if you used Pulumi (<a href="https://github.com/hashicorp/terraform-provider-google/issues/10609">or Terraform</a>)
+without explicitly disabling endpoint-independent mapping, you might
+have accidentally turned on <a href="https://cloud.google.com/nat/docs/ports-and-addresses#ports-reuse-endpoints">endpoint-independent mapping (EIM)</a>,
+which wouldn’t have been on by default if you used the GCP console.</p>
+<p>If you see dropped packets with reason <code>ENDPOINT_INDEPENDENT_CONFLICT</code>,
+and you didn’t intend to enable endpoint-independent mapping, this is
+your problem here. You probably want to disable it, or even to enable
+<em>dynamic port allocation</em>.</p>
+<p>In case you <em>do</em> need endpoint-independent mapping, <a href="https://cloud.google.com/nat/docs/troubleshooting#endpoint-independent-conflict">this section of the docs</a>
+can help you troubleshoot this.</p>
+</div>
+<h2 id="fixing-nat-out-of-resources" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#fixing-nat-out-of-resources"><span>Fixing NAT out of resources</span></a></h2>
+<p>Let’s say you assigned 2 NAT IPs. Each IP gives you
+<a href="https://cloud.google.com/nat/docs/ports-and-addresses#ports">64,512</a>
+ports to work with (65,536 minus the 1024 privileged ports). So we’re
+working with a total of 129,024 ports available for NAT at a time.</p>
+<p>If this looks a bit tight for your current traffic and network patterns,
+there you go, you need to add more IPs.</p>
+<p>But if you estimate that is is reasonable (or even <em>way, way enough</em>)
+for your expected traffic, adding more IPs will likely not solve the
+problem.</p>
+<p>In our case with the <em>default</em> Cloud NAT configuration, it should be in
+<a href="https://cloud.google.com/nat/docs/ports-and-addresses#static-port">static port allocation mode</a>,
+aka the state it’s in if you don’t check “dynamic port allocation” in
+the <strong>advanced configurations</strong> part (hidden by default).</p>
+<figure class="center">
+  <img alt="Default Cloud NAT port allocation settings" src="https://www.codejam.info/img/2023/03/cloud-nat-port-allocation.png" width="50%">
+</figure>
+<p>What this reveals is one key piece of information. <strong>Our Cloud NAT
+defaults to static port allocation with 64 ports per VM.</strong></p>
+<p>The copy in this UI is misleading, because while it reads 64 “minimum
+ports per VM instance”, it is actually both a minimum <em>and</em> a maximum
+(well, it’s <em>static</em>), which is why the “maximum ports” input is
+disabled.</p>
+<p><strong>So let’s say you configured your VPC Connector to use 2 VMs, this means
+you’re artificially limiting your NAT to use a most 128 ports used at a
+time!!</strong> (Out of your 129,024 available ports if you have 2 IPs. 😅)</p>
+<p>No wonder when all the traffic of your Cloud Functions go through those
+two poor VPC Connector VMs, you end up seeing huge network latency and
+dropped packets.</p>
+<div class="note">
+<p><strong>Note:</strong> the number you care about here is really the number of VMs you
+configured on the VPC Connector. You may have a much higher <em>instances
+count</em> on your Cloud Functions side, but since their traffic has to go
+through the VPC Connector instances first, it’s really this one that
+matters.</p>
+</div>
+<p>Once we understand that, the fix becomes obvious: <strong>increase the number
+of ports per VM</strong>.</p>
+<p>Since in our example we have 2 VPC Connector VMs and 2 IP addresses,
+assuming we use the Cloud NAT only for those, we could in theory assign
+up to 65,536 ports (all of an IP’s ports) per VM!</p>
+<p>Obviously adjust this number based on the maximum number of VMs you can
+have relative to how many IPs you allocated.</p>
+<p>Realistically, if you want to keep some headroom for adding more VPC
+Connector VMs without adding more IPs in the future, you need to pick a
+lower number like 4,096, 8,192, 16,384 or 32,768, especially if that’s
+enough for your current needs.</p>
+<p>The takeaway from is that the default Cloud NAT configuration is really
+not adapted to be used with a VPC Connector, and we’re required to tune
+the settings for proper network performance. It’s probably a decent
+default for other use cases, but <em>definitely</em> not this one.</p>
+<h2 id="going-further-with-dynamic-port-allocation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#going-further-with-dynamic-port-allocation"><span>Going further with dynamic port allocation</span></a></h2>
+<p>Increasing the static number of ports per VM should have helped quite a
+bit with the latency and dropped packets, but we can do better.</p>
+<p>If we enable <a href="https://cloud.google.com/nat/docs/ports-and-addresses#dynamic-port">dynamic port allocation</a>,
+this will allow Cloud NAT to allocate even more ports to a given VM if
+needed. It can use any number of ports between the min/max range you
+configure, up to a maximum of 65,536 ports (a full IP).</p>
+<p>An important thing to keep in mind with dynamic port allocation is that
+when a VM uses all its pre-allocated ports and reaches the point where
+it needs to allocate more more ports dynamically, <strong>this is not
+instantaneous</strong>.</p>
+<p>The symptoms of that would be, again, dropped packets and increased
+latency while the ports are being allocated.</p>
+<p>In our scenario, this would be very obvious if we used dynamic port
+allocation with its default minimum ports per VM of 32 (when our load
+needs orders of magnitude more ports than that).</p>
+<p><strong>So we can’t rely solely on dynamic port allocation to save our day. We
+do still need to configure a sensible minimum ports per VM <em>that matches
+our expected needs</em>.</strong></p>
+<p>Concretely, if we have 2 to 3 VPC Connector VMs, 2 NAT IPs, and the NAT
+is solely used by the VPC Connector, using a dynamic port allocation
+with a minimum ports per VM of 16,384 would be a good match that lives
+us some headroom for adding a few more VMs without needing extra IPs.</p>
+<h2 id="going-even-further-with-tcp-settings" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#going-even-further-with-tcp-settings"><span>Going even further with TCP settings</span></a></h2>
+<p>The <strong>advanced configurations</strong> of Cloud NAT also gives us control over
+various protocol timeouts. Here are the defaults:</p>
+<figure class="center">
+  <img alt="Default Cloud NAT timeouts settings" src="https://www.codejam.info/img/2023/03/cloud-nat-timeouts.png" width="50%">
+</figure>
+<p>Here we’ll focus on the TCP settings. Here’s a more detailed description
+of those from <a href="https://cloud.google.com/nat/docs/overview#specs-timeouts">the spec</a>:</p>
+<ul>
+<li><strong>TCP established connection idle timeout:</strong> specifies the time that a
+connection is idle before the Cloud NAT mappings are removed.</li>
+<li><strong>TCP transitory connection idle timeout:</strong> specifies the time that
+TCP connections can remain in the <a href="https://en.wikipedia.org/wiki/TCP_half-open">half-open state</a>
+before the Cloud NAT mappings can be deleted.</li>
+<li><strong>TCP time wait:</strong> specifies the time that a
+fully closed TCP connection is retained in the Cloud NAT mappings
+after the connection expires.</li>
+</ul>
+<p>I’m not too concerned about half-open TCP connections, and keeping them
+around for 30 seconds sounds like a reasonable value in the first place,
+so we’ll leave the <strong>transitory idle timeout</strong> alone.</p>
+<p>For <strong>established idle timeout</strong> and <strong>TCP time wait</strong> though,
+respective values of <strong>TWENTY MINUTES</strong> and 2 minutes may be more
+problematic.</p>
+<p>Those defaults are probably sensible when you have <em>actual</em> VMs
+directly connecting through the NAT, but with the dynamic and
+“serverless” nature of Cloud Functions, keeping idle and especially
+closed connections around for that long is no good.</p>
+<p><strong>Matching those with the value of your Cloud Functions request timeout
+would make more sense</strong>, which may be as low as 60 or 30 seconds (or
+even lower). Once a function gets killed because it exceeded its
+timeout, there’s no point in keeping the TCP connections it opened (and
+maybe failed to close) for any longer, especially not 20 minutes!</p>
+<p>In my case, lowering those timeouts to 30 seconds had a noticeable
+difference in the NAT <strong>open connections</strong> and port <strong>usage metric</strong>
+(they got cut by half!).</p>
+<h2 id="applying-this-to-our-pulumi-example" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#applying-this-to-our-pulumi-example"><span>Applying this to our Pulumi example</span></a></h2>
+<p>After learning all this, we can go back to our initial <a href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#configuring-them-together">Pulumi example</a>
+and apply those optimizations by adding the following to our <code>RouterNat</code>
+configuration. <strong>Keep in mind this is tuned for 2 (min) to 3 (max) VPC
+Connector VMs that are the <em>sole</em> VMs to use a Cloud NAT with 2 static IPs.</strong>
+Tweak appropriately.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">new</span> gcp.<span class="hljs-property">compute</span>.<span class="hljs-title class_">RouterNat</span>(<span class="hljs-string">&#x27;nat&#x27;</span>, {
+  <span class="hljs-comment">// ...</span>
+
+  <span class="hljs-attr">enableDynamicPortAllocation</span>: <span class="hljs-literal">true</span>,
+  <span class="hljs-attr">minPortsPerVm</span>: <span class="hljs-number">16384</span>,
+  <span class="hljs-attr">maxPortsPerVm</span>: <span class="hljs-number">65536</span>,
+  <span class="hljs-attr">tcpEstablishedIdleTimeoutSec</span>: <span class="hljs-number">60</span>,
+  <span class="hljs-attr">tcpTimeWaitTimeoutSec</span>: <span class="hljs-number">60</span>
+})
+</code></pre>
+<h2 id="what-about-dropped-received-packets-rate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#what-about-dropped-received-packets-rate"><span>What about dropped received packets rate?</span></a></h2>
+<p>After all this, we’re in a pretty good spot for our Cloud Functions to
+go through Cloud NAT static IPs with optimal performance.</p>
+<p>Yet, you might notice that your <a href="https://stackoverflow.com/q/72620834/4324668">dropped received packets</a>
+metric in Cloud NAT is non-zero, and that may concern you.</p>
+<p>My advice for you will be to look at the proportion of dropped received
+packets compared to your total received packets.</p>
+<p>While the Cloud NAT metrics tab shows you the dropped received packets
+rate, you don’t get the total received packets rate there. You’ll have
+to go to GCP metrics explorer and look at <code>received_packets_count</code>.</p>
+<p>If your dropped received packets rate is especially low compared to the
+total received packets you’re processing (e.g. 0.01%), and you notice no
+negative effects on your app (latency, errors or whatnot), you’re
+probably fine. After all, those packets are packets that Cloud NAT could
+not translate, which may include invalid or unauthorized traffic.</p>
+<p>However if it’s affecting a non-negligible part of your traffic, and
+if you’re noticing a high latency or network error rate, you definitely
+need to address it. This will widely vary based on your specific context
+and network patterns, but as a blind shot, if you underestimated how
+long your Cloud Functions can be alive and you <a href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#going-even-further-with-tcp-settings">lowered the TCP timeouts</a>
+too much, there’s probably some tuning to be done around there.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html#conclusion"><span>Conclusion</span></a></h2>
+<p>If you made it here, congrats! This article was pretty dense, and we
+covered a number of fairly complex topics. I hope you learnt everything
+you needed in order to have a successful Cloud NAT configuration for
+your serverless (or Kubernetes) environment.</p>
+<p>If I made mistakes in this post, or if you found something of value that
+would be worth adding there, as usual, <a href="https://www.codejam.info/val.html#contact">let me know</a>
+and I’ll be happy to make updates!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>OVH email redirect causes SPF check failure</title>
     <link href="https://www.codejam.info/2023/02/ovh-email-redirect-spf-failure.html" />
@@ -205,7 +574,7 @@ to work around that.</p>
 <p>Finally we saw an hybrid approach that gets “the best of both worlds”,
 except for the error message still being sent back…</p>
 <p>What was your favorite option? Let me know on
-<a href="https://twitter.com/valeriangalliat">Twitter</a>!</p>
+<a href="https://twitter.com/valeriangalliat/status/1629899238728499200">Twitter</a>!</p>
 <p>And if you know of other solutions I didn’t mention, please send me an
 email! Even if you do strict SPF checks, don’t worry, I’ll receive it. 😉</p>
 <section class="post-footer">
@@ -3276,254 +3645,6 @@ element to cancel their margin.</li>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1513692138776801287">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How can rsync work on a host without shell access? 🤔</title>
-    <link href="https://www.codejam.info/2022/04/rsync-without-shell-access.html" />
-    <id>https://www.codejam.info/2022/04/rsync-without-shell-access.html</id>
-    <updated>2022-04-09T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#tldr"><span>TLDR</span></a></h2>
-<p>It does not. But sometimes, hosting providers use a trick so that you
-don’t have shell access but rsync thinks it does…</p>
-<h2 id="the-case-of-a-file-hosting-provider" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#the-case-of-a-file-hosting-provider"><span>The case of a file hosting provider</span></a></h2>
-<p>I use a <a href="https://www.hetzner.com/storage/storage-box?country=us">Hetzner storage box</a>
-for my backups. They have a super competitive offer that can get you 1
-TB of storage for €2.90 per month, or 5 TB for €9.90!</p>
-<p>On their <a href="https://www.hetzner.com/storage/storage-box?country=us">features page</a>
-they list they support a number of protocols, including <strong>SFTP, SCP,
-BorgBackup, and rsync over SSH</strong>.</p>
-<p>All of those protocols happen over a SSH connection, yet Hetzner doesn’t
-give us SSH access to the box:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh u123456@u123456.your-storagebox.de</span>
-PTY allocation request failed on channel 0
-
-+-------------------------------------------------------------------------------+
-| Your authentication works but we do not support interactive logins.           |
-| For more information on how to access your Storage Box please check our Docs: |
-| https://docs.hetzner.com/robot/storage-box/access/access-ssh-rsync-borg       |
-+-------------------------------------------------------------------------------+
-
-Connection to u123456.your-storagebox.de closed.
-</code></pre>
-<p>Let’s assume the following <code>~/.ssh/config</code> for further commands for
-simplicity, so that we can just <code>ssh hetzner</code>:</p>
-<pre><code class="hljs">Host hetzner
-    HostName u123456.your-storagebox.de
-    User u123456
-</code></pre>
-<p>While interactive SSH is not allowed, we can try running a command
-directly:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span></span>
-file1
-file2
-file3
-</code></pre>
-<p>Interesting. What other commands do they allow?</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cp</span> file3 file4</span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">cat</span> file1</span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">du</span> -sh .</span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">pwd</span></span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">whoami</span></span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">rm</span> file3</span>
-Command not found
-</code></pre>
-<p>Well, not much. So by what sorcery are SFTP, SCP, BorgBackup and rsync
-able to work over this connection?</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp hetzner</span>
-Connected to hetzner.
-<span class="hljs-meta prompt_">sftp&gt;</span><span class="language-bash">
-</span><span class="hljs-meta prompt_">
-$ </span><span class="language-bash">scp file4 hetzner:</span>
-file4
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">rsync -v file5 hetnzer:</span>
-file5
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner <span class="hljs-built_in">ls</span> file4 file5</span>
-file4
-file5
-</code></pre>
-<p>To understand, let’s dig in the internals of SFTP, SCP, BorgBackup and
-rsync.</p>
-<h2 id="sftp" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#sftp"><span>SFTP</span></a></h2>
-<p>SFTP is actually the odd one in the room. But we’ll start with it
-nevertheless.</p>
-<p>Using <code>-v</code> to enable debug output gives one interesting line near the
-end of the log:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">sftp -v hetzner</span>
-...
-debug1: Sending subsystem: sftp
-...
-</code></pre>
-<p>It looks like we’re dealing with something called SSH subsystems. A good
-way to find more about them is to search
-<a href="https://serverfault.com/questions/354615/allow-sftp-but-disallow-ssh">how to enable SFTP but disallow SSH</a>.</p>
-<p>Here, we meet our SSH server subsystem again, which is typically
-configured on the server as:</p>
-<pre><code class="hljs language-conf">Subsystem sftp internal-sftp
-</code></pre>
-<p>From the <a href="https://linux.die.net/man/1/ssh"><code>ssh(1)</code></a> man page, we can
-see that <code>ssh -s</code> allows to pass a subsystem where we would normally
-pass a command, e.g:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner -s sftp</span>
-</code></pre>
-<p>This command hangs, meanings the remote server is waiting for SFTP
-commands. Since it’s a binary protocol, we won’t be able to play with it
-directly, but this is the connection over which a normal SFTP client
-would be able to do its magic. Sweet!</p>
-<h2 id="scp" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#scp"><span>SCP</span></a></h2>
-<p>Let’s use the verbose/debug mode trick like we did previously with SFTP:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v file4 hetzner:</span>
-...
-debug1: Sending command: scp -v -t .
-...
-</code></pre>
-<p>Here, the relevant part of the debug output is where <code>scp</code> sends the
-remote command <code>scp -v -t .</code>.</p>
-<p><code>-v</code> is for the verbose mode we specified, but if we look at the
-<a href="https://linux.die.net/man/1/scp"><code>scp(1)</code></a> man page, there’s nothing
-for <code>-t</code>.</p>
-<p>We can look at
-<a href="https://github.com/openssh/openssh-portable/blob/90452c8b69d065b7c7c285ff78b81418a75bcd76/scp.c#L575">the source code</a>
-where they parse the command line arguments:</p>
-<pre><code class="hljs language-c"><span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;f&#x27;</span>:    <span class="hljs-comment">/* &quot;from&quot; */</span>
-    iamremote = <span class="hljs-number">1</span>;
-    fflag = <span class="hljs-number">1</span>;
-    <span class="hljs-keyword">break</span>;
-<span class="hljs-keyword">case</span> <span class="hljs-string">&#x27;t&#x27;</span>:    <span class="hljs-comment">/* &quot;to&quot; */</span>
-    iamremote = <span class="hljs-number">1</span>;
-    tflag = <span class="hljs-number">1</span>;
-</code></pre>
-<p>So we learn that <code>-f</code> or <code>-t</code> are used internally to trigger the remote
-mode. Because in our case we were sending a file to the remote host, we
-entered <code>-t</code> mode, but if we were downloading a file form the host, we
-would likely see <code>-f</code>. Let’s try:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">scp -v hetzner:file4 .</span>
-...
-debug1: Sending command: scp -v -f file4
-...
-</code></pre>
-<p>So it’s through invoking <code>scp</code> on the remote host over SSH that our
-local <code>scp</code> is able to transfer files. But how is that possible? We saw
-earlier that basically every command but <code>ls</code> was returning “command not
-found”! And we can confirm <code>scp</code> is not present on the remote host:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp</span>
-Command not found
-</code></pre>
-<p>Or is it? Let’s try the full command that <code>scp</code> would normally run on
-the remote host…</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -t .</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner scp -f file4</span>
-</code></pre>
-<p>Both those commands hang, meaning that Hetzner actually ran them, and we
-now have a communication channel with the remote <code>scp</code> process!</p>
-<p>So Hetzner disallowed us to run <code>scp</code> directly on the remote host, but
-they whitelisted the specific arguments that <code>scp</code> would internally pass
-to start the remote process. Smart.</p>
-<h2 id="borgbackup" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#borgbackup"><span>BorgBackup</span></a></h2>
-<p>Now we know the pattern, it’s easy to confirm that they do the same
-whitelisting for BorgBackup. We can see that <a href="https://borgbackup.readthedocs.io/en/stable/usage/serve.html"><code>borg serve</code></a>
-is used to start the remote process.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner borg</span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner borg --<span class="hljs-built_in">help</span></span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner borg serve</span>
-</code></pre>
-<p>The last command hangs, and again we exposed the way Borg internally
-opens a communication channel with a Borg implementation on the remote
-server!</p>
-<h2 id="rsync" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#rsync"><span>rsync</span></a></h2>
-<p>One more time, we leverage the verbose mode, this time with <code>-vv</code> to get
-extra debug output, to see what rsync does internally:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">rsync -vv file5 hetzner:</span>
-opening connection using: ssh hetzner rsync --server -vve.LsfxCIvu . .  (7 args)
-delta-transmission enabled
-file5
-...
-</code></pre>
-<p>Sweet. Let’s try to run this manually:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">ssh hetzner rsync</span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner rsync --<span class="hljs-built_in">help</span></span>
-Command not found
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">ssh hetzner rsync --server -vve.LsfxCIvu . .</span>
-</code></pre>
-<p>And again, Hetzner allowed the last command and we have an open
-communication channel with the remote rsync process!</p>
-<h3 id="digging-deeper-just-for-fun" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#digging-deeper-just-for-fun"><span>Digging deeper just for fun</span></a></h3>
-<p>If you’re curious, there’s <a href="https://serverfault.com/questions/793669/what-is-the-rsync-option-logdtprze-ilsf-for/1096808">a Server Fault question</a>
-about the meaning of the <code>-vve.LsfxCIvu</code> part.</p>
-<p>The answers there were a pretty good start, but there was something
-fishy and unexplained about the <code>.</code> in the middle, and I wasn’t quite
-satisfied. So <a href="https://serverfault.com/a/1096808">I dug I bit more</a>.</p>
-<p>In the case of <code>-vve.LsfxCIvu</code>, it’s actually equivalent to <code>-v -v -e '.LsfxCIvu'</code>,
-because of the way <code>popt(3)</code>'s <code>POPT_ARG_STRING</code> parses command line
-options (the library used by rsync to parse options), which is quite a
-common behavior for Unix commands short options.</p>
-<p>The trick is that <code>-e</code> is interpreted differently when we’re in
-<code>--server</code> mode, in a way that’s not related to the <code>-e</code> client option
-from the man page, that is normally the short version of <code>--rsh</code>,
-allowing to specify the remote shell to use.</p>
-<p>Setting <code>-e</code> or <code>--rsh</code> will have the options parser populate the
-<code>shell_cmd</code> variable, but <a href="https://github.com/WayneD/rsync/blob/13c4019e94015b234697c75d9d3624862e962d3c/compat.c#L160">they hijack it in server mode</a>
-to populate a <code>client_info</code> variable instead, which is used
-<a href="https://github.com/WayneD/rsync/blob/13c4019e94015b234697c75d9d3624862e962d3c/compat.c#L134">differently</a>,
-to define a number of internal protocol compatibility options.</p>
-<p>We can look at <a href="https://github.com/WayneD/rsync/blob/f44e76b65c5819edb1a5b2fbbe732d5d214b35de/options.c#L2951">the code that creates the value for the <code>-e</code> option</a>
-to get an idea of what those options do. In my case:</p>
-<ul>
-<li><code>L</code>: symlink time-setting support</li>
-<li><code>s</code>: symlink iconv translation support</li>
-<li><code>f</code>: <code>flist</code> I/O-error safety support</li>
-<li><code>x</code>: <code>xattr</code> hardlink optimization not desired</li>
-<li><code>C</code>: support checksum seed order fix</li>
-<li><code>I</code>: support <code>inplace_partial</code> behavior</li>
-<li><code>v</code>: use <code>varint</code> for <code>flist</code> &amp; compat flags; negotiate checksum</li>
-<li><code>u</code>: include name of <code>uid 0</code> &amp; <code>gid 0</code> in the <code>id</code> map</li>
-</ul>
-<p>I didn’t really need to know that <code>-vve.LsfxCIvu</code> means
-<code>-v -v -e '.LsfxCIvu'</code> and not <code>-v -v -e . -L -s -f -x -C -I -v -u</code>? No.
-Does this makes my life any better? Not really. But there’s an invisible
-force that pushes me to spend ridiculous amounts of time to make sense
-of this kind of things.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/rsync-without-shell-access.html#conclusion"><span>Conclusion</span></a></h2>
-<p>SFTP, SCP, BorgBackup and rsync all work on a client/server model, where
-the command is run both on the client <em>and</em> the server, and communicate
-together over SSH. It means that the command needs to be installed on
-the remote server as well, and allowed to be run over SSH.</p>
-<p>rsync and BorgBackup can achieve great performance to synchronize files
-on a storage server like Hetzner, because despite not having shell
-access on that server, the specific commands used by those tools to
-start a remote process are whitelisted.</p>
-<p>For other tools like <a href="https://restic.net/">restic</a>, because Hetzner
-doesn’t support their custom server protocol, they are constrained to
-use the more generic (and limited) commands of SFTP, which doesn’t allow
-optimal performance.</p>
-<p>So if you were wondering how all those tools can run code on your
-storage box despite you being denied shell access, now you know!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1512854917702164494">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="Install the Vanta agent on a M1 Mac without Rosetta (and more)">
-  <meta property="og:description" content="Did you recently get asked to install the Vanta agent on your M1 Mac and got prompted to install Rosetta for it to run?">
+  <meta property="og:description" content="Update: Vanta eventually released a version that’s M1-native so neither Rosetta nor the workaround below is needed anymore.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -35,6 +35,14 @@
     </div>
   </header>
   <div class="content">
+<div class="note">
+<p><strong>Update:</strong> Vanta eventually released a version that’s M1-native so
+neither Rosetta nor the workaround below is needed anymore.</p>
+<p>What you may still be interested with is the part where I
+<a href="#spying-on-the-spyware-and-monitoring-its-network-traffic">observe the network logs</a>
+of the Vanta agent to see if it’s doing anything fishy, as well as the
+update where I tell you <a href="#analyzing-the-mitmproxy-logs">what I found those logs</a>.</p>
+</div>
 <p>Did you recently get asked to install the Vanta agent on your M1 Mac and
 got prompted to install Rosetta for it to run?</p>
 <p>Do you like running a Rosetta-free system?</p>
@@ -314,9 +322,40 @@ those tweaks by checking the following link:</p>
 <p>Where <code>YOUR-HARDWARE-UUID</code> is your hardware UUID as it can be found in
 <kbd>About This Mac</kbd>, <kbd>System Report…</kbd>, <kbd>Hardware
 UUID</kbd>.</p>
-<p>And that’s all for today! I hope you found on this page what is it you
-were looking for, and that you learnt a thing or two along the way! Or
-at least that you enjoyed reading through my adventures messing around
+<h2 id="analyzing-the-mitmproxy-logs" tabindex="-1"><a class="header-anchor" href="#analyzing-the-mitmproxy-logs"><span>Analyzing the mitmproxy logs</span></a></h2>
+<p>After monitoring the mitmproxy logs of the Vanta agent over a few
+months, I didn’t find anything suspicious.</p>
+<p>At least for my employer’s configuration (SOC 2 type 1 compliance), they
+only check the OS version, whether or not the disk is encrypted,
+whether or not my account has a password, and if there’s an autolocking
+mechanism after a precise period of inactivity.</p>
+<p>It also reports the version of each browser extensions and installed
+apps, the list of users in the system, as well as the public SSH keys
+allowed to access my user account.</p>
+<p>Periodically, it updates a list of known malware paths and fingerprints,
+in order to check that those are not found on the system.</p>
+<p>Finally there’s a mechanism that allows the server it’s registered with
+to send “custom queries” but it was not used during the period I
+monitored it. If it was to be used it, their API doesn’t seem to allow
+running arbitrary shell commands, rather it could run read-only
+“queries” as exposed by the <a href="https://github.com/osquery/osquery">osquery</a>
+SQL-like interface which is something to keep in mind.</p>
+<p>Based on those observations, I saw no problem (for my own standards)
+running the agent on a work computer solely dedicated to the company
+that requires running the agent.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>As an abundance of caution, I wouldn’t run the Vanta agent on a computer
+that I also use as a personal machine, nor on a computer that I use to
+work with other clients.</p>
+<p>Therefore, <strong>I require each of my clients who need the Vanta agent to provide me
+with a dedicated work machine</strong>. Luckily it’s only 2 of them for now. 😆</p>
+<p>Anyway, I don’t think it would be easy to make 2 independent
+registrations of the Vanta agent cohabitate on the same computer, let
+alone the fact that doing so would more likely be considered as a SOC 2
+violation.</p>
+<p>That’s all for today! I hope you found on this page what is it you were
+looking for, and that you learnt a thing or two along the way! Or at
+least that you enjoyed reading through my adventures messing around
 with this program. 😂</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>

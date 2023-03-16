@@ -23,7 +23,7 @@ Or don't do that and experience a taste of hell for 3 months like I did.
 
 ## Things I learnt about poison ivy
 
-* It's an innocent-looking plant.
+* [It's an innocent-looking plant](https://www.birdandmoon.com/poisonivy/).
 * There's not always a sign to warn you it's around your path
   (especially if you like to walk off tracks).
 * If you suspect you've been in contact with it, or if you've been in
@@ -163,3 +163,11 @@ In this COVID world it can be hard to see a doctor in real life, but I
 can't stress how important it is to meet a real professional to address
 seriously this kind of issue, especially if they persist after the basic
 pharmacy treatments or other suggestions found on the internet.
+
+<div class="note">
+
+**Update:** 2 years later I'm using again the gear I had when I caught
+poison ivy (my bag, hiking pants and climbing shoes) after thoroughly
+washing them yet another time. Didn't have any problem with it!
+
+</div>

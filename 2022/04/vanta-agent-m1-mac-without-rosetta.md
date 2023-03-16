@@ -1,6 +1,18 @@
 # Install the Vanta agent on a M1 Mac without Rosetta (and more)
 April 30, 2022
 
+<div class="note">
+
+**Update:** Vanta eventually released a version that's M1-native so
+neither Rosetta nor the workaround below is needed anymore.
+
+What you may still be interested with is the part where I
+[observe the network logs](#spying-on-the-spyware-and-monitoring-its-network-traffic)
+of the Vanta agent to see if it's doing anything fishy, as well as the
+update where I tell you [what I found those logs](#analyzing-the-mitmproxy-logs).
+
+</div>
+
 Did you recently get asked to install the Vanta agent on your M1 Mac and
 got prompted to install Rosetta for it to run?
 
@@ -367,7 +379,49 @@ Where `YOUR-HARDWARE-UUID` is your hardware UUID as it can be found in
 <kbd>About This Mac</kbd>, <kbd>System Report...</kbd>, <kbd>Hardware
 UUID</kbd>.
 
-And that's all for today! I hope you found on this page what is it you
-were looking for, and that you learnt a thing or two along the way! Or
-at least that you enjoyed reading through my adventures messing around
+## Analyzing the mitmproxy logs
+
+After monitoring the mitmproxy logs of the Vanta agent over a few
+months, I didn't find anything suspicious.
+
+At least for my employer's configuration (SOC 2 type 1 compliance), they
+only check the OS version, whether or not the disk is encrypted,
+whether or not my account has a password, and if there's an autolocking
+mechanism after a precise period of inactivity.
+
+It also reports the version of each browser extensions and installed
+apps, the list of users in the system, as well as the public SSH keys
+allowed to access my user account.
+
+Periodically, it updates a list of known malware paths and fingerprints,
+in order to check that those are not found on the system.
+
+Finally there's a mechanism that allows the server it's registered with
+to send "custom queries" but it was not used during the period I
+monitored it. If it was to be used it, their API doesn't seem to allow
+running arbitrary shell commands, rather it could run read-only
+"queries" as exposed by the [osquery](https://github.com/osquery/osquery)
+SQL-like interface which is something to keep in mind.
+
+Based on those observations, I saw no problem (for my own standards)
+running the agent on a work computer solely dedicated to the company
+that requires running the agent.
+
+## Conclusion
+
+As an abundance of caution, I wouldn't run the Vanta agent on a computer
+that I also use as a personal machine, nor on a computer that I use to
+work with other clients.
+
+Therefore, **I require each of my clients who need the Vanta agent to provide me
+with a dedicated work machine**. Luckily it's only 2 of them for now. 😆
+
+Anyway, I don't think it would be easy to make 2 independent
+registrations of the Vanta agent cohabitate on the same computer, let
+alone the fact that doing so would more likely be considered as a SOC 2
+violation.
+
+That's all for today! I hope you found on this page what is it you were
+looking for, and that you learnt a thing or two along the way! Or at
+least that you enjoyed reading through my adventures messing around
 with this program. 😂

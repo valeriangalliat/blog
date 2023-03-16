@@ -182,7 +182,7 @@ const crypto = require('crypto')
 
 const privateKey = crypto.createPrivateKey({
   key: serviceAccount.private_key,
-  format: 'pem',
+  format: 'pem'
 })
 ```
 
@@ -202,7 +202,7 @@ const jwk = JSON.parse(env.GOOGLE_APPLICATION_CREDENTIALS_JWK)
 const algorithm = {
   name: 'RSASSA-PKCS1-v1_5',
   hash: {
-    name: 'SHA-256',
+    name: 'SHA-256'
   }
 }
 
@@ -284,7 +284,7 @@ like this:
 const algorithm = {
   name: 'RSASSA-PKCS1-v1_5',
   hash: {
-    name: 'SHA-256',
+    name: 'SHA-256'
   }
 }
 
@@ -347,8 +347,8 @@ const header = Base64.encodeURI(
   JSON.stringify({
     alg: 'RS256',
     typ: 'JWT',
-    kid: serviceAccount.private_key_id,
-  }),
+    kid: serviceAccount.private_key_id
+  })
 )
 ```
 

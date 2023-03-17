@@ -218,7 +218,9 @@ On this page you'll find the gear that I use for various aspects of my life.
   <tr>
     <td><a href="https://www.osprey.com/pe/en/product/xenith-75-XENITH75IS18.html">Osprey Xenith 75</a></td>
     <td>Big bag for big adventures, perfect when I'm going both camping
-    <em>and</em> climbing for a few days.</td>
+    <em>and</em> climbing for a few days. Also the top lid is
+    detachable to be used as a day pack and I use it literally <em>all
+    the time</em>!</td>
   </tr>
   <tr>
     <td><a href="https://www.osprey.com/us/en/product/farpoint-40-travel-pack-FARPONT40F22.html">Osprey Farpoint 40</a></td>

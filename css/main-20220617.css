@@ -718,20 +718,25 @@ nav a:hover {
 .search {
     --vertical-margin: 1rem;
 }
-.post h1 {
+.post h1,
+.page-updated h1 {
     margin-bottom: .5rem;
 }
 
 .post .tagline,
-.post .date {
+.post .date,
+.page-updated .tagline,
+.page-updated .date {
     font-family: "Helvetica Neue", sans-serif;
 }
 
-.post .tagline {
+.post .tagline,
+.page-updated .tagline {
     margin-bottom: 0;
 }
 
-.post .date {
+.post .date,
+.page-updated .tagline {
     color: var(--color-fg-subtle);
 }
 

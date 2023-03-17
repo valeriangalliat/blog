@@ -14,17 +14,22 @@ const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
 const env = {}
-const bodyClass = file.match(/^\d{4}\//) ? 'post' : 'page'
+let layout = file.match(/^\d{4}\//) ? 'post' : 'page'
 
 const md = mdit({
   html: true,
   typographer: true
 })
 
+
 md.use(require('markdown-it-front-matter'), metaString => {
   for (const line of metaString.split('\n')) {
     const [key, value] = line.split(': ')
     meta[key] = value
+  }
+
+  if (meta.layout) {
+    layout = meta.layout
   }
 })
 
@@ -99,7 +104,7 @@ md.core.ruler.push('paragraphsAfterTitle', state => {
 
   const classes = ['tagline', 'date']
 
-  if (bodyClass === 'post' && paragraphs.length === 1) {
+  if (['post', 'page-updated'].includes(layout) && paragraphs.length === 1) {
     classes.shift()
   }
 
@@ -184,7 +189,7 @@ process.stdout.write(
   head
     .replace('<title>', `<title>${escape(env.title)}`)
     .replace('</head>', `${metaTags}</head>`)
-    .replace('<body>', `<body class="${bodyClass}">`)
+    .replace('<body>', `<body class="${layout}">`)
     .replace('<header>', hero)
     .replace('</header>', heroCredit)
     .replace('<div class="content">', `<div class="content">\n${header}`)
@@ -194,7 +199,7 @@ process.stdout.write(
 process.stdout.write(body)
 process.stdout.write('\n')
 
-if (bodyClass === 'post') {
+if (layout === 'post') {
   process.stdout.write('<section class="post-footer">\n  <h3>Want to leave a comment?</h3>\n')
   process.stdout.write('  <p>\n')
 

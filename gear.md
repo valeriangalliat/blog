@@ -1,14 +1,37 @@
-# Gear
+---
+layout: page-updated
+---
 
-On this page you'll find the list of all the gear I use! It's mainly
-around my [FunkyVal](https://www.youtube.com/FunkyVal) channel on
-YouTube because that's what requires most of it, but not limited to. 😉
+# The gear I use
+Updated on **March 17, 2023**.
 
-## Music
+On this page you'll find the gear that I use for various aspects of my life.  
+[Tech](#tech), [music](#music), [photography](#photography), [video](#video), [sports](#sports) and [coffee](#coffee).
+
+## Tech 💻
+
+### Hardware
+
+* M1 MacBook Pro 16"
+* [LG UltraFine 4K 24"](https://amzn.to/3LB5CiR)
+* [Sony WH-1000XM4](https://amzn.to/40d3yS7)
+* [Pixel 6A](https://store.google.com/product/pixel_6a)
+* [Kobo Nia](https://ca.kobobooks.com/products/kobo-nia)
+
+### Software
+
+* macOS, [Arch Linux](https://archlinux.org/)
+* [Vim](https://www.vim.org/)
+* [Visual Studio Code](https://code.visualstudio.com/)
+* [Node.js](https://nodejs.org/)
+* [Google Cloud](https://cloud.google.com/) (this blog runs on a free tier VM 😜)
+* [Firefox](https://www.mozilla.org/firefox/) with [uBlock Origin](https://ublockorigin.com/) and [Vimium](https://vimium.github.io/)
+
+## Music 🎸
 
 ![Acoustic guitar recording with the H2n](img/2021/09/h2n/acoustic-2.jpg)
 
-### Recording
+### Recording 🎤
 
 <table>
   <tr>
@@ -54,7 +77,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
   </tr>
 </table>
 
-### Playing
+### Playing 🎸
 
 <table>
   <tr>
@@ -94,7 +117,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
   </tr>
 </table>
 
-## Photography
+## Photography 📸
 
 ![Val taking a picture on top of a mountain](https://photography.codejam.info/img/val-4.jpg)
 
@@ -116,7 +139,7 @@ YouTube because that's what requires most of it, but not limited to. 😉
   </tr>
 </table>
 
-## Video
+## Video 🎥
 
 ![Val taking a photo in the office](https://photography.codejam.info/img/val-2.jpg)
 
@@ -161,7 +184,30 @@ YouTube because that's what requires most of it, but not limited to. 😉
   </tr>
 </table>
 
-## Coffee
+## Sports
+
+### Climbing 🧗
+
+* Rope: [Beal Booster III 9.7 mm Unicore Dry Cover 80 m](https://www.beal-planet.com/en/dynamic-ropes/1433-9922-booster-iii-97mm.html)
+* Quickdraws: [Edelrid Slash 10 cm](https://www.trueoutdoors.ca/slash-set-10cm-night-oasis.html) (12)
+* Master beaner: [Petzl WILLIAM Triact-Lock](https://www.petzl.com/US/en/Professional/Connectors/WILLIAM)
+* Large beaners: [Petzn Am'D Screw-Lock](https://www.petzl.com/US/en/Sport/Carabiners-and-quickdraws/Am-D) (2)
+* Small beaners: [Petzl Spirit Screw-Lock](https://www.vertical-addiction.com/us/petzl-petzl-spirit-screw-lock-carabiner.html) (5)
+* PAS: [Metolius Dynamic PAS](https://www.metoliusclimbing.com/dynamic-pas-personal-anchor-system.html)
+* Harness: [Edelrid Zack](https://www.outdoorgearlab.com/reviews/climbing/climbing-harness/edelrid-zack)
+* Helmet: [Edelrid Zodiac](https://www.trueoutdoors.ca/zodiac-helmet.html)
+* ATC: [Petzl REVERSO](https://www.petzl.com/US/en/Sport/Belay-devices-and-descenders/REVERSO)
+* Sling: [Petzl Fin'Anneau 120 cm](https://weighmyrack.com/sling/petzl-8-mm-finanneau-120-cm)
+
+### Skiing ⛷️
+
+* Ski: [Salomon MTN Explore 95 177 cm](https://www.sail.ca/en/salomon-mtn-explore-95-alpine-touring-skis-791043)
+* Bindings: [Salomon S/Lab Shift MNC 10 100 mm](https://www.salomon.com/en-ca/shop/product/s-lab-shift-mnc-10.html)
+* Boots: [Salomon Shift Pro 100 AT](https://www.mec.ca/en/product/6010-972/shift-pro-100-at-ski-boots)
+* Poles: [Völkl Touristick AC](https://volkl.com/en-ca/p/touristick-ac-poles-adjustable-2023)
+* Skins: [Black Diamond Ascension Nylon](https://www.blackdiamondequipment.com/product/ascension-nylon-climbing-skins/)
+
+## Coffee ☕️
 
 <table>
   <tr>

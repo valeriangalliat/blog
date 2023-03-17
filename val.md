@@ -34,15 +34,14 @@ I'm addicted to music, and when I'm not listening to some, it's more
 likely because I'm [playing][channel].
 
 I also happen to be a software developer, specialized in
-backend and infrastructure. Currently working at [Hookdeck] and
-previously [Sportlogiq], and [Busbud].
+backend and infrastructure. Currently working at [Arcade], and
+previously at [Hookdeck].
 
 [bike]: https://www.codejam.info/img/2020/06/gopro.jpg
 [motorcycle]: https://photography.codejam.info/photos/P2570525.html
 [channel]: https://www.youtube.com/FunkyVal
+[Arcade]: https://www.arcade.software/
 [Hookdeck]: https://hookdeck.com/about
-[Sportlogiq]: https://sportlogiq.com/en/about-us
-[Busbud]: https://www.busbud.com/en/about
 
 ## Contact
 

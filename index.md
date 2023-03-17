@@ -33,7 +33,6 @@ A blog about tech, programming and other things.
 
 <div class="links">
 
-* [Gear](gear.md) <small>| the gear I use</small>
 * [Git](git.md) <small>| how I learnt Git</small>
 * [Vim](vim.md) <small>| how I learnt Vim</small>
 * [Simple](simple.md) <small>| why I write boring code</small>
@@ -45,6 +44,8 @@ A blog about tech, programming and other things.
 <div class="links">
 
 * [About](val.md) <small>| meet the author</small>
+* [Now](now.md) <small>| what I'm doing now</small>
+* [Gear](gear.md) <small>| the gear I use</small>
 * [About the name](about-the-name.md) <small>| why CodeJam</small>
 * [Photography](https://photography.codejam.info/) <small>| my photos</small>
 * [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>

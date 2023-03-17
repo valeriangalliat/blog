@@ -207,6 +207,36 @@ On this page you'll find the gear that I use for various aspects of my life.
 * Poles: [Völkl Touristick AC](https://volkl.com/en-ca/p/touristick-ac-poles-adjustable-2023)
 * Skins: [Black Diamond Ascension Nylon](https://www.blackdiamondequipment.com/product/ascension-nylon-climbing-skins/)
 
+### Backpacks ⛰️
+
+<table>
+  <tr>
+    <td><a href="https://www.osprey.com/ca/en/product/kestrel-48-KESTREL48S19_130.html">Osprey Kestrel 48</a></td>
+    <td>My main backpack, a bit big for a single day but also does the
+    job for a few days if I pack somewhat light.</td>
+  </tr>
+  <tr>
+    <td><a href="https://www.osprey.com/pe/en/product/xenith-75-XENITH75IS18.html">Osprey Xenith 75</a></td>
+    <td>Big bag for big adventures, perfect when I'm going both camping
+    <em>and</em> climbing for a few days.</td>
+  </tr>
+  <tr>
+    <td><a href="https://www.osprey.com/us/en/product/farpoint-40-travel-pack-FARPONT40F22.html">Osprey Farpoint 40</a></td>
+    <td>One of the biggest bags you can take as a carry-on with most
+    airlines. You can get away with bigger in a lot of cases (most of
+    the time they're not strict about it) but if you want the peace of
+    mind to know it <em>technically</em> meets the requirements, this is
+    it. Perfect especially when I want to travel with <em>only</em> a
+    carry-on (this is so convenient).</td>
+  </tr>
+</table>
+
+### Camping 🏕️
+
+* Tent: [MSR Hubba Hubba NX 2-Person](https://www.msrgear.com/ca/tents/backpacking-tents/hubba-hubba-2-person-backpacking-tent/11506.html)
+* Sleeping pad: [Thermarest Z Lite Sol](https://www.thermarest.com/ca/sleeping-pads/fast-and-light/z-lite-sol-sleeping-pad/z-lite-sol.html)
+* Sleeping bag: [Enlightened Equipment Enigma Quilt](https://enlightenedequipment.com/enigma) (850 down, -6 °C)
+
 ## Coffee ☕️
 
 <table>

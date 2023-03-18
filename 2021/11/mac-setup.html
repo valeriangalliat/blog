@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="How I set up a new Mac">
-  <meta property="og:description" content="As I recently blogged, I just upgraded to macOS Monterey taking it as an opportunity to start from a clean, fresh, pristine system. This means I had to set up everything again, which is not a big deal, but for the sake of remembering it and making it even faster next time, I figured I’d write about it.">
+  <meta property="og:description" content="Note: updated March 17, 2023 with Ventura!">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -35,6 +35,9 @@
     </div>
   </header>
   <div class="content">
+<div class="note">
+<p><strong>Note:</strong> updated March 17, 2023 with Ventura!</p>
+</div>
 <p>As I <a href="yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">recently blogged</a>,
 I just upgraded to macOS Monterey taking it as an opportunity to start
 from a clean, fresh, pristine system. This means I had to set up
@@ -84,81 +87,82 @@ a clean start.</p>
 <p>Here’s the things I do when I log in the first time on my freshly
 installed system.</p>
 <ul>
-<li>Get rid of all the garbage in the dock. I just leave the Finder and
+<li>
+<p>Get rid of all the garbage in the dock. I just leave the Finder and
 the trash, because you can’t really remove them anyways (did you try
 dragging the trash to the trash?), but I happen to use them so that’s
-fine.</li>
-<li>Open Safari to download <strong>Firefox</strong>. Very similar to how one would use
-Internet Explorer (oh wait, Edge) to install a real browser on
-Windows. This comparison might sound like a joke, but Safari
-effectively became the new Internet Explorer regarding how far behind
-they drag web standards, so this is sadly far more accurate than I’d
-like it to be.</li>
-<li>Download and install <strong>iTerm2</strong>.</li>
-</ul>
-<div class="note">
-<p><strong>Note:</strong> I could have installed Firefox and iTerm2 with Homebrew (which
-I add later) but for some reason there’s a few programs I kinda like to
-install on their own. Don’t ask me why.</p>
-<p>But now I think about it, it’s probably because Homebrew became so
-ridiculously slow to update its repository and the installed software
-that I’d rather keep the ones I want to be the most up-to-date separate
-from Homebrew.</p>
-<p>I’ll otherwise update Homebrew once a month or two, or when I need to
-install something new with it, and it forces me to upgrade everything
-else at the same time.</p>
-<p>As a general rule of thumb, everything graphical I tend to install on
-its own, and all the CLI stuff is with Homebrew.</p>
-</div>
-<ul>
-<li>Install <strong>Adobe Creative Cloud</strong> and the apps I use with it (Lightroom
-Classic, Photoshop, Premiere and After Effects). In Creative Cloud
-preferences, turn off file syncing and launch at login.
-<ul>
-<li>On a multi-user system, you’ll need to sign in to Creative Cloud for
-every single user to turn off file syncing and launch at login, even
-the ones who don’t use Creative Cloud apps (because the preferences
-pane is only accessible to logged in users). Now all my users have an
-empty Creative Cloud account just for the sake of disabling it. I
-fucking hate the current state of technology. 🙃</li>
-</ul>
+fine.</p>
 </li>
-<li>Install <strong>Logic Pro</strong> an download the full sound library. Sadly a fresh
+<li>
+<p>Open the terminal app to install <a href="https://brew.sh/">Homebrew</a> with
+whatever is the current recommended way. I Install it in the default
+place because otherwise it won’t be able to leverage many prebuilt
+binaries that hardcode the default prefix in them, and it’s utterly
+slow to compile everything. If you want to run Homebrew on a
+multi-user system, <a href="homebrew-multi-user.html">read that first</a>.</p>
+<p>After the installation, Homebrew tells you add <code>eval &quot;$(/opt/homebrew/bin/brew shellenv)&quot;</code> to your <code>~/.zprofile</code>. I
+personally prefer to use my <code>~/.zshenv</code> for this, because it’s sourced
+all the time whereas <code>.zprofile</code> is sourced only for login shells.
+Concretely this means that by setting the Homebrew environment
+variables in <code>.zshenv</code>, I can do <code>ssh me@my-machine brew ...</code>, whereas with <code>.zprofile</code>, I can’t.</p>
+<p>Also I don’t like running <code>eval &quot;$(brew shellenv)&quot;</code> on every single
+Zsh boot, I’d rather hardcode the output of <code>brew shellenv</code> in there
+since it’s not really supposed to change anyway. Concretely, I run:</p>
+<pre><code class="hljs language-sh">/opt/homebrew/bin/brew shellenv &gt;&gt; ~/.zshenv
+</code></pre>
+</li>
+<li>
+<p>Install Firefox and iTerm2 and optionally other apps:</p>
+<pre><code class="hljs language-sh">brew install firefox iterm2
+<span class="hljs-comment"># brew install homebrew/cask-versions/firefox-developer-edition</span>
+<span class="hljs-comment"># brew install google-chrome</span>
+<span class="hljs-comment"># brew install visual-studio-code</span>
+</code></pre>
+</li>
+<li>
+<p>Install <strong>DaVinci Resolve</strong>.</p>
+</li>
+<li>
+<p>Install <strong>Logic Pro</strong> an download the full sound library. Sadly a fresh
 Logic installation can’t reuse an existing sound library directory (I
 like to keep mine on my hard drive instead of my limited size SSD), so
-we need to download the whole 60 GB from scratch. Did I say I
-hate the current state of technology already?</li>
-<li>Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
+we need to download the whole 60 GB from scratch.</p>
+</li>
+<li>
+<p>Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
 custom screenshot interface, where I can change the <strong>screenshot
 directory</strong> to <code>~/Desktop/Screenshots</code>. I don’t like to clutter my
-desktop with screenshots like it’s the case by default.</li>
-<li>I download and run <a href="https://gist.github.com/adaugherity/7435890"><code>patch-edid.rb</code></a>
-to <a href="https://www.codejam.info/2020/10/too-much-contrast-external-screen-macos-catalina.html">patch the EDID of my screen</a>
-because since Catalina, macOS wants to communicate with it over YCbCr
-instead of RGB and that causes colors and contrast to be fucked up.
-This is extremely specific to my own screen.</li>
+desktop with screenshots like it’s the case by default.</p>
+</li>
 </ul>
 <p>Now I’m ready to configure the <a href="#system-preferences">system preferences</a>,
 <a href="#iterm2-settings">iTerm2 settings</a> and my <a href="#terminal-environment">terminal-environment</a>.</p>
 <h2 id="system-preferences" tabindex="-1"><a class="header-anchor" href="#system-preferences"><span>System preferences</span></a></h2>
 <ul>
-<li>In <strong>keyboard</strong> I set “key repeat” and “delay until repeat” to the
-fastest possible. I like my keyboard to be snappy.</li>
-<li>Also in <strong>keyboard</strong>, this time in the <strong>text</strong> tab, I untick
-everything, and delete the built-in <code>omw</code> abbreviation. See
-<a href="../../img/2021/11/keyboard-before.png">before</a>
+<li>In <strong>keyboard</strong> I set “key repeat rate” and “delay until repeat” to
+the fastest possible. I like my keyboard to be snappy.</li>
+<li>Also in <strong>keyboard</strong>, I <strong>edit</strong> the <strong>input sources</strong> settings and
+disable everything. Also in the <strong>text replacements</strong> part, I remove
+the built-in <code>omw</code> abbreviation. See <a href="../../img/2021/11/keyboard-before.png">before</a>
 and <a href="../../img/2021/11/keyboard-after.png">after</a>. I’m always
 staggered when I forget to do this and <code>omw</code> gets replaced by <code>On my way!</code>, or when I press space twice and it inserts a colon instead
 <em>while I code in Visual Studio Code</em>! 🤦‍♀️</li>
-<li>For the <strong>dock &amp; menu bar</strong>, I leave only <strong>Time Machine</strong> and <strong>fast
-user switching</strong> if I’m on a multi-user system, and I set the
-<strong>clock</strong> to 24 hours format.</li>
+<li>In <strong>control center</strong>, I leave only <strong>Time Machine</strong> and <strong>fast
+user switching</strong> in the menu bar if I’m on a multi-user system, and I
+set the <strong>clock</strong> to 24 hours format.</li>
+<li>In <strong>desktop &amp; dock</strong>, tick <strong>automatically hide and show the dock</strong>,
+untick <strong>show recent applications in dock</strong>, and under <strong>mission
+control</strong>, untick <strong>automatically rearrange spaces based on most recent use</strong>.</li>
 <li>I enable <strong>Time Machine</strong> backups to my usual drive after configuring
 my exclude list (very specific to my data so not included here).</li>
-<li>In <strong>energy saver</strong> I disable <strong>Power Nap</strong> because I don’t need my
-machine to resume from sleep to check emails and run backups (after
-all if I’m not using my machine there’s not much to back up anyways).</li>
 <li>In <strong>displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
+<li>In <strong>keyboard</strong>, <strong>shortcuts</strong>, <strong>mission control</strong>, I enable the
+<strong>switch to desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
+<li>Run <code>defaults write com.apple.dock autohide-delay -float 0; killall Dock</code>
+to <a href="../../2022/05/macos-faster-desktops-dock.html">remove the delay</a> to
+show and hide the dock.</li>
+<li>If I installed Visual Studio Code, I run <code>defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false</code> for…
+sanity.</li>
 </ul>
 <h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
 <ul>
@@ -171,18 +175,14 @@ editing</strong> preset (allow it to remove whatever is already there), and
 remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
 <kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
 between tabs.</li>
+<li>In <strong>advanced</strong>, <strong>mouse</strong>, set <strong>scroll wheel sends arrow keys when
+in alternate screen mode</strong> to <strong>yes</strong>.</li>
 </ul>
 <h2 id="terminal-environment" tabindex="-1"><a class="header-anchor" href="#terminal-environment"><span>Terminal environment</span></a></h2>
-<p>First, install <a href="https://brew.sh/">Homebrew</a> with whatever is the current
-recommended way. Install it in the default place because otherwise it
-won’t be able to leverage many prebuilt binaries that hardcode the
-default prefix in them, and it’s utterly slow to compile everything. I’d
-be running Gentoo if that’s what I wanted FFS. Also if you want to run
-Homebrew on a multi-user system, <a href="homebrew-multi-user.html">read that first</a>.</p>
-<p>Then, make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I usually
-run <code>ssh-keygen</code> either way just to let it create the directory with the
-proper permissions, even if I’ll override the key later.</p>
-<pre><code class="hljs language-sh">ssh-keygen
+<p>First, I make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I
+usually run <code>ssh-keygen</code> either way just to let it create the directory
+with the proper permissions, even if I’ll override the key later.</p>
+<pre><code class="hljs language-sh">ssh-keygen -t ed25519
 </code></pre>
 <p>Clone my <a href="https://github.com/valeriangalliat/dotfiles">dotfiles</a>
 directory and install my Mac preset (mainly my Zsh, Vim and Git

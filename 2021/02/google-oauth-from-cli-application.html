@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="Google OAuth from a CLI application">
-  <meta property="og:description" content="I like to make command line (CLI) applications and scripts, and some of them require to authenticate with a Google account.">
+  <meta property="og:description" content="Update: Google dropped the support for the oob method described in this post. We now can’t be lazy anymore and need to implement a localhost redirect URL. See local server redirect!">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -35,6 +35,11 @@
     </div>
   </header>
   <div class="content">
+<div class="note">
+<p><strong>Update:</strong> Google dropped the support for the <code>oob</code> method described in
+this post. We now can’t be lazy anymore and need to implement a
+<code>localhost</code> redirect URL. See <a href="#update-local-server-redirect">local server redirect</a>!</p>
+</div>
 <p>I like to make command line (CLI) applications and scripts, and some of
 them require to authenticate with a Google account.</p>
 <p>This requires OAuth, and the most popular and most documented way is
@@ -98,11 +103,9 @@ paste into your app to complete the process.</p>
 <span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function"><span class="hljs-params">resolve</span> =&gt;</span> rl.<span class="hljs-title function_">question</span>(<span class="hljs-string">&#x27;Enter the code from that page here: &#x27;</span>, resolve))
 rl.<span class="hljs-title function_">close</span>()
 
-<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve, reject</span>) =&gt;</span> {
-  oauth2Client.<span class="hljs-title function_">getToken</span>(code, <span class="hljs-function">(<span class="hljs-params">err, token</span>) =&gt;</span> err ? <span class="hljs-title function_">reject</span>(err) : <span class="hljs-title function_">resolve</span>(token))
-})
+<span class="hljs-keyword">const</span> { tokens } = <span class="hljs-keyword">await</span> oauth2Client.<span class="hljs-title function_">getToken</span>(code)
 
-oauth2Client.<span class="hljs-title function_">setCredentials</span>(token)
+oauth2Client.<span class="hljs-title function_">setCredentials</span>(tokens)
 </code></pre>
 <p>Your <code>oauth2Client</code> is now authenticated, and you can use it to access
 the Google APIs that you requested in your scope, for example for
@@ -128,11 +131,70 @@ the application authentication flow.</p>
 <span class="hljs-keyword">const</span> auth = app.<span class="hljs-title function_">auth</span>()
 <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> firebase.<span class="hljs-property">auth</span>.<span class="hljs-title class_">GoogleAuthProvider</span>()
 
-<span class="hljs-comment">// Here, `token` is the result of `oauth2Client.getToken` in the earlier example.</span>
-<span class="hljs-keyword">const</span> credential = firebase.<span class="hljs-property">auth</span>.<span class="hljs-property">GoogleAuthProvider</span>.<span class="hljs-title function_">credential</span>(token.<span class="hljs-property">id_token</span>)
+<span class="hljs-comment">// Here, `tokens` is the result of `oauth2Client.getToken` in the earlier example.</span>
+<span class="hljs-keyword">const</span> credential = firebase.<span class="hljs-property">auth</span>.<span class="hljs-property">GoogleAuthProvider</span>.<span class="hljs-title function_">credential</span>(tokens.<span class="hljs-property">id_token</span>)
 <span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> auth.<span class="hljs-title function_">signInWithCredential</span>(credential)
 
 <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(result)
+</code></pre>
+<h2 id="update-local-server-redirect" tabindex="-1"><a class="header-anchor" href="#update-local-server-redirect"><span>Update: local server redirect</span></a></h2>
+<p>Since October 2022, the method described in this post <a href="https://developers.google.com/identity/protocols/oauth2/native-app#manual-copypaste">got deprecated</a>.</p>
+<p>We now don’t have a choice but spawning a local HTTP server to handle
+the redirect URL. I’ll past my updated implementation below in case it
+can help you getting started with this method.</p>
+<p>It works by calling <code>server.listen()</code> without passing a port, so the OS
+can automatically allocate an available port, and we read it using
+<code>server.address().port</code> in order to define the redirect URL dynamically.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> http = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;http&#x27;</span>)
+<span class="hljs-keyword">const</span> { google } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;googleapis&#x27;</span>)
+
+<span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;your client ID&#x27;</span>
+<span class="hljs-keyword">const</span> clientSecret = <span class="hljs-string">&#x27;your client secret&#x27;</span>
+
+<span class="hljs-keyword">let</span> resolve
+
+<span class="hljs-keyword">const</span> codePromise = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve_</span>) =&gt;</span> {
+  resolve = resolve_
+})
+
+<span class="hljs-keyword">const</span> server = http.<span class="hljs-title function_">createServer</span>(<span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(req.<span class="hljs-property">url</span>, <span class="hljs-string">&#x27;http://localhost&#x27;</span>)
+
+  <span class="hljs-keyword">if</span> (url.<span class="hljs-property">pathname</span> !== <span class="hljs-string">&#x27;/&#x27;</span>) {
+    res.<span class="hljs-title function_">writeHead</span>(<span class="hljs-number">404</span>).<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Not Found&#x27;</span>)
+    <span class="hljs-keyword">return</span>
+  }
+
+  <span class="hljs-keyword">const</span> code = url.<span class="hljs-property">searchParams</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;code&#x27;</span>)
+
+  <span class="hljs-keyword">if</span> (!code) {
+    res.<span class="hljs-title function_">writeHead</span>(<span class="hljs-number">400</span>).<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Bad Request&#x27;</span>)
+    <span class="hljs-keyword">return</span>
+  }
+
+  res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;OK&#x27;</span>)
+  server.<span class="hljs-title function_">close</span>()
+  <span class="hljs-title function_">resolve</span>(code)
+})
+
+server.<span class="hljs-title function_">listen</span>()
+
+<span class="hljs-keyword">const</span> port = server.<span class="hljs-title function_">address</span>().<span class="hljs-property">port</span>
+<span class="hljs-keyword">const</span> redirect = <span class="hljs-string">`http://localhost:<span class="hljs-subst">${port}</span>`</span>
+
+<span class="hljs-keyword">const</span> oauth2Client = <span class="hljs-keyword">new</span> google.<span class="hljs-property">auth</span>.<span class="hljs-title class_">OAuth2</span>(clientId, clientSecret, redirect)
+
+<span class="hljs-keyword">const</span> authUrl = oauth2Client.<span class="hljs-title function_">generateAuthUrl</span>({
+  <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
+  <span class="hljs-attr">scope</span>: [<span class="hljs-string">&#x27;https://www.googleapis.com/auth/youtube&#x27;</span>]
+})
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Authorize this app by visiting this URL: &#x27;</span>, authUrl)
+
+<span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> codePromise
+<span class="hljs-keyword">const</span> { tokens } = <span class="hljs-keyword">await</span> oauth2Client.<span class="hljs-title function_">getToken</span>(code)
+
+oauth2Client.<span class="hljs-title function_">setCredentials</span>(tokens)
 </code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>

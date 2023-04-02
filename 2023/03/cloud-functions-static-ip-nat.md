@@ -270,7 +270,7 @@ aka the state it's in if you don't check "dynamic port allocation" in
 the **advanced configurations** part (hidden by default).
 
 <figure class="center">
-  <img alt="Default Cloud NAT port allocation settings" src="../../img/2023/03/cloud-nat-port-allocation.png" width="50%">
+  <img alt="Default Cloud NAT port allocation settings" srcset="../../img/2023/03/cloud-nat-port-allocation.png 2x">
 </figure>
 
 What this reveals is one key piece of information. **Our Cloud NAT
@@ -357,7 +357,7 @@ The **advanced configurations** of Cloud NAT also gives us control over
 various protocol timeouts. Here are the defaults:
 
 <figure class="center">
-  <img alt="Default Cloud NAT timeouts settings" src="../../img/2023/03/cloud-nat-timeouts.png" width="50%">
+  <img alt="Default Cloud NAT timeouts settings" srcset="../../img/2023/03/cloud-nat-timeouts.png 2x">
 </figure>
 
 Here we'll focus on the TCP settings. Here's a more detailed description

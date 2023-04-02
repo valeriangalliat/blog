@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Getting rid of ghost login items in macOS Ventura</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Getting rid of ghost login items in macOS Ventura">
+  <meta property="og:description" content="Let’s say you uninstalled an app on macOS Ventura, and you see some leftovers from that app in system settings, general, login items:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Getting rid of ghost login items in macOS Ventura</h1>
+<p class="date">April 2, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Let’s say you uninstalled an app on macOS Ventura, and you see some
+leftovers from that app in <strong>system settings</strong>, <strong>general</strong>, <strong>login
+items</strong>:</p>
+<figure class="center">
+  <img srcset="../../img/2023/04/login-items-dirty.png 2x">
+</figure>
+<p>Here’s a few tips to solve it.</p>
+<h2 id="reboot" tabindex="-1"><a class="header-anchor" href="#reboot"><span>Reboot</span></a></h2>
+<p>More often than not, it seems that after removing login items and/or the
+app behind then, it takes a reboot of macOS Ventura until they’re
+“garbage collected” from system settings. That’s the first thing you
+should try.</p>
+<h2 id="check-your-trash" tabindex="-1"><a class="header-anchor" href="#check-your-trash"><span>Check your trash!</span></a></h2>
+<p>If you moved the app to the trash but didn’t empty the trash, its login
+items are still referenced from the trash! They won’t go away until you
+permanently delete the app (and reboot).</p>
+<h2 id="check-leftover-launch-agents-and-daemons" tabindex="-1"><a class="header-anchor" href="#check-leftover-launch-agents-and-daemons"><span>Check leftover launch agents and daemons</span></a></h2>
+<p>There’s a few places macOS looks for “login items” on your filesystem:</p>
+<ul>
+<li><code>/Library/LaunchAgents</code></li>
+<li><code>/Library/LaunchDaemons</code></li>
+<li><code>~/Library/LaunchAgents</code></li>
+<li><code>~/Library/LaunchDaemons</code></li>
+</ul>
+<p>Also, same thing under <code>/System/Library</code> but that’s for macOS own login
+items and you have no control over them.</p>
+<p>Check the 4 directories above for leftover <code>plist</code> files from the
+applications you removed. You may need to do some cleanup. After that,
+don’t forget to reboot!</p>
+<h2 id="inspect-backgrounditems-v4-btm" tabindex="-1"><a class="header-anchor" href="#inspect-backgrounditems-v4-btm"><span>Inspect <code>BackgroundItems-v4.btm</code></span></a></h2>
+<p>As shown in <a href="https://www.reddit.com/r/MacOSBeta/comments/w2we6q/cleaning_up_venturas_login_items/">this Reddit post</a>,
+the list of login items in Ventura is managed in <code>/private/var/db/com.apple.backgroundtaskmanagement</code>. In my case, in a <code>BackgroundItems-v8.btm</code> file.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v8.btm</span>
+Apple binary property list
+</code></pre>
+<p>As <code>file(1)</code> tells us, this is a binary property list file. We can
+inspect it with <code>plutil</code>:</p>
+<pre><code class="hljs language-sh">plutil -p /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v8.btm
+</code></pre>
+<p>This will print the whole structure behind that file. From inspecting
+its output, you should be able to determine what’s behind the “ghost items”
+that you identified in the system settings. More often than not, it’ll
+point to some file or app that you forgot to get rid of, and cleaning
+that up will fix your problem (again, after a reboot).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/ghost-login-items-macos-ventura.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

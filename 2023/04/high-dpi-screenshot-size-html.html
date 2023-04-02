@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Embedding high DPI screenshots at normal size in HTML</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Embedding high DPI screenshots at normal size in HTML">
+  <meta property="og:description" content="Since I moved to a Retina display, the screenshots I take are twice as big as before!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Embedding high DPI screenshots at normal size in HTML</h1>
+<p class="date">April 2, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Since I moved to a Retina display, the screenshots I take are twice as
+big as before!</p>
+<p>This is a problem because, when embedded in an HTML page, they look
+ginormous.</p>
+<p>Let’s take a dummy example of some UI element screenshot:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;save-as-example.png&quot;</span>&gt;</span>
+</code></pre>
+<figure class="center">
+  <img alt="Save as popup" src="../../img/2023/04/save-as-example.png">
+</figure>
+<p>This is huge. Crazy huge. It disturbs the reading flow and you only see
+that oversized, slightly blurry image. Just bad.</p>
+<p>How to fix it then?</p>
+<h2 id="downsize-the-image" tabindex="-1"><a class="header-anchor" href="#downsize-the-image"><span>Downsize the image</span></a></h2>
+<p>We can resize the image by 50% before embedding it. For example using
+ImageMagick:</p>
+<pre><code class="hljs language-sh">convert save-as-example.png -resize 50% save-as-example-small.png
+</code></pre>
+<p>This will work, but we introduce a loss in quality from the downscaling
+operation. It’s not gonna be as “sharp” as if the UI element was
+rendered at the lower resolution in the first place, without being
+downsized at the pixel level later on.</p>
+<p>On top of that, when viewed on a high DPI screen, the image will not be
+as crisp as what you saw when you took the screenshot, because half the
+pixels got lost.</p>
+<h2 id="take-the-screenshot-on-a-low-dpi-screen" tabindex="-1"><a class="header-anchor" href="#take-the-screenshot-on-a-low-dpi-screen"><span>Take the screenshot on a low DPI screen</span></a></h2>
+<p>On macOS, if you have an external screen that has a low DPI, you can
+take the screenshot on that screen. Then the screenshot will be taken at
+a normal-looking native resolution, because there’s no scaling factor.</p>
+<p>The downside is that you need a low DPI screen handy, and to plug it.
+Not always applicable.</p>
+<p>And on top of that, like the previous method, it won’t look as good when
+viewed on a high DPI screen.</p>
+<h2 id="use-srcset-with-a-2x-factor" tabindex="-1"><a class="header-anchor" href="#use-srcset-with-a-2x-factor"><span>Use <code>srcset</code> with a <code>2x</code> factor!</span></a></h2>
+<p>If you want to go the lazy and easy way, <code>srcset</code> is the way.</p>
+<p>It allows to specify a <em>pixel density descriptor</em> for the image being
+referenced. In our case, because the screenshot was rendered at double
+the size for the Retina display, we can specify <code>2x</code>.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">srcset</span>=<span class="hljs-string">&quot;save-as-example.png 2x&quot;</span>&gt;</span>
+</code></pre>
+<figure class="center">
+  <img alt="Save as popup" srcset="../../img/2023/04/save-as-example.png 2x">
+</figure>
+<p>This looks perfect! On a high DPI screen, we get the exact original
+quality of the screenshot, as crisp as can be. On a low DPI screen, the
+browser knows how to adapt the size of the screenshot to make it look
+just right.</p>
+<p>The only downside is that for low DPI screens, we’ll still send the
+heavier image with twice as much pixels, even if we don’t need it. If
+that’s a problem for you, then you can use one of the earlier solutions
+to generate a <code>1x</code> version of the screenshot, and use it as part of the
+<code>srcset</code>.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/high-dpi-screenshot-size-html.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

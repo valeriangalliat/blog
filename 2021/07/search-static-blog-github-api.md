@@ -371,7 +371,7 @@ think it illustrates perfectly the search implementation on this blog.
 
 > <figure>
 >   <a href="https://twitter.com/flaviocopes/status/1417007331930423298/photo/1">
->     <img alt="Code complexity" src="../../img/2021/07/code-complexity.jpg" width="500">
+>     <img alt="Code complexity" srcset="../../img/2021/07/code-complexity.jpg 3x">
 >   </a>
 > </figure>
 >

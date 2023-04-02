@@ -82,3 +82,13 @@ heavier image with twice as much pixels, even if we don't need it. If
 that's a problem for you, then you can use one of the earlier solutions
 to generate a `1x` version of the screenshot, and use it as part of the
 `srcset`.
+
+<div class="note">
+
+**Note:** I also use this technique from phone screenshots! Phones
+typically have high DPI screens too, and they generate pretty large
+screenshots. `2x` might not be enough to make it look reasonable on a
+web page, so feel free to go `3x` or `4x` if you want to reduce the size
+of the image without altering the original and compromising its quality!
+
+</div>

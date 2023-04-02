@@ -6,7 +6,7 @@ leftovers from that app in **system settings**, **general**, **login
 items**:
 
 <figure class="center">
-  <img srcset="../../img/2023/04/login-items-dirty.png 2x">
+  <img alt="macOS login items with leftover app that shouldn't be there" srcset="../../img/2023/04/login-items-dirty.png 2x">
 </figure>
 
 Here's a few tips to solve it.

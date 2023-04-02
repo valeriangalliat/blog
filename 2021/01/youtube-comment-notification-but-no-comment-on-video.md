@@ -111,7 +111,7 @@ comments that I couldn't find earlier were there, and I could actually
 approve them, and then reply to them.
 
 <figure class="center">
-  <img alt="Screenshot of the mobile app" src="../../img/2021/01/youtube-missing-comments/youtube-studio-mobile.jpg" width="360">
+  <img alt="Screenshot of the mobile app" srcset="../../img/2021/01/youtube-missing-comments/youtube-studio-mobile.jpg 3x">
   <figcaption>Where to find the missing comments on the mobile app.<br>Nothing to see on mine because I approved them all already!</figcaption>
 </figure>
 

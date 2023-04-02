@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 * [Embedding high DPI screenshots at normal size in HTML](2023/04/high-dpi-screenshot-size-html.md) <small>April 2, 2023</small>
 * [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
 * [OVH email redirect causes SPF check failure](2023/02/ovh-email-redirect-spf-failure.md) <small>February 26, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Notion: import CSV with Markdown page content](2022/05/notion-csv-markdown-page-content.md) <small>May 11, 2022</small>
 * [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 * [The disk wasn't ejected because one or more programs may be using it](2022/05/macos-disk-not-ejected-programs-using-it.md) <small>May 5, 2022</small>
-* [macOS faster switch between desktops and faster Dock](2022/05/macos-faster-desktops-dock.md) <small>May 5, 2022</small>
 
 [All the posts](posts.md)
 

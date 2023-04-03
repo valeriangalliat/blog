@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Archiving Google Photos offline to free up space</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Archiving Google Photos offline to free up space">
+  <meta property="og:description" content="If you backup your phone photos to Google Photos automatically, and you don’t pay for some kind of Google One subscription, you’ll run sooner or later into the 15 GB storage limit of your Google account.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Archiving Google Photos offline to free up space</h1>
+<p class="date">April 2, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>If you backup your phone photos to Google Photos automatically, and you
+don’t pay for some kind of Google One subscription, you’ll run sooner or
+later into the 15 GB storage limit of your Google account.</p>
+<p>15 GB is not a lot, especially when you consider than my Pixel 6a takes
+pictures that are easily 3 to 5 MB each. 😬</p>
+<p>To be fair, if you want convenience and you value your time, Google
+One’s $20/year for 100 GB is a pretty damn good deal. Same goes for the
+higher options with more storage if you need.</p>
+<p>But if you don’t like recurring bills like me, and you find it overkill
+to keep that many old photos in the cloud, read on.</p>
+<h2 id="my-protocol-for-archiving-photos-away-from-google" tabindex="-1"><a class="header-anchor" href="#my-protocol-for-archiving-photos-away-from-google"><span>My protocol for archiving photos away from Google</span></a></h2>
+<p>In order to save space, I’ll periodically archive my old photos outside
+of Google Photos.</p>
+<p>This protocol is designed to archive photos <em>from the phone</em> that are
+<em>backed up</em> to Google Photos, but preserving the phone’s original
+arborescence. Google Photos doesn’t have the path information, only the
+filename, so backing up <em>from Google Photos</em> directly would not work for
+this use case.</p>
+<p>The downside is that this doesn’t cover the case where you have photos
+in Google Photos that are <em>not</em> on your phone.</p>
+<p>Also it’s designed for a single phone backing up to a Google Photos
+account that’s used <em>solely</em> for that device. Multiple devices sharing
+the same Google Photos is not supported.</p>
+<p>With that said, here’s how I do it.</p>
+<h3 id="1-sync-phone-to-computer" tabindex="-1"><a class="header-anchor" href="#1-sync-phone-to-computer"><span>1. Sync phone to computer</span></a></h3>
+<p>First, I use <a href="https://syncthing.net/">Syncthing</a> to sync the contents of
+my phone to a hard drive connected to my computer.</p>
+<p>I configure Syncthing as “send only” on my phone, and “receive only” on
+my computer, and I configure it to sync the root directory of my phone
+(which can be tricky, <a href="syncthing-root-directory.html">but possible</a>).</p>
+<p><strong>After the sync is complete, I turn off Syncthing from my computer, to
+make sure no incremental updates will happen during the archive
+process.</strong></p>
+<h3 id="2-copy-synced-folder-to-archive" tabindex="-1"><a class="header-anchor" href="#2-copy-synced-folder-to-archive"><span>2. Copy synced folder to archive</span></a></h3>
+<p>For this example, let’s assume I synced my phone to a
+<code>/Volumes/Syncthing/Phone</code> directory, and I want to archive my old
+photos in <code>/Volumes/Archive/Phone</code>.</p>
+<p>I’ll run the following command to copy the phone contents to my archive
+directory:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/ /Volumes/Archive/Phone/
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the reason I copy the whole phone contents is because I want
+to catch <em>all</em> photos and videos that are backed up to Google Photos.
+Typically, apps like Messenger, Whats App, Signal, etc. all store photos
+in different directories, so syncing only <code>DCIM/Camera</code> would not be
+enough.</p>
+</div>
+<p>If the target directory already exists, this will append new files to it
+(and overwrite them if a file already exists there)!</p>
+<p>Also if the directory already exists, the trailing slashes are
+important.</p>
+<div class="note">
+<p><strong>Note:</strong> if both directories are on the same filesystem, and you’re not
+appending to an existing archive, you may use <code>mv</code> instead, but then
+make sure to recreate the Syncthing directory and put back its
+<code>.stfolder</code> (required for Syncthing to recognize it) and <code>.stignore</code> if
+you have one!</p>
+</div>
+<h3 id="3-delete-everything-from-google-photos" tabindex="-1"><a class="header-anchor" href="#3-delete-everything-from-google-photos"><span>3. Delete everything from Google Photos</span></a></h3>
+<p>Not necessarily everything, but well, everything you want to delete to
+free up space.</p>
+<p>You can do it from your phone, or from Google Photos on your computer,
+or on the web.</p>
+<div class="note">
+<p><strong>Note:</strong> be careful! If you have photos that are <em>only</em> on Google
+Photos but not stored on your phone storage, the previous step didn’t
+archive them. You need to make sure to download them from Google Photos
+in the first place. Doing that in an automated way is not covered in
+this post.</p>
+</div>
+<p>As an abundance of caution, you may want to double check that the number
+of photos/videos you have on Google Photos matches exactly with the
+number of photos/videos you have on your phone before doing that.</p>
+<p>If there’s any mismatch, try to find where the difference it to make
+sure you’re not accidentally losing any photo.</p>
+<p>Alternatively, you can <a href="#bonus-script-to-list-all-your-google-photos-using-the-api">use the Google Photos API</a>
+to list all the filenames on Google Photos, and ensure you have a match
+in your archive prior to deleting. Otherwise, you’ll know the names of
+the missing ones that you have to download.</p>
+<div class="note">
+<p><strong>Note:</strong> if you deleted the photos from the web or desktop app, make
+sure to wait that the deletion is propagated to your phone before you
+continue!</p>
+</div>
+<h3 id="4-sync-phone-to-computer-again" tabindex="-1"><a class="header-anchor" href="#4-sync-phone-to-computer-again"><span>4. Sync phone to computer again</span></a></h3>
+<p>Again with Syncthing in my case, I do a sync following the deletion.</p>
+<div class="note">
+<p><strong>Note:</strong> you may want to exclude <code>.trashed-*</code> files in your
+<code>.stignore</code>, otherwise the photos you deleted will still be synced while
+they’re in the trash.</p>
+</div>
+<p>Now in our example, <code>/Volumes/Syncthing/Phone</code> contains just the
+photos we decided to keep around in Google Photos, while
+<code>/Volumes/Archive/Phone</code> contains <em>all</em> the photos (also including the
+ones we kept around).</p>
+<p>On top of that, both directories contains <em>all other files</em> from the
+phone, that are not managed by Google Photos.</p>
+<div class="note">
+<p><strong>Note:</strong> this process is not very efficient if you have a lot of files
+that are not photos and videos, e.g. music and downloads. You may want
+to ignore those directories in the earlier steps to avoid copying them
+around unnecessarily!</p>
+</div>
+<h3 id="5-remove-the-overlap" tabindex="-1"><a class="header-anchor" href="#5-remove-the-overlap"><span>5. Remove the overlap</span></a></h3>
+<p>To avoid that duplication, we can remove all files from the archive that
+are still in the Syncthing directory. That is, all the photos/videos we
+kept, as well as all the files in the phone storage that are not managed
+by Google Photos.</p>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find . -<span class="hljs-built_in">type</span> f) | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> f; <span class="hljs-keyword">do</span> <span class="hljs-built_in">rm</span> -v <span class="hljs-string">&quot;/Volumes/Archive/Phone/<span class="hljs-variable">$f</span>&quot;</span>; <span class="hljs-keyword">done</span>
+</code></pre>
+<p>Now, the archive directory only contains what we removed from Google
+Photos (and from the phone), but there’s no duplicates!</p>
+<h3 id="6-profit" tabindex="-1"><a class="header-anchor" href="#6-profit"><span>6. Profit!</span></a></h3>
+<p>You can now enjoy all the space you freed up by archiving your photos
+and videos away from Google Photos!</p>
+<p>Repeat every time you’re close to running out of storage. 😉</p>
+<h2 id="about-the-google-photos-app-home-page" tabindex="-1"><a class="header-anchor" href="#about-the-google-photos-app-home-page"><span>About the Google Photos app “home page”</span></a></h2>
+<p>I think there may be some display bugs when deleting <em>a lot</em> of photos
+from Google Photos at once. For some reason the main photos list of my
+Google Photos still shows a few of the photos I deleted! They’re in a
+weird state where the UI offers me download them to my device (as if
+they’re not on the device already), but also shows me a local path to
+the file as if it was on device (but the photo is not actually there).</p>
+<p>I’m thinking this issue will be gone when the photos in the trash are
+permanently deleted, so this doesn’t concern me too much. What’s visible
+in Google Photos on the web (and in their API) is consistent with the
+state I want, and what’s on my phone’s raw storage is consistent too.</p>
+<h2 id="bonus-script-to-list-all-your-google-photos-using-the-api" tabindex="-1"><a class="header-anchor" href="#bonus-script-to-list-all-your-google-photos-using-the-api"><span>Bonus: script to list all your Google Photos using the API</span></a></h2>
+<p>In the previous section, we saw it can be useful to list all the photos
+from Google Photos (not necessarily on any of your devices) prior to
+running the archiving process, to make sure you can catch the ones that
+are not backed up anywhere.</p>
+<p>You can put this script in <code>photos.mjs</code> and run as <code>node photos.mjs</code>.
+You’ll need to put a Google OAuth access token with access to your
+Google Photos for this to work.</p>
+<p>If you want to generate one from the CLI, check out my
+<a href="../../2021/02/google-oauth-from-cli-application.html#update-local-server-redirect">article on the subject</a>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
+
+<span class="hljs-keyword">const</span> accessToken = <span class="hljs-string">&#x27;YOUR_ACCESS_TOKEN&#x27;</span>
+
+<span class="hljs-keyword">let</span> pageToken = <span class="hljs-string">&#x27;&#x27;</span>
+<span class="hljs-keyword">let</span> pages = []
+
+<span class="hljs-keyword">do</span> {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100&amp;pageToken=&#x27;</span> + <span class="hljs-built_in">encodeURIComponent</span>(pageToken)
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(url)
+
+  <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Authorization&#x27;</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${accessToken}</span>`</span>
+    }
+  })
+
+  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">json</span>()
+
+  pages.<span class="hljs-title function_">push</span>(json)
+
+  pageToken = json.<span class="hljs-property">nextPageToken</span>
+} <span class="hljs-keyword">while</span> (pageToken)
+
+<span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">writeFile</span>(<span class="hljs-string">&#x27;pages.json&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(pages, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>))
+</code></pre>
+<p>This will fetch all pages from the Google Photos API and dump them in a
+<code>pages.json</code> file. You can then iterate through it to do whatever
+operations you need to, e.g. making sure you don’t leave any photo
+around before deleting them from Google.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>Archiving photos away from Google Photos is not trivial, but possible.</p>
+<p>If you care about not losing any of your photos, I recommend double
+checking at every step that you’re not accidentally forgetting any file.</p>
+<p>When done well, this allows to periodically free up some space from your
+Google account without actually having to get rid of your photos and
+videos! They’ll still be available on your archive hard drive if you
+want to. Your old photos are not as handy as if they were in the cloud,
+but you know you can access them if needed.</p>
+<p>Overall, you’re probably better off just paying Google to increase your
+storage, but if you’re really motivated, I hope you can find inspiration
+in the process I described in this post.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/archiving-google-photos.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

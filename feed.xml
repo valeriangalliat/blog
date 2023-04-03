@@ -5,10 +5,373 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-03-18T21:58:36.034Z</updated>
+  <updated>2023-04-03T00:26:04.287Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Archiving Google Photos offline to free up space</title>
+    <link href="https://www.codejam.info/2023/04/archiving-google-photos.html" />
+    <id>https://www.codejam.info/2023/04/archiving-google-photos.html</id>
+    <updated>2023-04-02T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>If you backup your phone photos to Google Photos automatically, and you
+don’t pay for some kind of Google One subscription, you’ll run sooner or
+later into the 15 GB storage limit of your Google account.</p>
+<p>15 GB is not a lot, especially when you consider than my Pixel 6a takes
+pictures that are easily 3 to 5 MB each. 😬</p>
+<p>To be fair, if you want convenience and you value your time, Google
+One’s $20/year for 100 GB is a pretty damn good deal. Same goes for the
+higher options with more storage if you need.</p>
+<p>But if you don’t like recurring bills like me, and you find it overkill
+to keep that many old photos in the cloud, read on.</p>
+<h2 id="my-protocol-for-archiving-photos-away-from-google" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#my-protocol-for-archiving-photos-away-from-google"><span>My protocol for archiving photos away from Google</span></a></h2>
+<p>In order to save space, I’ll periodically archive my old photos outside
+of Google Photos.</p>
+<p>This protocol is designed to archive photos <em>from the phone</em> that are
+<em>backed up</em> to Google Photos, but preserving the phone’s original
+arborescence. Google Photos doesn’t have the path information, only the
+filename, so backing up <em>from Google Photos</em> directly would not work for
+this use case.</p>
+<p>The downside is that this doesn’t cover the case where you have photos
+in Google Photos that are <em>not</em> on your phone.</p>
+<p>Also it’s designed for a single phone backing up to a Google Photos
+account that’s used <em>solely</em> for that device. Multiple devices sharing
+the same Google Photos is not supported.</p>
+<p>With that said, here’s how I do it.</p>
+<h3 id="1-sync-phone-to-computer" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#1-sync-phone-to-computer"><span>1. Sync phone to computer</span></a></h3>
+<p>First, I use <a href="https://syncthing.net/">Syncthing</a> to sync the contents of
+my phone to a hard drive connected to my computer.</p>
+<p>I configure Syncthing as “send only” on my phone, and “receive only” on
+my computer, and I configure it to sync the root directory of my phone
+(which can be tricky, <a href="https://www.codejam.info/2023/04/syncthing-root-directory.html">but possible</a>).</p>
+<p><strong>After the sync is complete, I turn off Syncthing from my computer, to
+make sure no incremental updates will happen during the archive
+process.</strong></p>
+<h3 id="2-copy-synced-folder-to-archive" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#2-copy-synced-folder-to-archive"><span>2. Copy synced folder to archive</span></a></h3>
+<p>For this example, let’s assume I synced my phone to a
+<code>/Volumes/Syncthing/Phone</code> directory, and I want to archive my old
+photos in <code>/Volumes/Archive/Phone</code>.</p>
+<p>I’ll run the following command to copy the phone contents to my archive
+directory:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/ /Volumes/Archive/Phone/
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the reason I copy the whole phone contents is because I want
+to catch <em>all</em> photos and videos that are backed up to Google Photos.
+Typically, apps like Messenger, Whats App, Signal, etc. all store photos
+in different directories, so syncing only <code>DCIM/Camera</code> would not be
+enough.</p>
+</div>
+<p>If the target directory already exists, this will append new files to it
+(and overwrite them if a file already exists there)!</p>
+<p>Also if the directory already exists, the trailing slashes are
+important.</p>
+<div class="note">
+<p><strong>Note:</strong> if both directories are on the same filesystem, and you’re not
+appending to an existing archive, you may use <code>mv</code> instead, but then
+make sure to recreate the Syncthing directory and put back its
+<code>.stfolder</code> (required for Syncthing to recognize it) and <code>.stignore</code> if
+you have one!</p>
+</div>
+<h3 id="3-delete-everything-from-google-photos" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#3-delete-everything-from-google-photos"><span>3. Delete everything from Google Photos</span></a></h3>
+<p>Not necessarily everything, but well, everything you want to delete to
+free up space.</p>
+<p>You can do it from your phone, or from Google Photos on your computer,
+or on the web.</p>
+<div class="note">
+<p><strong>Note:</strong> be careful! If you have photos that are <em>only</em> on Google
+Photos but not stored on your phone storage, the previous step didn’t
+archive them. You need to make sure to download them from Google Photos
+in the first place. Doing that in an automated way is not covered in
+this post.</p>
+</div>
+<p>As an abundance of caution, you may want to double check that the number
+of photos/videos you have on Google Photos matches exactly with the
+number of photos/videos you have on your phone before doing that.</p>
+<p>If there’s any mismatch, try to find where the difference it to make
+sure you’re not accidentally losing any photo.</p>
+<p>Alternatively, you can <a href="https://www.codejam.info/2023/04/archiving-google-photos.html#bonus-script-to-list-all-your-google-photos-using-the-api">use the Google Photos API</a>
+to list all the filenames on Google Photos, and ensure you have a match
+in your archive prior to deleting. Otherwise, you’ll know the names of
+the missing ones that you have to download.</p>
+<div class="note">
+<p><strong>Note:</strong> if you deleted the photos from the web or desktop app, make
+sure to wait that the deletion is propagated to your phone before you
+continue!</p>
+</div>
+<h3 id="4-sync-phone-to-computer-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#4-sync-phone-to-computer-again"><span>4. Sync phone to computer again</span></a></h3>
+<p>Again with Syncthing in my case, I do a sync following the deletion.</p>
+<div class="note">
+<p><strong>Note:</strong> you may want to exclude <code>.trashed-*</code> files in your
+<code>.stignore</code>, otherwise the photos you deleted will still be synced while
+they’re in the trash.</p>
+</div>
+<p>Now in our example, <code>/Volumes/Syncthing/Phone</code> contains just the
+photos we decided to keep around in Google Photos, while
+<code>/Volumes/Archive/Phone</code> contains <em>all</em> the photos (also including the
+ones we kept around).</p>
+<p>On top of that, both directories contains <em>all other files</em> from the
+phone, that are not managed by Google Photos.</p>
+<div class="note">
+<p><strong>Note:</strong> this process is not very efficient if you have a lot of files
+that are not photos and videos, e.g. music and downloads. You may want
+to ignore those directories in the earlier steps to avoid copying them
+around unnecessarily!</p>
+</div>
+<h3 id="5-remove-the-overlap" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#5-remove-the-overlap"><span>5. Remove the overlap</span></a></h3>
+<p>To avoid that duplication, we can remove all files from the archive that
+are still in the Syncthing directory. That is, all the photos/videos we
+kept, as well as all the files in the phone storage that are not managed
+by Google Photos.</p>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find . -<span class="hljs-built_in">type</span> f) | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> f; <span class="hljs-keyword">do</span> <span class="hljs-built_in">rm</span> -v <span class="hljs-string">&quot;/Volumes/Archive/Phone/<span class="hljs-variable">$f</span>&quot;</span>; <span class="hljs-keyword">done</span>
+</code></pre>
+<p>Now, the archive directory only contains what we removed from Google
+Photos (and from the phone), but there’s no duplicates!</p>
+<h3 id="6-profit" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#6-profit"><span>6. Profit!</span></a></h3>
+<p>You can now enjoy all the space you freed up by archiving your photos
+and videos away from Google Photos!</p>
+<p>Repeat every time you’re close to running out of storage. 😉</p>
+<h2 id="about-the-google-photos-app-home-page" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#about-the-google-photos-app-home-page"><span>About the Google Photos app “home page”</span></a></h2>
+<p>I think there may be some display bugs when deleting <em>a lot</em> of photos
+from Google Photos at once. For some reason the main photos list of my
+Google Photos still shows a few of the photos I deleted! They’re in a
+weird state where the UI offers me download them to my device (as if
+they’re not on the device already), but also shows me a local path to
+the file as if it was on device (but the photo is not actually there).</p>
+<p>I’m thinking this issue will be gone when the photos in the trash are
+permanently deleted, so this doesn’t concern me too much. What’s visible
+in Google Photos on the web (and in their API) is consistent with the
+state I want, and what’s on my phone’s raw storage is consistent too.</p>
+<h2 id="bonus-script-to-list-all-your-google-photos-using-the-api" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#bonus-script-to-list-all-your-google-photos-using-the-api"><span>Bonus: script to list all your Google Photos using the API</span></a></h2>
+<p>In the previous section, we saw it can be useful to list all the photos
+from Google Photos (not necessarily on any of your devices) prior to
+running the archiving process, to make sure you can catch the ones that
+are not backed up anywhere.</p>
+<p>You can put this script in <code>photos.mjs</code> and run as <code>node photos.mjs</code>.
+You’ll need to put a Google OAuth access token with access to your
+Google Photos for this to work.</p>
+<p>If you want to generate one from the CLI, check out my
+<a href="https://www.codejam.info/2021/02/google-oauth-from-cli-application.html#update-local-server-redirect">article on the subject</a>.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
+
+<span class="hljs-keyword">const</span> accessToken = <span class="hljs-string">&#x27;YOUR_ACCESS_TOKEN&#x27;</span>
+
+<span class="hljs-keyword">let</span> pageToken = <span class="hljs-string">&#x27;&#x27;</span>
+<span class="hljs-keyword">let</span> pages = []
+
+<span class="hljs-keyword">do</span> {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100&amp;pageToken=&#x27;</span> + <span class="hljs-built_in">encodeURIComponent</span>(pageToken)
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(url)
+
+  <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Authorization&#x27;</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${accessToken}</span>`</span>
+    }
+  })
+
+  <span class="hljs-keyword">const</span> json = <span class="hljs-keyword">await</span> response.<span class="hljs-title function_">json</span>()
+
+  pages.<span class="hljs-title function_">push</span>(json)
+
+  pageToken = json.<span class="hljs-property">nextPageToken</span>
+} <span class="hljs-keyword">while</span> (pageToken)
+
+<span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">writeFile</span>(<span class="hljs-string">&#x27;pages.json&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(pages, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>))
+</code></pre>
+<p>This will fetch all pages from the Google Photos API and dump them in a
+<code>pages.json</code> file. You can then iterate through it to do whatever
+operations you need to, e.g. making sure you don’t leave any photo
+around before deleting them from Google.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Archiving photos away from Google Photos is not trivial, but possible.</p>
+<p>If you care about not losing any of your photos, I recommend double
+checking at every step that you’re not accidentally forgetting any file.</p>
+<p>When done well, this allows to periodically free up some space from your
+Google account without actually having to get rid of your photos and
+videos! They’ll still be available on your archive hard drive if you
+want to. Your old photos are not as handy as if they were in the cloud,
+but you know you can access them if needed.</p>
+<p>Overall, you’re probably better off just paying Google to increase your
+storage, but if you’re really motivated, I hope you can find inspiration
+in the process I described in this post.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Syncthing: sync phone root directory (all internal storage)</title>
+    <link href="https://www.codejam.info/2023/04/syncthing-root-directory.html" />
+    <id>https://www.codejam.info/2023/04/syncthing-root-directory.html</id>
+    <updated>2023-04-02T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>If you use Syncthing on your phone, it may not let you select the
+phone’s root directory as a shared folder source! At least that’s the
+case on my phone running Android 13.</p>
+<figure class="center">
+  <img alt="Syncthing web GUI showing root directory path as text" srcset="../../img/2023/04/syncthing-forbidden.png 3x">
+</figure>
+<p>As you can see, “use this folder” is greyed out and there’s a warning
+the folder can’t be used for privacy reasons.</p>
+<p>But I own that phone and I don’t like being told what to do. In our
+case, I want to be able to sync <strong>all</strong> of my phone’s storage to my
+computer, as a backup system.</p>
+<p>So how to circumvent that?</p>
+<p>Turns out we can do that through Syncthing’s lesser known “web GUI”!</p>
+<p>You can find it in the left menu (where you also exit Syncthing from).
+It will open the web version of Syncthing. From there, instead of
+selecting the directory to sync from your phone’s native folder picker
+(which may prevent you to use the root directory), you can just <em>input a
+path</em> as plain text.</p>
+<figure class="center">
+  <img alt="Syncthing web GUI showing root directory path as text" srcset="../../img/2023/04/syncthing-web-gui.png 3x">
+</figure>
+<p>Enter <code>/storage/emuilated/0</code> (or simply <code>~</code>), and there you go, you have
+a Syncthing folder that syncs all of your phone’s internal storage! 🙏</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Getting rid of ghost login items in macOS Ventura</title>
+    <link href="https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html" />
+    <id>https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html</id>
+    <updated>2023-04-02T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Let’s say you uninstalled an app on macOS Ventura, and you see some
+leftovers from that app in <strong>system settings</strong>, <strong>general</strong>, <strong>login
+items</strong>:</p>
+<figure class="center">
+  <img alt="macOS login items with leftover app that shouldn’t be there" srcset="../../img/2023/04/login-items-dirty.png 2x">
+</figure>
+<p>Here’s a few tips to solve it.</p>
+<h2 id="reboot" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html#reboot"><span>Reboot</span></a></h2>
+<p>More often than not, it seems that after removing login items and/or the
+app behind then, it takes a reboot of macOS Ventura until they’re
+“garbage collected” from system settings. That’s the first thing you
+should try.</p>
+<h2 id="check-your-trash" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html#check-your-trash"><span>Check your trash!</span></a></h2>
+<p>If you moved the app to the trash but didn’t empty the trash, its login
+items are still referenced from the trash! They won’t go away until you
+permanently delete the app (and reboot).</p>
+<h2 id="check-leftover-launch-agents-and-daemons" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html#check-leftover-launch-agents-and-daemons"><span>Check leftover launch agents and daemons</span></a></h2>
+<p>There’s a few places macOS looks for “login items” on your filesystem:</p>
+<ul>
+<li><code>/Library/LaunchAgents</code></li>
+<li><code>/Library/LaunchDaemons</code></li>
+<li><code>~/Library/LaunchAgents</code></li>
+<li><code>~/Library/LaunchDaemons</code></li>
+</ul>
+<p>Also, same thing under <code>/System/Library</code> but that’s for macOS own login
+items and you have no control over them.</p>
+<p>Check the 4 directories above for leftover <code>plist</code> files from the
+applications you removed. You may need to do some cleanup. After that,
+don’t forget to reboot!</p>
+<h2 id="inspect-backgrounditems-v4-btm" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/ghost-login-items-macos-ventura.html#inspect-backgrounditems-v4-btm"><span>Inspect <code>BackgroundItems-v4.btm</code></span></a></h2>
+<p>As shown in <a href="https://www.reddit.com/r/MacOSBeta/comments/w2we6q/cleaning_up_venturas_login_items/">this Reddit post</a>,
+the list of login items in Ventura is managed in <code>/private/var/db/com.apple.backgroundtaskmanagement</code>. In my case, in a <code>BackgroundItems-v8.btm</code> file.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v8.btm</span>
+Apple binary property list
+</code></pre>
+<p>As <code>file(1)</code> tells us, this is a binary property list file. We can
+inspect it with <code>plutil</code>:</p>
+<pre><code class="hljs language-sh">plutil -p /private/var/db/com.apple.backgroundtaskmanagement/BackgroundItems-v8.btm
+</code></pre>
+<p>This will print the whole structure behind that file. From inspecting
+its output, you should be able to determine what’s behind the “ghost items”
+that you identified in the system settings. More often than not, it’ll
+point to some file or app that you forgot to get rid of, and cleaning
+that up will fix your problem (again, after a reboot).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Embedding high DPI screenshots at normal size in HTML</title>
+    <link href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html" />
+    <id>https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html</id>
+    <updated>2023-04-02T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Since I moved to a Retina display, the screenshots I take are twice as
+big as before!</p>
+<p>This is a problem because, when embedded in an HTML page, they look
+ginormous.</p>
+<p>Let’s take a dummy example of some UI element screenshot:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;save-as-example.png&quot;</span>&gt;</span>
+</code></pre>
+<figure class="center">
+  <img alt="Save as popup" src="https://www.codejam.info/img/2023/04/save-as-example.png">
+</figure>
+<p>This is huge. Crazy huge. It disturbs the reading flow and you only see
+that oversized, slightly blurry image. Just bad.</p>
+<p>How to fix it then?</p>
+<h2 id="downsize-the-image" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#downsize-the-image"><span>Downsize the image</span></a></h2>
+<p>We can resize the image by 50% before embedding it. For example using
+ImageMagick:</p>
+<pre><code class="hljs language-sh">convert save-as-example.png -resize 50% save-as-example-small.png
+</code></pre>
+<p>This will work, but we introduce a loss in quality from the downscaling
+operation. It’s not gonna be as “sharp” as if the UI element was
+rendered at the lower resolution in the first place, without being
+downsized at the pixel level later on.</p>
+<p>On top of that, when viewed on a high DPI screen, the image will not be
+as crisp as what you saw when you took the screenshot, because half the
+pixels got lost.</p>
+<h2 id="take-the-screenshot-on-a-low-dpi-screen" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#take-the-screenshot-on-a-low-dpi-screen"><span>Take the screenshot on a low DPI screen</span></a></h2>
+<p>On macOS, if you have an external screen that has a low DPI, you can
+take the screenshot on that screen. Then the screenshot will be taken at
+a normal-looking native resolution, because there’s no scaling factor.</p>
+<p>The downside is that you need a low DPI screen handy, and to plug it.
+Not always applicable.</p>
+<p>And on top of that, like the previous method, it won’t look as good when
+viewed on a high DPI screen.</p>
+<h2 id="use-srcset-with-a-2x-factor" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#use-srcset-with-a-2x-factor"><span>Use <code>srcset</code> with a <code>2x</code> factor!</span></a></h2>
+<p>If you want to go the lazy and easy way, <code>srcset</code> is the way.</p>
+<p>It allows to specify a <em>pixel density descriptor</em> for the image being
+referenced. In our case, because the screenshot was rendered at double
+the size for the Retina display, we can specify <code>2x</code>.</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">srcset</span>=<span class="hljs-string">&quot;save-as-example.png 2x&quot;</span>&gt;</span>
+</code></pre>
+<figure class="center">
+  <img alt="Save as popup" srcset="../../img/2023/04/save-as-example.png 2x">
+</figure>
+<p>This looks perfect! On a high DPI screen, we get the exact original
+quality of the screenshot, as crisp as can be. On a low DPI screen, the
+browser knows how to adapt the size of the screenshot to make it look
+just right.</p>
+<p>The only downside is that for low DPI screens, we’ll still send the
+heavier image with twice as much pixels, even if we don’t need it. If
+that’s a problem for you, then you can use one of the earlier solutions
+to generate a <code>1x</code> version of the screenshot, and use it as part of the
+<code>srcset</code>.</p>
+<div class="note">
+<p><strong>Note:</strong> I also use this technique from phone screenshots! Phones
+typically have high DPI screens too, and they generate pretty large
+screenshots. <code>2x</code> might not be enough to make it look reasonable on a
+web page, so feel free to go <code>3x</code> or <code>4x</code> if you want to reduce the size
+of the image without altering the original and compromising its quality!</p>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1642615952305954818">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Google Cloud Functions with a static IP: a guide to high throughput NAT</title>
     <link href="https://www.codejam.info/2023/03/cloud-functions-static-ip-nat.html" />
@@ -229,7 +592,7 @@ problem.</p>
 aka the state it’s in if you don’t check “dynamic port allocation” in
 the <strong>advanced configurations</strong> part (hidden by default).</p>
 <figure class="center">
-  <img alt="Default Cloud NAT port allocation settings" src="https://www.codejam.info/img/2023/03/cloud-nat-port-allocation.png" width="50%">
+  <img alt="Default Cloud NAT port allocation settings" srcset="../../img/2023/03/cloud-nat-port-allocation.png 2x">
 </figure>
 <p>What this reveals is one key piece of information. <strong>Our Cloud NAT
 defaults to static port allocation with 64 ports per VM.</strong></p>
@@ -292,7 +655,7 @@ us some headroom for adding a few more VMs without needing extra IPs.</p>
 <p>The <strong>advanced configurations</strong> of Cloud NAT also gives us control over
 various protocol timeouts. Here are the defaults:</p>
 <figure class="center">
-  <img alt="Default Cloud NAT timeouts settings" src="https://www.codejam.info/img/2023/03/cloud-nat-timeouts.png" width="50%">
+  <img alt="Default Cloud NAT timeouts settings" srcset="../../img/2023/03/cloud-nat-timeouts.png 2x">
 </figure>
 <p>Here we’ll focus on the TCP settings. Here’s a more detailed description
 of those from <a href="https://cloud.google.com/nat/docs/overview#specs-timeouts">the spec</a>:</p>
@@ -2767,923 +3130,6 @@ network sniffing. 🤘</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1520528360182620160">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Install the Vanta agent on a M1 Mac without Rosetta (and more)</title>
-    <link href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html" />
-    <id>https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html</id>
-    <updated>2022-04-30T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<div class="note">
-<p><strong>Update:</strong> Vanta eventually released a version that’s M1-native so
-neither Rosetta nor the workaround below is needed anymore.</p>
-<p>What you may still be interested with is the part where I
-<a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">observe the network logs</a>
-of the Vanta agent to see if it’s doing anything fishy, as well as the
-update where I tell you <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#analyzing-the-mitmproxy-logs">what I found those logs</a>.</p>
-</div>
-<p>Did you recently get asked to install the Vanta agent on your M1 Mac and
-got prompted to install Rosetta for it to run?</p>
-<p>Do you like running a Rosetta-free system?</p>
-<p>Then this post is for you.</p>
-<p>Also if you also don’t like running (benevolent) spyware with <code>root</code>
-permissions, and want to monitor what the spyware is precisely spying
-about you, read on, I have a few other things for you. 😉</p>
-<h2 id="the-rosetta-thing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-rosetta-thing"><span>The Rosetta thing</span></a></h2>
-<p>I wrote <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html">a more generic post</a>
-about this, and I encourage you to read it if you want to learn about
-all the technical details, but for the purpose of this Vanta-specific
-article, I’ll keep it short. The objective is to:</p>
-<ol>
-<li>Extract the <code>vanta.pkg</code> installer to access its contents.</li>
-<li>Update the <code>Distribution</code> XML file to flag ARM support (removes the
-Rosetta prompt).</li>
-<li>Extract the <code>vanta-raw.pkg/Payload</code> archive and replace the x86-64
-<code>osqueryd</code> binary by the universal binary from <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
-(or greater).</li>
-<li>Repackage the whole thing.</li>
-</ol>
-<p>Assuming you have <code>vanta.pkg</code> already downloaded (otherwise you can get
-it from <a href="https://github.com/VantaInc/vanta-agent-scripts/blob/b4e421f11d51896d274ae5782884c90f6ba5ce27/install-macos.sh#L8%5D">here</a>),
-run the following commands:</p>
-<pre><code class="hljs language-sh"><span class="hljs-comment"># Create a directory to extract the package into</span>
-<span class="hljs-built_in">mkdir</span> vanta
-<span class="hljs-built_in">cd</span> vanta
-
-<span class="hljs-comment"># Extract the package in the current directory</span>
-xar -xf ../vanta.pkg
-
-<span class="hljs-comment"># Go in the subpackage</span>
-<span class="hljs-built_in">cd</span> vanta-raw.pkg
-
-<span class="hljs-comment"># Create a directory to extract the payload into</span>
-<span class="hljs-built_in">mkdir</span> PayloadOut
-<span class="hljs-built_in">cd</span> PayloadOut
-
-<span class="hljs-comment"># Extract the payload in the current directory</span>
-cpio -i &lt; ../Payload
-
-<span class="hljs-comment"># Stream the tar archive for `osqueryd` 5.2.2 (follow redirects) and extract it to the current directory</span>
-curl --location <span class="hljs-string">&#x27;https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz&#x27;</span> | tar xf -
-
-<span class="hljs-comment"># We now have a `osqueryd` binary that we can move to the right location</span>
-<span class="hljs-built_in">mv</span> osqueryd usr/local/vanta
-
-<span class="hljs-comment"># Recreate the cpio archive</span>
-find . | cpio -oz --owner 0:80 &gt; ../Payload
-
-<span class="hljs-comment"># Go back to the parent directory and remove our temporary `PayloadOut` directory</span>
-<span class="hljs-built_in">cd</span> ..
-<span class="hljs-built_in">rm</span> -rf PayloadOut
-
-<span class="hljs-comment"># Go back to the parent directory</span>
-<span class="hljs-built_in">cd</span> ..
-
-<span class="hljs-comment"># Flag ARM support in the `Distribution` file</span>
-sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s/&lt;allowed-os-versions&gt;/&lt;options hostArchitectures=&quot;arm64,x86_64&quot; \/&gt;\n    &lt;allowed-os-versions&gt;/&#x27;</span> Distribution
-
-<span class="hljs-comment"># Alternative with GNU sed</span>
-<span class="hljs-comment"># gsed -i &#x27;/&lt;installer-gui-script/a \    &lt;options hostArchitectures=&quot;arm64,x86_64&quot; /&gt;&#x27; Distribution</span>
-
-<span class="hljs-comment"># Repackage the main installer</span>
-xar --compression none -cf ../vanta-new.pkg .
-</code></pre>
-<p>This will give you a <code>vanta-new.pkg</code> installer that now has proper ARM
-support and won’t prompt you to install Rosetta!</p>
-<p>Again if you want to know precisely how this works, check out my
-<a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html">detailed article on the topic</a>.</p>
-<p>But while having native M1 support is great, there’s still a few things
-that concern me about this program.</p>
-<p>For example, I didn’t actually run that installer on my machine because
-it requires <code>root</code> permissions and I don’t want to run untrusted code as
-<code>root</code>. I still tested the package in a macOS VM (which is <a href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html">surprisingly easy to do nowdays</a>)
-to confirm that the script works end-to-end. But for a machine I care
-about, how do we install and run that thing with only user privileges?</p>
-<h2 id="installing-and-running-vanta-without-root-privilege" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#installing-and-running-vanta-without-root-privilege"><span>Installing and running Vanta without <code>root</code> privilege</span></a></h2>
-<p>It’s unclear what the this program does concretely, but it
-<a href="https://help.vanta.com/hc/en-us/articles/360060881051-Getting-Started-with-the-Vanta-Agent">claims</a>
-to be read-only (“it will <strong>not</strong> change anything on your machine”),
-despite their installer and other commands requesting <code>root</code> access
-(this is fishy AF).</p>
-<p>I don’t like running as <code>root</code> anything that wasn’t shipped by Apple
-as part of the macOS base system, with the exception of some specific
-open-source programs in very particular cases (e.g. some <code>nmap</code>
-invocations and such), or programs like nginx that I trust to properly
-drop privileges after starting and binding to a reserved port.</p>
-<p>This is definitely not the case of this agent, and there’s no way this
-thing is going to run as <code>root</code>.</p>
-<p>So how do we run it without giving it superuser privileges? First, we
-need to dissect the package a bit and install it manually.</p>
-<p>In the <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-rosetta-thing">first part</a>, we already extracted the
-installer as well as the <code>Payload</code> archive, in a <code>PayloadOut</code> directory.
-We’ll start from there, and go in the <code>PayloadOut</code> directory to manually
-install everything we need.</p>
-<p>First we’ll copy <code>Library/LaunchDaemons/com.vanta.metalauncher.plist</code>
-to <code>~/Library/LaunchAgents/com.vanta.metalauncher.plist</code>. Why? Launch
-daemons are systematically run as <code>root</code> while launch agents are user
-services. Their format is otherwise compatible so that makes things easy
-for us.</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> Library/LaunchDaemons/com.vanta.metalauncher.plist ~/Library/LaunchAgents
-</code></pre>
-<p>We also replace the error log path in that file to point to a location
-where we actually have write permission:</p>
-<pre><code class="hljs language-sh">sed -i <span class="hljs-string">&#x27;&#x27;</span> <span class="hljs-string">&#x27;s,/var/log/vanta_stderr.log,/usr/local/vanta/log/vanta_stderr.log,&#x27;</span> ~/Library/LaunchAgents/com.vanta.metalauncher.plist
-</code></pre>
-<p>Then we can copy <code>etc/vanta.conf</code> and <code>usr/local/vanta</code> to <code>/etc/</code> and
-<code>/usr/local</code> respectively.</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cp</span> etc/vanta.conf /etc
-sudo <span class="hljs-built_in">cp</span> -r usr/local/vanta /usr/local
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> OK I lied earlier, we do need <code>root</code> permission for this step.
-But at no point in this section we’ll run third-party code as <code>root</code>,
-and that’s what I intended by “without <code>root</code> privilege”.</p>
-<p>Also, keep in mind that we need to copy the <code>vanta</code> directory to
-<code>/usr/local</code> because that path is actually hardcoded everywhere in the
-software binaries so we can’t easily run it from another location.</p>
-</div>
-<p>Vanta asserts that some binaries are owned by <code>root</code>, and refuses to run
-otherwise. Once owned by <code>root</code> though, the program runs just fine
-even from a user account.</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/launcher
-sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/osqueryd
-</code></pre>
-<p>Then, edit the <code>/etc/vanta.conf</code> file to set your agent key and email.</p>
-<p>Finally we can start the service:</p>
-<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/com.vanta.metalauncher.plist
-</code></pre>
-<p>You can alternatively start the agent from any CLI instead of using
-<a href="https://en.wikipedia.org/wiki/Launchd">launchd</a>:</p>
-<pre><code class="hljs language-sh">/usr/local/vanta/metalauncher
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> the agent needs to be started using an absolute path if you
-want the <code>vanta-cli</code> and the Vanta app in the tray to report that the
-agent is running. If you <code>cd /usr/local/vanta</code> and run <code>./metalauncher</code>,
-those other tools will think it’s not running even though the agent is
-actually running and reporting properly. 😅</p>
-</div>
-<p>And we’re up! The logs are happily reporting that everything is running
-fine, and the menu bar app (if you chose to run it) also reports that
-the agent is running.</p>
-<div class="note">
-<p><strong>Note:</strong> if you don’t want your menu bar to be “polluted” by the Vanta
-icon, I think there’s a setting to hide it, or even better, just get rid
-of <code>/usr/local/vanta/Vanta Agent.app</code> and you won’t see it ever again!</p>
-<p>All that app seems to be really doing is <code>ps aux | grep /usr/local/vanta/metalauncher</code>
-to check that the agent is running, so you can easily do that yourself
-if you want.</p>
-</div>
-<blockquote>
-<p>But Val, how do you know that the agent is working properly after you
-installed it in such an esoteric way?</p>
-</blockquote>
-<p>Well, thanks to <a href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html">the VM</a> I mentioned
-earlier, I could test that the network traffic of the agent installed
-with the original x86-64 package is identical to that of my method
-without <code>root</code>. 😁</p>
-<blockquote>
-<p>But Val, how do you see the network traffic of the app? It’s all HTTPS
-and stuff.</p>
-</blockquote>
-<p>Well…</p>
-<h2 id="spying-on-the-spyware-and-monitoring-its-network-traffic" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic"><span>Spying on the spyware and monitoring its network traffic</span></a></h2>
-<p>This agent is essentially a spyware that employees willingly install on
-their work computer (or employers secretly install in some less ethical
-cases) to spy on them with good intentions.</p>
-<p>I’m more comfortable being spied on when I know precisely what is
-captured and what is not. A salesperson can always say “don’t worry, we
-respect your privacy”, but I tend to trust HTTPS traffic logs better. 😏</p>
-<h3 id="ways-to-sniff-packets" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#ways-to-sniff-packets"><span>Ways to sniff packets</span></a></h3>
-<p>There’s a multitude of ways to sniff network traffic from an app. If all
-you care about is transport layer data (e.g. raw TCP or UDP traffic),
-you can easily monitor it with tools like <a href="https://linux.die.net/man/8/tcpdump"><code>tcpdump(8)</code></a>
-or Wireshark. But for encrypted HTTPS traffic, that won’t cut it (and
-that’s the whole point of HTTPS).</p>
-<p>When you have some control over the application you want to monitor, or
-if it natively supports running through a proxy, a logging HTTPS proxy
-like <a href="https://mitmproxy.org/">mitmproxy</a> is really useful. Some software
-support communicating over a proxy through the pretty common
-<code>http_proxy</code> and <code>https_proxy</code> environment variables. Others support
-configuring a proxy via configuration files, UI, or command line
-arguments. If this is your case, you’re in luck, and you can use those
-means to make that program run its HTTPS traffic through mitmproxy!</p>
-<p>Otherwise, you need to dig deeper and tools like
-<a href="https://linux.die.net/man/8/tsocks"><code>tsocks(1)</code></a>,
-<a href="https://github.com/haad/proxychains">ProxyChains</a>,
-<a href="https://github.com/rofl0r/proxychains-ng">ProxyChains-NG</a> and
-<a href="https://github.com/hmgle/graftcp">graftcp</a> (my personal favorite),
-can really help. I wrote a <a href="https://www.codejam.info/2022/04/graftcp-inspect-https-traffic-proxy.html">dedicated article on the matter</a>
-if you’re interested!</p>
-<h3 id="the-proxy-hostname-argument" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#the-proxy-hostname-argument"><span>The <code>--proxy_hostname</code> argument</span></a></h3>
-<p>In our case, it turns out that Vanta uses the open-source
-<a href="https://github.com/osquery/osquery">osquery</a> program, which allows
-defining a custom proxy (see <code>--proxy_hostname</code> on <a href="https://osquery.readthedocs.io/en/stable/deployment/remote/">this page</a>)!</p>
-<p>So all we need to do is add our own <code>--proxy_hostname</code> to the <code>osqueryd</code>
-arguments. While we don’t control the invocation of <code>osqueryd</code> (it’s in
-the Vanta launcher binary), we can easily achieve this by wrapping the
-<code>osqueryd</code> binary with a shell script:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">mv</span> osqueryd osqueryd-orig
-
-<span class="hljs-built_in">cat</span> &lt;&lt; <span class="hljs-string">EOF &gt; osqueryd
-#!/bin/sh -e
-
-exec /usr/local/vanta/osqueryd-orig --proxy_hostname=localhost:1337 &quot;$@&quot;
-EOF</span>
-
-<span class="hljs-built_in">chmod</span> +x osqueryd
-</code></pre>
-<p>With that shell script, we invoke the original <code>osqueryd</code> binary,
-passing our custom <code>--proxy_hostname</code> option (here with a proxy running
-on port 1337), and otherwise forwarding all other arguments.</p>
-<h3 id="what-about-certificates" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#what-about-certificates"><span>What about certificates?</span></a></h3>
-<p>In order to intercept HTTPS traffic, mitmproxy uses its own certificate,
-that you can find in <code>~/.mitmproxy/mitmproxy-ca-cert.pem</code>. You can add
-it to your system’s trusted certificates list, and as long as the
-software you’re monitoring uses the system CA certificates list, you
-should be good!</p>
-<p>However Vanta pins their own certificate chain (using the
-<code>--tls_server_certs</code> option), ignoring the certificates trusted at the
-OS level.</p>
-<p>The good news is that this pinned certificate is stored in
-<code>/usr/local/vanta/cert.pem</code>, and we can just replace it with the
-mitmproxy certificate!</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cat</span> ~/.mitmproxy/mitmproxy-ca-cert.pem &gt; /usr/local/vanta/cert.pem
-</code></pre>
-<p>After that, and restarting the service, we should be able to monitor the
-traffic:</p>
-<pre><code class="hljs language-sh">launchctl unload ~/Library/LaunchAgents/com.vanta.metalauncher.plist
-launchctl load ~/Library/LaunchAgents/com.vanta.metalauncher.plist
-</code></pre>
-<h3 id="dump-with-mitmdump" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#dump-with-mitmdump"><span>Dump with mitmdump</span></a></h3>
-<p>mitmproxy is great to interactively monitor the intercepted traffic, but
-you don’t want to be watching that all the time. Instead, mitmdump can
-be used to log the captured traffic to a file. Then you can parse that
-file and query it the way you like.</p>
-<pre><code class="hljs language-sh">mitmdump -w +/path/to/dump/file --listen-host 127.0.0.1 --listen-port 1337
-</code></pre>
-<p>Here, <code>-w</code> specifies the file we want to log to, and it’s prefixed by
-<code>+</code> because we want to append to it instead of truncating it. The other
-arguments are self-explanatory.</p>
-<p>To start it as a launch agent the same way we start the Vanta agent, we
-can add the following to <code>~/Library/LaunchAgents/mitmdump.plist</code>:</p>
-<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
-<span class="hljs-meta">&lt;!DOCTYPE <span class="hljs-keyword">plist</span> <span class="hljs-keyword">PUBLIC</span> <span class="hljs-string">&quot;-//Apple//DTD PLIST 1.0//EN&quot;</span> <span class="hljs-string">&quot;http://www.apple.com/DTDs/PropertyList-1.0.dtd&quot;</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">plist</span> <span class="hljs-attr">version</span>=<span class="hljs-string">&quot;1.0&quot;</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">dict</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>KeepAlive<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>Label<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>ProgramArguments<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">array</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>/path/to/mitmdump<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>-w<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>+/path/to/dump/file<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-host<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>127.0.0.1<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>--listen-port<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">string</span>&gt;</span>1337<span class="hljs-tag">&lt;/<span class="hljs-name">string</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">array</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">key</span>&gt;</span>RunAtLoad<span class="hljs-tag">&lt;/<span class="hljs-name">key</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">true</span>/&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">dict</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">plist</span>&gt;</span>
-</code></pre>
-<p>And enable it with:</p>
-<pre><code class="hljs language-sh">launchctl load -w ~/Library/LaunchAgents/mitmdump.plist
-</code></pre>
-<h2 id="check-that-it-all-worked" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#check-that-it-all-worked"><span>Check that it all worked</span></a></h2>
-<p>Finally, you can confirm that the agent is registered properly after all
-those tweaks by checking the following link:</p>
-<pre><code class="hljs">https://app.vanta.com/agent/info?uuid=YOUR-HARDWARE-UUID
-</code></pre>
-<p>Where <code>YOUR-HARDWARE-UUID</code> is your hardware UUID as it can be found in
-<kbd>About This Mac</kbd>, <kbd>System Report…</kbd>, <kbd>Hardware
-UUID</kbd>.</p>
-<h2 id="analyzing-the-mitmproxy-logs" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#analyzing-the-mitmproxy-logs"><span>Analyzing the mitmproxy logs</span></a></h2>
-<p>After monitoring the mitmproxy logs of the Vanta agent over a few
-months, I didn’t find anything suspicious.</p>
-<p>At least for my employer’s configuration (SOC 2 type 1 compliance), they
-only check the OS version, whether or not the disk is encrypted,
-whether or not my account has a password, and if there’s an autolocking
-mechanism after a precise period of inactivity.</p>
-<p>It also reports the version of each browser extensions and installed
-apps, the list of users in the system, as well as the public SSH keys
-allowed to access my user account.</p>
-<p>Periodically, it updates a list of known malware paths and fingerprints,
-in order to check that those are not found on the system.</p>
-<p>Finally there’s a mechanism that allows the server it’s registered with
-to send “custom queries” but it was not used during the period I
-monitored it. If it was to be used it, their API doesn’t seem to allow
-running arbitrary shell commands, rather it could run read-only
-“queries” as exposed by the <a href="https://github.com/osquery/osquery">osquery</a>
-SQL-like interface which is something to keep in mind.</p>
-<p>Based on those observations, I saw no problem (for my own standards)
-running the agent on a work computer solely dedicated to the company
-that requires running the agent.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#conclusion"><span>Conclusion</span></a></h2>
-<p>As an abundance of caution, I wouldn’t run the Vanta agent on a computer
-that I also use as a personal machine, nor on a computer that I use to
-work with other clients.</p>
-<p>Therefore, <strong>I require each of my clients who need the Vanta agent to provide me
-with a dedicated work machine</strong>. Luckily it’s only 2 of them for now. 😆</p>
-<p>Anyway, I don’t think it would be easy to make 2 independent
-registrations of the Vanta agent cohabitate on the same computer, let
-alone the fact that doing so would more likely be considered as a SOC 2
-violation.</p>
-<p>That’s all for today! I hope you found on this page what is it you were
-looking for, and that you learnt a thing or two along the way! Or at
-least that you enjoyed reading through my adventures messing around
-with this program. 😂</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How to repackage a macOS .pkg installer for M1 support without Rosetta</title>
-    <link href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html" />
-    <id>https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html</id>
-    <updated>2022-04-30T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>To start with, some basis that you might already know:</p>
-<ul>
-<li><a href="https://en.wikipedia.org/wiki/Apple_M1">Apple M1</a> is an
-<a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>-based
-CPU/GPU chip that ships with the latest Apple devices.</li>
-<li><a href="https://en.wikipedia.org/wiki/Rosetta_(software)">Rosetta</a> is a
-compatibility layer to translate <a href="https://en.wikipedia.org/wiki/X86-64">x86-64</a>
-instructions to <a href="https://en.wikipedia.org/wiki/ARM_architecture_family">ARM</a>
-instructions.</li>
-</ul>
-<p>Until recently, x86-64 was happily ruling the market (and still is by
-orders of magnitude, let’s be honest), but since Apple dropped those
-<strong>LIT</strong> 🔥 M1 chips that are basically killing the game in terms of
-performance, things are changing.</p>
-<p>This means that Mac software that was previously only targeting x86-64
-now needs to ship <strong>universal</strong> binaries that support both x86-64 and
-ARM if they want native performance.</p>
-<p>But some vendors didn’t catch up yet, and in those cases, you’ll need to
-rely on Rosetta for the while being to run those programs.</p>
-<p>That being said, there’s a thin chance that the program you install can
-be repackaged in a way that can run natively, <em>without Rosetta</em>! In this
-post we’ll explore the Vanta agent, that claims it requires Rosetta, but
-can easily be patched to run natively.</p>
-<p>If you’re in luck, you might be able to apply this knowledge to other
-macOS installers.</p>
-<h2 id="the-case-of-the-vanta-agent" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-case-of-the-vanta-agent"><span>The case of the Vanta agent</span></a></h2>
-<p>As part of a security policy, my employer requires me to install an
-agent program on my work laptop. This program is provided by a company
-called Vanta.</p>
-<p>I won’t go in details about what is this program, but if you care, you
-can checkout my <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html">detailed post on the topic</a>!</p>
-<p>Anyways, they ship a <code>vanta.pkg</code> installer, that, when opened, claims to
-be incompatible with the M1 architecture and requests to install
-Rosetta. Not good.</p>
-<h2 id="why-not-install-rosetta" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#why-not-install-rosetta"><span>Why not install Rosetta?</span></a></h2>
-<p>I don’t like installing garbage on my computer, and when I’m required to
-install garbage on my computer, I don’t like when on top of that the
-garbage requires me to emulate another CPU architecture in order to run
-it.</p>
-<p>Also the challenge is fun, and a bit of software golfing here and there
-is always enjoyable. I know it’s common practice to golf on production
-code these days in the industry, but I personally prefer to keep it
-contained and isolated. Golfing is a personal pleasure and, like
-masturbating, you shouldn’t impose it on your colleagues.</p>
-<h2 id="how-is-a-macos-installer-pkg-made" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#how-is-a-macos-installer-pkg-made"><span>How is a macOS installer (<code>.pkg</code>) made?</span></a></h2>
-<p>Let’s ask <a href="https://linux.die.net/man/1/file"><code>file(1)</code></a> for some
-information.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file vanta.pkg</span>
-vanta.pkg: xar archive compressed TOC: 4838, SHA-1 checksum
-</code></pre>
-<p>It looks like we’re looking at a wild archive format, mostly
-used on Darwin: <a href="https://linux.die.net/man/1/xar"><code>xar(1)</code></a>.
-Its arguments are pretty similar to <a href="https://linux.die.net/man/1/tar"><code>tar(1)</code></a>.</p>
-<p>Let’s make a directory to extract the archive in:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> vanta</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash">xar -xf ../vanta.pkg</span>
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
-total 8
--rw-r--r--  1 val  staff   1.1K 13 Apr 16:50 Distribution
-drwx------  3 val  staff    96B 31 Dec  1969 Resources
-drwx------  6 val  staff   192B 31 Dec  1969 vanta-raw.pkg
-</code></pre>
-<p>So we have a file, <code>Distribution</code> and two directories, <code>Resources</code> and
-<code>vanta-raw.pkg</code>. Let’s investigate.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">file Distribution</span>
-Distribution: XML 1.0 document text, ASCII text
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">vim Distribution</span>
-</code></pre>
-<p><code>Distribution</code> is a XML document, and when we look at it, we can see a
-bunch of metadata for the macOS installer, where vendors can customize
-background, logos, images and so on of the installer. In our case, it
-also references the <code>vanta-raw.pkg</code> directory.</p>
-<p>We’ll see <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt">later</a> that’s also where we
-can specify whether or not the package supports universal binaries!</p>
-<p>But first, let’s inspect that <code>vanta-raw.pkg</code>.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> vanta-raw.pkg</span>
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
-total 75880
--rw-r--r--  1 val  staff    42K  4 Jan 16:32 Bom
--rw-r--r--  1 val  staff   920B 13 Apr 16:50 PackageInfo
--rw-r--r--  1 val  staff    36M  4 Jan 16:32 Payload
--rw-r--r--  1 val  staff   1.2K  4 Jan 16:32 Scripts
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">file *</span>
-Bom:         Mac OS X bill of materials (BOM) file
-PackageInfo: XML 1.0 document text, ASCII text
-Payload:     gzip compressed data, from Unix, original size modulo 2^32 104344576
-Scripts:     gzip compressed data, from Unix, original size modulo 2^32 3072
-</code></pre>
-<p>So, another XML, two gzipped files, and a BOM file that we won’t care
-about in the scope of this article.</p>
-<p>The XML specifies “bundles” as well as <code>preinstall</code> and <code>postinstall</code>
-scripts. Nothing really interesting in there.</p>
-<p>Let’s look at the gzipped data. This doesn’t tell us anything other than
-the fact that it’s compressed with gzip… but let’s ask <code>file</code> for its
-opinion on the decompressed data.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">gunzip &lt; Payload | file -</span>
-/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash">gunzip &lt; Scripts | file -</span>
-/dev/stdin: ASCII cpio archive (pre-SVR4 or odc)
-</code></pre>
-<p>Another archive format? And another obscure (at least to me) one on top
-of that? Alright.</p>
-<p>According to <a href="https://linux.die.net/man/1/cpio"><code>cpio(1)</code></a>, we’ll use
-<code>cpio -i</code> to extract it (it knows to handle gzipped data so we don’t
-need to uncompress it first).</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> PayloadOut</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> PayloadOut</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Payload</span>
-203798 blocks
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
-total 0
-drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 Library
-drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 etc
-drwxr-xr-x  3 val  staff    96B 13 Apr 18:40 usr
-</code></pre>
-<p>Looks like this is the tree of files to be copied to the target system
-during the installation. We can do the same thing with <code>Scripts</code>:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">mkdir</span> ScriptsOut</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cd</span> ScriptsOut</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash">cpio -i &lt; ../Scripts</span>
-6 blocks
-<span class="hljs-meta prompt_">
-$ </span><span class="language-bash"><span class="hljs-built_in">ls</span> -lh</span>
-total 16
--rwxr-xr-x  1 val  staff   1.7K 13 Apr 18:40 postinstall
--rwxr-xr-x  1 val  staff   890B 13 Apr 18:40 preinstall
-</code></pre>
-<p>Those are two shell scripts that the installer runs respectively before
-and after the installation.</p>
-<p>We don’t need to mess with those in the scope of this article, but in
-general, I like to read those scripts prior to running any macOS <code>.pkg</code>
-installer to get an idea of what it’s going to do to my system.</p>
-<h2 id="finding-the-non-arm-binaries" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#finding-the-non-arm-binaries"><span>Finding the non-ARM binaries</span></a></h2>
-<p>Let’s go back to the extracted <code>Payload</code> and find all the executables in
-there to see which ones are not ARM-compatible.</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . <span class="hljs-built_in">type</span> f -perm +111 | xargs file</span>
-./usr/local/vanta/launcher:          Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
-- Mach-O 64-bit executable x86_64] [arm64]
-./usr/local/vanta/launcher (for architecture x86_64):	Mach-O 64-bit executable x86_64
-./usr/local/vanta/launcher (for architecture arm64):	Mach-O 64-bit executable arm64
-./usr/local/vanta/osquery-vanta.ext: Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
-- Mach-O 64-bit executable x86_64] [arm64]
-./usr/local/vanta/osquery-vanta.ext (for architecture x86_64):	Mach-O 64-bit executable x86_64
-./usr/local/vanta/osquery-vanta.ext (for architecture arm64):	Mach-O 64-bit executable arm64
-./usr/local/vanta/autoupdater:       Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
-- Mach-O 64-bit executable x86_64] [arm64]
-./usr/local/vanta/autoupdater (for architecture x86_64):	Mach-O 64-bit executable x86_64
-./usr/local/vanta/autoupdater (for architecture arm64):	Mach-O 64-bit executable arm64
-./usr/local/vanta/vanta-cli:         Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
-- Mach-O 64-bit executable x86_64] [arm64]
-./usr/local/vanta/vanta-cli (for architecture x86_64):	Mach-O 64-bit executable x86_64
-./usr/local/vanta/vanta-cli (for architecture arm64):	Mach-O 64-bit executable arm64
-./usr/local/vanta/metalauncher:      Mach-O universal binary with 2 architectures: [x86_64:Mach-O 64-bit executable x86_64
-- Mach-O 64-bit executable x86_64] [arm64]
-./usr/local/vanta/metalauncher (for architecture x86_64):	Mach-O 64-bit executable x86_64
-./usr/local/vanta/metalauncher (for architecture arm64):	Mach-O 64-bit executable arm64
-./usr/local/vanta/osqueryd:          Mach-O 64-bit executable x86_64
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> in GNU <code>find</code>, this would be <code>find . -type f -executable</code> but
-BSD <code>find</code> doesn’t support <code>-executable</code>. Instead we can pass <code>-perm</code>
-with an expression for matching the permission bits, where <code>+</code> means
-we’re passing a bitmask where at least one of the bits must match, and
-<code>111</code> is the bitmask to match executable permissions (for owner, group
-and others).</p>
-<p>See <a href="https://stackoverflow.com/a/4458361">this thread</a> for details.</p>
-</div>
-<p>By scanning this output we see that <code>usr/local/vanta/osqueryd</code> isn’t
-compatible with ARM. We can sort through this output to confirm we
-didn’t miss anything (by printing only the files where <code>file(1)</code> didn’t
-give the string <code>universal</code>):</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">for</span> file <span class="hljs-keyword">in</span> $(find . -<span class="hljs-built_in">type</span> f -perm +111 | grep -v <span class="hljs-string">&#x27;\.app&#x27;</span>); <span class="hljs-keyword">do</span> file <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q universal || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span></span>
-./usr/local/vanta/osqueryd
-</code></pre>
-<p>So we identified our culprit.</p>
-<p>If this binary wasn’t essential to the program (or what we specifically
-want to do with it), we could just ignore it and jump to the <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt">last step</a>
-to prevent the installer from prompting to install Rosetta.</p>
-<h2 id="replacing-the-binary" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#replacing-the-binary"><span>Replacing the binary</span></a></h2>
-<p>Because in our case it’s actually an essential binary, we need to
-replace it with an ARM-compatible version. This is not always going to
-be possible, in which case you might have to resort to Rosetta (or
-deciding to not install this package after all).</p>
-<p>For this specific program, we’re in luck because
-<a href="https://github.com/osquery/osquery">osquery</a> is actually an
-open source program!</p>
-<p>This means that even if they don’t provide an ARM version, hopefully
-with little work we can compile from source for ARM and use that for our
-package.</p>
-<p>But for us it’s even better, because they released <a href="https://github.com/osquery/osquery/releases/tag/5.2.2">version 5.2.2</a>
-a few months ago with Apple silicon support. Dope!</p>
-<p>So we can just fetch <a href="https://github.com/osquery/osquery/releases/download/5.2.2/osqueryd-macos-bare-5.2.2.tar.gz">the <code>osqueryd</code> binary from this release</a>
-and replace the one from the original Vanta package.</p>
-<p>In my case I <a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#installing-and-running-vanta-without-root-privilege">did a few</a>
-<a href="https://www.codejam.info/2022/04/vanta-agent-m1-mac-without-rosetta.html#spying-on-the-spyware-and-monitoring-its-network-traffic">other tweaks</a>
-because I didn’t want to give this program <code>root</code> privileges and I also
-wanted to monitor its HTTPS traffic, but that’s off-topic for this
-article.</p>
-<h2 id="preventing-the-rosetta-prompt" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#preventing-the-rosetta-prompt"><span>Preventing the Rosetta prompt</span></a></h2>
-<p>Or in other words, marking the package as ARM-compatible.</p>
-<p>If we were to <a href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#repackaging-the-installer">repackage the installer</a>
-right now, even though all the binaries in the payload are
-ARM-compatible, we would still be greeted by a prompt to install Rosetta
-when running it!</p>
-<p>We can find the solution as part of <a href="https://stackoverflow.com/a/11487658">this answer</a>
-(the “Apple silicon” part). By adding the following line in the
-<code>Distribution</code> XML file inside our package, we claim that the installer
-supports ARM64 natively and hence doesn’t need Rosetta:</p>
-<pre><code class="hljs language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">options</span> <span class="hljs-attr">hostArchitectures</span>=<span class="hljs-string">&quot;arm64,x86_64&quot;</span> /&gt;</span>
-</code></pre>
-<p>It can be added anywhere inside the <code>installer-gui-script</code> node.</p>
-<h2 id="repackaging-the-installer" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#repackaging-the-installer"><span>Repackaging the installer</span></a></h2>
-<p>Now we made sure all the binaries we needed are compatible with ARM,
-and the <code>Distribution</code> file reflects that, we’re ready to repackage the
-installer!</p>
-<p>This is done in two steps.</p>
-<ol>
-<li>Recreate the <code>Payload</code> cpio archive from our updated content.</li>
-<li>Recreate the <code>.pkg</code> archive containing the whole structure.</li>
-</ol>
-<p>All the necessary instructions are in <a href="https://stackoverflow.com/questions/11298855/how-to-unpack-and-pack-pkg-file">this thread</a>
-but I’ll detail the specific ones I used below.</p>
-<h3 id="the-payload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-payload"><span>The payload</span></a></h3>
-<p>For the <code>Payload</code>, that we extracted and updated in a temporary
-<code>PayloadOut</code> directory next to it, we’ll run the following command from
-the <code>PayloadOut</code> directory:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find . | cpio -oz --owner 0:80 &gt; ../Payload</span>
-203798 blocks
-</code></pre>
-<p>Here, <code>cpio -o</code> archives the file list from <code>stdin</code> and outputs the
-archive in <code>stdout</code>. <code>-z</code> was added for built-in gzip compression (could
-also be achieved by piping the output to <code>gzip -c</code>). <code>--owner 0:80</code> is
-used to archive the files with <code>root:admin</code> ownership (instead of my own
-user and group), which was necessary for this particular program.</p>
-<div class="note">
-<p><strong>Note:</strong> there’s also a <code>Bom</code> file next to our <code>Payload</code> and <code>Scripts</code>
-archives, which is effectively a BOM (bill of materials), containing a
-bunch of information about the files in the package.</p>
-<p>In my experience I didn’t need to touch this file despite some of the
-contents of the package changing, but your mileage may vary, in which
-case you might want to regenerate the BOM from our extracted
-<code>PayloadOut</code> directory by running <code>mkbom PayloadOut Bom</code>.</p>
-</div>
-<h3 id="the-package" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#the-package"><span>The package</span></a></h3>
-<p>Before repackaging don’t forget to remove our temporary <code>PayloadOut</code> and
-<code>ScriptsOut</code> directories.</p>
-<p>Then, from the root of the extracted package, we can run the following
-command to create a new package:</p>
-<pre><code class="hljs language-sh">xar --compression none -cf ../vanta-new.pkg .
-</code></pre>
-<p>The <code>--compression none</code> part turned out to be important because if the
-XAR archive is compressed, we encounter the following error during the
-installation:</p>
-<pre><code class="hljs">Error Domain=BOMCopierFatalError Code=1 &quot;cpio read error: bad file format&quot;
-</code></pre>
-<p>This error is kinda misleading because it points to the cpio archive
-while the issue really is with the top-level XAR archive.</p>
-<p>It’s even more confusing because the macOS installer was able to extract
-the XAR archive to read the metadata from it (and can happily show files
-of the nested <code>Payload</code> archive), yet somehow fails to proceed with
-the rest of the installation because the archive it’s already reading
-from is compressed?</p>
-<p>I’m not gonna try to understand why that is, but just know that
-<code>--compression none</code> is necessary for this to work!</p>
-<h2 id="what-about-the-package-signature" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#what-about-the-package-signature"><span>What about the package signature?</span></a></h2>
-<p>You might have noticed that we didn’t sign that newly created package.</p>
-<p>It turns out that this is fine. Sure, we’re now lacking the lock icon on
-the top right corner of the installer, but for our own usage, this isn’t
-a big deal. It doesn’t prevent the installation from completing
-whatsoever.</p>
-<p>So how come we get a security warning when we try to run an unsigned
-installer downloaded from the internet? That’s because Apple flags
-downloaded files as quarantined. You can see it by running e.g. <code>xattr vanta.pkg</code> and seeing it includes <code>com.apple.quarantine</code>.</p>
-<p>When opening a quarantined installer, macOS will check for a valid
-signature and print a security warning otherwise.</p>
-<p>But the archive we just created on our own is not quarantined, because
-we didn’t download it, so macOS is happy to let us run it without
-signature, which is pretty useful here.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/repackage-macos-app-m1-support-without-rosetta.html#conclusion"><span>Conclusion</span></a></h2>
-<p>Was it worth going through all that trouble to keep running my software
-as natively as possible? Definitely not.</p>
-<p>Did I learn a lot about macOS installers in the process, and how they
-handle universal binaries? Hell yeah.</p>
-<p>So in the end, I’m happy I dug through this, and if you ended up on this
-article somehow, I hope this was useful to you too!</p>
-<p>Wishing you a happy Rosetta-free Mac!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1520527092219355138">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Run macOS inside Docker on Linux, with Wayland</title>
-    <link href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html" />
-    <id>https://www.codejam.info/2022/04/macos-docker-linux-wayland.html</id>
-    <updated>2022-04-13T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>This is gonna be a short one. There’s this fucking fantastic software
-called <a href="https://github.com/sickcodes/Docker-OSX">Docker-OSX</a> that
-lets you run a macOS VM on Linux out of the box, just like that. ✨</p>
-<p>Running macOS on a non-Apple hardware is already
-<a href="https://www.codejam.info/2019/03/macos-high-sierra-msi-h110m-pro-d-skylake-nvidia-pascal.html">not a</a>
-<a href="https://www.codejam.info/2021/11/yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">trivial task</a>,
-even though <a href="https://github.com/acidanthera/OpenCorePkg">OpenCore</a> and
-the (also fucking fantastic) <a href="https://dortania.github.io/OpenCore-Install-Guide/">Dortania guide</a>
-help greatly. Let alone running it inside a VM.</p>
-<p>Docker-OSX is based on <a href="https://github.com/kholia/osx-kvm">OSX-KVM</a> as
-well as <a href="https://github.com/thenickdude/KVM-Opencore/">KVM-OpenCore</a>,
-and provides a Docker container that’s preconfigured to run the macOS
-installer of your choice inside a KVM virtual machine that’s already
-set up to support macOS.</p>
-<p>With some Docker volume mounts magic, it can show the KVM window
-directly on your X11 display, despite you not installing KVM on your
-main system and configuring anything. Sweet.</p>
-<p>The commands to run various macOS versions are directly <a href="https://github.com/sickcodes/Docker-OSX#quick-start-docker-osx">in the readme</a>
-and work out of the box! Example for Monterey:</p>
-<pre><code class="hljs language-sh">docker run -it \
-    --device /dev/kvm \
-    -p 50922:10022 \
-    -v /tmp/.X11-unix:/tmp/.X11-unix \
-    -e <span class="hljs-string">&quot;DISPLAY=<span class="hljs-variable">${DISPLAY:-:0.0}</span>&quot;</span> \
-    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
-    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
-    sickcodes/docker-osx:monterey
-</code></pre>
-<h2 id="making-it-work-on-wayland" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/macos-docker-linux-wayland.html#making-it-work-on-wayland"><span>Making it work on Wayland</span></a></h2>
-<p>I recently <a href="https://www.codejam.info/2022/05/migrating-x11-wayland-i3-sway.html">moved to Wayland</a>,
-so setting <code>DISPLAY=:0.0</code> and mount binding <code>/tmp/.X11-unix</code> is not
-gonna do much. 😬</p>
-<p>At the time of writing, there’s no official instructions in the readme
-to run with Wayland, but the task turned out to be fairly easy!</p>
-<p>Luckily I’m not the first one to try to do that, and there’s already two
-<a href="https://github.com/sickcodes/Docker-OSX/issues/410">open</a>
-<a href="https://github.com/sickcodes/Docker-OSX/issues/419">issues</a> on the
-topic! The second one in particular contains a
-<a href="https://github.com/sickcodes/Docker-OSX/issues/419#issuecomment-1011401905">solution</a>,
-essentially replacing the X11-specific volume and environment variable
-by Wayland equivalents (which I would definitely not have guessed easily 😂).</p>
-<p>Once adapted for Monterey, the command is the following:</p>
-<pre><code class="hljs language-sh">docker run -it \
-    --device /dev/kvm \
-    -p 50922:10022 \
-    -e XDG_RUNTIME_DIR=/tmp \
-    -e WAYLAND_DISPLAY=<span class="hljs-variable">$WAYLAND_DISPLAY</span> \
-    -v <span class="hljs-variable">$XDG_RUNTIME_DIR</span>/<span class="hljs-variable">$WAYLAND_DISPLAY</span>:/tmp/<span class="hljs-variable">$WAYLAND_DISPLAY</span>  \
-    -e GENERATE_UNIQUE=<span class="hljs-literal">true</span> \
-    -e MASTER_PLIST_URL=<span class="hljs-string">&#x27;https://raw.githubusercontent.com/sickcodes/osx-serial-generator/master/config-custom.plist&#x27;</span> \
-    sickcodes/docker-osx:monterey
-</code></pre>
-<p>The original comment specified a number of extra environment variables
-but they didn’t appear to be needed for me.</p>
-<p>And that’s it! Happy hacking on macOS in a VM! 🎉</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1514368088531247108">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Make floats and lists collaborate 🙈</title>
-    <link href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html" />
-    <id>https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html</id>
-    <updated>2022-04-11T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Am I the only one struggling to get lists and other styled elements to
-render properly next to a float?</p>
-<p>At least, it definitely doesn’t work well out of the box. Let’s start
-from a generic browser style sheet context (a HTML file without any CSS
-added), or <a href="https://necolas.github.io/normalize.css/">Normalize.css</a>.</p>
-<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#the-problem"><span>The problem</span></a></h2>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-</code></pre>
-<pre><code class="hljs language-css"><span class="hljs-selector-class">.square</span> {
-    <span class="hljs-attribute">float</span>: left;
-    <span class="hljs-attribute">width</span>: <span class="hljs-number">6em</span>;
-    <span class="hljs-attribute">height</span>: <span class="hljs-number">6em</span>;
-    <span class="hljs-attribute">background</span>: <span class="hljs-number">0366</span>d6;
-}
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-0.html" width="100%"></iframe>
-<p>This is not great. The left padding of the <code>&lt;ul&gt;</code> overlaps with the
-square, and so does the bullet point.</p>
-<p>The only way I’m aware of to fix this in a normal document flow (e.g.
-not doing a very custom thing with Flexbox or grids) is to set
-<code>overflow: hidden</code> to the <code>&lt;ul&gt;</code> (or on a parent block that’s also being
-pushed by the float):</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-tag">ul</span> {
-    <span class="hljs-attribute">overflow</span>: hidden;
-}
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-1.html" width="100%"></iframe>
-<p>Better. Let’s add a paragraph <em>before</em> the square and <em>after</em> the <code>&lt;ul&gt;</code>
-and see what happens.</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Hello<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-2.html" width="100%"></iframe>
-<p>So far so good.</p>
-<h2 id="breaking-it-again" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#breaking-it-again"><span>Breaking it again</span></a></h2>
-<p>Now let’s assume we have paragraphs <em>inside</em> our list items (yes, this
-happens). You also get a similar problem with <code>&lt;blockquote&gt;</code>s or any
-other element where you might want to have a left border and padding,
-and that contains paragraphs or anything with a vertical margin.</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello from a paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-3.html" width="100%"></iframe>
-<p>Subtle yet important thing to notice: the vertical margin from the
-list paragraph now don’t merge with the adjacent margins because of our
-<code>overflow: hidden</code> hack! So we have double the margin before and after
-the list. Not good.</p>
-<p>But what is this behavior in the first place? Meet <a href="https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing">margin collapsing</a>.
-This concept is is very well defined by <a href="https://css-tricks.com/what-you-should-know-about-collapsing-margins/">CSS-Tricks</a>:</p>
-<blockquote>
-<p>Collapsing margins happen when two vertical margins come in contact
-with one another. If one margin is greater than the other, then that
-margin overrides the other, leaving one margin.</p>
-</blockquote>
-<p>So by using <code>overflow: hidden</code>, we break margin collapsing.</p>
-<h2 id="avoiding-collapsing-altogether" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#avoiding-collapsing-altogether"><span>Avoiding collapsing altogether</span></a></h2>
-<p>It’s quite common to use something like <code>margin-top: 0</code> and
-<code>margin-bottom: 1em</code> on all content elements (or the other way
-around) to avoid relying on (and dealing with) margin collapsing.</p>
-<p><a href="https://twitter.com/valeriangalliat/status/1512869222111756292">I ran a poll on Twitter</a>
-that got 74 answers. A majority of y’all use this technique to avoid
-margin collapsing!</p>
-<table>
-  <tr>
-    <td><code>p { margin: 1em 0; }</code>
-    <td>37.8%</td>
-  </tr>
-  <tr>
-    <td><code>p { margin-bottom: 1em; }</code>
-    <td>62.2%</td>
-  </tr>
-</table>
-<p>We can try this and see if it helps with our problem.</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-tag">p</span>, <span class="hljs-selector-tag">ul</span> {
-    <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>;
-}
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-4.html" width="100%"></iframe>
-<p>It’s better. We don’t have double the spacing anymore above the <code>&lt;ul&gt;</code>,
-but we still have the problem with the <code>margin-bottom</code> of the <code>&lt;ul&gt;</code> not
-collapsing with its inner paragraph.</p>
-<p>What we can do though is to set <code>overflow: hidden</code> on a wrapper element
-instead of the <code>&lt;ul&gt;</code> directly, then this should let the inner paragraph
-collapse with it’s parent <code>&lt;ul&gt;</code>'s <code>margin-bottom</code>:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;square&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Hello from a paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>Paragraph<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-</code></pre>
-<pre><code class="hljs language-css"><span class="hljs-selector-class">.float-hack</span> {
-    <span class="hljs-attribute">overflow</span>: hidden;
-}
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-5.html" width="100%"></iframe>
-<p>Sweet, that works like a charm!</p>
-<p>That being said, it works especially well because we decided to kill the
-<code>margin-top</code> of content elements, but if you want to remove the
-<code>margin-bottom</code> instead and keep the <code>margin-top</code>, it’s a different
-story:</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-tag">p</span>, <span class="hljs-selector-tag">ul</span> {
-    <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">0</span>;
-}
-</code></pre>
-<iframe src="https://www.codejam.info/img/2022/04/float-demo/example-6.html" width="100%"></iframe>
-<p>So keep that in mind of you want to drop margin collapsing, the margin
-you kill has an importance!</p>
-<h2 id="a-solution-to-keep-collapsing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#a-solution-to-keep-collapsing"><span>A solution to keep collapsing?</span></a></h2>
-<p>The simplicity of the previous solution pretty much convinced me to use
-this pattern on my blog. But for some reason you might want to keep
-relying on margin collapsing and still need to fix this spacing issues
-with floats. Let’s find a way.</p>
-<p>Since we need to combat the fact that <code>overflow: hidden</code> prevents our
-vertical margins from collapsing, an option is to set <code>margin-top: 0</code>
-<strong>recursively</strong> on all the first children of the <code>overflow: hidden</code> element,
-and <code>margin-bottom: 0</code> on all the last children.</p>
-<p>Why <em>recursively</em>? Because any element in the tree of direct first
-children could set a <code>margin-top</code> that we want to cancel (and similarly
-for <code>margin-bottom</code> and the last children tree).</p>
-<p>But <a href="https://stackoverflow.com/questions/12477272/select-recursive-last-child-possible">we can’t recursively target all the first or last children of an element</a>!</p>
-<p>So a solution would be to write something like this (relying on the
-<code>float-hack</code> class we introduced earlier:</p>
-<pre><code class="hljs language-css"><span class="hljs-selector-class">.float-hack</span> {
-    <span class="hljs-attribute">overflow</span>: hidden;
-}
-
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child &gt; <span class="hljs-selector-pseudo">:first</span>-child {
-    <span class="hljs-attribute">margin-top</span>: <span class="hljs-number">0</span>;
-}
-
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span>,
-<span class="hljs-selector-class">.float-hack</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> &gt; <span class="hljs-selector-pseudo">:last-child</span> {
-    <span class="hljs-attribute">margin-bottom</span>: <span class="hljs-number">0</span>;
-}
-</code></pre>
-<p>This should be good enough for most simple cases. You can even have a
-paragraph inside a <code>&lt;blockquote&gt;</code>, itself inside a list item!</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">ul</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">blockquote</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">p</span>&gt;</span>This is a quote<span class="hljs-tag">&lt;/<span class="hljs-name">p</span>&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-name">blockquote</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-</code></pre>
-<p>Or a nested list, which reach the same level of nesting:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">div</span> <span class="hljs-attr">class</span>=<span class="hljs-string">&quot;float-hack&quot;</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
-    <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>
-      <span class="hljs-tag">&lt;<span class="hljs-name">ol</span>&gt;</span>
-        <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>Nested list item<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
-      <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
-    <span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
-  <span class="hljs-tag">&lt;/<span class="hljs-name">ol</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">div</span>&gt;</span>
-</code></pre>
-<p>Maybe don’t add a <code>&lt;blockquote&gt;</code> with paragraphs inside this nested list
-item or you might want to add a few recursion levels to our earlier CSS
-rule. 😂</p>
-<div class="note">
-<p><strong>Note:</strong> this isn’t a complete fix as it won’t behave properly if the
-collapsing margins are not equal.</p>
-<p>The engine normally keeps the greater margin, but here we’ll always nuke
-the margin of the first and last items of our <code>float-hack</code> element.</p>
-</div>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/04/make-floats-and-lists-collaborate.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>And there you go! Two solutions for the price of one:</p>
-<ol>
-<li>Prevent margin collapsing altogether by only applying a
-<code>margin-bottom</code> and setting <code>margin-top: 0</code> on all content elements.</li>
-<li>Recursively target the first and last children of the <code>overflow: hidden</code>
-element to cancel their margin.</li>
-</ol>
-<p>Which one is your favorite?</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1513692138776801287">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

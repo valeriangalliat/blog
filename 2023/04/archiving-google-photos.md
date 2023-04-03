@@ -189,6 +189,40 @@ permanently deleted, so this doesn't concern me too much. What's visible
 in Google Photos on the web (and in their API) is consistent with the
 state I want, and what's on my phone's raw storage is consistent too.
 
+## What about motion photos?
+
+Google's motion photos are the equivalent of Apple's live photos: a
+photo that also contains a short video of the "moment" it was captured.
+
+What happens to those during our archival process? Well, it's
+complicated.
+
+In short, don't worry, they're backed up and the little video that goes
+with the motion photo is not going to be lost, but you won't be able to
+watch the "live" part anymore, you'll only see the still picture.
+
+The reason is that Google stores the MP4 video part at the end of the JPEG
+file. This doesn't prevent displaying the image, but there's currently
+no photo viewer other than Google Photos that knows to extract that MP4
+section following the JPEG data, and display it properly.
+
+So if you want to see the live part of a motion photo, you'll have to
+re-import it to Google Photos.
+
+Alternatively, you can extract the MP4 part of the motion photo to a
+different file, which you can do by using a script like
+[detailed in this post](https://mjanja.ch/2021/10/stripping-embedded-mp4s-out-of-android-12-motion-photos/).
+
+<div class="note">
+
+**Note:** if you use the script from the above post on macOS, you'll
+need GNU `grep` in order find the byte offset of the MP4 header.
+
+This means you'll have to `brew install coreutils` and replace `grep` by
+`ggrep` in the script for it to work.
+
+</div>
+
 ## Bonus: script to list all your Google Photos using the API
 
 In the previous section, we saw it can be useful to list all the photos

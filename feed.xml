@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-03T00:26:04.287Z</updated>
+  <updated>2023-04-03T00:38:52.686Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -142,6 +142,29 @@ the file as if it was on device (but the photo is not actually there).</p>
 permanently deleted, so this doesn’t concern me too much. What’s visible
 in Google Photos on the web (and in their API) is consistent with the
 state I want, and what’s on my phone’s raw storage is consistent too.</p>
+<h2 id="what-about-motion-photos" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#what-about-motion-photos"><span>What about motion photos?</span></a></h2>
+<p>Google’s motion photos are the equivalent of Apple’s live photos: a
+photo that also contains a short video of the “moment” it was captured.</p>
+<p>What happens to those during our archival process? Well, it’s
+complicated.</p>
+<p>In short, don’t worry, they’re backed up and the little video that goes
+with the motion photo is not going to be lost, but you won’t be able to
+watch the “live” part anymore, you’ll only see the still picture.</p>
+<p>The reason is that Google stores the MP4 video part at the end of the JPEG
+file. This doesn’t prevent displaying the image, but there’s currently
+no photo viewer other than Google Photos that knows to extract that MP4
+section following the JPEG data, and display it properly.</p>
+<p>So if you want to see the live part of a motion photo, you’ll have to
+re-import it to Google Photos.</p>
+<p>Alternatively, you can extract the MP4 part of the motion photo to a
+different file, which you can do by using a script like
+<a href="https://mjanja.ch/2021/10/stripping-embedded-mp4s-out-of-android-12-motion-photos/">detailed in this post</a>.</p>
+<div class="note">
+<p><strong>Note:</strong> if you use the script from the above post on macOS, you’ll
+need GNU <code>grep</code> in order find the byte offset of the MP4 header.</p>
+<p>This means you’ll have to <code>brew install coreutils</code> and replace <code>grep</code> by
+<code>ggrep</code> in the script for it to work.</p>
+</div>
 <h2 id="bonus-script-to-list-all-your-google-photos-using-the-api" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/archiving-google-photos.html#bonus-script-to-list-all-your-google-photos-using-the-api"><span>Bonus: script to list all your Google Photos using the API</span></a></h2>
 <p>In the previous section, we saw it can be useful to list all the photos
 from Google Photos (not necessarily on any of your devices) prior to

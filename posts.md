@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [Archiving Google Photos offline to free up space](2023/04/archiving-google-photos.md) <small>April 2, 2023</small>
 * [Syncthing: sync phone root directory (all internal storage)](2023/04/syncthing-root-directory.md) <small>April 2, 2023</small>
 * [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 * [Embedding high DPI screenshots at normal size in HTML](2023/04/high-dpi-screenshot-size-html.md) <small>April 2, 2023</small>

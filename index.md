@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Archiving Google Photos offline to free up space](2023/04/archiving-google-photos.md) <small>April 2, 2023</small>
 * [Syncthing: sync phone root directory (all internal storage)](2023/04/syncthing-root-directory.md) <small>April 2, 2023</small>
 * [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 * [Embedding high DPI screenshots at normal size in HTML](2023/04/high-dpi-screenshot-size-html.md) <small>April 2, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
 * [Debugging a GitHub Actions workflow via SSH](2022/05/debugging-github-actions-workflow-ssh.md) <small>May 14, 2022</small>
 * [Notion: import CSV with Markdown page content](2022/05/notion-csv-markdown-page-content.md) <small>May 11, 2022</small>
-* [Google Cloud service account authorization without OAuth](2022/05/google-cloud-service-account-authorization-without-oauth.md) <small>May 7, 2022</small>
 
 [All the posts](posts.md)
 

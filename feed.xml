@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-03T00:38:52.686Z</updated>
+  <updated>2023-04-05T22:07:59.989Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -313,6 +313,11 @@ its output, you should be able to determine what’s behind the “ghost items�
 that you identified in the system settings. More often than not, it’ll
 point to some file or app that you forgot to get rid of, and cleaning
 that up will fix your problem (again, after a reboot).</p>
+<div class="note">
+<p><strong>Note:</strong> if when accessing <code>/private/var/db</code> you get a permission
+denied error, even as <code>root</code>, make sure to grant “full disk access”
+permission to your terminal app!</p>
+</div>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

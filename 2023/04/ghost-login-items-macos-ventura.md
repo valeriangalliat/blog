@@ -62,3 +62,11 @@ its output, you should be able to determine what's behind the "ghost items"
 that you identified in the system settings. More often than not, it'll
 point to some file or app that you forgot to get rid of, and cleaning
 that up will fix your problem (again, after a reboot).
+
+<div class="note">
+
+**Note:** if when accessing `/private/var/db` you get a permission
+denied error, even as `root`, make sure to grant "full disk access"
+permission to your terminal app!
+
+</div>

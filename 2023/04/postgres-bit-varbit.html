@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Postgres casting to bit vs. varbit vs. &quot;bit&quot; (with quotes)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Postgres casting to bit vs. varbit vs. &quot;bit&quot; (with quotes)">
+  <meta property="og:description" content="Here’s a few things to know if you’re working with bit strings in Postgres.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Postgres casting to <code>bit</code> vs. <code>varbit</code> vs. <code>&quot;bit&quot;</code> (with quotes)</h1>
+<p class="date">April 5, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Here’s a few things to know if you’re working with bit strings in
+Postgres.</p>
+<h2 id="bit-means-bit-1" tabindex="-1"><a class="header-anchor" href="#bit-means-bit-1"><span><code>bit</code> means <code>bit(1)</code></span></a></h2>
+<p>As documented <a href="https://www.postgresql.org/docs/8.0/functions-bitstring.html">here</a>,
+<code>bit</code> is an alias for <code>bit(1)</code>, so it will only keep the least
+significant bit.</p>
+<pre><code class="hljs">42::bit(10)  0000101010
+42::bit(1)            0
+42::bit               0
+
+43::bit(10)  0000101011
+43::bit(1)            1
+43::bit               1
+</code></pre>
+<h2 id="define-bit-strings-with-b-101010" tabindex="-1"><a class="header-anchor" href="#define-bit-strings-with-b-101010"><span>Define bit strings with <code>B'101010'</code></span></a></h2>
+<p>You can define bit strings with the <code>B</code> prefix:</p>
+<pre><code class="hljs">B&#x27;101010&#x27;             101010
+B&#x27;101010&#x27;::int        42
+pg_typeof(B&#x27;101010&#x27;)  bit
+</code></pre>
+<h2 id="cast-a-string-to-bit" tabindex="-1"><a class="header-anchor" href="#cast-a-string-to-bit"><span>Cast a string to <code>bit</code></span></a></h2>
+<p>If you have a string made of only 0s and 1s, you can cast it to a bit
+string too! Useful for dynamically generating bit sequences.</p>
+<pre><code class="hljs">&#x27;101010&#x27;::bit(10)  1010100000
+</code></pre>
+<p>But we instantly notice an interesting difference: when casting from an
+integer as we did earlier, the truncation (or padding otherwise) was
+right-aligned, while when casting from a string, it’s left-aligned.</p>
+<pre><code class="hljs">12::bit(4)       1100
+12::bit(2)         00
+&#x27;1100&#x27;::bit(4)   1100
+&#x27;1100&#x27;::bit(2)   11
+B&#x27;1100&#x27;::bit(2)  11
+</code></pre>
+<h2 id="dynamic-length-bit-strings" tabindex="-1"><a class="header-anchor" href="#dynamic-length-bit-strings"><span>Dynamic length bit strings</span></a></h2>
+<p>What if you’re generating a bit string from… an actual string, but you
+don’t know its length in advance? You can always use a fixed length
+that’s larger than what you think you’ll need, but that may not be very
+efficient.</p>
+<p>Instead, you can use the <code>bit varying</code> type, also known as <code>varbit</code>!</p>
+<pre><code class="hljs">&#x27;101010&#x27;::bit varying             101010
+&#x27;101010&#x27;::varbit                  101010
+pg_typeof(&#x27;101010&#x27;::bit varying)  bit varying
+pg_typeof(&#x27;101010&#x27;::varbit)       bit varying
+</code></pre>
+<p>Alternatively, there’s an <a href="https://dba.stackexchange.com/a/204838/240451">internal, undocumented <code>&quot;bit&quot;</code> type</a>
+(to not be mistaken with <code>bit</code> without the quotes), which will
+automatically cast to a static-sized <code>bit</code>, <em>but inferring the size form
+the input</em>!</p>
+<pre><code class="hljs">&#x27;101010&#x27;::bit                1
+&#x27;101010&#x27;::varbit             101010
+pg_typeof(&#x27;101010&#x27;::varbit)  bit varying
+&#x27;101010&#x27;::&quot;bit&quot;              101010
+pg_typeof(&#x27;101010&#x27;::&quot;bit&quot;)   bit
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> there’s probably very little situations where you’d need
+<code>&quot;bit&quot;</code> instead of <code>varbit</code>, but at least now you know it exists. I
+wouldn’t recommend relying on a type that’s internal to Postgres and
+undocumented though!</p>
+</div>
+<p>The <code>&quot;bit&quot;</code> magic is not transparent to <a href="https://www.postgresql.org/docs/current/app-psql.html"><code>\gdesc</code></a>
+though:</p>
+<pre><code class="hljs">&#x27;101010&#x27;::bit     1       bit(1)
+&#x27;101010&#x27;::bit(6)  101010  bit(6)
+&#x27;101010&#x27;::varbit  101010  bit varying
+&#x27;101010&#x27;::&quot;bit&quot;   101010  &quot;bit&quot;
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/postgres-bit-varbit.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

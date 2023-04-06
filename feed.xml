@@ -5,10 +5,253 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-05T23:05:29.041Z</updated>
+  <updated>2023-04-06T01:50:36.372Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Recovering Kobo eReader highlights after an accidental factory reset!</title>
+    <link href="https://www.codejam.info/2023/04/kobo-highlights-recover.html" />
+    <id>https://www.codejam.info/2023/04/kobo-highlights-recover.html</id>
+    <updated>2023-04-05T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>The other day my Kobo eReader had some issues where it was instantly
+dying when not plugged in, despite showing a full battery! This happened
+after I let it charge overnight on an external battery. 😬</p>
+<p>I restarted it a few times, hoping this would fix the issue, but without
+luck. Until… the last restart was a bit different: <strong>it asked me to
+chose a language</strong>.</p>
+<p>At this very moment, I knew I fucked up.</p>
+<p>I somehow managed to accidentally factory reset my eReader!</p>
+<h2 id="limiting-the-damage-make-a-disk-image" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#limiting-the-damage-make-a-disk-image"><span>Limiting the damage: make a disk image</span></a></h2>
+<p>Because I was in denial, I didn’t instantly accept that a factory reset
+had happened. So I went on, picked my language and connected it again to
+my Wi-Fi, so I could access the main screen.</p>
+<p>Indeed, all my books were gone. Not a big deal because I have a copy on
+my computer. More problematic though, my highlights and notes were
+gone too!</p>
+<p>I do back them up once in a while, but I’ve been neglecting that, so my
+last backup was over 4 months old! I’ve read a bunch of books since
+then, and highlighted quite some stuff I would have been happy to go
+through again in the future. Bummer.</p>
+<p>To prevent further damage, once I realized my data was gone, I stopped
+doing anything with the device that could write to the storage.</p>
+<p>As any good data recovery starts, I plugged it to my laptop and cloned
+the entire storage to an image file:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/sdb of=kobo-raw-disk bs=1M
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I used <code>dd</code> because the storage of the eReader was presumably
+healthy, if not for the fact that a factory reset had happened.</p>
+<p>If I had actual corruption issues with the disk, it would have been good
+to use <a href="https://www.gnu.org/software/ddrescue/"><code>ddrescue</code></a>.</p>
+</div>
+<h2 id="testdisk-trying-to-recover-the-original-partition" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#testdisk-trying-to-recover-the-original-partition"><span>TestDisk: trying to recover the original partition</span></a></h2>
+<p>The first thing I tried was to use <a href="https://www.cgsecurity.org/wiki/TestDisk">TestDisk</a>
+to recover the partition table from before the factory reset, but this
+wasn’t successful.</p>
+<p>I think it would have been a more appropriate tool to recover specific
+partitions that were deleted without being written over, or if only the
+partition table was corrupted or lost.</p>
+<p>Here though, I think the factory reset process overwrote too much data
+to make TestDisk successful. It didn’t hurt to try though!</p>
+<h2 id="photorec-extract-recognizable-file-formats-from-raw-disk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#photorec-extract-recognizable-file-formats-from-raw-disk"><span>PhotoRec: extract recognizable file formats from raw disk</span></a></h2>
+<p>Had I been successful with TestDisk, I would have recovered the original
+partition and filesystem, with the entire directory structure and
+filenames.</p>
+<p>As a fallback though, I decided to use
+<a href="https://www.cgsecurity.org/wiki/PhotoRec">PhotoRec</a>
+(another tool by the same creators as TestDisk), to try and identify
+well-known file formats from the raw disk image.</p>
+<p>The inconvenient of that is that we lose all the filenames and their
+arborescence, but I can live with that.</p>
+<p>The output of PhotoRec was 7304 files, split in directories containing
+500 files each, going from <code>recup_dir.1</code> to <code>recup_dir.15</code>.</p>
+<p>Each file is named after the logical sector it was found at, which is
+not very useful to me here, and has the extension of the filetype that
+was identified.</p>
+<p>Here’s all the extensions it was able to find, along with the number of
+files for that extension:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find photorec-out -<span class="hljs-built_in">type</span> f | sed <span class="hljs-string">&#x27;s/.*\.//&#x27;</span> | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c</span>
+      5 c
+      1 csv
+      2 elf
+     77 epub
+      5 f
+     11 gz
+     18 h
+     18 html
+      1 ico
+   1493 ini
+    154 java
+   3964 jpg
+      4 pdf
+      3 plist
+    161 png
+     27 py
+      6 sqlite
+      1 sxw
+      1 tar
+   1343 txt
+      1 xml
+      8 zip
+</code></pre>
+<h2 id="trying-to-recover-the-sqlite-databases" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#trying-to-recover-the-sqlite-databases"><span>Trying to recover the SQLite databases</span></a></h2>
+<p>I knew that Kobo stores the highlights in a SQLite database, located in
+<code>.kobo/KoboReader.sqlite</code>. If this was intact, I had all my highlights
+back!</p>
+<p>I tried to open the 6 identified SQLite databases, but sadly, the few
+that weren’t corrupted didn’t have the tables I was looking for, and the
+only one that was about as large as what I would expect for my
+<code>KoboReader.sqlite</code> (a bit bigger than the one of my last backup) was
+corrupted.</p>
+<p>I tried using the <a href="https://www.sqlite.org/recovery.html"><code>.recover</code></a>
+SQLite command, but that didn’t work either:</p>
+<pre><code class="hljs language-sh">sqlite3 corrupt.db .recover &gt; data.sql
+</code></pre>
+<p>I tried <a href="https://www.nucleustechnologies.com/blog/best-6-sqlite-database-recovery-tools/">a whole bunch</a>
+of different proprietary tools to recover corrupted SQLite databases,
+but none of them was able to do anything.</p>
+<p>When I was looking at the raw contents of the SQLite database though,
+e.g. using <code>less</code> directly on the binary file, or using <code>xxd</code> or
+<code>strings</code>, I could see some highlights data, but definitely not as much
+as I expected.</p>
+<h2 id="looking-at-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#looking-at-the-raw-disk-directly"><span>Looking at the raw disk directly</span></a></h2>
+<p>I tried pretty hard for that SQLite database, but I had to come to the
+fact it wasn’t gonna be my savior here. However there was something I
+liked about this idea of looking at the raw binary data directly.</p>
+<p>I had a light of hope when I decided to <code>grep</code> into the corrupted SQLite
+database, as well as the raw disk image, for fragments of sentences I
+definitely remembered having highlighted. The binary files, in fact,
+matched! There was after all a chance that at least some of my
+highlights were there, but it wasn’t exactly clear where, how many, and
+under what form.</p>
+<p>Since I couldn’t do anything with the database, I decided to focus on
+the raw disk image. Using <code>less</code> and <code>xxd</code> to visualize it wasn’t very
+successful (it took too long to go through the huge amounts of
+unreadable data to notice anything actually usable). However, <code>strings</code>,
+that only outputs printable data, made it much easier for me to filter
+through its contents.</p>
+<p>When I looked up in the <code>strings</code> output for some sentence I remembered
+highlighting, it was, in fact, part of a fairly large XML string! What?</p>
+<h2 id="looking-at-the-recovered-xml-files" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#looking-at-the-recovered-xml-files"><span>Looking at the recovered XML files</span></a></h2>
+<p>It turned out that whole time, the Kobo eReader was storing annotations
+not only in a database, but also in XML files!</p>
+<p>For some reason PhotoRec identified them all as <code>txt</code> instead of <code>xml</code>,
+but it was pretty easy to extract them. All the annotations XML started
+with <code>&lt;annotationSet</code>.</p>
+<pre><code class="hljs language-sh">grep -R --files-with-match <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> photorec-out/**/*.txt
+</code></pre>
+<p>With <code>-R</code> for recursive, and <code>--files-with-match</code>, this command printed
+the filenames of all the files that contained <code>&lt;annotationSet</code>.</p>
+<p>I copied them to a separate directory for analysis.</p>
+<p>I quickly identified a pattern: each XML file contained all the
+annotations for a given book, but I had many different XML files for the
+same books, with more or less annotations in them. It was like I had the
+history of every single time each file was written to as I added new
+highlights!</p>
+<p>I wrote a quick script to validate this theory, and surely, the XML with
+the most annotations for each book systematically contained all of the
+annotations of the other, smaller XML files for that same book. This
+allowed me to filter quite a lot amongst those files.</p>
+<h2 id="integrity-check-comparing-with-my-backup-database" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#integrity-check-comparing-with-my-backup-database"><span>Integrity check: comparing with my backup database</span></a></h2>
+<p>Remember, I still had that copy of the database from a few months ago. I
+decided to check the integrity of the XMLs I recovered against what was
+in my backup, so I wrote a quick script to compare them.</p>
+<p>I wasn’t happy with what I found though. For the books for which I did
+have a backup, this showed that I recovered <em>most</em> of the highlights in
+the XML files, but not <em>all</em>. This means that for the ones where I
+didn’t have a backup, I couldn’t hope to have recovered <em>everything</em>.</p>
+<p>This was better than nothing, but I was pretty uncomfortable with that
+state of having recovered <em>some</em> data but not knowing what data I had
+actually lost. 😅</p>
+<p>I scratched my head a bit, and surely enough, I was able to recall a few
+words for a sentence that I definitely remembered highlighting recently,
+and that was not part of the XMLs that PhotoRec recovered.</p>
+<p>What was exciting though, is that I could successfully <code>grep</code> for this
+sentence in the binary disk image! Did PhotoRec miss some XML files
+somehow?</p>
+<h2 id="grepping-for-xml-files-on-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#grepping-for-xml-files-on-the-raw-disk-directly"><span>Grepping for XML files on the raw disk directly!</span></a></h2>
+<p>Only one way to know. Since I knew exactly the patterns to look for at
+the start and end of the annotations XML, I could find them in the raw
+disk image, extract the byte offset, and then <code>dd</code> everything
+in-between each start and end offset!</p>
+<p>Using <code>grep</code> with <code>--text</code> to force it to treat the disk binary data as text,
+and <code>--byte-offset</code> to get the byte offset of the matches, I was able to
+extract the position of the markers:</p>
+<pre><code class="hljs language-sh">grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> kobo-raw-disk &gt; xml-start-markers-offsets
+grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;/annotationSet&gt;&#x27;</span> kobo-raw-disk &gt; xml-end-markers-offsets
+</code></pre>
+<p>Each file looked like this:</p>
+<pre><code class="hljs">199089105:&lt;annotationSet
+222029926:&lt;annotationSet
+799936271:&lt;annotationSet
+830499395:&lt;annotationSet
+839015506:&lt;annotationSet
+</code></pre>
+<p>From there, I used the <code>paste</code> command to merge both files side by side
+(using a <code>cut</code> subshell in order to keep only the offset before the
+<code>:</code>):</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets)
+</code></pre>
+<p>Which gave me something like:</p>
+<pre><code class="hljs">199089105	199091941
+222029926	222031623
+799936271	799937945
+830499395	830499742
+839015506	839016589
+</code></pre>
+<p>I could then use <code>dd</code> to extract the bytes from the raw disk image
+in-between those offsets:</p>
+<pre><code class="hljs language-sh">start=199089105
+end=199091941
+<span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
+</code></pre>
+<p>What’s the 16 in that command? It’s the length of the end marker
+<code>&lt;/annotationSet&gt;</code>! Because <code>grep</code> gave us the offset of the <em>start</em> of
+the search.</p>
+<p>So I piped both of those commands together through a <code>while</code> loop to
+extract all the XMLs:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets) \
+   | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> start end; <span class="hljs-keyword">do</span>
+      <span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
+   <span class="hljs-keyword">done</span>
+</code></pre>
+<p>With that method, I was able to find 287 XMLs, where PhotoRec only
+recovered 234!</p>
+<p>I ran my integrity check script against this new output, and was
+astonished: <em>it was a perfect match</em>!</p>
+<p>Every single highlight I had i my backup were found in those XMLs, which
+gave me confidence that the ones that were <em>not</em> in my backup were most
+likely there too.</p>
+<h2 id="confidence-checking" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#confidence-checking"><span>Confidence checking</span></a></h2>
+<p>In order to be even more sure about this, I checked the last recovered
+highlight for all of the books I’ve read since my last backup. Each
+highlight contains a <code>progress</code> attribute, between 0 and 1, representing
+how far in the book it’s situated.</p>
+<p>For all of the books I finished, the last highlight was pretty close to
+the end of the book, and since we saw earlier that the file with the
+most highlights always contained the highlights of the previous versions
+of that file, I was pretty confident I’ve recovered all of my data at
+that point! 🎉</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>This was a rollercoaster of emotions! Between losing all my highlights,
+recovering a database that turned out to be unusable, finding the XMLs
+with PhotoRec but noticing they were incomplete, and finally using
+<code>grep</code> and <code>dd</code> to extract the XML files myself directly from the raw
+disk. Luckily, I was able to recover everything I was looking for thanks
+to the last method!</p>
+<p>But really, the morale of this story is that, <strong>if you care about some
+data, you better make sure that you back it up</strong>, and that you do so
+rigorously and frequently (or even better, automatically).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Postgres bit vs varbit vs &quot;bit&quot; (with quotes)</title>
     <link href="https://www.codejam.info/2023/04/postgres-bit-varbit.html" />
@@ -2976,109 +3219,6 @@ in a new desktop. I lose a tiny bit of vertical space because of the top
 bar, but I gained even more vertical space with the Dock trick earlier
 that this is not a big deal!</p>
 <p>I hope this tip was useful to you. 🥰</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Firefox credit card autofill not working on Linux</title>
-    <link href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html" />
-    <id>https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html</id>
-    <updated>2022-05-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Firefox 79 <a href="https://techdows.com/2020/07/firefox-autofiil-credit-card.html">introduced</a>
-credit card autofill capability back in summer 2020. The feature is
-limited to a few regions, starting with US, and now supporting US, CA,
-UK, FR and DE.</p>
-<p>Today, I’m using Firefox 101 in Canada, and I noticed this feature
-wasn’t working on my Linux computer. In this post I’ll show what the
-problem was, how I debugged it and especially how I fixed it!</p>
-<h2 id="symptoms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#symptoms"><span>Symptoms</span></a></h2>
-<p>I know I have a few credit cards saved in my Firefox Sync account, they
-work perfectly on macOS and Android versions of Firefox, and Firefox was
-configured to sync them. Yet, the “saved credit cards” window in the
-privacy preferences pane was empty!</p>
-<figure class="center">
-  <img alt="Empty credit cards window" src="https://www.codejam.info/img/2022/05/firefox-saved-credit-cards.png">
-</figure>
-<p>Also if I clicked the <kbd>Add…</kbd> button and try to add a credit
-card (e.g. <code>4111111111111111</code> for a Visa card to pass the validation for
-testing), the <kbd>Save</kbd> button was completely unresponsive.</p>
-<h2 id="debugging" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#debugging"><span>Debugging</span></a></h2>
-<p>I opened the browser console from “more tools” in the application menu.
-Every time I clicked <kbd>Save</kbd>, an error would pop: “User canceled
-OS unlock entry”.</p>
-<pre><code class="hljs">[Exception... &quot;User canceled OS unlock entry&quot; nsresult: &quot;0x80004004 (NS_ERROR_ABORT)&quot; location: &quot;JS frame :: resource://gre/modules/OSKeyStore.jsm :: encrypt :: line 332&quot; data: no] OSKeyStore.jsm:332:24
-</code></pre>
-<p>Luckily this problem is already reported <a href="https://bugs.archlinux.org/task/74373">on the Arch Linux bug tracker</a>,
-and the solution seems to be to install a software providing
-<code>org.freedesktop.secrets</code>, which as of today is either <code>gnome-keyring</code>
-or <code>keepassxc</code>.</p>
-<p>I installed <code>gnome-keyring</code> and had to reboot for it to start
-automatically (ain’t no time to figure how this thing work under the
-hood for now). Yet the bug persisted, despite people on that thread
-mentioning this solves the issue for them!</p>
-<p>The “User canceled OS unlock entry” exception is thrown
-during the <a href="https://github.com/mozilla/gecko-dev/blob/bf243bc817f97b0bb74af710bd9d874370468e8b/toolkit/modules/OSKeyStore.jsm#L333"><code>OSKeyStore.encrypt</code></a>
-call, because the <code>ensureLoggedIn</code> function determined we were not
-authenticated. The underlying reason seemed to be the
-<a href="https://github.com/mozilla/gecko-dev/blob/bf243bc817f97b0bb74af710bd9d874370468e8b/toolkit/modules/OSKeyStore.jsm#L254"><code>nativeOSKeyStore.asyncGenerateSecret</code></a>
-call returning <code>NS_ERROR_FAILURE</code>.</p>
-<p>More likely Firefox wasn’t able to generate a secret in GNOME Keyring.
-So I installed <a href="https://en.wikipedia.org/wiki/Seahorse_(software)">Seahorse</a>
-to test it myself, and indeed, I couldn’t store new secrets from there
-either, it would fail with <code>No such secret collection at path: /</code>. This
-bug is also <a href="https://wiki.archlinux.org/title/GNOME/Keyring#No_such_secret_collection_at_path:_/">documented</a>
-on the ArchWiki, but sadly the solution there didn’t work for me.</p>
-<h2 id="the-underlying-issue" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#the-underlying-issue"><span>The underlying issue</span></a></h2>
-<p>I use LightDM autologin to automatically start my compositor on boot
-(where I <a href="https://www.codejam.info/2021/08/lock-screen-as-login-screen-linux.html">greet myself with a lock screen</a>).
-It turns out GNOME Keyring doesn’t play well with autologin. From the
-<a href="https://wiki.archlinux.org/title/GNOME/Keyring#Using_the_keyring">ArchWiki</a>:</p>
-<blockquote>
-<p>To use automatic unlocking with automatic login, you can set a blank
-password for the default keyring. Note that the contents of the
-keyring are stored unencrypted in this case.</p>
-</blockquote>
-<p>That’s not ideal. And I already have a primary password configured in
-Firefox so it would suck to set a second one on GNOME Keyring just for
-Firefox to deal with credit cards differently…</p>
-<p>In the end I decided to ditch my automatic login and go back to TTY
-login and <a href="https://wiki.archlinux.org/title/Sway#Automatically_on_TTY_login">starting Sway automatically upon login on TTY1</a>.
-This is the recommended way to start Sway anyway, and they officially
-don’t support display managers, so that definitely can’t hurt.</p>
-<p>All I had to do was to edit <code>/etc/pam.d/login</code> according to the “when
-using console-based login” instructions of the <a href="https://wiki.archlinux.org/title/GNOME/Keyring#PAM_step">PAM
-step</a> in the
-GNOME Keyring page on ArchWiki, appending the following:</p>
-<pre><code class="hljs">auth       optional     pam_gnome_keyring.so
-session    optional     pam_gnome_keyring.so auto_start
-</code></pre>
-<h2 id="the-keepassxc-alternative" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#the-keepassxc-alternative"><span>The KeePassXC alternative</span></a></h2>
-<p>In the bug tracker there’s also <a href="https://bugs.archlinux.org/task/74373#comment207641">an answer</a>
-describing how to fix this issue with KeePassXC:</p>
-<blockquote>
-<ol>
-<li>KeePassXC needs to be running.</li>
-<li>The secret service integration must be enabled in settings.</li>
-<li>A database must be setup where at least one group is accessible to the secret service.</li>
-</ol>
-</blockquote>
-<p>That’s a solid alternative, but then if I want secrets to be properly
-secured, I need to add another password to that KeePassXC database, on
-top of my encrypted filesystem password, login password and Firefox
-primary password. That starts to be quite a lot of passwords… so I’ll
-stick with GNOME Keyring for now because it’s able to reuse my login
-password for that purpose.</p>
-<h2 id="final-words" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/firefox-credit-card-autofill-not-working-on-linux.html#final-words"><span>Final words</span></a></h2>
-<p>I now have a successful credit card sync and autofill in Firefox on
-Linux! I hope this becomes a bit simpler in the future, but at least I
-learnt a thing or two about the underlying implementation and the
-technical challenges and tradeoffs it involves.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

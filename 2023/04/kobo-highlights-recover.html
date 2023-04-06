@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Recovering Kobo eReader highlights after an accidental factory reset!</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Recovering Kobo eReader highlights after an accidental factory reset!">
+  <meta property="og:description" content="Grepping through raw disk image, yay. The other day my Kobo eReader had some issues where it was instantly dying when not plugged in, despite showing a full battery! This happened after I let it charge overnight on an external battery. 😬">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Recovering Kobo eReader highlights after an accidental factory reset!</h1>
+<p class="tagline">Grepping through raw disk image, yay</p>
+<p class="date">April 5, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>The other day my Kobo eReader had some issues where it was instantly
+dying when not plugged in, despite showing a full battery! This happened
+after I let it charge overnight on an external battery. 😬</p>
+<p>I restarted it a few times, hoping this would fix the issue, but without
+luck. Until… the last restart was a bit different: <strong>it asked me to
+chose a language</strong>.</p>
+<p>At this very moment, I knew I fucked up.</p>
+<p>I somehow managed to accidentally factory reset my eReader!</p>
+<h2 id="limiting-the-damage-make-a-disk-image" tabindex="-1"><a class="header-anchor" href="#limiting-the-damage-make-a-disk-image"><span>Limiting the damage: make a disk image</span></a></h2>
+<p>Because I was in denial, I didn’t instantly accept that a factory reset
+had happened. So I went on, picked my language and connected it again to
+my Wi-Fi, so I could access the main screen.</p>
+<p>Indeed, all my books were gone. Not a big deal because I have a copy on
+my computer. More problematic though, my highlights and notes were
+gone too!</p>
+<p>I do back them up once in a while, but I’ve been neglecting that, so my
+last backup was over 4 months old! I’ve read a bunch of books since
+then, and highlighted quite some stuff I would have been happy to go
+through again in the future. Bummer.</p>
+<p>To prevent further damage, once I realized my data was gone, I stopped
+doing anything with the device that could write to the storage.</p>
+<p>As any good data recovery starts, I plugged it to my laptop and cloned
+the entire storage to an image file:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/sdb of=kobo-raw-disk bs=1M
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I used <code>dd</code> because the storage of the eReader was presumably
+healthy, if not for the fact that a factory reset had happened.</p>
+<p>If I had actual corruption issues with the disk, it would have been good
+to use <a href="https://www.gnu.org/software/ddrescue/"><code>ddrescue</code></a>.</p>
+</div>
+<h2 id="testdisk-trying-to-recover-the-original-partition" tabindex="-1"><a class="header-anchor" href="#testdisk-trying-to-recover-the-original-partition"><span>TestDisk: trying to recover the original partition</span></a></h2>
+<p>The first thing I tried was to use <a href="https://www.cgsecurity.org/wiki/TestDisk">TestDisk</a>
+to recover the partition table from before the factory reset, but this
+wasn’t successful.</p>
+<p>I think it would have been a more appropriate tool to recover specific
+partitions that were deleted without being written over, or if only the
+partition table was corrupted or lost.</p>
+<p>Here though, I think the factory reset process overwrote too much data
+to make TestDisk successful. It didn’t hurt to try though!</p>
+<h2 id="photorec-extract-recognizable-file-formats-from-raw-disk" tabindex="-1"><a class="header-anchor" href="#photorec-extract-recognizable-file-formats-from-raw-disk"><span>PhotoRec: extract recognizable file formats from raw disk</span></a></h2>
+<p>Had I been successful with TestDisk, I would have recovered the original
+partition and filesystem, with the entire directory structure and
+filenames.</p>
+<p>As a fallback though, I decided to use
+<a href="https://www.cgsecurity.org/wiki/PhotoRec">PhotoRec</a>
+(another tool by the same creators as TestDisk), to try and identify
+well-known file formats from the raw disk image.</p>
+<p>The inconvenient of that is that we lose all the filenames and their
+arborescence, but I can live with that.</p>
+<p>The output of PhotoRec was 7304 files, split in directories containing
+500 files each, going from <code>recup_dir.1</code> to <code>recup_dir.15</code>.</p>
+<p>Each file is named after the logical sector it was found at, which is
+not very useful to me here, and has the extension of the filetype that
+was identified.</p>
+<p>Here’s all the extensions it was able to find, along with the number of
+files for that extension:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find photorec-out -<span class="hljs-built_in">type</span> f | sed <span class="hljs-string">&#x27;s/.*\.//&#x27;</span> | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c</span>
+      5 c
+      1 csv
+      2 elf
+     77 epub
+      5 f
+     11 gz
+     18 h
+     18 html
+      1 ico
+   1493 ini
+    154 java
+   3964 jpg
+      4 pdf
+      3 plist
+    161 png
+     27 py
+      6 sqlite
+      1 sxw
+      1 tar
+   1343 txt
+      1 xml
+      8 zip
+</code></pre>
+<h2 id="trying-to-recover-the-sqlite-databases" tabindex="-1"><a class="header-anchor" href="#trying-to-recover-the-sqlite-databases"><span>Trying to recover the SQLite databases</span></a></h2>
+<p>I knew that Kobo stores the highlights in a SQLite database, located in
+<code>.kobo/KoboReader.sqlite</code>. If this was intact, I had all my highlights
+back!</p>
+<p>I tried to open the 6 identified SQLite databases, but sadly, the few
+that weren’t corrupted didn’t have the tables I was looking for, and the
+only one that was about as large as what I would expect for my
+<code>KoboReader.sqlite</code> (a bit bigger than the one of my last backup) was
+corrupted.</p>
+<p>I tried using the <a href="https://www.sqlite.org/recovery.html"><code>.recover</code></a>
+SQLite command, but that didn’t work either:</p>
+<pre><code class="hljs language-sh">sqlite3 corrupt.db .recover &gt; data.sql
+</code></pre>
+<p>I tried <a href="https://www.nucleustechnologies.com/blog/best-6-sqlite-database-recovery-tools/">a whole bunch</a>
+of different proprietary tools to recover corrupted SQLite databases,
+but none of them was able to do anything.</p>
+<p>When I was looking at the raw contents of the SQLite database though,
+e.g. using <code>less</code> directly on the binary file, or using <code>xxd</code> or
+<code>strings</code>, I could see some highlights data, but definitely not as much
+as I expected.</p>
+<h2 id="looking-at-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="#looking-at-the-raw-disk-directly"><span>Looking at the raw disk directly</span></a></h2>
+<p>I tried pretty hard for that SQLite database, but I had to come to the
+fact it wasn’t gonna be my savior here. However there was something I
+liked about this idea of looking at the raw binary data directly.</p>
+<p>I had a light of hope when I decided to <code>grep</code> into the corrupted SQLite
+database, as well as the raw disk image, for fragments of sentences I
+definitely remembered having highlighted. The binary files, in fact,
+matched! There was after all a chance that at least some of my
+highlights were there, but it wasn’t exactly clear where, how many, and
+under what form.</p>
+<p>Since I couldn’t do anything with the database, I decided to focus on
+the raw disk image. Using <code>less</code> and <code>xxd</code> to visualize it wasn’t very
+successful (it took too long to go through the huge amounts of
+unreadable data to notice anything actually usable). However, <code>strings</code>,
+that only outputs printable data, made it much easier for me to filter
+through its contents.</p>
+<p>When I looked up in the <code>strings</code> output for some sentence I remembered
+highlighting, it was, in fact, part of a fairly large XML string! What?</p>
+<h2 id="looking-at-the-recovered-xml-files" tabindex="-1"><a class="header-anchor" href="#looking-at-the-recovered-xml-files"><span>Looking at the recovered XML files</span></a></h2>
+<p>It turned out that whole time, the Kobo eReader was storing annotations
+not only in a database, but also in XML files!</p>
+<p>For some reason PhotoRec identified them all as <code>txt</code> instead of <code>xml</code>,
+but it was pretty easy to extract them. All the annotations XML started
+with <code>&lt;annotationSet</code>.</p>
+<pre><code class="hljs language-sh">grep -R --files-with-match <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> photorec-out/**/*.txt
+</code></pre>
+<p>With <code>-R</code> for recursive, and <code>--files-with-match</code>, this command printed
+the filenames of all the files that contained <code>&lt;annotationSet</code>.</p>
+<p>I copied them to a separate directory for analysis.</p>
+<p>I quickly identified a pattern: each XML file contained all the
+annotations for a given book, but I had many different XML files for the
+same books, with more or less annotations in them. It was like I had the
+history of every single time each file was written to as I added new
+highlights!</p>
+<p>I wrote a quick script to validate this theory, and surely, the XML with
+the most annotations for each book systematically contained all of the
+annotations of the other, smaller XML files for that same book. This
+allowed me to filter quite a lot amongst those files.</p>
+<h2 id="integrity-check-comparing-with-my-backup-database" tabindex="-1"><a class="header-anchor" href="#integrity-check-comparing-with-my-backup-database"><span>Integrity check: comparing with my backup database</span></a></h2>
+<p>Remember, I still had that copy of the database from a few months ago. I
+decided to check the integrity of the XMLs I recovered against what was
+in my backup, so I wrote a quick script to compare them.</p>
+<p>I wasn’t happy with what I found though. For the books for which I did
+have a backup, this showed that I recovered <em>most</em> of the highlights in
+the XML files, but not <em>all</em>. This means that for the ones where I
+didn’t have a backup, I couldn’t hope to have recovered <em>everything</em>.</p>
+<p>This was better than nothing, but I was pretty uncomfortable with that
+state of having recovered <em>some</em> data but not knowing what data I had
+actually lost. 😅</p>
+<p>I scratched my head a bit, and surely enough, I was able to recall a few
+words for a sentence that I definitely remembered highlighting recently,
+and that was not part of the XMLs that PhotoRec recovered.</p>
+<p>What was exciting though, is that I could successfully <code>grep</code> for this
+sentence in the binary disk image! Did PhotoRec miss some XML files
+somehow?</p>
+<h2 id="grepping-for-xml-files-on-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="#grepping-for-xml-files-on-the-raw-disk-directly"><span>Grepping for XML files on the raw disk directly!</span></a></h2>
+<p>Only one way to know. Since I knew exactly the patterns to look for at
+the start and end of the annotations XML, I could find them in the raw
+disk image, extract the byte offset, and then <code>dd</code> everything
+in-between each start and end offset!</p>
+<p>Using <code>grep</code> with <code>--text</code> to force it to treat the disk binary data as text,
+and <code>--byte-offset</code> to get the byte offset of the matches, I was able to
+extract the position of the markers:</p>
+<pre><code class="hljs language-sh">grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> kobo-raw-disk &gt; xml-start-markers-offsets
+grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;/annotationSet&gt;&#x27;</span> kobo-raw-disk &gt; xml-end-markers-offsets
+</code></pre>
+<p>Each file looked like this:</p>
+<pre><code class="hljs">199089105:&lt;annotationSet
+222029926:&lt;annotationSet
+799936271:&lt;annotationSet
+830499395:&lt;annotationSet
+839015506:&lt;annotationSet
+</code></pre>
+<p>From there, I used the <code>paste</code> command to merge both files side by side
+(using a <code>cut</code> subshell in order to keep only the offset before the
+<code>:</code>):</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets)
+</code></pre>
+<p>Which gave me something like:</p>
+<pre><code class="hljs">199089105	199091941
+222029926	222031623
+799936271	799937945
+830499395	830499742
+839015506	839016589
+</code></pre>
+<p>I could then use <code>dd</code> to extract the bytes from the raw disk image
+in-between those offsets:</p>
+<pre><code class="hljs language-sh">start=199089105
+end=199091941
+<span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
+</code></pre>
+<p>What’s the 16 in that command? It’s the length of the end marker
+<code>&lt;/annotationSet&gt;</code>! Because <code>grep</code> gave us the offset of the <em>start</em> of
+the search.</p>
+<p>So I piped both of those commands together through a <code>while</code> loop to
+extract all the XMLs:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets) \
+   | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> start end; <span class="hljs-keyword">do</span>
+      <span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
+   <span class="hljs-keyword">done</span>
+</code></pre>
+<p>With that method, I was able to find 287 XMLs, where PhotoRec only
+recovered 234!</p>
+<p>I ran my integrity check script against this new output, and was
+astonished: <em>it was a perfect match</em>!</p>
+<p>Every single highlight I had i my backup were found in those XMLs, which
+gave me confidence that the ones that were <em>not</em> in my backup were most
+likely there too.</p>
+<h2 id="confidence-checking" tabindex="-1"><a class="header-anchor" href="#confidence-checking"><span>Confidence checking</span></a></h2>
+<p>In order to be even more sure about this, I checked the last recovered
+highlight for all of the books I’ve read since my last backup. Each
+highlight contains a <code>progress</code> attribute, between 0 and 1, representing
+how far in the book it’s situated.</p>
+<p>For all of the books I finished, the last highlight was pretty close to
+the end of the book, and since we saw earlier that the file with the
+most highlights always contained the highlights of the previous versions
+of that file, I was pretty confident I’ve recovered all of my data at
+that point! 🎉</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>This was a rollercoaster of emotions! Between losing all my highlights,
+recovering a database that turned out to be unusable, finding the XMLs
+with PhotoRec but noticing they were incomplete, and finally using
+<code>grep</code> and <code>dd</code> to extract the XML files myself directly from the raw
+disk. Luckily, I was able to recover everything I was looking for thanks
+to the last method!</p>
+<p>But really, the morale of this story is that, <strong>if you care about some
+data, you better make sure that you back it up</strong>, and that you do so
+rigorously and frequently (or even better, automatically).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/kobo-highlights-recover.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

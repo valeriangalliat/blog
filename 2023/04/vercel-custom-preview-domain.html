@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vercel: custom preview domain for free?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Vercel: custom preview domain for free?">
+  <meta property="og:description" content="If you host your app on Vercel, you must be familiar with how preview deployments are a first-class citizen, and each pull request you make gets a preview deployment.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Vercel: custom preview domain for free?</h1>
+<p class="date">April 6, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>If you host your app on Vercel, you must be familiar with how preview
+deployments are a first-class citizen, and each pull request you make gets
+a preview deployment.</p>
+<p>Those preview deployments default to be hosted on <code>vercel.app</code>, and
+Vercel provisions two preview domains for it, with the following
+patterns:</p>
+<ul>
+<li><code>{app}-{id}-{org}.vercel.app</code></li>
+<li><code>{app}-git-{branch}-{org}.vercel.app</code></li>
+</ul>
+<p>So if you make a PR on an app called <code>my-app</code> in an organization
+<code>my-org</code>, on a branch called <code>hello-world</code>, and the deployment ID for
+this commit was <code>lkj8trp27</code>, your URLs would be:</p>
+<ul>
+<li><code>https://my-app-lkj8trp27-my-org.vercel.app/</code></li>
+<li><code>https://my-app-git-hello-world-my-org.vercel.app/</code></li>
+</ul>
+<p>But what if you want, for example, to allow OAuth on your preview
+domains? Whitelisting <code>vercel.app</code> is out of the question since it would
+allow <em>any</em> Vercel website (including an attacker’s website) to be a
+valid redirect URI for our OAuth provider!</p>
+<p>And we can’t typically whitelist a domain pattern like <code>*-my-org.vercel.app</code>,
+not that this would be a good idea anyway because <strong>this pattern is
+<em>not</em> private to your organization</strong>. Any random Vercel user can use
+it in their own app!</p>
+<p>Then, it would be useful to use your own domain instead of <code>vercel.app</code>.
+Turns out Vercel supports this, and <a href="https://vercel.com/docs/concepts/deployments/generated-urls#preview-deployment-suffix">charges $100/month</a>
+for it! Steep.</p>
+<p>Steep, but if you’re looking for a turnkey solution, it’s definitely
+worth it. Otherwise, keep reading.</p>
+<h2 id="using-the-vercel-cli" tabindex="-1"><a class="header-anchor" href="#using-the-vercel-cli"><span>Using the Vercel CLI</span></a></h2>
+<p>An interesting thing in the Vercel CLI is that it lets us manually
+associate a custom domain to a given deployment using
+<a href="https://vercel.com/docs/cli/alias"><code>vercel alias</code></a>. 😏</p>
+<p>Let’s say <code>codejam.info</code> is part of my Vercel-managed domains:</p>
+<pre><code class="hljs language-sh">vercel <span class="hljs-built_in">alias</span> <span class="hljs-built_in">set</span> my-app-lkj8trp27-my-org.vercel.app hello-world.preview.codejam.info
+</code></pre>
+<p>This will associate the deployment example from earlier to my custom
+domain!</p>
+<p>We can literally put anything we want under <code>codejam.info</code> there, and it
+will happily generate a SSL certificate for that arbitrary subdomain,
+and associate it to our deployment.</p>
+<p>This will work as long you associated a wildcard subdomain on your DNS
+to Vercel, like <code>*.preview.codejam.info</code> in our example.</p>
+<p>This is a good start, but it doesn’t scale!</p>
+<h2 id="using-the-vercel-api" tabindex="-1"><a class="header-anchor" href="#using-the-vercel-api"><span>Using the Vercel API</span></a></h2>
+<p>Luckily, the Vercel API exposes an endpoint to do just the same thing:
+<a href="https://vercel.com/docs/rest-api/endpoints#assign-an-alias"><code>POST /v2/deployments/{id}/aliases</code></a>.
+In our example, we can call it with:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;alias&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;hello-world.preview.codejam.info&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>How do we find the deployment ID though? We need the full deployment ID,
+something looking like <code>dpl_hgLKkCqMExSzNpTtA3Dy6sVfWuYj</code>.</p>
+<p>Vercel gives us a handy <a href="https://vercel.com/docs/rest-api/endpoints#get-a-deployment-by-id-or-url"><code>GET /v13/deployments/{idOrUrl}</code></a>
+endpoint for this, where we can pass our deployment URL and get the
+deployment object back, including its full <code>id</code>.</p>
+<p>By combining those two endpoints, we can dynamically associate our
+custom domain to any Vercel preview deployment. 🙏</p>
+<h2 id="getting-an-api-token" tabindex="-1"><a class="header-anchor" href="#getting-an-api-token"><span>Getting an API token</span></a></h2>
+<p>In order to call the API, we need to pass a bearer token in the
+<code>Authorization</code> header. You can create a token from your
+<a href="https://vercel.com/account/tokens">Vercel account settings</a>.</p>
+<p>Then, you can put it in your app’s environment variables, e.g. as
+<code>VERCEL_TOKEN</code>, so it’s available in your server-side code environment.</p>
+<h2 id="associating-the-domain-on-the-fly" tabindex="-1"><a class="header-anchor" href="#associating-the-domain-on-the-fly"><span>Associating the domain on the fly</span></a></h2>
+<p>From there, we can detect when we’re running under a <code>vercel.app</code>
+preview domain, call the API to associate our own custom domain, and
+finally redirect to it. This will add a bit of delay when loading our
+preview deployments from the <code>vercel.app</code> domains, but no big deal.</p>
+<p>Where you hook in order to do that is up to you. <code>_app.jsx</code> may be a
+good start, or maybe some component that’s included in all of your
+pages, maybe just the home page if you don’t expect any deep link on
+your <code>vercel.app</code> preview domains, or maybe even somewhere in
+<code>getServerSideProps</code>?</p>
+<p>If you do this client-side, you’ll want to add an API route or go
+through a SSR page that will be doing the call to the Vercel API (you
+don’t want to expose your Vercel API token client-side), but if you’re
+hooking directly in <code>getServerSideProps</code>, you can skip that step.</p>
+<p>On the client, you could do something like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> router = <span class="hljs-title function_">useRouter</span>()
+
+<span class="hljs-keyword">if</span> (location.<span class="hljs-property">host</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;-my-org.vercel.app&#x27;</span>)) {
+  <span class="hljs-comment">// Preview env</span>
+  router.<span class="hljs-title function_">push</span>(<span class="hljs-string">&#x27;/preview-redirect&#x27;</span>)
+}
+</code></pre>
+<p>Then, implement a <code>preview-redirect</code> page to associate your custom
+domain to the current preview environment, then redirect to it.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getServerSideProps</span> (context) {
+  <span class="hljs-keyword">const</span> deployment = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDeployment</span>(context.<span class="hljs-property">req</span>.<span class="hljs-property">headers</span>.<span class="hljs-property">host</span>)
+
+  <span class="hljs-keyword">const</span> domain = <span class="hljs-string">`pr-<span class="hljs-subst">${deployment.gitSource.prId}</span>.preview.codejam.info`</span>
+
+  <span class="hljs-keyword">await</span> <span class="hljs-title function_">associateDomainToDeployment</span>(deployment.<span class="hljs-property">id</span>, domain)
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">redirect</span>: {
+      <span class="hljs-attr">destination</span>: <span class="hljs-string">`https://<span class="hljs-subst">${domain}</span>`</span>
+    }
+  }
+}
+</code></pre>
+<p>Where <code>getDeployment</code> is a wrapper to <a href="https://vercel.com/docs/rest-api/endpoints#get-a-deployment-by-id-or-url"><code>GET /v13/deployments/{idOrUrl}</code></a>,
+and <code>associateDomainToDeployment</code> wraps <a href="https://vercel.com/docs/rest-api/endpoints#assign-an-alias"><code>POST /v2/deployments/{id}/aliases</code></a>
+(writing those is left as an exercise to the reader).</p>
+<p>Here, I chose to prefix the domain with <code>pr-</code> and the PR number, but
+you’re free to construct your preview domains however you want.</p>
+<p>You’ll notice this works the first time, but obviously if you open again
+the <code>vercel.app</code> preview URL, it will fail because the domain was
+already assigned! To cover that, you need to call <a href="https://vercel.com/docs/rest-api/endpoints#list-deployment-aliases"><code>/v2/deployments/{id}/aliases</code></a>
+and redirecting to the existing domain if you already associated it
+before.</p>
+<p>We can add something like this in the beginning of our previous
+function:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> aliases = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDeploymentAliases</span>(deployment.<span class="hljs-property">id</span>)
+
+<span class="hljs-keyword">const</span> existingDomain = aliases.<span class="hljs-title function_">find</span>(<span class="hljs-function"><span class="hljs-params">alias</span> =&gt;</span>
+  alias.<span class="hljs-property">alias</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;.preview.codejam.info&#x27;</span>)
+)
+
+<span class="hljs-keyword">if</span> (existingDomain) {
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">redirect</span>: {
+      <span class="hljs-attr">destination</span>: <span class="hljs-string">`https://<span class="hljs-subst">${existingDomain.alias}</span>`</span>
+    }
+  }
+}
+</code></pre>
+<p>After this, you should have your free custom preview domains working,
+congrats!</p>
+<h2 id="about-vercel-certificates" tabindex="-1"><a class="header-anchor" href="#about-vercel-certificates"><span>About Vercel certificates</span></a></h2>
+<p>However, you may realize this is bloating your domain’s SSL certificates
+list on Vercel. Every single preview deployment will add a new entry in
+your SSL certificates list, and because the Vercel UI for this doesn’t
+really expect an infinitely growing list of certificates, it’ll make it
+a pain for you to manage your “actual” certificates!</p>
+<p>To prevent this, you need to manually create a wildcard certificate for
+the domain you use for your preview deployments. In the example featured
+in this post, that would be <code>*.preview.codejam.info</code>.</p>
+<p>Vercel is smart enough to notice when we associate a new domain to a
+deployment, that a wildcard certificate covering it already exists, and
+so doesn’t create an <em>individual</em> certificate for <em>that</em> particular
+preview. This will keep your certificates list clean and tidy!</p>
+<p>You can’t create the wildcard certificate from the dashboard directly,
+but you can do so with the CLI using <a href="https://vercel.com/docs/cli/certs#extended-usage"><code>vercel certs issue</code></a>.</p>
+<pre><code class="hljs language-sh">vercel certs issue <span class="hljs-string">&#x27;*.preview.codejam.info&#x27;</span>
+</code></pre>
+<p>Note that this will only work if you use Vercel’s nameservers. This
+means the following won’t work (e.g. in the <code>codejam.info</code> DNS zone):</p>
+<pre><code class="hljs">*.preview CNAME cname.vercel-dns.com
+</code></pre>
+<p>But the following will work:</p>
+<pre><code class="hljs">preview NS ns1.vercel-dns.com
+preview NS ns2.vercel-dns.com
+</code></pre>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>If you made it here, congrats! You now have everything you need in order
+to implement your own custom preview domains, without paying Vercel big
+money for it.</p>
+<p>Is going through all of this worth saving $100/month? That’s up to you.
+But as far as I’m concerned, the joy of putting together this little
+system was well worth the savings. 😜</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/vercel-custom-preview-domain.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

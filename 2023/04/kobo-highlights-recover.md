@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1643793553032617986
+---
+
 # Recovering Kobo eReader highlights after an accidental factory reset!
 Grepping through raw disk image, yay  
 April 5, 2023

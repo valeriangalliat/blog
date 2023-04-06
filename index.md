@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
 * [Recovering Kobo eReader highlights after an accidental factory reset!](2023/04/kobo-highlights-recover.md) <small>April 5, 2023</small>
 * [Postgres `bit` vs `varbit` vs `"bit"` (with quotes)](2023/04/postgres-bit-varbit.md) <small>April 5, 2023</small>
 * [Archiving Google Photos offline to free up space](2023/04/archiving-google-photos.md) <small>April 2, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
 * [Using a GoPro in the Canadian winter ❄️](2022/05/gopro-canadian-winter.md) <small>May 25, 2022</small>
 * [Migrating from X11 to Wayland and from i3 to Sway](2022/05/migrating-x11-wayland-i3-sway.md) <small>May 15, 2022</small>
-* [How to make a GitHub Action that exposes a SSH server](2022/05/github-action-expose-ssh-server.md) <small>May 14, 2022</small>
 
 [All the posts](posts.md)
 

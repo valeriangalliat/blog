@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
 * [Recovering Kobo eReader highlights after an accidental factory reset!](2023/04/kobo-highlights-recover.md) <small>April 5, 2023</small>
 * [Postgres `bit` vs `varbit` vs `"bit"` (with quotes)](2023/04/postgres-bit-varbit.md) <small>April 5, 2023</small>
 * [Archiving Google Photos offline to free up space](2023/04/archiving-google-photos.md) <small>April 2, 2023</small>

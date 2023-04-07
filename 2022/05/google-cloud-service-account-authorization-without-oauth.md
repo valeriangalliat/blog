@@ -82,7 +82,7 @@ Then the JWT can be signed with RS256 (RSA signature with SHA-256), and
 used in a `Authorization: Bearer` header against the service you
 included in the `aud` field.
 
-And it does work most of the time (again checkout [my post](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers)
+And it does work most of the time (again check out [my post](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers)
 to see the vanilla JavaScript implementation), but in some cases like
 with Google Cloud Storage, [it breaks down](https://stackoverflow.com/q/63222450).
 

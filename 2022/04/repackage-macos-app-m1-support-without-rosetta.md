@@ -42,7 +42,7 @@ agent program on my work laptop. This program is provided by a company
 called Vanta.
 
 I won't go in details about what is this program, but if you care, you
-can checkout my [detailed post on the topic](vanta-agent-m1-mac-without-rosetta.md)!
+can check out my [detailed post on the topic](vanta-agent-m1-mac-without-rosetta.md)!
 
 Anyways, they ship a `vanta.pkg` installer, that, when opened, claims to
 be incompatible with the M1 architecture and requests to install

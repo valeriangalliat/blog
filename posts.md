@@ -8,6 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [Firebase functions in a monorepo? A challenging pile of hacks](2023/04/firebase-functions-monorepo.md) <small>April 7, 2023</small>
+* [How Firebase `functions.ignore` really works](2023/04/firebase-functions-ignore.md) <small>April 7, 2023</small>
+* [Firebase functions: debugging upload error `EntityTooLarge`](2023/04/firebase-functions-entity-too-large.md) <small>April 7, 2023</small>
 * [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
 * [Recovering Kobo eReader highlights after an accidental factory reset!](2023/04/kobo-highlights-recover.md) <small>April 5, 2023</small>
 * [Postgres casting to `bit` vs. `varbit` vs. `"bit"` (with quotes)](2023/04/postgres-bit-varbit.md) <small>April 5, 2023</small>

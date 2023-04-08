@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1644495294803898369
+---
+
 # Firebase functions in a monorepo? A challenging pile of hacks
 April 7, 2023
 

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How Firebase functions.ignore really works</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="How Firebase functions.ignore really works">
+  <meta property="og:description" content="Maybe you ran into Firebase functions space issues, which is not uncommon if you’re moving Firebase functions inside a monorepo. Anyhow, you’re now playing with the functions.ignore list in your firebase.json.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>How Firebase <code>functions.ignore</code> really works</h1>
+<p class="date">April 7, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Maybe you ran into <a href="firebase-functions-entity-too-large.html">Firebase functions space issues</a>,
+which is not uncommon if you’re <a href="firebase-functions-monorepo.html">moving Firebase functions inside a monorepo</a>.
+Anyhow, you’re now playing with the <code>functions.ignore</code> list in your
+<code>firebase.json</code>.</p>
+<p>The ignore list is not well documented, nor is the whole
+<code>firebase.json</code> really, but there is <a href="https://firebase.google.com/docs/cli/#the_firebasejson_file">a section on it</a>
+in the Firebase CLI reference. I always struggle to find this page, and
+I systematically find it through <a href="https://github.com/firebase/firebase-tools/issues/1409">this GitHub issue</a>
+about documenting it.</p>
+<p>It says the following <a href="https://firebase.google.com/docs/cli/#functions-ignored-files">about the ignore list</a>:</p>
+<blockquote>
+<p>The list of files ignored by default, shown in JSON format, is:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;ignore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-string">&quot;.git&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;.runtimeconfig.json&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;firebase-debug.log&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;firebase-debug.*.log&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;node_modules&quot;</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>If you add your own custom values for ignore in <code>firebase.json</code>, make
+sure that you keep (or add, if it is missing) the list of files shown
+above.</p>
+</blockquote>
+<p>Let’s dig into it in a bit more details.</p>
+<h2 id="if-you-set-an-ignore-list-it-overrides-the-defaults" tabindex="-1"><a class="header-anchor" href="#if-you-set-an-ignore-list-it-overrides-the-defaults"><span>If you set an ignore list, it overrides the defaults!</span></a></h2>
+<p>That’s the only thing the docs say about the ignore list. It’s important
+to note because otherwise, you may notice that setting <code>&quot;ignore&quot;: []</code>
+ends up including <em>much more stuff</em> than not setting it, and
+<a href="https://github.com/firebase/firebase-tools/issues/1602">this can be surprising</a>.</p>
+<p>This is actually partially true (but mostly true to be fair).</p>
+<p>We can see <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/deploy/functions/prepareFunctionsUpload.ts#L75-L80">in the source code</a>
+the following:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ignore = config.<span class="hljs-property">ignore</span> || [<span class="hljs-string">&#x27;node_modules&#x27;</span>, <span class="hljs-string">&#x27;.git&#x27;</span>]
+
+ignore.<span class="hljs-title function_">push</span>(
+  <span class="hljs-string">&#x27;firebase-debug.log&#x27;</span>,
+  <span class="hljs-string">&#x27;firebase-debug.*.log&#x27;</span>,
+  <span class="hljs-string">&#x27;.runtimeconfig.json&#x27;</span>
+)
+</code></pre>
+<p>This means that regardless if you customize or not <code>functions.ignore</code>,
+the debug logs and runtime config will always be ignored. But it’s also
+true that if you explicitly set <code>functions.ignore</code> and forget to add
+<code>node_modules</code> and <code>.git</code>, those will indeed be included. Now you know.</p>
+<h2 id="you-can-t-use-to-refer-to-the-functions-root" tabindex="-1"><a class="header-anchor" href="#you-can-t-use-to-refer-to-the-functions-root"><span>You can’t use <code>/</code> to refer to the functions root</span></a></h2>
+<p>In <code>.gitignore</code> and any sane ignore format, you can use <code>/</code> to refer to
+the project root. E.g. ignoring <code>/bar</code> will ignore <code>bar</code> at the top
+level, but will still include <code>foo/bar</code>.</p>
+<p>This is pretty handy in a number of situations, and just a good practice
+in general to be more intentional about what you <em>mean</em> to exclude. If
+you have a <code>data</code> directory that you want to ignore, but you just put
+<code>data</code> in your ignore file, and later on you add <code>src/api/data/load.js</code>,
+guess what, <code>src/api/data</code> will be ignored and you’ll be confused until
+you figure out the sneaky ignore pattern. You really should be ignoring
+<code>/data</code> in that case.</p>
+<p>So again, we can’t do that in <code>functions.ignore</code>. Why? Ultimately, this
+is because Firebase uses <a href="https://github.com/isaacs/minimatch">minimatch</a>
+for this <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/fsAsync.ts#L53">here</a>,
+but they pass the system-wide absolute path as the first argument! So
+that’s what ends up happening when using a <code>/</code> pattern (using
+<code>matchBase</code> and <code>dot</code> to mimic how Firebase uses it):</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">false</span>
+</code></pre>
+<p>What would be great is if the first argument was “scoped” to the
+functions root. Then we would have nice things:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<p>But because we can’t have nice things, we have to resort to using a
+wider pattern (without the <code>/</code>):</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<p>This is a problem though because as we saw earlier, it’s <em>too</em> wide:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/src/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<h2 id="can-t-use-in-base-patterns" tabindex="-1"><a class="header-anchor" href="#can-t-use-in-base-patterns"><span>Can’t use <code>/</code> in base patterns</span></a></h2>
+<p>The last example works only because <code>matchBase</code> is enabled, but if you
+look at the <a href="https://github.com/isaacs/minimatch#matchbase"><code>matchBase</code> documentation</a>,
+you see that it breaks down as soon as our pattern includes a <code>/</code>:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">false</span>
+</code></pre>
+<p>But since root patterns don’t work <em>anyway</em> as we just saw, we can get
+around this by using wildcards:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;**/foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<h2 id="there-s-no-pattern-negation" tabindex="-1"><a class="header-anchor" href="#there-s-no-pattern-negation"><span>There’s no pattern negation</span></a></h2>
+<p>Pattern negation is what allows you do do something like this in a
+<code>.gitignore</code>:</p>
+<pre><code class="hljs language-gitignore">/dist/*
+!/dist/package.json
+</code></pre>
+<p>This would ignore everything in the <code>dist</code> directory except for
+<code>dist/package.json</code>.</p>
+<p>This is particularly handy in a number of situations, especially when
+you consider the alternative which is to <em>explicitly ignore every single
+file or directory you have in <code>dist</code></em>. And obviously, remembering to add
+any <em>new</em> file to your ignore list when you create them, or when tools
+you use create other random files you don’t even know exist.</p>
+<p>All that to say, you guessed it, that Firebase <code>functions.ignore</code>
+<a href="https://github.com/firebase/firebase-tools/issues/2677">doesn’t support this</a>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>That’s all I have for today. If you’re working with Firebase
+<code>functions.ignore</code> right now and noticed a few quirks, I hope this made
+it easier for you to understand what’s going on.</p>
+<p>And if you’re trying to fix a Firebase functions source being too large
+to be deployed, I also <a href="firebase-functions-entity-too-large.html">wrote a post</a>
+with tips to troubleshoot it.</p>
+<p>Peace. ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/firebase-functions-ignore.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

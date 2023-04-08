@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Firebase functions: debugging upload error EntityTooLarge</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Firebase functions: debugging upload error EntityTooLarge">
+  <meta property="og:description" content="So during a firebase deploy, you ran into the following error:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Firebase functions: debugging upload error <code>EntityTooLarge</code></h1>
+<p class="date">April 7, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So during a <code>firebase deploy</code>, you ran into the following error:</p>
+<pre><code class="hljs">Upload Error: HTTP Error: 400
+</code></pre>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>EntityTooLarge<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>Your proposed upload is larger than the maximum object size specified in your Policy Document.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Details</span>&gt;</span>Content-length exceeds upper bound on range<span class="hljs-tag">&lt;/<span class="hljs-name">Details</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
+</code></pre>
+<p>What to do from there?</p>
+<p>This happens because your functions source was too large: over 100 MB
+for the compressed source, or 500 MB for the uncompressed source and its
+dependencies, as documented in <a href="https://cloud.google.com/functions/quotas#resource_limits">resource limits</a>.</p>
+<p>Now, there may be ways you can reduce that, particularly using the
+<a href="https://firebase.google.com/docs/cli/#functions-ignored-files"><code>functions.ignore</code></a>
+list in <code>firebase.json</code> to ignore unnecessary (and possibly heavy)
+files.</p>
+<p>But it’s not necessarily easy to write this list. The ignore patterns
+are not well documented and can be quirky, enough that I <a href="firebase-functions-ignore.html">wrote another
+blog post</a> to demistify them. You can
+easily end up in a loop of trial and error until you get the patterns
+right, and some guesswork to find what files and directories can be
+exceeding the size limit.</p>
+<p>Firebase doesn’t give us any way to inspect the functions packed source
+to diagnose what failed to be ignored and is taking all that space.
+Luckily, it’s pretty easy to hack that around.</p>
+<h2 id="catching-the-temporary-zip-as-it-s-generated" tabindex="-1"><a class="header-anchor" href="#catching-the-temporary-zip-as-it-s-generated"><span>Catching the temporary ZIP as it’s generated</span></a></h2>
+<p>By looking at the source code of Firebase, we can see they
+<a href="https://github.com/firebase/firebase-tools/blob/b0798fb1fe96499e1404d6fea6c181735e3a8f11/src/deploy/functions/prepareFunctionsUpload.ts#L63">use the <code>tmp</code> module</a>
+in order to generate the ZIP archive for Cloud Functions.</p>
+<p>Let’s see where <code>tmp</code> creates the files. On macOS, that’s what I got:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">node -p <span class="hljs-string">&quot;require(&#x27;tmp&#x27;).fileSync({ prefix: &#x27;firebase-functions-&#x27;, postfix: &#x27;.zip&#x27; }).name&quot;</span></span>
+/var/folders/8g/6ch743rn6p990xxbsd757yfm0000gn/T/firebase-functions--35549-LDS1bLg78ajZ.zip
+</code></pre>
+<p>Sweet. So we can look for <code>firebase-functions-*.zip</code> inside
+<code>/var/folders</code> to find the archive that’s being uploaded!</p>
+<p>Now, we just have to watch for those logs during the deploy:</p>
+<pre><code class="hljs">i  functions: preparing . directory for uploading...
+i  functions: packaged /path/to/repo (123.45 MB) for uploading
+</code></pre>
+<p>This tells us that the archive is ready. Be quick (or cancel the
+deploy), because Firebase will clean it up pretty fast!</p>
+<p>You can use a command like this to show the creation time of the files
+that matched. Then just pick the most recent one.</p>
+<pre><code class="hljs language-sh">find /var/folders -name <span class="hljs-string">&#x27;firebase-functions-*.zip&#x27;</span> -<span class="hljs-built_in">ls</span> 2&gt; /dev/null
+</code></pre>
+<p>The <code>2&gt; /dev/null</code> part is to ignore the error stream since a lot of
+stuff in <code>/var/folders</code> will get permission denied errors.</p>
+<p>Now you have the source ZIP file, you can uncompress it and see what
+failed to be ignored, or what’s left in there that is too heavy and
+needs to be added to the ignore list!</p>
+<div class="note">
+<p><strong>Note:</strong> while trying to find leftover files that are too large,
+<a href="https://dev.yorhel.nl/ncdu">ncdu</a> is really useful. It’s a small CLI
+tool that allows to browse a directory, showing the largest files and
+folders on top, with their size. I can only highly recommend it when you
+need to identify large files.</p>
+<p>You may install it with one of the following commands, depending on your
+system:</p>
+<pre><code class="hljs language-sh">apt install ncdu
+pacman -S ncdu
+brew install ncdu
+</code></pre>
+</div>
+<h2 id="an-even-better-solution" tabindex="-1"><a class="header-anchor" href="#an-even-better-solution"><span>An even better solution</span></a></h2>
+<p>While this first solution worked, I didn’t like having to catch the ZIP
+files fast before Firebase removes it. I kept digging through the code,
+and I found a way to call the Firebase archiving code directly,
+instead of running <code>firebasde deploy</code>!</p>
+<pre><code class="hljs language-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-tools/lib/deploy/functions/prepareFunctionsUpload&#x27;</span>).<span class="hljs-title function_">prepareFunctionsUpload</span>(
+  process.<span class="hljs-title function_">cwd</span>(),
+  <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./firebase.json&#x27;</span>).<span class="hljs-property">functions</span>
+).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(x.<span class="hljs-property">pathToSource</span>))
+</code></pre>
+<p>Running this from our Firebase root directory (the one where
+<code>firebase.json</code> is in), it will generate the ZIP archive and output its
+temporary path!</p>
+<p>You can then decompress it and analyze it as we just saw.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/firebase-functions-entity-too-large.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

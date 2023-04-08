@@ -5,10 +5,689 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-06T18:01:41.683Z</updated>
+  <updated>2023-04-08T00:15:19.425Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Firebase functions in a monorepo? A challenging pile of hacks</title>
+    <link href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html" />
+    <id>https://www.codejam.info/2023/04/firebase-functions-monorepo.html</id>
+    <updated>2023-04-07T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I recently went through the trouble of migrating a Firebase app to a
+monorepo, in particular the Cloud Functions part. While doing so, I went
+through a total of 3 different “methods”, all of which were full of
+surprises that I discovered along the way.</p>
+<p>In this blog post I’ll go through those 3 options, and highlight their
+tradeoffs, in order to help you pick the one that’s the most appropriate
+to your workflow. It’s a long post, so feel free to jump to the
+<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison">comparison</a> directly, and then cherry pick what to read
+from there. 😄</p>
+<p>Here, I assume that your monorepo uses something like npm or Yarn
+workspaces. It may be applicable to pnpm but I didn’t try it.</p>
+<h2 id="the-common-ground" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-common-ground"><span>The common ground</span></a></h2>
+<p>Before we get started with the 3 options, they all share a common
+ground. And for the sake of this blog post, I’ll start with an
+hypothetical base monorepo structure which I’ll lay down below.</p>
+<h3 id="the-base-monorepo" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-base-monorepo"><span>The base monorepo</span></a></h3>
+<p>This is a basic monorepo with two websites and a shared package, e.g.
+for helper functions, types or any other common code.</p>
+<pre><code class="hljs">monorepo
+├── apps
+│   ├── website1
+│   │   └── package.json
+│   └── website2
+│       └── package.json
+├── packages
+│   └── shared
+│       └── package.json
+├── package-lock.json
+└── package.json
+</code></pre>
+<p>The top-level <code>package.json</code> contains:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;workspaces&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-string">&quot;apps/*&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;packages/*&quot;</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="the-firebase-functions-in-its-own-repo" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-firebase-functions-in-its-own-repo"><span>The Firebase functions in its own repo</span></a></h3>
+<p>In another repo, you have a Firebase app with functions:</p>
+<pre><code class="hljs">firebase
+├── functions
+│   ├── src
+│   │   └── index.js
+│   ├── package-lock.json
+│   └── package.json
+└── firebase.json
+</code></pre>
+<p>Where your <code>firebase.json</code> contains:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;functions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;functions&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<h3 id="merging-them-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#merging-them-together"><span>Merging them together</span></a></h3>
+<p>Since in a Firebase repo, <code>functions</code> is already its own subdirectory
+with its own <code>package.json</code>, it feels pretty natural to just “merge”
+both repos together, maybe  renaming <code>functions</code> into <code>apps/functions</code>
+to match our initial structure better, but no more than that:</p>
+<pre><code class="hljs language-diff"> monorepo
+ ├── apps
+ │   ├── website1
+ │   │   └── package.json
+ │   ├── website2
+ │   │   └── package.json
+<span class="hljs-addition">+│   └── functions</span>
+<span class="hljs-addition">+│       ├── src</span>
+<span class="hljs-addition">+│       │   └── index.js</span>
+<span class="hljs-addition">+│       └── package.json</span>
+ ├── packages
+ │   └── shared
+ │       └── package.json
+<span class="hljs-addition">+├── firebase.json</span>
+ ├── package-lock.json
+ └── package.json
+</code></pre>
+<p>In <code>firebase.json</code>, we just update the <code>source</code> to be <code>apps/functions</code>,
+and we remove the <code>functions/package-lock.json</code> to let npm merge the
+functions dependencies in the top-level <code>package-lock.json</code>. This way,
+we only need to run <code>npm install</code> at the root of the monorepo, instead
+of having to go inside <code>apps/functions</code> and run <code>npm install</code> there
+again. After all, that’s part of the point of a monorepo.</p>
+<p>Great, so we’re done? That was easy.</p>
+<h2 id="why-this-works-but-not-really" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#why-this-works-but-not-really"><span>Why this works, but not really</span></a></h2>
+<p>Not so fast. This will seemingly work, but it will do so kind of by
+chance, as a somewhat lucky accident.</p>
+<h3 id="how-firebase-deploy-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#how-firebase-deploy-works"><span>How <code>firebase deploy</code> works</span></a></h3>
+<p>See, when <code>firebase deploy</code> deploys the functions, it will make a ZIP
+archive of the functions source directory (as defined in <code>firebase.json</code>).</p>
+<p>Then, it will deploy the function from that ZIP. The Cloud Functions
+deploy process will send that ZIP to Cloud Build, which will:</p>
+<ol>
+<li>Run some variant of <code>npm install</code> or <code>yarn install</code>.</li>
+<li>Run the <code>gcp-build</code> script if defined in <code>package.json</code>.</li>
+<li>Prune development dependencies from <code>node_modules</code> if needed.</li>
+<li>Use the output of that process as the source for the function
+runtime.</li>
+</ol>
+<p>This is defined in GCP buildpacks, e.g. <a href="https://github.com/GoogleCloudPlatform/buildpacks/blob/99553d0a2051834324d621f20ad5355453f675a1/cmd/nodejs/npm/main.go">for npm</a>
+and <a href="https://github.com/GoogleCloudPlatform/buildpacks/blob/99553d0a2051834324d621f20ad5355453f675a1/cmd/nodejs/yarn/main.go">for Yarn</a>.</p>
+<p>We can already see a bit of a problem. Because we’re sending only the
+<code>apps/functions</code> context to Cloud Build, it doesn’t have access to the
+top-level <code>package-lock.json</code>, which means the install output will be
+nondeterministic, and each deploy is subject to using different versions
+of different packages and potentially break your code without you
+knowing.</p>
+<p><strong>This can introduce a whole range of sneaky errors that will be a pain to
+debug!</strong></p>
+<h3 id="using-shared-packages" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#using-shared-packages"><span>Using shared packages</span></a></h3>
+<p>Moreover, we now understand that this will not allow using <em>shared
+packages</em> inside the monorepo!</p>
+<p>If we wanted to use <code>packages/shared</code> inside <code>apps/functions</code>, by adding
+<code>&quot;shared&quot;: &quot;*&quot;</code> in our <code>dependencies</code>, letting npm or Yarn resolve it to
+the local workspace version, it wouldn’t actually work.</p>
+<p>Or actually, it will work in development, because we have the whole
+monorepo there. And in our particular example, even the Firebase
+deployment will surprisingly succeed, <strong>but only as an accident because
+<a href="https://www.npmjs.com/package/shared"><code>shared</code></a> is a valid npm
+package</strong>! It will break at runtime when you try to use a package that
+doesn’t contain the code you expect at all.</p>
+<p>Other names for common monorepo shared packages that are also valid npm
+packages would be <a href="https://www.npmjs.com/package/eslint-config"><code>eslint-config</code></a>
+and <a href="https://www.npmjs.com/package/tsconfig"><code>tsconfig</code></a>, so they would
+also result in this kind of collision.</p>
+<div class="note">
+<p><strong>Note:</strong> if you use Yarn, you can prevent those collisions by prefixing
+your version specifier for your shared dependencies with <code>workspace:</code>,
+e.g. <code>&quot;shared&quot;: &quot;workspace:*&quot;</code> to use any version. This will ensure the
+dependency is <em>always</em> installed from the local workspace and not from
+the registry.</p>
+<p>npm doesn’t support that, but you can still add a layer of safety by
+making sure all your shared package names don’t conflict with anything
+on npm, for example by prefixing them with <code>@myorg</code> such as
+<code>@myorg/shared</code>, <code>@myorg/eslint-config</code>, <code>@myorg/tsconfig</code> and so on.</p>
+<p>Or as an abundance of caution if you use Yarn, maybe do both. 😬</p>
+</div>
+<h2 id="the-good-enough-for-me-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach"><span>The “good enough for me” approach</span></a></h2>
+<p>We’re now in a situation where 1. the top-level <code>package-lock.json</code> is
+not respected when deploying Cloud Functions, and 2. we cannot use any
+workspace shared package in our functions.</p>
+<p>You may actually be fine with that. Maybe you don’t care that your
+production functions have an unpredictable dependency tree every time
+you deploy, and maybe you don’t want to use shared packages in your
+functions anyway!</p>
+<div class="note">
+<p><strong>Note:</strong> you can even use shared packages in your <code>devDependencies</code>
+with that setup, as long as you don’t have a <code>gcp-build</code> script that
+depends on them!</p>
+<p>At least if you use npm. Because there’s currently a bug with the Yarn
+Cloud Build buildpack that makes it install <code>devDependencies</code> before
+pruning them right after, even when no build script is present. 😅</p>
+<p>This would fail your build if the shared package from your
+<code>devDependencies</code> don’t exist on npm. It’s one of those cases where
+having a shared package name that collisions with a npm package would
+help, although I wouldn’t really recommend this as a fix.</p>
+</div>
+<p>If that works for you, congratulations, your job here is done.
+Otherwise, let’s dig in the two other options. 👇</p>
+<h2 id="the-full-context-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach"><span>The full context approach</span></a></h2>
+<p>There’s a <a href="https://github.com/firebase/firebase-tools/issues/653">long thread</a>
+in the <code>firebase-tools</code> repo about monorepo support. The majority of the
+solutions described there are some variation of a deploy script that
+packs your shared dependencies into <code>.tgz</code> files, and patch the
+<code>functions/package.json</code> file to reference them with <code>file:</code> for the
+time of the deployment. We’ll explore this in details in the last solution: <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">the hybrid approach</a>.</p>
+<p>However, there’s <a href="https://github.com/firebase/firebase-tools/issues/653#issuecomment-1371306331">a particular comment</a>
+in that thread that describes something very different, and caught my
+attention despite not being given very much interest there.</p>
+<figure class="center">
+  <img alt="A comment suggesting to put the monorepo root as the functions source" srcset="../../img/2023/04/firebase-monorepo-comment.png 2x">
+</figure>
+<p>This comment suggests that we put the monorepo root as the functions
+source in <code>firebase.json</code> (ignoring unnecessary files as needed), to
+ensure we send the whole relevant monorepo context to Cloud Build!</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;functions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;.&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;ignore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+      <span class="hljs-string">&quot;firebase.json&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;**/.*&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;**/node_modules/**&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;**/packages/@(web|mobile)/**&quot;</span>
+    <span class="hljs-punctuation">]</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Then, adding the functions entrypoint in the top-level <code>package.json</code>,
+because Cloud Functions still don’t know about monorepos, and expects the
+functions <code>package.json</code> to be at the root.</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;main&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./packages/functions/dist/index.js&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> if you use <code>.env</code> files in your functions, e.g. <code>.env</code>,
+<code>.env.production</code>, <code>.env.staging</code>, and any other project aliases you may
+have, which is becoming more and more common <a href="https://firebase.google.com/docs/functions/config-env#environment_configuration">now Firebase deprecated
+<code>functions.config()</code></a>,
+you also need to put them at the root of your monorepo with this
+solution, otherwise they will be ignored during deploy!</p>
+</div>
+<p>To me, this sounds <em>much more elegant</em> than the hacks with deploy
+scripts and <code>file:</code> references! But after using this approach in
+production for a few weeks, I decided to rollback, because there was too
+many downsides for my use case.</p>
+<h3 id="the-ignore-list-is-quirky" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-ignore-list-is-quirky"><span>The ignore list is quirky</span></a></h3>
+<p>The ignore list is not exactly intuitive to work with. And if you forget
+to ignore anything somewhat large, <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">your functions will fail to deploy</a>.
+It struggled so much to figure out the precise rules of this ignore list
+that I had to go in the <code>firebase-tools</code> source code in order to
+understand it, and I wrote <a href="https://www.codejam.info/2023/04/firebase-functions-ignore.html">another blog post</a>
+to explain how it really works, and how to test your ignore patterns!</p>
+<p>The main caveat is that you <a href="https://github.com/firebase/firebase-tools/issues/2677">can’t use negative ignore rules</a>
+like you could in <code>.gitignore</code> and most ignore systems, e.g.:</p>
+<pre><code class="hljs language-gitignore">/apps/website1/*
+!/apps/website1/package.json
+/apps/website2/*
+!/apps/website2/package.json
+</code></pre>
+<p>In a <code>.gitignore</code>, this would ignore everything in <code>apps/website1</code> and
+<code>apps/website2</code> except for their <code>package.json</code>. If you use “a modern
+version of Yarn” (not 1.x), this is something you would need to do, because
+<code>yarn install --immutable</code> will fail if the workspaces identified in
+your <code>yarn.lock</code> don’t actually point to directories with a
+<code>package.json</code> in them!</p>
+<p>If you use npm or Yarn 1.x though, <code>npm ci</code> and <code>yarn install --frozen-lockfile</code> won’t care, so you’re good to go.</p>
+<div class="note">
+<p><strong>Note:</strong> just keep in mind that Yarn 1.x doesn’t let you install
+dependencies for a single workspace, you systematically have to install
+all dependencies for the whole monorepo, which can be a pretty bad hit
+for any pipeline that works only on a small subset of the monorepo.</p>
+<p>While you can <a href="https://classic.yarnpkg.com/en/docs/cli/install#toc-yarn-install-focus"><code>yarn install --focus</code></a>
+with 1.x, which kind of sounds like this, it doesn’t work with
+dependencies that are local to the monorepo, they <em>need</em> to be fetched
+from a registry.</p>
+</div>
+<p>But on new Yarn versions, this is a pretty big deal because you can’t
+ignore a whole workspace from your functions deploy, and because there’s
+no negative patterns to ignore everything but the <code>package.json</code> in a
+given workspace, you’re stuck with having to <em>explicitly</em> ignore
+everything but the <code>package.json</code> in each of the workspaces you want to
+exclude. And it’s a list you’ll now have to maintain forever every time
+you add new things to your monorepo.</p>
+<p>This is even more of a problem because if you have any kind of secret in
+your repo, and you fail to add them to your <code>functions.ignore</code> list,
+they’ll be packaged in your functions source and you won’t notice. Your
+functions source is private to your Google Cloud account by default, but
+this is silently waiting to make a future security issue much worse.</p>
+<h3 id="all-the-other-workspace-dependencies-are-installed" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#all-the-other-workspace-dependencies-are-installed"><span>All the other workspace dependencies are installed</span></a></h3>
+<p>This is the one that made me give up this solution. I could deal with
+the ignore list issues, but this was another level.</p>
+<p>As we saw earlier, Cloud Functions use Cloud Build to install your
+dependencies. The whole thing is not designed for monorepos, which is
+why we had to put our <code>main</code> entrypoint in the root <code>package.json</code>. A
+more concerning effect of that though, is that Cloud Build will run <code>npm install</code>
+at the top level of the monorepo.</p>
+<p>This means installing all the dependencies of all your apps and
+packages. This is big problem if you have a lot of unrelated
+dependencies across your different workspaces.</p>
+<p>Firebase doesn’t let you configure the install command either, to run
+e.g. <code>npm install --workspace functions</code> or <code>yarn workspace function workspaces focus</code>
+(I know, awkward command), which would install only the functions
+dependencies. <em>This can speed up your install times drastically</em> in
+remote build environments, but here it’s not an option.</p>
+<p>For us, the difference was 10 minutes to deploy Firebase functions vs. 2
+minutes, if we could install the dependencies of the functions only.</p>
+<p>This was to much, which is why I ended up with the last approach.</p>
+<div class="note">
+<p><strong>Note:</strong> the build time issue was heavily magnified in my case by the
+fact Cloud Build <a href="https://github.com/GoogleCloudPlatform/buildpacks/issues/203">doesn’t do any caching for Yarn 2.x and greater</a>
+if it’s not used in <a href="https://yarnpkg.com/features/pnp">PnP mode</a>.
+Proper caching may help a bit with npm and Yarn 1.x, even though it’s
+still not ideal.</p>
+<p>There may be a way though, for example by replacing the top-level
+<code>package.json</code> and <code>package-lock.json</code> by dummy ones during <code>firebase deploy</code> so that from Cloud Build’s perspective it looks like you have no
+dependencies, and then hijacking the <code>gcp-build</code> script to <em>actually</em>
+install your dependencies yourself using the appropriate command that
+doesn’t install the whole world at the same time. 🥹</p>
+<p>I haven’t tested this but it may work. However, if you’re gonna get that
+hacky, you might as well embrace the third solution.</p>
+</div>
+<h2 id="the-hybrid-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach"><span>The hybrid approach</span></a></h2>
+<p>This is an improved version of <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">the first “good enough for me” solution</a>,
+where in our development environment, we work with a full-fledged
+monorepo, with shared packages and everything, but when we deploy the
+Firebase functions, we narrow it down to its own independent-repo-like
+entity, but in a way that will actually work with our
+<code>package-lock.json</code> and shared packages!</p>
+<p>This will take a bit of code though, in the form of a <code>predeploy</code> and
+<code>postdeploy</code> script for our functions. The <code>predeploy</code> script needs to:</p>
+<ol>
+<li>Do anything you were already doing in a <code>predeploy</code> script like
+linting and building your app.</li>
+<li>Copy all the shared packages you depend on in your functions
+directory, either through <code>.tgz</code> files from using <code>npm pack</code> or <code>yarn pack</code>, or the directories themselves (see below for the difference).</li>
+<li>Patch your functions <code>package.json</code> to reference the internal
+dependencies using <code>file:</code> references to the <code>.tgz</code> files or
+directories you just created.</li>
+<li><strong>Do so recursively for your whole graph of internal dependencies.</strong>
+Hopefully it’s small enough to be manageable, but I can see this
+turning into a living hell in complex monorepos.</li>
+<li>Copy the top-level lock file in the functions directory. If you use
+Yarn 2.x and greater, you’ll need to do a bit more than that, see
+below.</li>
+</ol>
+<p>As for the <code>postdeploy</code> script, it needs to undo everything that
+<code>predeploy</code> did.</p>
+<p>Of course, your repo will be in an inconsistent state for the duration
+of <code>firebase deploy</code>, so maybe run that from another copy of your
+monorepo that you don’t work from, or make sure to not mess with your
+dependencies during the deploy, or things will fall apart!</p>
+<p>You’ll find a number of examples of those <code>predeploy</code> and <code>postdeploy</code>
+scripts in the issue thread I linked earlier. Here’s
+<a href="https://github.com/firebase/firebase-tools/issues/653#issuecomment-1464911379">one of the most recent ones</a>
+that you can take inspiration from.</p>
+<p>For the part where you replace the versions of your internal packages in
+your <code>package.json</code>, you can use <a href="https://docs.npmjs.com/cli/v7/commands/npm-pkg"><code>npm pkg set</code></a></p>
+<pre><code class="hljs language-sh">npm pkg <span class="hljs-built_in">set</span> <span class="hljs-string">&#x27;dependencies.@myorg/shared=file:shared.tgz&#x27;</span> <span class="hljs-string">&#x27;dependencies.@myorg/tsconfig=file:tsconfig.tgz&#x27;</span>
+</code></pre>
+<p>Just make a backup of your original <code>package.json</code> so you can restore it
+in the <code>postdeploy</code> script. Feel free to use it with Yarn as well since
+this really just edits your <code>package.json</code> from the command line.</p>
+<p>Now, about the downsides.</p>
+<h3 id="you-have-to-recursively-package-your-internal-dependencies" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#you-have-to-recursively-package-your-internal-dependencies"><span>You have to recursively package your internal dependencies</span></a></h3>
+<p>And to do so, you have to patch your <code>package.json</code> files all the way
+down the internal dependency graph for your functions. Nasty.</p>
+<p>As for using <code>.tgz</code> files from <code>npm pack</code> or <code>yarn pack</code> vs. copying the
+directories directly, it comes down to personal preference with npm, but
+if you use Yarn and you have nested internal dependencies, you’re much
+better off going with the directory approach.</p>
+<p>That’s because npm can resolve <code>file:</code> references to <code>.tgz</code> files
+relative to <em>where <code>npm install</code> is ran from</em>, but Yarn only looks for
+the <code>.tgz</code> files relative to the <code>package.json</code> referencing it.</p>
+<p>You can see how this becomes a problem with more than one level of
+dependency, because you would have to embed the archive of the same
+packages in all the packages that reference it, and do so recursively,
+which can get exponentially heavy and inefficient! Not to mention that
+you’d end up with a lot of duplicated dependencies, which can cause a
+whole lot of other problems on its own.</p>
+<p>It will work with the directory approach though:</p>
+<ol>
+<li>You make your functions depend on <code>&quot;@myorg/shared&quot;: &quot;file:shared&quot;</code>.</li>
+<li>You make <code>shared/package.json</code> depends on <code>&quot;@myorg/tsconfig&quot;: &quot;file:../tsconfig&quot;</code>.</li>
+<li>You copy both <code>shared</code> and <code>tsconfig</code> under your functions directory
+and you’re god to go.</li>
+</ol>
+<h3 id="you-need-to-mirror-some-top-level-logic" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#you-need-to-mirror-some-top-level-logic"><span>You need to mirror some top-level logic</span></a></h3>
+<p>In the previous solution, we saw how we had to copy some functions logic
+at the top level (<code>main</code> inside <code>package.json</code> as well as <code>.env</code> files).
+Here, we have the opposite problem.</p>
+<p>Because we’re shipping only the functions directory to Cloud Functions,
+it’s missing your <code>package-lock.json</code> or <code>yarn.lock</code> from the top
+level (and maybe a number of other files you may need without knowing it).</p>
+<p>For example, if you use “a modern version of Yarn” aka not Yarn 1.x, it
+also needs its <code>.yarnrc.yml</code> as well as <code>.yarn/releases</code> and
+<code>.yarn/plugins</code> directories in order to function!</p>
+<p>If you forget to copy any of those inside your functions directory,
+Cloud Build will either use the wrong package manager or the wrong
+version of your package manager, which may result in the best case in a
+broken deploy, or worst, resolving and linking dependencies differently
+than in your local environment, which can lead to a number of sneaky
+issues.</p>
+<p>This is not something that’s accounted for in any of the solutions from
+<a href="https://github.com/firebase/firebase-tools/issues/653">the thread</a>
+I linked earlier. <strong>They all ship a lonely <code>functions/package.json</code> that
+will end up installing unpredictable dependency versions in their
+production environment.</strong></p>
+<p>Luckily, this is easy to fix! Just copy your top-level
+<code>package-lock.json</code> or <code>yarn.lock</code> in the functions directory as part of
+your <code>predeploy</code> script.</p>
+<p>npm and Yarn 1.x are resilient enough to do the right thing from a
+<em>superset</em> of the lock file. More recent versions of Yarn though, are
+pretty strict and will refuse to install if it finds anything
+<em>superfluous</em> in <code>yarn.lock</code> (from its partial perspective).</p>
+<p>There’s a whole bunch of ways to addresses this, tracked in
+<a href="https://github.com/yarnpkg/yarn/issues/5428">those</a> <a href="https://github.com/yarnpkg/berry/issues/1223">issues</a>,
+with the emerging of various experimental Yarn plugins to fix it like
+<a href="https://github.com/andreialecu/yarn-plugin-workspace-lockfile">yarn-plugin-workspace-lockfile</a>
+(<a href="https://github.com/bertho-zero/yarn-plugin-workspace-lockfile">and</a>
+<a href="https://github.com/milesforks/yarn-plugin-workspace-lockfile">its</a>
+<a href="https://github.com/jakebailey/yarn-plugin-workspace-lockfile">forks</a>)
+or <a href="https://github.com/JanVoracek/yarn-plugin-entrypoint-lockfiles">yarn-plugin-entrypoint-lockfiles</a>
+that maintains individual lock files for each workspaces (or
+“entrypoint”) at the cost of slightly slower installs when you add or
+remove dependencies.</p>
+<p>I initially used some version of this, but while writing this blog post,
+I stumbled upon <a href="https://stackoverflow.com/a/73118909/4324668">this StackOverflow comment</a>
+that mentions <code>yarn install --mode update-lockfile</code>. This is <em>exactly
+what we want</em>! So as of Yarn 3.x, we can just do the following:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> yarn.lock apps/functions
+<span class="hljs-built_in">cd</span> apps/functions
+yarn install --mode update-lockfile
+</code></pre>
+<p>This will updates <code>apps/functions/yarn.lock</code> to contain <em>only</em> the
+entries <em>necessary</em> for your functions, while keeping the versions that
+were pinned in the original lock file. This will happily work when Cloud
+Build runs <code>yarn install --immutable</code> later on. 😍</p>
+<p>Again, this is something you need to do in your <code>predeploy</code> script, and
+undo in your <code>postdeploy</code>.</p>
+<h2 id="comparison" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison"><span>Comparison</span></a></h2>
+<p>Let’s compare the pros and cons of those 3 options.</p>
+<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">Good enough</a></strong></p>
+<ul>
+<li>🟢 Easy AF.</li>
+<li>🟡  Doesn’t use your lock file, you’re installing nondeterministic
+versions of your dependencies in production (easily fixable by taking
+that specific part of the hybrid approach though).</li>
+<li>🔴 Can’t use workspace shared packages.</li>
+</ul>
+<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach">Full context</a></strong></p>
+<ul>
+<li>🟢 Supports your lock file and any other monorepo-wide config
+(Yarn version, etc.) by design and out of the box.</li>
+<li>🟢 Supports shared workspaces packages by design and out of the box.</li>
+<li>🟡 Need to proxy the functions <code>main</code> entrypoint in the top-level <code>package.json</code>,
+as well as other things like functions <code>.env</code> files.</li>
+<li>🟠 Need to maintain the <code>functions.ignore</code> list which is clunky,
+and gets significantly worst when using modern Yarn versions.</li>
+<li>🔴 It installs your whole monorepo dependencies instead of just your
+functions dependencies.</li>
+</ul>
+<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">Hybrid</a></strong></p>
+<ul>
+<li>🟢 None of the downsides of the previous approach.</li>
+<li>🟡 You have to copy your lock file and maybe other global requirements
+like your <code>.yarnrc.yml</code>, <code>.yarn</code> folder and alike inside your
+functions directory.</li>
+<li>🔴 Needs a <code>predeploy</code> and <code>postdeploy</code> script to package workspace
+dependencies inside the functions directories, and recursively patch
+their <code>package.json</code> to reference them with <code>file:</code>.</li>
+</ul>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Today, we went through 3 methods to make Firebase functions <em>somewhat</em>
+work with a monorepo: <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">the “good enough for me” approach</a>,
+<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach">the full context approach</a>
+and <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">the hybrid approach</a>. Finally, we
+<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison">compared their pros and cons</a>.</p>
+<p>By now, you should have everything you need in order to make an educated
+decision about which method to pick.</p>
+<p>And if you find any other cool trick to make working with Firebase
+functions in a monorepo easier, don’t hesitate to <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>How Firebase functions.ignore really works</title>
+    <link href="https://www.codejam.info/2023/04/firebase-functions-ignore.html" />
+    <id>https://www.codejam.info/2023/04/firebase-functions-ignore.html</id>
+    <updated>2023-04-07T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Maybe you ran into <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">Firebase functions space issues</a>,
+which is not uncommon if you’re <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html">moving Firebase functions inside a monorepo</a>.
+Anyhow, you’re now playing with the <code>functions.ignore</code> list in your
+<code>firebase.json</code>.</p>
+<p>The ignore list is not well documented, nor is the whole
+<code>firebase.json</code> really, but there is <a href="https://firebase.google.com/docs/cli/#the_firebasejson_file">a section on it</a>
+in the Firebase CLI reference. I always struggle to find this page, and
+I systematically find it through <a href="https://github.com/firebase/firebase-tools/issues/1409">this GitHub issue</a>
+about documenting it.</p>
+<p>It says the following <a href="https://firebase.google.com/docs/cli/#functions-ignored-files">about the ignore list</a>:</p>
+<blockquote>
+<p>The list of files ignored by default, shown in JSON format, is:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;ignore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-string">&quot;.git&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;.runtimeconfig.json&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;firebase-debug.log&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;firebase-debug.*.log&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-string">&quot;node_modules&quot;</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>If you add your own custom values for ignore in <code>firebase.json</code>, make
+sure that you keep (or add, if it is missing) the list of files shown
+above.</p>
+</blockquote>
+<p>Let’s dig into it in a bit more details.</p>
+<h2 id="if-you-set-an-ignore-list-it-overrides-the-defaults" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#if-you-set-an-ignore-list-it-overrides-the-defaults"><span>If you set an ignore list, it overrides the defaults!</span></a></h2>
+<p>That’s the only thing the docs say about the ignore list. It’s important
+to note because otherwise, you may notice that setting <code>&quot;ignore&quot;: []</code>
+ends up including <em>much more stuff</em> than not setting it, and
+<a href="https://github.com/firebase/firebase-tools/issues/1602">this can be surprising</a>.</p>
+<p>This is actually partially true (but mostly true to be fair).</p>
+<p>We can see <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/deploy/functions/prepareFunctionsUpload.ts#L75-L80">in the source code</a>
+the following:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ignore = config.<span class="hljs-property">ignore</span> || [<span class="hljs-string">&#x27;node_modules&#x27;</span>, <span class="hljs-string">&#x27;.git&#x27;</span>]
+
+ignore.<span class="hljs-title function_">push</span>(
+  <span class="hljs-string">&#x27;firebase-debug.log&#x27;</span>,
+  <span class="hljs-string">&#x27;firebase-debug.*.log&#x27;</span>,
+  <span class="hljs-string">&#x27;.runtimeconfig.json&#x27;</span>
+)
+</code></pre>
+<p>This means that regardless if you customize or not <code>functions.ignore</code>,
+the debug logs and runtime config will always be ignored. But it’s also
+true that if you explicitly set <code>functions.ignore</code> and forget to add
+<code>node_modules</code> and <code>.git</code>, those will indeed be included. Now you know.</p>
+<h2 id="you-can-t-use-to-refer-to-the-functions-root" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#you-can-t-use-to-refer-to-the-functions-root"><span>You can’t use <code>/</code> to refer to the functions root</span></a></h2>
+<p>In <code>.gitignore</code> and any sane ignore format, you can use <code>/</code> to refer to
+the project root. E.g. ignoring <code>/bar</code> will ignore <code>bar</code> at the top
+level, but will still include <code>foo/bar</code>.</p>
+<p>This is pretty handy in a number of situations, and just a good practice
+in general to be more intentional about what you <em>mean</em> to exclude. If
+you have a <code>data</code> directory that you want to ignore, but you just put
+<code>data</code> in your ignore file, and later on you add <code>src/api/data/load.js</code>,
+guess what, <code>src/api/data</code> will be ignored and you’ll be confused until
+you figure out the sneaky ignore pattern. You really should be ignoring
+<code>/data</code> in that case.</p>
+<p>So again, we can’t do that in <code>functions.ignore</code>. Why? Ultimately, this
+is because Firebase uses <a href="https://github.com/isaacs/minimatch">minimatch</a>
+for this <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/fsAsync.ts#L53">here</a>,
+but they pass the system-wide absolute path as the first argument! So
+that’s what ends up happening when using a <code>/</code> pattern (using
+<code>matchBase</code> and <code>dot</code> to mimic how Firebase uses it):</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">false</span>
+</code></pre>
+<p>What would be great is if the first argument was “scoped” to the
+functions root. Then we would have nice things:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<p>But because we can’t have nice things, we have to resort to using a
+wider pattern (without the <code>/</code>):</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<p>This is a problem though because as we saw earlier, it’s <em>too</em> wide:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/src/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<h2 id="can-t-use-in-base-patterns" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#can-t-use-in-base-patterns"><span>Can’t use <code>/</code> in base patterns</span></a></h2>
+<p>The last example works only because <code>matchBase</code> is enabled, but if you
+look at the <a href="https://github.com/isaacs/minimatch#matchbase"><code>matchBase</code> documentation</a>,
+you see that it breaks down as soon as our pattern includes a <code>/</code>:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">false</span>
+</code></pre>
+<p>But since root patterns don’t work <em>anyway</em> as we just saw, we can get
+around this by using wildcards:</p>
+<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;**/foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
+<span class="hljs-literal">true</span>
+</code></pre>
+<h2 id="there-s-no-pattern-negation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#there-s-no-pattern-negation"><span>There’s no pattern negation</span></a></h2>
+<p>Pattern negation is what allows you do do something like this in a
+<code>.gitignore</code>:</p>
+<pre><code class="hljs language-gitignore">/dist/*
+!/dist/package.json
+</code></pre>
+<p>This would ignore everything in the <code>dist</code> directory except for
+<code>dist/package.json</code>.</p>
+<p>This is particularly handy in a number of situations, especially when
+you consider the alternative which is to <em>explicitly ignore every single
+file or directory you have in <code>dist</code></em>. And obviously, remembering to add
+any <em>new</em> file to your ignore list when you create them, or when tools
+you use create other random files you don’t even know exist.</p>
+<p>All that to say, you guessed it, that Firebase <code>functions.ignore</code>
+<a href="https://github.com/firebase/firebase-tools/issues/2677">doesn’t support this</a>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#conclusion"><span>Conclusion</span></a></h2>
+<p>That’s all I have for today. If you’re working with Firebase
+<code>functions.ignore</code> right now and noticed a few quirks, I hope this made
+it easier for you to understand what’s going on.</p>
+<p>And if you’re trying to fix a Firebase functions source being too large
+to be deployed, I also <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">wrote a post</a>
+with tips to troubleshoot it.</p>
+<p>Peace. ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Firebase functions: debugging upload error EntityTooLarge</title>
+    <link href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html" />
+    <id>https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html</id>
+    <updated>2023-04-07T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So during a <code>firebase deploy</code>, you ran into the following error:</p>
+<pre><code class="hljs">Upload Error: HTTP Error: 400
+</code></pre>
+<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
+<span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>EntityTooLarge<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>Your proposed upload is larger than the maximum object size specified in your Policy Document.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">Details</span>&gt;</span>Content-length exceeds upper bound on range<span class="hljs-tag">&lt;/<span class="hljs-name">Details</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
+</code></pre>
+<p>What to do from there?</p>
+<p>This happens because your functions source was too large: over 100 MB
+for the compressed source, or 500 MB for the uncompressed source and its
+dependencies, as documented in <a href="https://cloud.google.com/functions/quotas#resource_limits">resource limits</a>.</p>
+<p>Now, there may be ways you can reduce that, particularly using the
+<a href="https://firebase.google.com/docs/cli/#functions-ignored-files"><code>functions.ignore</code></a>
+list in <code>firebase.json</code> to ignore unnecessary (and possibly heavy)
+files.</p>
+<p>But it’s not necessarily easy to write this list. The ignore patterns
+are not well documented and can be quirky, enough that I <a href="https://www.codejam.info/2023/04/firebase-functions-ignore.html">wrote another
+blog post</a> to demistify them. You can
+easily end up in a loop of trial and error until you get the patterns
+right, and some guesswork to find what files and directories can be
+exceeding the size limit.</p>
+<p>Firebase doesn’t give us any way to inspect the functions packed source
+to diagnose what failed to be ignored and is taking all that space.
+Luckily, it’s pretty easy to hack that around.</p>
+<h2 id="catching-the-temporary-zip-as-it-s-generated" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html#catching-the-temporary-zip-as-it-s-generated"><span>Catching the temporary ZIP as it’s generated</span></a></h2>
+<p>By looking at the source code of Firebase, we can see they
+<a href="https://github.com/firebase/firebase-tools/blob/b0798fb1fe96499e1404d6fea6c181735e3a8f11/src/deploy/functions/prepareFunctionsUpload.ts#L63">use the <code>tmp</code> module</a>
+in order to generate the ZIP archive for Cloud Functions.</p>
+<p>Let’s see where <code>tmp</code> creates the files. On macOS, that’s what I got:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">node -p <span class="hljs-string">&quot;require(&#x27;tmp&#x27;).fileSync({ prefix: &#x27;firebase-functions-&#x27;, postfix: &#x27;.zip&#x27; }).name&quot;</span></span>
+/var/folders/8g/6ch743rn6p990xxbsd757yfm0000gn/T/firebase-functions--35549-LDS1bLg78ajZ.zip
+</code></pre>
+<p>Sweet. So we can look for <code>firebase-functions-*.zip</code> inside
+<code>/var/folders</code> to find the archive that’s being uploaded!</p>
+<p>Now, we just have to watch for those logs during the deploy:</p>
+<pre><code class="hljs">i  functions: preparing . directory for uploading...
+i  functions: packaged /path/to/repo (123.45 MB) for uploading
+</code></pre>
+<p>This tells us that the archive is ready. Be quick (or cancel the
+deploy), because Firebase will clean it up pretty fast!</p>
+<p>You can use a command like this to show the creation time of the files
+that matched. Then just pick the most recent one.</p>
+<pre><code class="hljs language-sh">find /var/folders -name <span class="hljs-string">&#x27;firebase-functions-*.zip&#x27;</span> -<span class="hljs-built_in">ls</span> 2&gt; /dev/null
+</code></pre>
+<p>The <code>2&gt; /dev/null</code> part is to ignore the error stream since a lot of
+stuff in <code>/var/folders</code> will get permission denied errors.</p>
+<p>Now you have the source ZIP file, you can uncompress it and see what
+failed to be ignored, or what’s left in there that is too heavy and
+needs to be added to the ignore list!</p>
+<div class="note">
+<p><strong>Note:</strong> while trying to find leftover files that are too large,
+<a href="https://dev.yorhel.nl/ncdu">ncdu</a> is really useful. It’s a small CLI
+tool that allows to browse a directory, showing the largest files and
+folders on top, with their size. I can only highly recommend it when you
+need to identify large files.</p>
+<p>You may install it with one of the following commands, depending on your
+system:</p>
+<pre><code class="hljs language-sh">apt install ncdu
+pacman -S ncdu
+brew install ncdu
+</code></pre>
+</div>
+<h2 id="an-even-better-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html#an-even-better-solution"><span>An even better solution</span></a></h2>
+<p>While this first solution worked, I didn’t like having to catch the ZIP
+files fast before Firebase removes it. I kept digging through the code,
+and I found a way to call the Firebase archiving code directly,
+instead of running <code>firebasde deploy</code>!</p>
+<pre><code class="hljs language-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-tools/lib/deploy/functions/prepareFunctionsUpload&#x27;</span>).<span class="hljs-title function_">prepareFunctionsUpload</span>(
+  process.<span class="hljs-title function_">cwd</span>(),
+  <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./firebase.json&#x27;</span>).<span class="hljs-property">functions</span>
+).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(x.<span class="hljs-property">pathToSource</span>))
+</code></pre>
+<p>Running this from our Firebase root directory (the one where
+<code>firebase.json</code> is in), it will generate the ZIP archive and output its
+temporary path!</p>
+<p>You can then decompress it and analyze it as we just saw.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Vercel: custom preview domain for free?</title>
     <link href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html" />
@@ -431,7 +1110,7 @@ rigorously and frequently (or even better, automatically).</p>
 ]]></content>
   </entry>
   <entry>
-    <title>Postgres bit vs varbit vs &quot;bit&quot; (with quotes)</title>
+    <title>Postgres casting to bit vs. varbit vs. &quot;bit&quot; (with quotes)</title>
     <link href="https://www.codejam.info/2023/04/postgres-bit-varbit.html" />
     <id>https://www.codejam.info/2023/04/postgres-bit-varbit.html</id>
     <updated>2023-04-05T04:00:00.000Z</updated>
@@ -3001,349 +3680,6 @@ Cheers!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1525554350042619904">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Notion: import CSV with Markdown page content</title>
-    <link href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html" />
-    <id>https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html</id>
-    <updated>2022-05-11T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>As I was <a href="https://github.com/valeriangalliat/github-to-notion">migrating a GitHub project to Notion</a>,
-one of the solutions I considered was to import a CSV using the native
-import feature.</p>
-<p>Sadly, there was no way to set the page content from the rows in the CSV
-file. All the columns are imported as custom attributes and we
-can’t pick one to be used as page content.</p>
-<p>So I ended up making a <a href="https://github.com/valeriangalliat/github-to-notion/blob/master/import-to-notion.js">custom script</a>
-using the <a href="https://developers.notion.com/">Notion API</a>. And while this
-script is very specific to my use case, I figured it would be good to
-generalize it and go back to my original CSV idea, this way other people
-can leverage it for their own projects!</p>
-<h2 id="the-way-it-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#the-way-it-works"><span>The way it works</span></a></h2>
-<p>The idea is simple. First, we import a CSV using the native import
-feature, which results in our “content” column being imported as a page
-attribute. Then we run a simple scripts that goes through all the pages
-with a non-empty “content” column, and moves it to the page body
-instead!</p>
-<p>I named this script <a href="https://github.com/valeriangalliat/notion-property-to-content">Notion property to content</a>
-(I know, I suck at naming things), and with a bit terminal fu, you can
-use it on your own Notion imports!</p>
-<h2 id="running-the-script" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#running-the-script"><span>Running the script</span></a></h2>
-<p>It requires <a href="https://nodejs.org/">Node.js</a> version 18 or later.</p>
-<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/valeriangalliat/notion-property-to-content
-<span class="hljs-built_in">cd</span> notion-property-to-content
-npm install
-</code></pre>
-<p>From there, we need a Notion token. For this, you need to
-<a href="https://www.notion.so/my-integrations">create a new integration</a>. The
-default parameters should do. At the end Notion will give you a token
-that we’ll set in an environment variable (lines starting with <code>$</code> means
-an actual command that you run, but don’t type the <code>$</code>):</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">read</span> NOTION_TOKEN</span>
-Paste the token here
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">export</span> NOTION_TOKEN</span>
-</code></pre>
-<p>Now you need to share the database you’re working on with your newly
-created integration. On the top right corner of your database page, hit
-the “share” button:</p>
-<figure class="center">
-  <img src="https://www.codejam.info/img/2022/05/notion-share.png">
-</figure>
-<p>Click on the search field to reveal your integration, and click
-“invite”:</p>
-<figure class="center">
-  <img src="https://www.codejam.info/img/2022/05/notion-invite.png">
-</figure>
-<p>While you’re on the database page, copy its ID from the URL bar, for
-example if the current URL is:</p>
-<pre><code class="hljs">https://www.notion.so/513bff94c55a4cf09a66a336c87e7964?v=0eb7b11463c94c3a84786bd3191e4032
-</code></pre>
-<p>Copy this part:</p>
-<pre><code class="hljs">513bff94c55a4cf09a66a336c87e7964
-</code></pre>
-<p>Finally, back to the terminal, you can run the following command to
-move the property of your choice to the page content:</p>
-<pre><code class="hljs language-sh">node property-to-content.js &lt;database-id&gt; &lt;property&gt; --remove
-</code></pre>
-<p>Where <code>&lt;database-id&gt;</code> is the ID of your database and <code>&lt;property&gt;</code> is the
-name of the property you want to use as page content. For example if
-your database ID is <code>513bff94c55a4cf09a66a336c87e7964</code> and your property
-is named “Page Content”, run:</p>
-<pre><code class="hljs language-sh">node property-to-content.js 513bff94c55a4cf09a66a336c87e7964 <span class="hljs-string">&#x27;Page Content&#x27;</span> --remove
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> I recommend you to run this on a test database first just to
-make sure it behaves the way you want with your data!</p>
-</div>
-<p>The <code>--remove</code> part is to empty the property after writing its value to
-the actual page content. It is useful so that if you were to run the
-script again, it doesn’t copy the content a second time at the end of
-the page, as the script only goes through non-empty content values.</p>
-<p>If you plan to only run this once and want to keep the content in its
-original property, don’t add the <code>--remove</code> part.</p>
-<h2 id="need-some-help" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/notion-csv-markdown-page-content.html#need-some-help"><span>Need some help?</span></a></h2>
-<p>If you need help with this, or importing data to your Notion workspace
-and working with the Notion API in general, don’t hesitate to
-<a href="https://www.codejam.info/val.html#contact">shoot me an email</a>, I’ll be happy to help you on a
-consulting basis! You’ll even get a 20% discount if you tell me you’re
-coming from this article. 😜</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Google Cloud service account authorization without OAuth</title>
-    <link href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html" />
-    <id>https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html</id>
-    <updated>2022-05-07T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Google’s <a href="https://developers.google.com/identity/protocols/oauth2/service-account">OAuth documentation</a>
-goes in length about how to sign a JWT with the service account key in
-order to call their token endpoint <code>https://oauth2.googleapis.com/token</code>
-to get an OAuth token so that you can call actual Google Cloud APIs,
-only to mention at the end in a small addendum that you can skip the
-token endpoint step altogether and
-<a href="https://developers.google.com/identity/protocols/oauth2/service-account#jwt-auth">just use your self-signed JWT directly</a>. 😬</p>
-<p>In this blog post we’ll develop this last step, because it’s so much
-more convenient, reliable, and there’s a few undocumented things about
-it.</p>
-<h2 id="the-normal-flow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-normal-flow"><span>The normal flow</span></a></h2>
-<p>But before, let’s quickly look at the “normal” recommended OAuth flow.
-Borrowing this diagram from their documentation:</p>
-<figure class="center">
-  <img alt="JWT OAuth flow" src="https://www.codejam.info/img/2022/05/jwt-flow.png">
-</figure>
-<ol>
-<li>Create a self-signed JWT using your service account key.</li>
-<li>Use it to authenticate to <code>https://oauth2.googleapis.com/token</code> to
-request an OAuth token.</li>
-<li>Use that OAuth token to call Google APIs.</li>
-</ol>
-<p>This is not bad, but having to go over the network to authenticate and
-refresh tokens before they expire adds extra overhead, delay, error
-handling, retry logic, and in general just an extra few things that can
-go wrong.</p>
-<p>And I don’t like things out of my control that can go wrong.</p>
-<h2 id="the-better-flow" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-better-flow"><span>The better flow</span></a></h2>
-<p>On the other hand, the poorly documented “service account authorization
-without OAuth method” consists in:</p>
-<ol>
-<li>Create a self-signed JWT using your service account key.</li>
-<li>Use it directly to call Google APIs.</li>
-<li>Profit.</li>
-</ol>
-<p>Same amount of steps, but you can imagine why I like this method better.</p>
-<h2 id="implementing-direct-authorization-from-scratch" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#implementing-direct-authorization-from-scratch"><span>Implementing direct authorization from scratch</span></a></h2>
-<p>Typically, the Google Cloud SDK in the language of your choice takes
-care of this for you (and most of the time uses this self-signed method,
-because they too realize it’s a much superior method). But in some
-cases, you have to reimplement the authorization step, for example
-<a href="https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers">when running on Cloudflare Workers</a>,
-which I wrote about in details in that article.</p>
-<p>As of today their <a href="https://developers.google.com/identity/protocols/oauth2/service-account#jwt-auth">documentation</a>
-mentions the JWT must have the following header and payload:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;alg&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;RS256&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;typ&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;JWT&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;kid&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_PRIVATE_KEY_ID&quot;</span>
-<span class="hljs-punctuation">}</span>
-.
-<span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;iss&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;aud&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://SERVICE.googleapis.com/&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;iat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511900000</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511903600</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>Where the parts in all caps are variables to adapt to your situation.
-Then the JWT can be signed with RS256 (RSA signature with SHA-256), and
-used in a <code>Authorization: Bearer</code> header against the service you
-included in the <code>aud</code> field.</p>
-<p>And it does work most of the time (again checkout <a href="https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers#the-problem-with-cloudflare-workers">my post</a>
-to see the vanilla JavaScript implementation), but in some cases like
-with Google Cloud Storage, <a href="https://stackoverflow.com/q/63222450">it breaks down</a>.</p>
-<h2 id="when-it-breaks-down" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#when-it-breaks-down"><span>When it breaks down</span></a></h2>
-<p>With Google Cloud Storage, when using the documented method with a <code>aud</code>
-field of <code>https://storage.googleapis.com/</code>, we sadly <a href="https://stackoverflow.com/q/63222450">get an error</a>
-when calling the API, e.g. when trying to get a file:</p>
-<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>AuthenticationRequired<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>Authentication required.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
-</code></pre>
-<p>Or when trying to upload a file:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;error&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;code&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">401</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid Credentials&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;errors&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-      <span class="hljs-punctuation">{</span>
-        <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Invalid Credentials&quot;</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-attr">&quot;domain&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;global&quot;</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-attr">&quot;reason&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;authError&quot;</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-attr">&quot;locationType&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;header&quot;</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-attr">&quot;location&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Authorization&quot;</span>
-      <span class="hljs-punctuation">}</span>
-    <span class="hljs-punctuation">]</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>But the exact same code to generate a JWT works seamlessly with Pub/Sub,
-Datastore and other services! Why is that? Should we fall back to using
-the OAuth endpoint for those problematic services?</p>
-<p>No.</p>
-<h2 id="the-new-undocumented-jwt-payload" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#the-new-undocumented-jwt-payload"><span>The new, undocumented JWT payload</span></a></h2>
-<p>It turns out that you need to remove the <code>aud</code> field and replace it with
-a <code>scope</code> field, akin to the one we would pass to the main OAuth token
-endpoint.</p>
-<p>In the case of Google Cloud Storage, our JWT payload would now look like
-this:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;iss&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;sub&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;SERVICE_ACCOUNT_EMAIL&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;scope&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://www.googleapis.com/auth/iam https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/devstorage.full_control&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;iat&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511900000</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;exp&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1511903600</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>You can find the <a href="https://developers.google.com/identity/protocols/oauth2/scopes">full list of OAuth scopes</a>
-in the Google Cloud OAuth 2.0 documentation.</p>
-<p>It turns out the <code>scope</code> field is also accepted by Pub/Sub and other
-services that were working fine with <code>aud</code>, so we can just make our
-generic implementation use the <code>scope</code> field and be done with it. Sweet!</p>
-<h2 id="bonus-how-did-i-find-out-about-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#bonus-how-did-i-find-out-about-that"><span>Bonus: how did I find out about that?</span></a></h2>
-<p>This is the story about <a href="https://stackoverflow.com/a/71834557">this answer</a>
-I posted on the Stack Overflow question I linked earlier.</p>
-<p>First, I dug in the <a href="https://github.com/googleapis/google-cloud-node">Google Cloud Node.js SDK</a>
-to see how they implemented the service account authentication.</p>
-<p>It turns out they do use the <a href="https://github.com/googleapis/google-auth-library-nodejs/blob/b48254490768799e465a8fa4aae13296ddceea53/src/auth/jwtclient.ts#L126">self-signed JWT method</a>,
-in their shared auth library, but it’s conditional to a variable
-<code>useJWTAccessWithScope</code> being set to <code>true</code> by the client SDK. For
-example, this is <a href="https://github.com/googleapis/nodejs-pubsub/blob/ba333c2284b802cdd43df7568b553b2a90dba8d8/src/v1/publisher_client.ts#L139">where Pub/Sub sets it</a>,
-and this is
-<a href="https://github.com/googleapis/nodejs-storage/search?q=useJWTAccessWithScope">where GCS <strong>doesn’t</strong> set it</a>
-(as of today).</p>
-<p>But what if we force this variable to <code>true</code>?</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { <span class="hljs-title class_">Storage</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@google-cloud/storage&#x27;</span>
-
-<span class="hljs-keyword">const</span> storage = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Storage</span>()
-
-storage.<span class="hljs-property">authClient</span>.<span class="hljs-property">useJWTAccessWithScope</span> = <span class="hljs-literal">true</span>
-
-<span class="hljs-keyword">const</span> file = <span class="hljs-keyword">await</span> storage.<span class="hljs-title function_">bucket</span>(<span class="hljs-string">&#x27;bucket&#x27;</span>).<span class="hljs-title function_">file</span>(<span class="hljs-string">&#x27;file&#x27;</span>).<span class="hljs-title function_">get</span>()
-</code></pre>
-<p>By running this script with <code>NODE_DEBUG=https</code>, we can see that without
-the <code>useJWTAccessWithScope</code> line, the client makes a call to
-<code>https://www.googleapis.com/oauth2/v4/token</code> first, then calls
-<code>https://storage.googleapis.com/storage/v1/b/bucket/o/file</code>, but with
-<code>useJWTAccessWithScope</code>, it skips the first token call (and everything
-works still)!</p>
-<p>We can also notice that the token from the OAuth token endpoint contains
-hundreds of dots (<code>.</code>) at the end, whereas the self-signed token is just
-the usual 3 parts Base64URL JWT. Not an useful information, but
-interesting.</p>
-<p>Either way, this proved that despite not working with the method in the
-documentation, self-signed authentication was effectively supported by
-Google Cloud Storage. So how did that SDK-generated token differ? The
-easiest is to copy that token from our <code>NODE_DEBUG=https</code> output and
-parse the payload segment:</p>
-<pre><code class="hljs language-sh">pbpaste | <span class="hljs-built_in">cut</span> -d. -f2 | <span class="hljs-built_in">base64</span> --decode
-</code></pre>
-<p>Or in Node.js:</p>
-<pre><code class="hljs language-js"><span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(token.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;.&#x27;</span>)[<span class="hljs-number">1</span>], <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>()
-</code></pre>
-<p>There we see they use a <code>scope</code> parameter as opposed to <code>aud</code>.</p>
-<p>We can track it down to the <a href="https://github.com/googleapis/google-auth-library-nodejs/blob/b48254490768799e465a8fa4aae13296ddceea53/src/auth/jwtclient.ts#L191">code of the authentication library</a>,
-and we can also see where the Google Cloud Storage client
-<a href="https://github.com/googleapis/nodejs-storage/blob/c3240060b3dc905013ab6fa219e975631b41f5c4/src/storage.ts#L653">defines the necessary OAuth scopes</a>.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/google-cloud-service-account-authorization-without-oauth.html#conclusion"><span>Conclusion</span></a></h2>
-<p>With some investigation in the Google Cloud Node.js SDK source code and
-some <code>NODE_DEBUG=https</code> debugging, we can dissect their implementation
-of the self-signed service account authentication, and replicate it on
-our side.</p>
-<p>This enables us to use this simpler and superior mechanism that Google
-uses internally, instead of the method that’s widely documented of
-calling their OAuth endpoint.</p>
-<p>I hope that you learnt something thanks to this article, and that it
-helps you build great things! And as always, keep hacking! 🚀</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1523114655698554880">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>The disk wasn’t ejected because one or more programs may be using it</title>
-    <link href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html" />
-    <id>https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html</id>
-    <updated>2022-05-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If you run macOS, you might have run in the following error message when
-trying to eject a removable device:</p>
-<figure class="center">
-  <img alt="The disk wasn’t ejected because one or more programs may be using it" src="https://www.codejam.info/img/2022/05/macos-disk-eject.png">
-</figure>
-<p>In some cases, even waiting a few minutes doesn’t solve the problem.
-Often, it happens after deleting files from the device just before
-ejecting, and Quick Look is often the culprit. Let’s see.</p>
-<p><em>Inspired by <a href="https://mycyberuniverse.com/macos/how-fix-volume-cant-be-ejected-because-currently-use-user.html">this post</a>
-and <a href="https://mycyberuniverse.com/macos/how-fix-volume-cant-be-ejected-because-currently-use.html">this post</a>.</em></p>
-<h2 id="investigating" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#investigating"><span>Investigating</span></a></h2>
-<p>To know what program is currently using the volume you’re trying to
-eject, you can use the <a href="https://linux.die.net/man/8/lsof"><code>lsof(8)</code></a>
-command. In my case the volume is <code>/Volumes/LUMIX</code>:</p>
-<pre><code class="hljs language-console"> lsof +c0 /Volumes/LUMIX
-COMMAND            PID USER   FD   TYPE DEVICE   SIZE/OFF   NODE NAME
-QuickLookUIService 611  val    3r   REG   1,31 2970637594     51 /Volumes/LUMIX/.Trashes/501/P2770021.MP4
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> the <code>+c0</code> option here is to display the full command string.
-By default, it only shows 9 characters.</p>
-</div>
-<p>You can see that <code>QuickLookUIService</code> is still doing something with the
-file <code>P2770021.MP4</code> that I deleted… and it’s probably stuck and
-confused because the file is not there anymore.</p>
-<h2 id="killing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#killing"><span>Killing</span></a></h2>
-<p>To fix that, we can kill the <code>QuickLookUIService</code> process (or whatever
-process was blocking in your case).</p>
-<div class="note">
-<p><strong>Note:</strong> in the case of <code>QuickLookUIService</code>, it’s safe to kill, but if
-you’re dealing with a different program preventing you to eject your
-drive, it’s up to your own judgment whether it’s a good idea or not to
-kill it!</p>
-</div>
-<p>There’s essentially two methods we’ll talk about: soft kill, which would
-be<code>pkill QuickLookUIService</code> and hard kill, with <code>pkill -9 QuickLookUIService</code>.</p>
-<p>In the case of this bug, it looks like we need to resort to hard kill,
-as a soft kill doesn’t terminate the hanging process:</p>
-<pre><code class="hljs language-sh">pkill -9 QuickLookUIService
-</code></pre>
-<p>Now you should be able to eject your device!</p>
-<h2 id="restarting-quick-look" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/macos-disk-not-ejected-programs-using-it.html#restarting-quick-look"><span>Restarting Quick Look</span></a></h2>
-<p>Quick Look is the macOS service responsible for computing file previews
-for various UI components. After we killed it, it might or might not
-restart by itself, so if you notice that new file previews and
-thumbnails don’t appear anymore in your Finder, you can restart Quick
-Look with the following command:</p>
-<pre><code class="hljs language-sh">qlmanage -r
-</code></pre>
-<p>It won’t hurt to run it either way after killing the process and
-ejecting the drive.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

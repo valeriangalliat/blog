@@ -5,6 +5,8 @@ const fs = require('fs')
 const mdit = require('markdown-it')
 const escape = require('escape-html')
 const slugify = require('@sindresorhus/slugify')
+const hljsOrig = require('highlight.js')
+const hljsCodeDiff = require('highlightjs-code-diff')
 
 const baseUrl = 'https://www.codejam.info/'
 const meta = {}
@@ -21,6 +23,7 @@ const md = mdit({
   typographer: true
 })
 
+const hljs = hljsCodeDiff(hljsOrig)
 
 md.use(require('markdown-it-front-matter'), metaString => {
   for (const line of metaString.split('\n')) {
@@ -41,7 +44,7 @@ md.use(require('markdown-it-anchor'), {
 
 md.use(require('markdown-it-deflist'))
 md.use(require('markdown-it-footnote'))
-md.use(require('markdown-it-highlightjs'), { auto: false })
+md.use(require('markdown-it-highlightjs'), { hljs, auto: false })
 md.use(require('markdown-it-title'), { excerpt: 3 })
 md.use(require('markdown-it-attr-typographer'), { html: true })
 

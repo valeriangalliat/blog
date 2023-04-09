@@ -1,5 +1,5 @@
 # Configuring a GCP Pub/Sub dead letter queue with Pulumi
-April 8, 2023
+April 9, 2023
 
 I've been playing a bit with [Pulumi](https://www.pulumi.com/) lately,
 and it quickly became one of my favorite infrastructure as code tools.

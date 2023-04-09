@@ -208,7 +208,7 @@ http {
 
 From there, I tweak a few things.
 
-```diff
+```diff:nginx
      sendfile on;
      tcp_nopush on;
      types_hash_max_size 2048;
@@ -280,7 +280,7 @@ a bit later, but until then, we need to comment those parts otherwise
 the nginx config won't validate and nginx won't be able to start (or
 reload).
 
-```diff
+```diff:nginx
 -ssl_certificate /path/to/signed_cert_plus_intermediates;
 -ssl_certificate_key /path/to/private_key;
 +# ssl_certificate /path/to/signed_cert_plus_intermediates;
@@ -411,7 +411,7 @@ certificate files yet, nginx will not accept our SSL servers. So comment
 those out in the meantime, and just add the following server that will
 let us generate our initial certificates:
 
-```conf
+```nginx
 server {
     listen 80 default_server;
     listen [::]:80 default_server;
@@ -677,7 +677,7 @@ But we commented out the certificate files in `nginx.conf` earlier
 because they didn't exist yet. We can now edit the config (as root) to
 reference those files we just installed.
 
-```diff
+```diff:nginx
 -# ssl_certificate /path/to/signed_cert_plus_intermediates;
 -# ssl_certificate_key /path/to/private_key;
 +ssl_certificate /etc/acme/codejam.info/fullchain.pem;

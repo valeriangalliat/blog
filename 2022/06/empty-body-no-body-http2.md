@@ -119,7 +119,7 @@ itching me in a particular manner.
 I tried adding `--trace`, and `--trace-ascii` to the previous cURL
 commands, in order to dump the raw protocol data and compare it:
 
-```diff
+```diff:sh
  curl https://events.hookdeck.com/e/source-id-goes-here \
    -X POST \
    -H 'Content-Type: text/plain' \
@@ -253,7 +253,7 @@ listening after the first connection, and `-p` to specify the port.)
 
 Then I can hit it:
 
-```diff
+```diff:sh
 -curl https://events.hookdeck.com/e/source-id-goes-here \
 +curl http://localhost:8888/ \
    -X POST \
@@ -354,7 +354,7 @@ well as the raw headers, in the hope to find the key difference there.
 As before, we hit it, with the addition of `--insecure` because we don't
 want cURL to reject our self-signed certificate:
 
-```diff
+```diff:sh
  curl http://localhost:8888/ \
    -X POST \
    -H 'Content-Type: text/plain' \

@@ -224,7 +224,7 @@ somehow?
 Only one way to know. Since I knew exactly the patterns to look for at
 the start and end of the annotations XML, I could find them in the raw
 disk image, extract the byte offset, and then `dd` everything
-in-between each start and end offset!
+in between each start and end offset!
 
 Using `grep` with `--text` to force it to treat the disk binary data as text,
 and `--byte-offset` to get the byte offset of the matches, I was able to
@@ -264,7 +264,7 @@ Which gave me something like:
 ```
 
 I could then use `dd` to extract the bytes from the raw disk image
-in-between those offsets:
+in between those offsets:
 
 ```sh
 start=199089105

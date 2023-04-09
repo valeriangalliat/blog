@@ -55,7 +55,7 @@ the start script until it's unlocked.
 And the following in `/etc/lightdm/lightdm.conf` (where `foo` is your
 username):
 
-```conf
+```ini
 [Seat:*]
 autologin-user=foo
 ```

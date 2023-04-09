@@ -182,26 +182,26 @@ I’ll post my custom additions after.</p>
 </code></pre>
 <h3 id="val-s-essential-tweaks" tabindex="-1"><a class="header-anchor" href="#val-s-essential-tweaks"><span>Val’s essential tweaks</span></a></h3>
 <p>From there, I tweak a few things.</p>
-<pre><code class="hljs language-diff">     sendfile on;
-     tcp_nopush on;
-     types_hash_max_size 2048;
-<span class="hljs-deletion">-    # server_tokens off;</span>
-<span class="hljs-addition">+    server_tokens off;</span>
+<pre><code class="hljs language-diff:nginx">     <span class="hljs-attribute">sendfile</span> <span class="hljs-literal">on</span>;
+     <span class="hljs-attribute">tcp_nopush</span> <span class="hljs-literal">on</span>;
+     <span class="hljs-attribute">types_hash_max_size</span> <span class="hljs-number">2048</span>;
+<span class="hljs-deletion">-    <span class="hljs-comment"># server_tokens off;</span></span>
+<span class="hljs-addition">+    <span class="hljs-attribute">server_tokens</span> <span class="hljs-literal">off</span>;</span>
 
-     include /etc/nginx/mime.types;
-     default_type application/octet-stream;
+     <span class="hljs-attribute">include</span> /etc/nginx/mime.types;
+     <span class="hljs-attribute">default_type</span> application/octet-stream;
 
-<span class="hljs-deletion">-    access_log /var/log/nginx/access.log;</span>
-<span class="hljs-addition">+    access_log off;</span>
-     error_log /var/log/nginx/error.log;
+<span class="hljs-deletion">-    <span class="hljs-attribute">access_log</span> /var/log/nginx/access.log;</span>
+<span class="hljs-addition">+    <span class="hljs-attribute">access_log</span> <span class="hljs-literal">off</span>;</span>
+     <span class="hljs-attribute">error_log</span> /var/log/nginx/<span class="hljs-literal">error</span>.log;
 
-     gzip on;
-<span class="hljs-addition">+    gzip_vary on;</span>
+     <span class="hljs-attribute">gzip</span> <span class="hljs-literal">on</span>;
+<span class="hljs-addition">+    <span class="hljs-attribute">gzip_vary</span> <span class="hljs-literal">on</span>;</span>
 <span class="hljs-addition">+</span>
-<span class="hljs-addition">+    # Custom list based on Debian&#x27;s `/etc/nginx/mime.types`.</span>
-<span class="hljs-addition">+    gzip_types text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;</span>
+<span class="hljs-addition">+    <span class="hljs-comment"># Custom list based on Debian&#x27;s `/etc/nginx/mime.types`.</span></span>
+<span class="hljs-addition">+    <span class="hljs-attribute">gzip_types</span> text/css text/xml application/javascript application/atom+xml application/rss+xml text/plain application/json image/svg+xml;</span>
 <span class="hljs-addition">+</span>
-<span class="hljs-addition">+    charset utf-8;</span>
+<span class="hljs-addition">+    <span class="hljs-attribute">charset</span> utf-<span class="hljs-number">8</span>;</span>
  }
 </code></pre>
 <ul>
@@ -246,23 +246,23 @@ there. We still need to generate them with Let’s Encrypt. We’ll do that
 a bit later, but until then, we need to comment those parts otherwise
 the nginx config won’t validate and nginx won’t be able to start (or
 reload).</p>
-<pre><code class="hljs language-diff"><span class="hljs-deletion">-ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-deletion">-ssl_certificate_key /path/to/private_key;</span>
-<span class="hljs-addition">+# ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-addition">+# ssl_certificate_key /path/to/private_key;</span>
- ssl_session_timeout 1d;
- ssl_session_cache shared:MozSSL:10m;
- ssl_session_tickets off;
-<span class="hljs-deletion">-ssl_dhparam /path/to/dhparam;</span>
-<span class="hljs-addition">+# ssl_dhparam /path/to/dhparam;</span>
- ssl_protocols TLSv1.2 TLSv1.3;
- ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
- ssl_prefer_server_ciphers off;
- add_header Strict-Transport-Security &quot;max-age=63072000&quot; always;
- ssl_stapling on;
- ssl_stapling_verify on;
-<span class="hljs-deletion">-ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
-<span class="hljs-addition">+# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
+<pre><code class="hljs language-diff:nginx"><span class="hljs-deletion">-<span class="hljs-attribute">ssl_certificate</span> /path/to/signed_cert_plus_intermediates;</span>
+<span class="hljs-deletion">-<span class="hljs-attribute">ssl_certificate_key</span> /path/to/private_key;</span>
+<span class="hljs-addition">+<span class="hljs-comment"># ssl_certificate /path/to/signed_cert_plus_intermediates;</span></span>
+<span class="hljs-addition">+<span class="hljs-comment"># ssl_certificate_key /path/to/private_key;</span></span>
+ <span class="hljs-attribute">ssl_session_timeout</span> <span class="hljs-number">1d</span>;
+ <span class="hljs-attribute">ssl_session_cache</span> shared:MozSSL:<span class="hljs-number">10m</span>;
+ <span class="hljs-attribute">ssl_session_tickets</span> <span class="hljs-literal">off</span>;
+<span class="hljs-deletion">-<span class="hljs-attribute">ssl_dhparam</span> /path/to/dhparam;</span>
+<span class="hljs-addition">+<span class="hljs-comment"># ssl_dhparam /path/to/dhparam;</span></span>
+ <span class="hljs-attribute">ssl_protocols</span> TLSv1.<span class="hljs-number">2</span> TLSv1.<span class="hljs-number">3</span>;
+ <span class="hljs-attribute">ssl_ciphers</span> ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+ <span class="hljs-attribute">ssl_prefer_server_ciphers</span> <span class="hljs-literal">off</span>;
+ <span class="hljs-attribute">add_header</span> Strict-Transport-Security <span class="hljs-string">&quot;max-age=63072000&quot;</span> always;
+ <span class="hljs-attribute">ssl_stapling</span> <span class="hljs-literal">on</span>;
+ <span class="hljs-attribute">ssl_stapling_verify</span> <span class="hljs-literal">on</span>;
+<span class="hljs-deletion">-<span class="hljs-attribute">ssl_trusted_certificate</span> /path/to/root_CA_cert_plus_intermediates;</span>
+<span class="hljs-addition">+<span class="hljs-comment"># ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span></span>
 </code></pre>
 <h3 id="default-server-with-https-and-www-redirect" tabindex="-1"><a class="header-anchor" href="#default-server-with-https-and-www-redirect"><span>Default server with HTTPS and <code>www</code> redirect</span></a></h3>
 <p>I like <code><strong>http://</strong>www.codejam.info/</code> to redirect to
@@ -360,16 +360,16 @@ main <code>http</code> block which I won’t include again here.</p>
 certificate files yet, nginx will not accept our SSL servers. So comment
 those out in the meantime, and just add the following server that will
 let us generate our initial certificates:</p>
-<pre><code class="hljs language-conf">server {
-    listen 80 default_server;
-    listen [::]:80 default_server;
+<pre><code class="hljs language-nginx"><span class="hljs-section">server</span> {
+    <span class="hljs-attribute">listen</span> <span class="hljs-number">80</span> default_server;
+    <span class="hljs-attribute">listen</span> [::]:<span class="hljs-number">80</span> default_server;
 
-    location / {
-        return 404;
+    <span class="hljs-section">location</span> / {
+        <span class="hljs-attribute">return</span> <span class="hljs-number">404</span>;
     }
 
-    location /.well-known/acme-challenge {
-        root /var/www/challenges;
+    <span class="hljs-section">location</span> /.well-known/acme-challenge {
+        <span class="hljs-attribute">root</span> /var/www/challenges;
     }
 }
 </code></pre>
@@ -543,23 +543,23 @@ certificates and how to reload the server during the cron job.</p>
 <p>But we commented out the certificate files in <code>nginx.conf</code> earlier
 because they didn’t exist yet. We can now edit the config (as root) to
 reference those files we just installed.</p>
-<pre><code class="hljs language-diff"><span class="hljs-deletion">-# ssl_certificate /path/to/signed_cert_plus_intermediates;</span>
-<span class="hljs-deletion">-# ssl_certificate_key /path/to/private_key;</span>
-<span class="hljs-addition">+ssl_certificate /etc/acme/codejam.info/fullchain.pem;</span>
-<span class="hljs-addition">+ssl_certificate_key /etc/acme/codejam.info/privkey.pem;</span>
- ssl_session_timeout 1d;
- ssl_session_cache shared:MozSSL:10m;
- ssl_session_tickets off;
-<span class="hljs-deletion">-# ssl_dhparam /path/to/dhparam;</span>
-<span class="hljs-addition">+ssl_dhparam /etc/acme/ssl-dhparams.pem;</span>
- ssl_protocols TLSv1.2 TLSv1.3;
- ssl_ciphers ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
- ssl_prefer_server_ciphers off;
- add_header Strict-Transport-Security &quot;max-age=63072000&quot; always;
- ssl_stapling on;
- ssl_stapling_verify on;
-<span class="hljs-deletion">-# ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span>
-<span class="hljs-addition">+ssl_trusted_certificate /etc/acme/codejam.info/chain.pem;</span>
+<pre><code class="hljs language-diff:nginx"><span class="hljs-deletion">-<span class="hljs-comment"># ssl_certificate /path/to/signed_cert_plus_intermediates;</span></span>
+<span class="hljs-deletion">-<span class="hljs-comment"># ssl_certificate_key /path/to/private_key;</span></span>
+<span class="hljs-addition">+<span class="hljs-attribute">ssl_certificate</span> /etc/acme/codejam.<span class="hljs-literal">info</span>/fullchain.pem;</span>
+<span class="hljs-addition">+<span class="hljs-attribute">ssl_certificate_key</span> /etc/acme/codejam.<span class="hljs-literal">info</span>/privkey.pem;</span>
+ <span class="hljs-attribute">ssl_session_timeout</span> <span class="hljs-number">1d</span>;
+ <span class="hljs-attribute">ssl_session_cache</span> shared:MozSSL:<span class="hljs-number">10m</span>;
+ <span class="hljs-attribute">ssl_session_tickets</span> <span class="hljs-literal">off</span>;
+<span class="hljs-deletion">-<span class="hljs-comment"># ssl_dhparam /path/to/dhparam;</span></span>
+<span class="hljs-addition">+<span class="hljs-attribute">ssl_dhparam</span> /etc/acme/ssl-dhparams.pem;</span>
+ <span class="hljs-attribute">ssl_protocols</span> TLSv1.<span class="hljs-number">2</span> TLSv1.<span class="hljs-number">3</span>;
+ <span class="hljs-attribute">ssl_ciphers</span> ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384;
+ <span class="hljs-attribute">ssl_prefer_server_ciphers</span> <span class="hljs-literal">off</span>;
+ <span class="hljs-attribute">add_header</span> Strict-Transport-Security <span class="hljs-string">&quot;max-age=63072000&quot;</span> always;
+ <span class="hljs-attribute">ssl_stapling</span> <span class="hljs-literal">on</span>;
+ <span class="hljs-attribute">ssl_stapling_verify</span> <span class="hljs-literal">on</span>;
+<span class="hljs-deletion">-<span class="hljs-comment"># ssl_trusted_certificate /path/to/root_CA_cert_plus_intermediates;</span></span>
+<span class="hljs-addition">+<span class="hljs-attribute">ssl_trusted_certificate</span> /etc/acme/codejam.<span class="hljs-literal">info</span>/chain.pem;</span>
 </code></pre>
 <p>Verify the config is valid with <code>nginx -t</code> and run a final <code>systemctl reload nginx</code> to apply the changes.</p>
 <h2 id="bonus-http-basic-authentication" tabindex="-1"><a class="header-anchor" href="#bonus-http-basic-authentication"><span>Bonus: HTTP basic authentication</span></a></h2>

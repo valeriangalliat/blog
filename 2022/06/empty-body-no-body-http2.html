@@ -116,18 +116,18 @@ itching me in a particular manner.</p>
 <h2 id="digging-deeper-with-trace" tabindex="-1"><a class="header-anchor" href="#digging-deeper-with-trace"><span>Digging deeper with <code>--trace</code></span></a></h2>
 <p>I tried adding <code>--trace</code>, and <code>--trace-ascii</code> to the previous cURL
 commands, in order to dump the raw protocol data and compare it:</p>
-<pre><code class="hljs language-diff"> curl https://events.hookdeck.com/e/source-id-goes-here \
+<pre><code class="hljs language-diff:sh"> curl https://events.hookdeck.com/e/source-id-goes-here \
    -X POST \
-   -H &#x27;Content-Type: text/plain&#x27; \
-   -H &#x27;Content-Length:&#x27; \
-<span class="hljs-deletion">-  --data &#x27;&#x27;</span>
-<span class="hljs-addition">+  --data &#x27;&#x27; \</span>
+   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
+<span class="hljs-deletion">-  --data <span class="hljs-string">&#x27;&#x27;</span></span>
+<span class="hljs-addition">+  --data <span class="hljs-string">&#x27;&#x27;</span> \</span>
 <span class="hljs-addition">+  --trace empty-body.txt</span>
  
  curl https://events.hookdeck.com/e/source-id-goes-here \
    -X POST \
-<span class="hljs-deletion">-  -H &#x27;Content-Type: text/plain&#x27;</span>
-<span class="hljs-addition">+  -H &#x27;Content-Type: text/plain&#x27; \</span>
+<span class="hljs-deletion">-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span></span>
+<span class="hljs-addition">+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \</span>
 <span class="hljs-addition">+  --trace no-body.txt</span>
 </code></pre>
 <p>Then diffing it with:</p>
@@ -216,17 +216,17 @@ hopefully tell them apart:</p>
 <p>(This makes netcat listen on port 8888: <code>-l</code> to listen, <code>-k</code> to keep
 listening after the first connection, and <code>-p</code> to specify the port.)</p>
 <p>Then I can hit it:</p>
-<pre><code class="hljs language-diff"><span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
+<pre><code class="hljs language-diff:sh"><span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
 <span class="hljs-addition">+curl http://localhost:8888/ \</span>
    -X POST \
-   -H &#x27;Content-Type: text/plain&#x27; \
-   -H &#x27;Content-Length:&#x27; \
-   --data &#x27;&#x27;
+   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
+   --data <span class="hljs-string">&#x27;&#x27;</span>
  
 <span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
 <span class="hljs-addition">+curl http://localhost:8888/ \</span>
    -X POST \
-   -H &#x27;Content-Type: text/plain&#x27;
+   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span>
 </code></pre>
 <p>Sadly this results in the same HTTP/1.1 request in both cases:</p>
 <pre><code class="hljs language-http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/</span> <span class="hljs-meta">HTTP/1.1</span>
@@ -294,18 +294,18 @@ server.<span class="hljs-title function_">listen</span>(<span class="hljs-number
 well as the raw headers, in the hope to find the key difference there.</p>
 <p>As before, we hit it, with the addition of <code>--insecure</code> because we don’t
 want cURL to reject our self-signed certificate:</p>
-<pre><code class="hljs language-diff"> curl http://localhost:8888/ \
+<pre><code class="hljs language-diff:sh"> curl http://localhost:8888/ \
    -X POST \
-   -H &#x27;Content-Type: text/plain&#x27; \
-   -H &#x27;Content-Length:&#x27; \
-<span class="hljs-deletion">-  --data &#x27;&#x27;</span>
-<span class="hljs-addition">+  --data &#x27;&#x27; \</span>
+   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
+   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
+<span class="hljs-deletion">-  --data <span class="hljs-string">&#x27;&#x27;</span></span>
+<span class="hljs-addition">+  --data <span class="hljs-string">&#x27;&#x27;</span> \</span>
 <span class="hljs-addition">+  --insecure</span>
  
  curl http://localhost:8888/ \
    -X POST \
-<span class="hljs-deletion">-  -H &#x27;Content-Type: text/plain&#x27;</span>
-<span class="hljs-addition">+  -H &#x27;Content-Type: text/plain&#x27; \</span>
+<span class="hljs-deletion">-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span></span>
+<span class="hljs-addition">+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \</span>
 <span class="hljs-addition">+  --insecure</span>
 </code></pre>
 <p>And while the raw headers are exactly the same, the flag is different:

@@ -196,7 +196,7 @@ somehow?</p>
 <p>Only one way to know. Since I knew exactly the patterns to look for at
 the start and end of the annotations XML, I could find them in the raw
 disk image, extract the byte offset, and then <code>dd</code> everything
-in-between each start and end offset!</p>
+in between each start and end offset!</p>
 <p>Using <code>grep</code> with <code>--text</code> to force it to treat the disk binary data as text,
 and <code>--byte-offset</code> to get the byte offset of the matches, I was able to
 extract the position of the markers:</p>
@@ -223,7 +223,7 @@ grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;/annotationSet&
 839015506	839016589
 </code></pre>
 <p>I could then use <code>dd</code> to extract the bytes from the raw disk image
-in-between those offsets:</p>
+in between those offsets:</p>
 <pre><code class="hljs language-sh">start=199089105
 end=199091941
 <span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))

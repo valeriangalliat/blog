@@ -74,8 +74,8 @@ the start script until it’s unlocked.</p>
 </div>
 <p>And the following in <code>/etc/lightdm/lightdm.conf</code> (where <code>foo</code> is your
 username):</p>
-<pre><code class="hljs language-conf">[Seat:*]
-autologin-user=foo
+<pre><code class="hljs language-ini"><span class="hljs-section">[Seat:*]</span>
+<span class="hljs-attr">autologin-user</span>=foo
 </code></pre>
 <p>This results in LightDM acting as a totally transparent display manager,
 allowing the logind session to be considered graphical, and i3lock being

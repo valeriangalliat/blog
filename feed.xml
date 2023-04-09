@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-09T13:31:34.135Z</updated>
+  <updated>2023-04-09T13:35:43.373Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -13,7 +13,7 @@
     <title>Configuring a GCP Pub/Sub dead letter queue with Pulumi</title>
     <link href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html" />
     <id>https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html</id>
-    <updated>2023-04-08T04:00:00.000Z</updated>
+    <updated>2023-04-09T04:00:00.000Z</updated>
     <content type="html"><![CDATA[<p>I’ve been playing a bit with <a href="https://www.pulumi.com/">Pulumi</a> lately,
 and it quickly became one of my favorite infrastructure as code tools.
 It feels like the power of <a href="https://aws.amazon.com/cdk/">AWS CDK</a> which

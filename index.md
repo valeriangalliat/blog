@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
 * [Configuring a GCP Pub/Sub dead letter queue with Pulumi](2023/04/gcp-pubsub-dlq-pulumi.md) <small>April 9, 2023</small>
 * [Firebase functions in a monorepo? A challenging pile of hacks](2023/04/firebase-functions-monorepo.md) <small>April 7, 2023</small>
 * [How Firebase `functions.ignore` really works](2023/04/firebase-functions-ignore.md) <small>April 7, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
 * [OVH email redirect causes SPF check failure](2023/02/ovh-email-redirect-spf-failure.md) <small>February 26, 2023</small>
 * [GitHub: disable squash & merge on specific branches](https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches) <small>August 15, 2022</small>
-* [Adobe Bridge mass update filetype associations](2022/07/adobe-bridge-mass-update-filetype-associations.md) <small>July 19, 2022</small>
 
 [All the posts](posts.md)
 

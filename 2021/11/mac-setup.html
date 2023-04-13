@@ -139,44 +139,44 @@ desktop with screenshots like it’s the case by default.</p>
 <a href="#iterm2-settings">iTerm2 settings</a> and my <a href="#terminal-environment">terminal-environment</a>.</p>
 <h2 id="system-preferences" tabindex="-1"><a class="header-anchor" href="#system-preferences"><span>System preferences</span></a></h2>
 <ul>
-<li>In <strong>keyboard</strong> I set “key repeat rate” and “delay until repeat” to
-the fastest possible. I like my keyboard to be snappy.</li>
-<li>Also in <strong>keyboard</strong>, I <strong>edit</strong> the <strong>input sources</strong> settings and
-disable everything. Also in the <strong>text replacements</strong> part, I remove
-the built-in <code>omw</code> abbreviation. See <a href="../../img/2021/11/keyboard-before.png">before</a>
+<li>In <strong>Keyboard</strong> I set <strong>Key repeat rate</strong> and <strong>Delay until repeat</strong>
+to the fastest possible. I like my keyboard to be snappy.</li>
+<li>In <strong>Keyboard &gt; Input Sources</strong>, I <strong>Edit</strong> the settings to disable
+everything. Also in the <strong>Text Replacements</strong> part, I remove the
+built-in <code>omw</code> abbreviation. See <a href="../../img/2021/11/keyboard-before.png">before</a>
 and <a href="../../img/2021/11/keyboard-after.png">after</a>. I’m always
 staggered when I forget to do this and <code>omw</code> gets replaced by <code>On my way!</code>, or when I press space twice and it inserts a colon instead
 <em>while I code in Visual Studio Code</em>! 🤦‍♀️</li>
-<li>In <strong>control center</strong>, I leave only <strong>Time Machine</strong> and <strong>fast
-user switching</strong> in the menu bar if I’m on a multi-user system, and I
-set the <strong>clock</strong> to 24 hours format.</li>
-<li>In <strong>desktop &amp; dock</strong>, tick <strong>automatically hide and show the dock</strong>,
-untick <strong>show recent applications in dock</strong>, and under <strong>mission
-control</strong>, untick <strong>automatically rearrange spaces based on most recent use</strong>.</li>
+<li>In <strong>Keyboard &gt; Keyboard Shortcuts &gt; Mission Control</strong>, I
+enable the <strong>Switch to Desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
+<li>In <strong>Control Center</strong>, I leave only <strong>Time Machine</strong> and <strong>Fast
+User Switching</strong> in the menu bar if I’m on a multi-user system, and I
+set the <strong>Clock</strong> to 24 hours format.</li>
+<li>In <strong>Desktop &amp; Dock</strong>, tick <strong>Automatically hide and show the Dock</strong>,
+untick <strong>Show recent applications in Dock</strong>, and under <strong>Mission
+Control</strong>, untick <strong>Automatically rearrange Spaces based on most recent use</strong>.</li>
 <li>I enable <strong>Time Machine</strong> backups to my usual drive after configuring
 my exclude list (very specific to my data so not included here).</li>
-<li>In <strong>displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
-<li>In <strong>keyboard</strong>, <strong>shortcuts</strong>, <strong>mission control</strong>, I enable the
-<strong>switch to desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
+<li>In <strong>Displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
 <li>Run <code>defaults write com.apple.dock autohide-delay -float 0; killall Dock</code>
 to <a href="../../2022/05/macos-faster-desktops-dock.html">remove the delay</a> to
 show and hide the dock.</li>
-<li>If I installed Visual Studio Code, I run <code>defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false</code> for…
-sanity.</li>
+<li>If I installed Visual Studio Code, I run <code>defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false</code></li>
+<li>for… sanity.</li>
 </ul>
 <h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
 <ul>
-<li>In <strong>appearance</strong>, <strong>windows</strong>, tick <strong>hide scrollbars</strong>.</li>
-<li>In <strong>profiles</strong>, <strong>general</strong>, select <strong>reuse previous session’s
+<li>In <strong>Appearance &gt; Windows</strong>, tick <strong>Hide scrollbars</strong>.</li>
+<li>In <strong>Profiles &gt; General</strong>, select <strong>Reuse previous session’s
 directory</strong> as working directory.</li>
-<li>In <strong>profiles</strong>, <strong>terminal</strong>, tick <strong>silence bell</strong>.</li>
-<li>In <strong>profiles</strong>, <strong>keys</strong>, <strong>key mappings</strong>, load the <strong>natural text
-editing</strong> preset (allow it to remove whatever is already there), and
+<li>In <strong>Profiles &gt; Terminal</strong>, tick <strong>Silence bell</strong>.</li>
+<li>In <strong>Profiles &gt; Keys &gt; Key Mappings</strong>, load the <strong>Natural Text
+Editing</strong> preset (allow it to remove whatever is already there), and
 remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
 <kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
 between tabs.</li>
-<li>In <strong>advanced</strong>, <strong>mouse</strong>, set <strong>scroll wheel sends arrow keys when
-in alternate screen mode</strong> to <strong>yes</strong>.</li>
+<li>In <strong>Advanced &gt; Mouse</strong>, set <strong>Scroll wheel sends arrow keys when
+in alternate screen mode</strong> to <strong>Yes</strong>.</li>
 </ul>
 <h2 id="terminal-environment" tabindex="-1"><a class="header-anchor" href="#terminal-environment"><span>Terminal environment</span></a></h2>
 <p>First, I make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I

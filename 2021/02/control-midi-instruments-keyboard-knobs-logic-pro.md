@@ -28,17 +28,17 @@ instruments.
 
 ## Assign physical knobs to virtual instrument
 
-For this, you need to open the <kbd>Smart Controls</kbd> panel (e.g. by
+For this, you need to open the **Smart Controls** panel (e.g. by
 pressing <kbd>B</kbd>). In this panel, make sure you're in the
-<kbd>Controls</kbd> tab (it usually also shows <kbd>Transform</kbd> and
-<kbd>EQ</kbd>).
+**Controls** tab (it usually also shows **Transform** and
+**EQ**).
 
-On the top left of that panel, there's a little <kbd>i</kbd> button,
+On the top left of that panel, there's a little **ⓘ** button,
 click it to show the inspector, which allows you to create external
 assignments!
 
-By the <kbd>Learn</kbd> button, you can select one of the controls on
-the right (e.g. <kbd>CUTOFF</kbd>), and turn the physical knob that you
+By the **Learn** button, you can select one of the controls on
+the right (e.g. **CUTOFF**), and turn the physical knob that you
 want to assign. Logic should understand the matching MIDI signal and add
 the assignment.
 
@@ -48,4 +48,4 @@ the assignment.
 
 You can then click on another control, turn another physical knob again,
 until you're satisfied, then you can stop the learning process by
-clicking again the <kbd>Learn</kbd> button.
+clicking again the **Learn** button.

@@ -21,15 +21,15 @@ privacy preferences pane was empty!
   <img alt="Empty credit cards window" src="../../img/2022/05/firefox-saved-credit-cards.png">
 </figure>
 
-Also if I clicked the <kbd>Add...</kbd> button and try to add a credit
+Also if I clicked the **Add** button and try to add a credit
 card (e.g. `4111111111111111` for a Visa card to pass the validation for
-testing), the <kbd>Save</kbd> button was completely unresponsive.
+testing), the **Save** button was completely unresponsive.
 
 ## Debugging
 
 I opened the browser console from "more tools" in the application menu.
-Every time I clicked <kbd>Save</kbd>, an error would pop: "User canceled
-OS unlock entry".
+Every time I clicked **Save**, an error would pop: "User canceled OS
+unlock entry".
 
 ```
 [Exception... "User canceled OS unlock entry" nsresult: "0x80004004 (NS_ERROR_ABORT)" location: "JS frame :: resource://gre/modules/OSKeyStore.jsm :: encrypt :: line 332" data: no] OSKeyStore.jsm:332:24

@@ -11,8 +11,8 @@ double-click on a picture, I most often just want to see it in Preview.
 
 ## The manual solution
 
-The solution, is to go in <kbd>Preferences</kbd>, <kbd>File Type
-Associations</kbd> and associate pictures with Preview form there.
+The solution, is to go in "Preferences", "File Type
+Associations" and associate pictures with Preview form there.
 
 The problem is that there's *countless* different extensions for
 pictures and we need to update them one by one! Bummer.

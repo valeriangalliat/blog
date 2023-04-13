@@ -122,46 +122,45 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 
 ## System preferences
 
-* In **keyboard** I set "key repeat rate" and "delay until repeat" to
-  the fastest possible. I like my keyboard to be snappy.
-* Also in **keyboard**, I **edit** the **input sources** settings and
-  disable everything. Also in the **text replacements** part, I remove
-  the built-in `omw` abbreviation. See [before](../../img/2021/11/keyboard-before.png)
+* In **Keyboard** I set **Key repeat rate** and **Delay until repeat**
+  to the fastest possible. I like my keyboard to be snappy.
+* In **Keyboard > Input Sources**, I **Edit** the settings to disable
+  everything. Also in the **Text Replacements** part, I remove the
+  built-in `omw` abbreviation. See [before](../../img/2021/11/keyboard-before.png)
   and [after](../../img/2021/11/keyboard-after.png). I'm always
   staggered when I forget to do this and `omw` gets replaced by `On my
   way!`, or when I press space twice and it inserts a colon instead
   *while I code in Visual Studio Code*! 🤦‍♀️
-* In **control center**, I leave only **Time Machine** and **fast
-  user switching** in the menu bar if I'm on a multi-user system, and I
-  set the **clock** to 24 hours format.
-* In **desktop & dock**, tick **automatically hide and show the dock**,
-  untick **show recent applications in dock**, and under **mission
-  control**, untick **automatically rearrange spaces based on most recent use**.
+* In **Keyboard > Keyboard Shortcuts > Mission Control**, I
+  enable the **Switch to Desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
+* In **Control Center**, I leave only **Time Machine** and **Fast
+  User Switching** in the menu bar if I'm on a multi-user system, and I
+  set the **Clock** to 24 hours format.
+* In **Desktop & Dock**, tick **Automatically hide and show the Dock**,
+  untick **Show recent applications in Dock**, and under **Mission
+  Control**, untick **Automatically rearrange Spaces based on most recent use**.
 * I enable **Time Machine** backups to my usual drive after configuring
   my exclude list (very specific to my data so not included here).
-* In **displays** I turn on **Night Shift** form sunset to sunrise.
-* In **keyboard**, **shortcuts**, **mission control**, I enable the
-  **switch to desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
+* In **Displays** I turn on **Night Shift** form sunset to sunrise.
 * Run `defaults write com.apple.dock autohide-delay -float 0; killall Dock`
   to [remove the delay](../../2022/05/macos-faster-desktops-dock.md) to
   show and hide the dock.
-* If I installed Visual Studio Code, I run `defaults write
-  com.microsoft.VSCode ApplePressAndHoldEnabled -bool false` for...
-  sanity.
+* If I installed Visual Studio Code, I run `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
+* for... sanity.
 
 ## iTerm2 preferences
 
-* In **appearance**, **windows**, tick **hide scrollbars**.
-* In **profiles**, **general**, select **reuse previous session's
+* In **Appearance > Windows**, tick **Hide scrollbars**.
+* In **Profiles > General**, select **Reuse previous session's
   directory** as working directory.
-* In **profiles**, **terminal**, tick **silence bell**.
-* In **profiles**, **keys**, **key mappings**, load the **natural text
-  editing** preset (allow it to remove whatever is already there), and
+* In **Profiles > Terminal**, tick **Silence bell**.
+* In **Profiles > Keys > Key Mappings**, load the **Natural Text
+  Editing** preset (allow it to remove whatever is already there), and
   remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
   <kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
   between tabs.
-* In **advanced**, **mouse**, set **scroll wheel sends arrow keys when
-  in alternate screen mode** to **yes**.
+* In **Advanced > Mouse**, set **Scroll wheel sends arrow keys when
+  in alternate screen mode** to **Yes**.
 
 ## Terminal environment
 

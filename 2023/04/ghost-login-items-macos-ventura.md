@@ -2,8 +2,7 @@
 April 2, 2023
 
 Let's say you uninstalled an app on macOS Ventura, and you see some
-leftovers from that app in **system settings**, **general**, **login
-items**:
+leftovers from that app in **System Settings > General > Login Items**:
 
 <figure class="center">
   <img alt="macOS login items with leftover app that shouldn't be there" srcset="../../img/2023/04/login-items-dirty.png 2x">

@@ -36,19 +36,19 @@ surprisingly good results.
 </figure>
 
 Like most of the time, I started from the Modern Stack bass amp in
-Logic. I disabled the default <kbd>Noise Gate</kbd> and <kbd>Channel EQ</kbd>
+Logic. I disabled the default **Noise Gate** and **Channel EQ<**
 it comes with, and I tweaked a couple settings on the amp:
 
-* Set the slider between <kbd>Amp</kbd> and <kbd>Direct Box</kbd> all
+* Set the slider between **Amp** and **Direct Box** all
   the way to the amp side.
-* Flip the <kbd>low</kbd> switch all the way to the right (brighter tone).
+* Flip the **low** switch all the way to the right (brighter tone).
 
 <figure class="center">
   <img alt="Amp settings" src="../../img/2021/01/franc-moody-logic-amp.png">
 </figure>
 
-Then I added a <kbd>Pedalboard</kbd> plugin where I put the <kbd>Phase
-Tripper</kbd> pedal, with the default settings.
+Then I added the **Pedalboard** plugin where I put the **Phase Tripper**
+pedal, with the default settings.
 
 <figure class="center">
   <img alt="Pedalboard settings" src="../../img/2021/01/franc-moody-logic-pedalboard.png">

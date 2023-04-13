@@ -58,7 +58,7 @@ new snapshots!
 ## Removing the ghost backup directory
 
 First, we need to identify a volume that's already excluded from Time
-Machine. Go in the Time Machine preferences, and in <kbd>Options...</kbd>, see if
+Machine. Go in the Time Machine preferences, and in "Options...", see if
 you have an excluded volume. It could be an internal drive that you
 explicitly excluded from backups, or an external drive that you never
 explicitly included in backups.

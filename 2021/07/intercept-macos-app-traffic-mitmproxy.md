@@ -118,7 +118,7 @@ requests, just to be safe.
 Then it's a matter of browsing all the requests in the mitmproxy UI.
 
 Here, it'll be particularly handy to use the filter function by pressing
-<kbd>f</kbd>. This allows us to specify a [filter pattern](https://docs.mitmproxy.org/stable/concepts-filters/).
+<kbd>F</kbd>. This allows us to specify a [filter pattern](https://docs.mitmproxy.org/stable/concepts-filters/).
 
 For example, if I know the URL I'm looking for contains the string
 `buddylist`, I can type that in the filter prompt, which equals to the

@@ -376,8 +376,7 @@ https://app.vanta.com/agent/info?uuid=YOUR-HARDWARE-UUID
 ```
 
 Where `YOUR-HARDWARE-UUID` is your hardware UUID as it can be found in
-<kbd>About This Mac</kbd>, <kbd>System Report...</kbd>, <kbd>Hardware
-UUID</kbd>.
+the Apple menu, in **About This Mac > System Report > Hardware UUID**.
 
 ## Analyzing the mitmproxy logs
 

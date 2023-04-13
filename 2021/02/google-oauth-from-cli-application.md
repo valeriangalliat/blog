@@ -47,7 +47,7 @@ some JavaScript examples on Node.js.
 [native-app]: https://developers.google.com/identity/protocols/oauth2/native-app
 
 First, [in Google Cloud Platform](https://console.cloud.google.com/apis/credentials), 
-you need to create a Oauth client ID of type <kbd>Desktop</kbd>. This
+you need to create a Oauth client ID of type **Desktop**. This
 will give you a client ID and client secret that you can configure
 in your app.
 

@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Changing default mail client on macOS without signing in to the Mail app</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Changing default mail client on macOS without signing in to the Mail app">
+  <meta property="og:description" content="The things we have to do sometimes… 🙈">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Changing default mail client on macOS without signing in to the Mail app</h1>
+<p class="date">April 13, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>The things we have to do sometimes… 🙈</p>
+<p>Maybe you use another mail client than the Mail app on macOS, and you
+want to make it the default, so that when you click <code>mailto:</code> links, it
+actually opens the app you want.</p>
+<p>Apple documents how to do that in <a href="https://support.apple.com/en-ca/HT201607">change the default email app</a>:</p>
+<blockquote>
+<ol>
+<li>Open the Mail app.</li>
+<li>From the menu bar, choose <strong>Mail &gt; Settings</strong>.</li>
+<li>Click <strong>General</strong>.</li>
+<li>Choose an email app from the <strong>Default email reader</strong> menu.</li>
+</ol>
+</blockquote>
+<p>That’s great, except it doesn’t work. If you never used the Mail app,
+which you probably didn’t if you use another mail client, you can’t
+access the settings! You’re greeted with this screen:</p>
+<figure class="center">
+  <img alt="A dialog prompting you to set up a mail account" srcset="../../img/2023/04/mail/01-blocking-dialog.png 2x">
+</figure>
+<p>And the settings are greyed out!</p>
+<figure class="center">
+  <img alt="Greyed out settings menu" srcset="../../img/2023/04/mail/02-disabled-settings.png 2x">
+</figure>
+<p>What to do then? There’s <a href="https://apple.stackexchange.com/q/261881/452681">a number of solutions</a>:</p>
+<ul>
+<li>Connect your mail account to the Mail app to go through this dialog
+and finally access the settings.</li>
+<li>Use a number of different third-party apps that can change default
+associations.</li>
+<li>Write a script to mess with the <code>LaunchServices</code> API.</li>
+</ul>
+<p>But <a href="https://apple.stackexchange.com/a/422772/452681">my</a>
+<a href="https://osxdaily.com/2014/05/06/change-default-mail-app-mac/#comment-745047">favorite</a>,
+that doesn’t require any third-party app, consists in selecting <strong>Other
+Mail Account</strong>, putting garbage in the fields, and let it fail a few
+times until it works!</p>
+<figure class="center">
+  <img alt="Mail account settings" srcset="../../img/2023/04/mail/03-add-account.png 2x">
+</figure>
+<p>This will obviously fail, and prompt you for more information:</p>
+<figure class="center">
+  <img alt="Advanced account settings" srcset="../../img/2023/04/mail/04-add-account-error.png 2x">
+</figure>
+<p>Just keep hitting the <strong>Sign In</strong> button until it gives up and lets you
+through! You now have access to the settings menu.</p>
+<figure class="center">
+  <img alt="Active settings menu" srcset="../../img/2023/04/mail/05-settings-menu.png 2x">
+</figure>
+<p>From there, you can set your <strong>Default email reader</strong> to your favorite
+app.</p>
+<figure class="center">
+  <img alt="Default email reader settings" srcset="../../img/2023/04/mail/06-settings.png 2x">
+</figure>
+<h2 id="using-gmail-inside-firefox-as-default-email-reader-on-macos" tabindex="-1"><a class="header-anchor" href="#using-gmail-inside-firefox-as-default-email-reader-on-macos"><span>Using Gmail inside Firefox as default email reader on macOS</span></a></h2>
+<p>In my case, I selected the Firefox app in the previous step, because I
+want to use Gmail inside Firefox as my default email reader.</p>
+<p>With that, the next time you open a <code>mailto:</code> link from anywhere on your
+system, it’s going to open Firefox, and Firefox will then need to know
+you want to use Gmail for this. Normally it’ll prompt you the first
+time, but you can also configure it in the <strong>Applications</strong> settings:</p>
+<figure class="center">
+  <img alt="Firefox settings" srcset="../../img/2023/04/mail/07-firefox-settings.png 2x">
+</figure>
+<p>I hope this helps!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/macos-default-mail-client.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

@@ -82,9 +82,9 @@ simply by using `#!/usr/bin/env swift` as a shebang, which I had no clue
 was possible prior to this.
 
 While most Swift windowed apps are expected to be created as part of an
-Xcode project, it turns out the library is flexible enough to allow
-easily creating windows without a complex app boilerplate and an
-explicit compilation process!
+Xcode project, it turns out the library [is flexible enough](https://stackoverflow.com/questions/30763229/display-window-on-osx-using-swift-without-xcode-or-nib)
+to allow easily creating windows without a complex app boilerplate and
+an explicit compilation process!
 
 This is made particularly easy using
 [`NSApplication.shared`](https://developer.apple.com/documentation/appkit/nsapplication/1428360-shared)

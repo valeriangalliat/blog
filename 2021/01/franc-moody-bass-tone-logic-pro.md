@@ -36,7 +36,7 @@ surprisingly good results.
 </figure>
 
 Like most of the time, I started from the Modern Stack bass amp in
-Logic. I disabled the default **Noise Gate** and **Channel EQ<**
+Logic. I disabled the default **Noise Gate** and **Channel EQ**
 it comes with, and I tweaked a couple settings on the amp:
 
 * Set the slider between **Amp** and **Direct Box** all

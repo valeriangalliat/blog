@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
 * [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
 * [macOS screenshot: capture selected window but for dialogs](2023/04/macos-screenshot-dialog.md) <small>April 13, 2023</small>
 * [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Syncthing: sync phone root directory (all internal storage)](2023/04/syncthing-root-directory.md) <small>April 2, 2023</small>
 * [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 * [Embedding high DPI screenshots at normal size in HTML](2023/04/high-dpi-screenshot-size-html.md) <small>April 2, 2023</small>
-* [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
 
 [All the posts](posts.md)
 

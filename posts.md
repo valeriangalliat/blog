@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
 * [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
 * [macOS screenshot: capture selected window but for dialogs](2023/04/macos-screenshot-dialog.md) <small>April 13, 2023</small>
 * [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>macOS reset app window to default size and position</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="macOS reset app window to default size and position">
+  <meta property="og:description" content="Maybe it’s because I’m a bit of a perfectionist, but I sometimes like to reset an app’s window to its default size and position. It looks like I’m definitely not the only one.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>macOS reset app window to default size and position</h1>
+<p class="date">April 20, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Maybe it’s because I’m a bit of a perfectionist, but I sometimes like to
+reset an app’s window to its default size and position. It looks like
+I’m <a href="https://superuser.com/q/1485027">definitely</a>
+<a href="https://apple.stackexchange.com/q/195479/452681">not</a>
+<a href="https://discussions.apple.com/thread/250618907">the</a>
+<a href="https://www.reddit.com/r/MacOS/comments/hbbg7z/reset_default_window_positionsize_in_catalina/">only one</a>.</p>
+<p>The summary of the above links is that the window information is usually
+stored in <code>~/Library/Preferences</code> or <code>~/Library/Saved Application State</code>, and you can get away with removing the matching application
+preferences files in one of those locations, or carefully editing it to
+remove <em>just</em> the window position if that’s what you want.</p>
+<p>This is generally true, but not all the time (as shown in the
+<a href="https://apple.stackexchange.com/a/195494/452681">case of the Mail app</a>).</p>
+<p>This means this solution isn’t perfect. Did I say I was a perfectionist?</p>
+<h2 id="finding-every-window-position-preferences" tabindex="-1"><a class="header-anchor" href="#finding-every-window-position-preferences"><span>Finding <em>every</em> window position preferences</span></a></h2>
+<p>From the files we could find from the earlier solution, we can see that
+the window position is either in a <code>NSWindowFrame</code> key, or a key that
+starts with <code>NSWindow Frame</code>, e.g. for Activity Monitor and Finder:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">plutil -p ~/Library/Preferences/com.apple.ActivityMonitor.plist | grep NSWindow | grep Frame</span>
+  &quot;NSWindow Frame main window&quot; =&gt; &quot;161 208 960 640 0 0 1728 1079 &quot;
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">plutil -p ~/Library/Saved\ Application\ State/com.apple.finder.savedState/windows.plist | grep NSWindow | grep Frame</span>
+    &quot;NSWindowCloseButtonFrame&quot; =&gt; &quot;{{19, 876}, {14, 16}}&quot;
+    &quot;NSWindowFrame&quot; =&gt; &quot;42 1193 1652 910 -87 1117 1920 1055 &quot;
+    &quot;NSWindowMiniaturizeButtonFrame&quot; =&gt; &quot;{{39, 876}, {14, 16}}&quot;
+    &quot;NSWindowZoomButtonFrame&quot; =&gt; &quot;{{59, 876}, {14, 16}}&quot;
+</code></pre>
+<p>Moreover, this setting is always stored in a <code>plist</code> file, the property
+list file that macOS apps store their preferences in.</p>
+<p>So we can try and find for those keys in all <code>plist</code> files in the whole
+<code>~/Library</code>!</p>
+<pre><code class="hljs language-sh">find ~/Library -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&#x27;*.plist&#x27;</span> -<span class="hljs-built_in">exec</span> grep -E <span class="hljs-string">&#x27;NSWindow ?Frame&#x27;</span> {} +
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> <code>-exec command {} +</code> will execute the <code>command</code>, replacing <code>{} +</code> by all the files that <code>find</code> found! See the
+<a href="https://linux.die.net/man/1/find"><code>find(1)</code></a> man page for more details.</p>
+</div>
+<p>Thanks to that, we uncover more locations! Here’s the exhaustive list of
+where I found those window position preferences:</p>
+<ul>
+<li><code>~/Library/Preferences/{appId}.plist</code></li>
+<li><code>~/Library/Saved Application State/{appId}.savedState/windows.plist</code></li>
+<li><code>~/Library/Containers/{appId}/Data/Library/Preferences/{appId}.plist</code></li>
+<li><code>~/Library/Containers/{appId}/Data/Library/Saved Application State/{appId}.savedState/windows.plist</code></li>
+</ul>
+<p>Where <code>appId</code> is the application ID, aka its bundle identifier, e.g.
+<code>com.apple.mail</code> for Apple Mail.</p>
+<h2 id="resetting-the-window-position" tabindex="-1"><a class="header-anchor" href="#resetting-the-window-position"><span>Resetting the window position</span></a></h2>
+<p>Now you were able to locate the preferences file for your app’s window
+location, you can reset it! There’s a few ways.</p>
+<p>For the ones in <code>Prefererences</code>, this is typically managed (and cached)
+by the <code>defaults</code> command. The cached part is important: while you can
+manually edit or remove those files, your changes are more likely to be
+ignored until you reboot. To avoid that, use
+<a href="https://www.unix.com/man-page/osx/1/defaults/"><code>defaults(1)</code></a> to edit
+them.</p>
+<p>For Activity Monitor, that would be:</p>
+<pre><code class="hljs language-sh">defaults delete ~/Library/Preferences/com.apple.ActivityMonitor.plist <span class="hljs-string">&#x27;NSWindow Frame main window&#x27;</span>
+</code></pre>
+<p>Which is equivalent to:</p>
+<pre><code class="hljs language-sh">defaults delete com.apple.ActivityMonitor <span class="hljs-string">&#x27;NSWindow Frame main window&#x27;</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> this works even for containerized apps like Apple Mail:</p>
+<pre><code class="hljs language-sh">defaults delete com.apple.mail
+</code></pre>
+<p>Because no key was passed, it’ll delete all the preferences. But either
+way, it’ll know to target
+<code>~/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist</code>.</p>
+</div>
+<p>As for the <code>Saved Application State</code> files, they don’t seem to be
+cached, and they’re definitely not editable with the <code>defaults</code> command,
+so feel free to remove them, or edit them with your favorite <code>plist</code>
+editor!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/macos-reset-app-window-size-position.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

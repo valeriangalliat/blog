@@ -5,10 +5,97 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-20T18:46:00.589Z</updated>
+  <updated>2023-04-20T21:45:20.828Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>macOS reset app window to default size and position</title>
+    <link href="https://www.codejam.info/2023/04/macos-reset-app-window-size-position.html" />
+    <id>https://www.codejam.info/2023/04/macos-reset-app-window-size-position.html</id>
+    <updated>2023-04-20T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Maybe it’s because I’m a bit of a perfectionist, but I sometimes like to
+reset an app’s window to its default size and position. It looks like
+I’m <a href="https://superuser.com/q/1485027">definitely</a>
+<a href="https://apple.stackexchange.com/q/195479/452681">not</a>
+<a href="https://discussions.apple.com/thread/250618907">the</a>
+<a href="https://www.reddit.com/r/MacOS/comments/hbbg7z/reset_default_window_positionsize_in_catalina/">only one</a>.</p>
+<p>The summary of the above links is that the window information is usually
+stored in <code>~/Library/Preferences</code> or <code>~/Library/Saved Application State</code>, and you can get away with removing the matching application
+preferences files in one of those locations, or carefully editing it to
+remove <em>just</em> the window position if that’s what you want.</p>
+<p>This is generally true, but not all the time (as shown in the
+<a href="https://apple.stackexchange.com/a/195494/452681">case of the Mail app</a>).</p>
+<p>This means this solution isn’t perfect. Did I say I was a perfectionist?</p>
+<h2 id="finding-every-window-position-preferences" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-reset-app-window-size-position.html#finding-every-window-position-preferences"><span>Finding <em>every</em> window position preferences</span></a></h2>
+<p>From the files we could find from the earlier solution, we can see that
+the window position is either in a <code>NSWindowFrame</code> key, or a key that
+starts with <code>NSWindow Frame</code>, e.g. for Activity Monitor and Finder:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">plutil -p ~/Library/Preferences/com.apple.ActivityMonitor.plist | grep NSWindow | grep Frame</span>
+  &quot;NSWindow Frame main window&quot; =&gt; &quot;161 208 960 640 0 0 1728 1079 &quot;
+<span class="hljs-meta prompt_">
+$ </span><span class="language-bash">plutil -p ~/Library/Saved\ Application\ State/com.apple.finder.savedState/windows.plist | grep NSWindow | grep Frame</span>
+    &quot;NSWindowCloseButtonFrame&quot; =&gt; &quot;{{19, 876}, {14, 16}}&quot;
+    &quot;NSWindowFrame&quot; =&gt; &quot;42 1193 1652 910 -87 1117 1920 1055 &quot;
+    &quot;NSWindowMiniaturizeButtonFrame&quot; =&gt; &quot;{{39, 876}, {14, 16}}&quot;
+    &quot;NSWindowZoomButtonFrame&quot; =&gt; &quot;{{59, 876}, {14, 16}}&quot;
+</code></pre>
+<p>Moreover, this setting is always stored in a <code>plist</code> file, the property
+list file that macOS apps store their preferences in.</p>
+<p>So we can try and find for those keys in all <code>plist</code> files in the whole
+<code>~/Library</code>!</p>
+<pre><code class="hljs language-sh">find ~/Library -<span class="hljs-built_in">type</span> f -name <span class="hljs-string">&#x27;*.plist&#x27;</span> -<span class="hljs-built_in">exec</span> grep -E <span class="hljs-string">&#x27;NSWindow ?Frame&#x27;</span> {} +
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> <code>-exec command {} +</code> will execute the <code>command</code>, replacing <code>{} +</code> by all the files that <code>find</code> found! See the
+<a href="https://linux.die.net/man/1/find"><code>find(1)</code></a> man page for more details.</p>
+</div>
+<p>Thanks to that, we uncover more locations! Here’s the exhaustive list of
+where I found those window position preferences:</p>
+<ul>
+<li><code>~/Library/Preferences/{appId}.plist</code></li>
+<li><code>~/Library/Saved Application State/{appId}.savedState/windows.plist</code></li>
+<li><code>~/Library/Containers/{appId}/Data/Library/Preferences/{appId}.plist</code></li>
+<li><code>~/Library/Containers/{appId}/Data/Library/Saved Application State/{appId}.savedState/windows.plist</code></li>
+</ul>
+<p>Where <code>appId</code> is the application ID, aka its bundle identifier, e.g.
+<code>com.apple.mail</code> for Apple Mail.</p>
+<h2 id="resetting-the-window-position" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-reset-app-window-size-position.html#resetting-the-window-position"><span>Resetting the window position</span></a></h2>
+<p>Now you were able to locate the preferences file for your app’s window
+location, you can reset it! There’s a few ways.</p>
+<p>For the ones in <code>Prefererences</code>, this is typically managed (and cached)
+by the <code>defaults</code> command. The cached part is important: while you can
+manually edit or remove those files, your changes are more likely to be
+ignored until you reboot. To avoid that, use
+<a href="https://www.unix.com/man-page/osx/1/defaults/"><code>defaults(1)</code></a> to edit
+them.</p>
+<p>For Activity Monitor, that would be:</p>
+<pre><code class="hljs language-sh">defaults delete ~/Library/Preferences/com.apple.ActivityMonitor.plist <span class="hljs-string">&#x27;NSWindow Frame main window&#x27;</span>
+</code></pre>
+<p>Which is equivalent to:</p>
+<pre><code class="hljs language-sh">defaults delete com.apple.ActivityMonitor <span class="hljs-string">&#x27;NSWindow Frame main window&#x27;</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> this works even for containerized apps like Apple Mail:</p>
+<pre><code class="hljs language-sh">defaults delete com.apple.mail
+</code></pre>
+<p>Because no key was passed, it’ll delete all the preferences. But either
+way, it’ll know to target
+<code>~/Library/Containers/com.apple.mail/Data/Library/Preferences/com.apple.mail.plist</code>.</p>
+</div>
+<p>As for the <code>Saved Application State</code> files, they don’t seem to be
+cached, and they’re definitely not editable with the <code>defaults</code> command,
+so feel free to remove them, or edit them with your favorite <code>plist</code>
+editor!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>macOS won’t sleep from the Apple menu</title>
     <link href="https://www.codejam.info/2023/04/macos-wont-sleep.html" />
@@ -3178,226 +3265,6 @@ learnt quite a bit about HTTP/2 which I wasn’t really up-to-date with.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1532007358225862657">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Best GoPro mount position for skiing</title>
-    <link href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html" />
-    <id>https://www.codejam.info/2022/05/best-gopro-position-skiing.html</id>
-    <updated>2022-05-25T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>After a long journey figuring how to <a href="https://www.codejam.info/2022/05/gopro-canadian-winter.html">prevent my GoPro HERO5 from dying in cold weather</a>
-(so basically, during all of the ski season 🙄), it was time for me to
-find the best mount point for recording POV skiing videos!</p>
-<h2 id="helmet-top" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#helmet-top"><span>Helmet top</span></a></h2>
-<p>This is what seems to be the most common place to mount a GoPro for
-winter sports. Still, there’s many ways to mount a GoPro on top of a
-helmet, and it will vary on the kind of helmet you have, and how much
-you’re willing to trade convenience for better video quality.</p>
-<p>The shape of your helmet might not allow you to stick a GoPro mount
-anywhere, because of vents (and the switch to open or close them), and
-shape variations like insets and other non-smooth cuts. So you might not
-have that much choice for a solid mount.</p>
-<p>If you do though, here’s the tradeoffs:</p>
-<ul>
-<li>
-<p>If you mount it <strong>at the frontmost part</strong>, you’re going to get a more
-immersive point of view, but the GoPro will be in the way of your
-goggles, so you can’t put them up on your helmet while the GoPro is
-mounted there. Not super convenient.</p>
-<p>Also I found that this was putting quite a bunch of weight towards the
-front of my helmet and it was constantly pushing it down. The pressure
-around my nose was a bit uncomfortable and most importantly, it kept
-slipping down as I was skiing, especially during big shocks. You might
-get better results depending on your helmet/goggles combination, but
-it wasn’t very successful for me.</p>
-</li>
-<li>
-<p>If you put it <strong>fully on top</strong>, it will be more balanced while skiing
-(although I still have the same slipping issue as before, to a lesser
-extent), but the point of view will be a bit high. You don’t see the
-skis as much, and if you point it down too much, you will start seeing
-a bit of the helmet at the bottom of the frame.</p>
-</li>
-<li>
-<p>Somewhere <strong>in between</strong>, you should still have the option to put your
-goggles up on your helmet without bothering the GoPro. The point of
-view is not bad, although you might risk seeing a bit of the helmet at
-the bottom of the frame. It will still put most of the weight on the
-front of the helmet so that might be an issue for comfort depending on
-your gear.</p>
-</li>
-</ul>
-<p>With the GoPro on top of the helmet, it’s also more prone to taking the
-wind, which can get tiring for your neck after a while.</p>
-<p>One of the best advantages of a helmet-mounted GoPro is that it moves
-with your face! Meaning that when you look one way or another, the
-camera will follow you, making it easy to show action happening left and
-right.</p>
-<p>The problem is that it will <em>always</em> move with your head, including when
-you check your surroundings and behind you before changing directions.
-For me, this happens much more often than when I want to show on camera
-something that’s not in front of me. And those quick pans are not
-usually desirable.</p>
-<h2 id="helmet-side" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#helmet-side"><span>Helmet side</span></a></h2>
-<p>I loved that point of view <a href="https://youtu.be/o0Y1C88BhdY">on my motorcycle helmet</a>.
-You can get the GoPro exactly at your eye level which gives one of the
-best POV styles in my opinion, although the side of the helmet might be
-in the frame, and you’ll see the “clear” side wider than the helmet
-side.</p>
-<p>From my motorcycle experience with a side mount, it was definitely not
-as tiring for the neck than a top mount is. Seems that my neck is
-stronger for compensating horizontal rotation than vertical inclination.
-😆</p>
-<p>But the biggest problem in the case of a ski helmet is that a side mount
-will be <strong>in the way of the strap of your goggles</strong>!</p>
-<p>Depending on the shape of your helmet you might find a way to make this
-work, but I couldn’t manage it on my own helmet. Too bad.</p>
-<h2 id="chest-mount" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#chest-mount"><span>Chest mount</span></a></h2>
-<p>When I found <a href="https://youtu.be/pXfNA-xqETA">this video</a> after hours
-(days…) of research about <a href="https://www.codejam.info/2022/05/gopro-canadian-winter.html">how to keep the GoPro alive in cold temperature</a>,
-they also mentioned their chest mount setup.</p>
-<p>It’s something that was quite new to me, I’ve seen very little chest
-mount ski videos online in the past, and I really liked the look. So I
-<a href="https://amzn.to/3sXrOcR">got one for myself</a>.</p>
-<p>It’s a bit lower so you can see the skis really well, while still having
-the whole landscape in the frame. You also see a bit the hands with the
-poles on the sides and that’s quite a cool view. You can even see the
-knees at rare occasions e.g. on really bumpy parts.</p>
-<p>Overall, I find it <strong>even more immersive</strong> than a helmet mount!</p>
-<p>But because it’s chest mounted, <strong>you can’t as easily turn to the
-sides</strong> to show some action happening around, you’ll always see pretty
-much just what’s in front where your body is facing. You can try turning
-your chest a bit to the sides but the effect is very limited compared to
-turning your head.</p>
-<p>It’s not something that I need a lot, so no big deal for me. Actually it
-can even be seen as <strong>a feature</strong>: you can freely look around while
-skiing without worrying about the camera moving in all directions and
-making you nauseous when you watch it!</p>
-<p>The chest mount gives more stable results than a helmet mount especially
-on really shaky and bumpy slopes, and in the end I find the chest mount
-footage smoother and more enjoyable to watch.</p>
-<p>But the biggest thing for me was that the chest mount is <strong>really
-comfortable</strong>. Having the extra weight of the GoPro on my chest makes
-little to no difference. I can ski with a chest mount GoPro all day
-without even noticing it’s there!</p>
-<p>It’s also easier to take off and on from its mount because it’s right in
-front of you and you can see it. When it’s on your head, finding the
-hole for the screw can be quite tricky, although after a few runs you
-kinda get a sense for it. 😏</p>
-<h2 id="pros-and-cons-table" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#pros-and-cons-table"><span>Pros and cons table</span></a></h2>
-<p>To summarize, I’ll compare those 3 options with a number of criteria:</p>
-<ul>
-<li><strong>POV:</strong> how realistic is the point of view footage.</li>
-<li><strong>Compatibility:</strong> can you use it with most gear or is it tricky?</li>
-<li><strong>Comfort:</strong> how comfortable, or tiring is it.</li>
-<li><strong>Maneuverability:</strong> is it easy to take off and on?</li>
-<li><strong>Look around:</strong> do the camera follow you when you look around?</li>
-<li><strong>Stability:</strong> how stable is the footage.</li>
-</ul>
-<table>
-<thead>
-<tr>
-<th></th>
-<th>Helmet top</th>
-<th>Helmet side</th>
-<th>Chest</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>POV</td>
-<td>★★★★☆</td>
-<td>★★★★☆</td>
-<td>★★★★☆</td>
-</tr>
-<tr>
-<td>Compatibility</td>
-<td>★★★☆☆</td>
-<td>★☆☆☆☆</td>
-<td>★★★★★</td>
-</tr>
-<tr>
-<td>Comfort</td>
-<td>★☆☆☆☆</td>
-<td>★★★☆☆</td>
-<td>★★★★★</td>
-</tr>
-<tr>
-<td>Maneuverability</td>
-<td>★★★☆☆</td>
-<td>★★★☆☆</td>
-<td>★★★★★</td>
-</tr>
-<tr>
-<td>Look around</td>
-<td>★★★★★</td>
-<td>★★★★★</td>
-<td>★☆☆☆☆</td>
-</tr>
-<tr>
-<td>Stability</td>
-<td>★★★☆☆</td>
-<td>★★★☆☆</td>
-<td>★★★★☆</td>
-</tr>
-</tbody>
-</table>
-<p>The helmet top POV is the most conventional, but <strong>only when the mount
-it put at the frontmost part of the helmet</strong>. If it’s put higher, it
-quickly feels too high and loses some of its immersiveness, and you risk
-seeing a bit of the helmet at the bottom of the frame.</p>
-<p>The side mount is a more typical kind of POV that might not be to the
-taste of everyone, but I personally really like it. Same goes for the
-chest mount.</p>
-<p>The comfort of a top mount might be better with your particular
-helmet/goggles combination but for me it was a no-no. Also if you want
-to put the mount at the frontmost part, which is where it looks the
-best, you lose the ability to put your goggles up on your helmet, and
-I find that quite annoying.</p>
-<p>Still better than the side mount where it’s basically incompatible with
-having a goggles strap, but might work for you if your helmet has a
-built-in visor.</p>
-<p>The chest mount won’t follow your face when you look around, so you
-might not be able to capture a sudden event around you where you’re not
-directly facing. But we’ve seen this also gives a much more stable image
-and lets you freely move your head around (e.g. for safety) without
-making your viewer nauseous.</p>
-<p>When I’m not recording, I was wondering how annoying it would be to wear
-the chest strap, and if I needed to take it off and on all the time. It
-turns out the chest strap is really not a big deal, I can wear it all
-day long without even noticing it’s there.</p>
-<h2 id="what-about-the-field-of-view" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#what-about-the-field-of-view"><span>What about the field of view?</span></a></h2>
-<p>In all cases, SuperView. While in my <a href="https://www.codejam.info/2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.html">my GoPro settings post</a>
-I said I prefer wide to SuperView, skiing is the exception.</p>
-<p>When shooting POV skiing in anything else than SuperView, you’re mostly
-just gonna see the snow and little to nothing of the landscape in front
-of and around you.</p>
-<p>SuperView all the way, trust me.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html#conclusion"><span>Conclusion</span></a></h2>
-<p>At the end of the day, the <a href="https://amzn.to/3sXrOcR">chest mount</a> won
-for me: it’s by far <strong>the most comfortable and practical solution</strong>, so
-that the fact I’m recording a video doesn’t impact my skiing experience
-whatsoever.</p>
-<p>This is a huge deal for me. If recording a video takes effort and
-negatively affects my skiing, I’m less likely to do it, and at the end
-of the day that might make me miss some runs that would have been really
-cool to have on video. With a chest mount, especially now my GoPro can
-<a href="https://www.codejam.info/2022/05/gopro-canadian-winter.html">handle the cold</a>, I can record liberally
-while still having a great time. After all, I’m here <strong>mostly to ski,
-not just to record a video</strong>.</p>
-<p>On top of that, I like the chest mount POV quite a lot, despite being a
-bit unconventional. I find it very immersive, and we get a great view of
-the skis, the slope and the landscape around, all at the same time.</p>
-<p>As a bonus, it seems my chest is better at absorbing shocks and
-stabilizing footage than my head is. And the footage is smoother overall
-because my chest is not moving as much as my head while skiing.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -264,6 +264,12 @@ iframe {
 .float-inner {
     overflow: hidden;
 }
+
+/* In `console` code that contains both the prompt, command and output,
+ * prevent selection on the prompt to make copy/paste easier. */
+.hljs-meta.prompt_ {
+    user-select: none;
+}
 .header-anchor {
     color: var(--color-fg-default);
     margin-left: -1.5ch;

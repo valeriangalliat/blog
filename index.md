@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
 * [macOS screenshot: capture selected window but for dialogs](2023/04/macos-screenshot-dialog.md) <small>April 13, 2023</small>
 * [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
 * [Configuring a GCP Pub/Sub dead letter queue with Pulumi](2023/04/gcp-pubsub-dlq-pulumi.md) <small>April 9, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 * [Embedding high DPI screenshots at normal size in HTML](2023/04/high-dpi-screenshot-size-html.md) <small>April 2, 2023</small>
 * [Google Cloud Functions with a static IP: a guide to high throughput NAT](2023/03/cloud-functions-static-ip-nat.md) <small>March 16, 2023</small>
-* [OVH email redirect causes SPF check failure](2023/02/ovh-email-redirect-spf-failure.md) <small>February 26, 2023</small>
 
 [All the posts](posts.md)
 

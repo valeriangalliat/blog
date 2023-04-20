@@ -5,10 +5,209 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-15T23:20:05.067Z</updated>
+  <updated>2023-04-20T15:59:07.886Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>macOS won’t sleep from the Apple menu</title>
+    <link href="https://www.codejam.info/2023/04/macos-wont-sleep.html" />
+    <id>https://www.codejam.info/2023/04/macos-wont-sleep.html</id>
+    <updated>2023-04-20T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>This one has been bugging me for a while now and I’m so glad I finally
+found the cause.</p>
+<p>It was <strong>so stupid</strong>: when I clicked <strong>Sleep</strong> in the Apple menu to
+manually put my Mac to sleep, I was leaving my fingers on the trackpad
+for a fraction of a second, and that “trackpad activity” caused it to
+instantly wake up! 🤦‍♀️</p>
+<p>If that was your issue as well, enjoy, you can stop reading here. In
+case you’re bored though, here’s the full story.</p>
+<h2 id="external-monitors-laptop-lid-and-sleep" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#external-monitors-laptop-lid-and-sleep"><span>External monitors, laptop lid, and sleep</span></a></h2>
+<p>Before I got my external monitor, I was never putting my Mac to sleep
+<em>explicitly</em>. I just closed the lid and that was it.</p>
+<p>But with an external monitor connected, it’s another story.</p>
+<p>This <a href="https://apple.stackexchange.com/q/18037/452681">goes back to 2011</a>,
+with Mountain Lion. Before then, on Snow Leopard, closing the lid of
+your MacBook was putting it to sleep, regardless whether or not an
+external monitor was connected. Since Mountain Lion though, doing so
+puts your MacBook in clamshell mode, where the external screen becomes
+your primary monitor!</p>
+<p>There’s essentially two groups of people when it comes to closing the
+laptop with an external screen connected: the ones who want it to sleep
+and the ones who want it to go in clamshell mode.</p>
+<p>To be fair I could see myself leaning one way or the other depending on
+what I want to do! We can’t have both at the same time, and the option
+that’s not the default will have added friction.</p>
+<p>When sleep was the default and you wanted to close your lid to go in
+clamshell mode, you had to:</p>
+<ol>
+<li>Close the lid and let your laptop go to sleep.</li>
+<li>Wake it up with your external mouse/keyboard.</li>
+</ol>
+<p>With clamshell being the default, if you want to sleep, you have to:</p>
+<ol>
+<li>Unplug the monitor.</li>
+<li>Close the lid.</li>
+<li>Plug the monitor again if you were also charging through it.</li>
+</ol>
+<p>Or even better:</p>
+<ol>
+<li>Click <strong>Sleep</strong> in the Apple menu.</li>
+<li>Close the lid.</li>
+</ol>
+<p>That last one is acceptable to me, except at first, it didn’t seem to
+work!</p>
+<h2 id="waking-up-right-away-after-manually-sleeping" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#waking-up-right-away-after-manually-sleeping"><span>Waking up right away after manually sleeping</span></a></h2>
+<p>After clicking <strong>Sleep</strong> in the Apple menu, both screens would turn off
+for like a second, and then they would come right up!</p>
+<p>Usually after trying a couple times, it would actually go to sleep, but
+I could never really understand why. This exactly
+<a href="https://discussions.apple.com/thread/253854954">what’s described in this Apple support thread</a>
+although it got locked for inactivity before ever being resolved.
+It just links to a Apple guide about <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp2995/mac">diagnosing sleep issues</a>
+with some generic advice but nothing useful to our case.</p>
+<p>The other day though even after 10 tries, it kept waking up right away,
+so I decided to dig into it.</p>
+<h2 id="the-technical-symptoms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#the-technical-symptoms"><span>The technical symptoms</span></a></h2>
+<p>When we look at the Activity Monitor app, I discovered we can show
+additional columns by right clicking on the columns header. In there, we
+have <strong>Preventing Sleep</strong>.</p>
+<figure class="center">
+  <img alt="Activity Monitor column settings" srcset="../../img/2023/04/activity-monitor-sleep.png 2x">
+</figure>
+<p>In my case, it was <code>WindowServer</code>, aka the macOS process responsible for
+managing windows, as well as <code>powerd</code>:</p>
+<figure class="center">
+  <img alt="Processes preventing sleep" srcset="../../img/2023/04/activity-monitor-prevent-sleep.png 2x">
+</figure>
+<div class="note">
+<p><strong>Note:</strong> the <strong>Energy</strong> tab in Activity Monitor is also useful to
+diagnose sleep issues! Not only it displays the power consumption
+details of the currently running apps, <em>but also of the ones that were
+previously closed</em>! And you can directly see if they’re preventing sleep
+or not.</p>
+<p>In our particular case though it wasn’t as useful as the <strong>CPU</strong> tab
+because it doesn’t show the system processes.</p>
+</div>
+<p>Moreover, we can use the <code>pmset</code> command (power management settings) to
+list if anything is preventing sleep (emphasis mine):</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">pmset -g assertions</span>
+Assertion status system-wide:
+   BackgroundTask                 0
+   ApplePushServiceTask           0
+<strong>   UserIsActive                   1</strong>
+   PreventUserIdleDisplaySleep    0
+   PreventSystemSleep             0
+   ExternalMedia                  0
+<strong>   PreventUserIdleSystemSleep     1</strong>
+   NetworkClientActive            0
+Listed by owning process:
+<strong>   powerd: PreventUserIdleSystemSleep named: "Powerd - Prevent sleep while display is on"
+   WindowServer: UserIsActive named: "com.apple.iohideventsystem.queue.tickle service:AppleHIDKeyboardEventDriverV2 product:Apple Internal Keyboard / Trackpad eventType:3"</strong>
+	Timeout will fire in 600 secs Action=TimeoutActionRelease
+</code></pre>
+<h2 id="researching-the-symptoms" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#researching-the-symptoms"><span>Researching the symptoms</span></a></h2>
+<p>Again, we saw that <code>powerd</code> and <code>WindowServer</code> are the culprits.</p>
+<ul>
+<li><code>powerd</code> has an assertion <code>PreventUserIdleSystemSleep</code> “prevent sleep
+while display is on”.</li>
+<li><code>WindowServer</code> has an assertion <code>UserIsActive</code> materialized by my own
+activity on the keyboard/trackpad.</li>
+</ul>
+<p>Looking for those leads us to a thread on Apple support about
+<a href="https://discussions.apple.com/thread/252520499"><code>WindowServer</code> preventing sleep mode</a>,
+but without any proper resolution: the problem just seems to have gone
+away for some people with an Apple update, but the messages are from a
+few years ago, and in my case I’m running the latest version of macOS.</p>
+<p>We also find two Reddit threads,
+<a href="https://www.reddit.com/r/MacOS/comments/n525zt/windowserver_preventing_my_mbp_from_sleeping/">one for <code>WindowServer</code></a>
+and <a href="https://www.reddit.com/r/macbook/comments/o6kwqp/sleep_prevented_by_powerd/">one for <code>powerd</code></a>,
+again both without a clear resolution.</p>
+<div class="note">
+<p><strong>Note:</strong> The <code>WindowServer</code> thread has <em>unrelated</em> resolutions where
+<code>sharingd</code> and <code>coreaudiod</code> were preventing sleep, which is not what
+we’re looking for here. That being said if you’re currently sharing
+files over the network, or you have music playing, this will prevent
+your Mac to sleep, so look into this first!</p>
+</div>
+<p>On top of that, I’m a bit dubious that <code>powerd</code> and <code>WindowServer</code> are
+the problem here. After all, “preventing sleep while display is on”
+sounds like a very reasonable thing to do, as well as preventing sleep
+when there’s activity on the keyboard/trackpad! And it would be
+logical to expect that manually putting the system to sleep would bypass
+those assertions anyway.</p>
+<p>This is confirmed by <a href="https://www.bravolt.com/post/why-won-t-my-computer-sleep">this post</a>:</p>
+<blockquote>
+<p><code>PreventUserIdleSystemSleep</code>: per the docs, the system should still sleep if you close your
+laptop’s lid, or sleep manually.</p>
+</blockquote>
+<p><a href="https://developer.apple.com/documentation/iokit/kiopmassertiontypepreventuseridlesystemsleep">The <code>PreventUserIdleSystemSleep</code> docs</a>:</p>
+<blockquote>
+<p>The system may still sleep for lid close, Apple menu, low battery, or
+other sleep reasons.</p>
+</blockquote>
+<p>It looks like we’re hitting a rock wall here. No appropriate solution
+out there, my only suspects turned out to be innocent, and I still can’t
+reliably put my Mac to sleep from the Apple menu!</p>
+<h2 id="digging-deeper" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#digging-deeper"><span>Digging deeper</span></a></h2>
+<p>We already tinkered with <code>pmset</code> earlier, and that’s what we’ll use to
+find more about the problem. We can use <code>pmset -g assertionslog</code> to show
+a log of the sleep assertions! Like <code>pmset -g assertions</code>, it’ll show
+the <em>current</em> assertions (whatever may be preventing sleep), but it will
+keep running and print any further event related to sleep (or not
+sleep)!</p>
+<p>So I can run <code>pmset -g assertionslog</code>, then click the <strong>Sleep</strong> button
+from the Apple menu, and see what’s in the logs when the screens light
+back up right away.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">pmset -g assertionslog</span>
+Showing assertion changes(Press Ctrl-T to log all currently held assertions):
+
+Action      Age       Type                          Name
+======      ========  ====                          ====
+Created     00:00:00  InternalPreventSleep          com.apple.powermanagement.darkwakelinger
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+<strong>Released    00:00:24  PreventUserIdleSystemSleep    Powerd - Prevent sleep while display is on</strong>
+Created     00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-lastpowerassertionlinger
+Released    00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-keepalive-push.apple.com
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-datareceived-push.apple.com
+Released    00:00:00  InteractivePushServiceTask    com.apple.apsd-keepalive-push.apple.com
+Released    00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+<strong>TurnedOn    00:00:00  UserIsActive                  com.apple.iohideventsystem.queue.tickle service:AppleMultitouchDevice product:Apple Internal Keyboard / Trackpad eventType:11</strong>
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+Created     00:00:00  PreventUserIdleSystemSleep    Powerd - Prevent sleep while display is on
+Created     00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+</code></pre>
+<p>I highlighted the parts that were relevant in our case. First, we can
+see that when we explicitly sleep, <code>powerd</code> do release its “prevent
+sleep while display is on” assertion, so it effectively doesn’t prevent
+sleep anymore!</p>
+<p><strong>However we see just after that <code>UserUsActive</code> was turned on, by
+“tickling” the trackpad. What?</strong></p>
+<h2 id="the-moment-it-clicked" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-wont-sleep.html#the-moment-it-clicked"><span>The moment it clicked 🤯</span></a></h2>
+<p>Then it occurred to me: when I click the <strong>Sleep</strong> button, my hand is,
+well, on the trackpad, and it stays there for a fraction of a second
+after I click. That’s a fraction of a second too long, because the mere
+fact of me removing my finger from the trackpad triggers an
+<code>UserIsActive</code> event which wakes the system right back up!</p>
+<p>So the solution is simple: I need to remove my finger from the trackpad
+<em>immediately</em> after I click the <strong>Sleep</strong> button!</p>
+<p>I couldn’t believe I spent hours to figure this out. I played around
+with it and it’s 100% that. The <strong>Sleep</strong> button actually works great,
+regardless whether or not I have an external display connected, as long
+as I don’t keep my finger on the damn trackpad for even a fraction of a
+second after clicking it. The gentlest touch will wake everything up
+right away, even if it happens half a second after clicking that button.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>macOS screenshot: capture selected window but for dialogs</title>
     <link href="https://www.codejam.info/2023/04/macos-screenshot-dialog.html" />
@@ -3195,167 +3394,6 @@ the skis, the slope and the landscape around, all at the same time.</p>
 <p>As a bonus, it seems my chest is better at absorbing shocks and
 stabilizing footage than my head is. And the footage is smoother overall
 because my chest is not moving as much as my head while skiing.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using a GoPro in the Canadian winter ❄️</title>
-    <link href="https://www.codejam.info/2022/05/gopro-canadian-winter.html" />
-    <id>https://www.codejam.info/2022/05/gopro-canadian-winter.html</id>
-    <updated>2022-05-25T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If you ever used a GoPro in a very cold weather, I’m talking -20 or even -30 °C,
-you probably noticed that its battery dies extremely fast. It’s
-sometimes a matter of <em>minutes</em> before it shuts off and refuses to start
-again until it’s warmed up again.</p>
-<p><a href="https://www.newschoolers.com/forum/thread/919646/GoPro-Hero8-Can-t-Handle-the-Cold">The</a>
-<a href="https://www.reddit.com/r/gopro/comments/kd48w1/gopro_hero_9_turns_off_at_cold_temperatures/">internet</a>
-<a href="https://www.quora.com/I-wanted-to-use-my-GoPro-Hero-4-today-while-snowboarding-but-the-battery-died-prematurely-due-to-the-cold-What-is-a-way-of-getting-around-this-issue">is</a>
-<a href="https://www.hardcoresledder.com/threads/gopro-camera-stops-in-cold-weather.620282/page-2">full</a>
-<a href="https://www.codejam.info/img/2022/05/gopro-cold-weather.png">of</a>
-<a href="https://youtu.be/WK6oi7x_sNU">people</a>
-<a href="https://youtu.be/eeI7bTvlXyg">having</a>
-<a href="https://youtu.be/noGoux3Yya4">issues</a>
-<a href="https://youtu.be/9SnPMeXVK3E">with</a>
-<a href="https://youtu.be/mU-FOWcvZNg">their</a>
-<a href="https://youtu.be/FlqLFW9DZVk">GoPro</a>
-(any version especially after HERO4) dying ridiculously fast after being used
-in cold weather, e.g. with winter sports.</p>
-<blockquote>
-<p>In any conditions below 20 °F / -10 °C my GoPro HERO8 renders itself
-utterly useless with the battery dying after about 10 minutes of
-filming.
-[<a href="https://www.newschoolers.com/forum/thread/919646/GoPro-Hero8-Can-t-Handle-the-Cold">Source</a>]</p>
-<p>I am skiing right now with a GoPro max. I can’t even take it outside before it dies. 6-7 degrees below Celsius.
-[<a href="https://www.reddit.com/r/gopro/comments/kd48w1/gopro_hero_9_turns_off_at_cold_temperatures/">Source</a>]</p>
-<p>Found the same problem on my HERO8 Black. Tested in -27 here in Norway and it died immediately after 2-3 clips.
-[<a href="https://youtu.be/FlqLFW9DZVk">Source</a>]</p>
-<p>Battery life has been a real pain for me as well using it during the
-winter months. I keep my camera and batteries in my pants pockets
-until I need them but even doing that might yield me five minutes of
-recording once it’s exposed to sub-zero temps.
-[<a href="https://youtu.be/FlqLFW9DZVk">Source</a>]</p>
-</blockquote>
-<p>And it seems like it’s <a href="https://forum.dji.com/forum.php?mod=viewthread&amp;tid=252188">not just a problem with GoPro</a>.</p>
-<blockquote>
-<p>When the temperature is below -10 ℃, DJI Action 2 cannot be turned on.</p>
-</blockquote>
-<p>There’s a number of tips, lots of them that I’m not really read for.</p>
-<blockquote>
-<p>When you finish your line, stop and take the GoPro off and put it in a
-pocket or backpack, take the battery out and put it back in warm
-pocket.
-[<a href="https://www.newschoolers.com/forum/thread/919646/GoPro-Hero8-Can-t-Handle-the-Cold">Source</a>]</p>
-<p>Definitely worth buying an extra set of batteries. I’ve gone through
-4+ on a good pow day.
-[<a href="https://www.newschoolers.com/forum/thread/919646/GoPro-Hero8-Can-t-Handle-the-Cold">Source</a>]</p>
-<p>If you want to capture winter sports such as skiing, snowboarding,
-sled dog racing etc., don’t waste your hard earned money on a Go Pro.
-[<a href="https://www.newschoolers.com/forum/thread/919646/GoPro-Hero8-Can-t-Handle-the-Cold">Source</a>]</p>
-</blockquote>
-<p>You also see people putting it in a <a href="https://youtu.be/9SnPMeXVK3E">foam cover</a>
-or others <a href="https://youtu.be/WK6oi7x_sNU">storing it in a bag</a> with <a href="https://youtu.be/eeI7bTvlXyg">hand
-or feet warmers</a> when not in use.</p>
-<h2 id="the-problem-with-the-default-case" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/gopro-canadian-winter.html#the-problem-with-the-default-case"><span>The problem with the default case</span></a></h2>
-<p>I was actually surprised the first time I mounted the GoPro on my
-helmet and I saw it die that fast. In the past I’ve used that same GoPro
-hand-held, an I remember being able to shoot quite a lot, and still had
-some battery left at the end of a ski day.</p>
-<p>So what could be the culprit? Sure when it’s mounted on my helmet I tend
-to leave it outside a bit more, whereas before I would store it in my
-pocket when it’s not recording, but I’ve made a habit of taking it off
-my helmet and putting it in my pocket during the lifts too, and still
-had the same issues.</p>
-<p>I’ve tried different pockets, jacket pocket, pants pocket, internal
-pocket, but it wouldn’t make much difference. It was always dead after a
-few hours of being outside, regardless if I was recording a lot or
-keeping it in my pocket most of the time.</p>
-<p>One day, I’ve even kept the GoPro in my pants pocket (turned out to be
-the warmest) for an hour or two before first using it, and it was
-<strong>already dead</strong> when I tried to record! WTF?</p>
-<p>So I decided to <strong>try something</strong> and just use it hand-held like I used
-to in the previous years, to see if my battery degraded significantly
-over time or something. <strong>Turned out it performed great</strong> and I could
-shoot plenty of hand-held shots the whole day without it dying at any
-point!</p>
-<p>Then I realized: the <em>only</em> difference between that day where it died in
-my pocket before I even use it, and that time where I could record
-hand-held all day, was <strong>the plastic case</strong>.</p>
-<p>When I plan to use it hand-held only, I don’t put it in the black
-plastic case that allows me to mount it.</p>
-<ul>
-<li>GoPro without case stored in pocket all day: <strong>full battery</strong>.</li>
-<li>GoPro with case stored in pocket all day: <strong>battery dead after a
-couple hours</strong>.</li>
-</ul>
-<p>Luckily if you have a newer GoPro, you don’t need a case to mount it
-anymore, so this shouldn’t be as much of a problem. But if using one of
-the GoPro that can only be mounted with a case, it’s a deal breaker!</p>
-<h2 id="introducing-the-super-suit" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/gopro-canadian-winter.html#introducing-the-super-suit"><span>Introducing the Super Suit</span></a></h2>
-<p>The <a href="https://amzn.to/3wP6ZkX">Super Suit</a>, alias “protection + dive
-housing” and now renamed to <a href="https://amzn.to/3LMDaaa">“protective housing + waterproof case”</a>
-for the newer models, is a transparent waterproof case for your GoPro.</p>
-<figure class="center">
-  <img alt="GoPro Super Suit" src="https://www.codejam.info/img/2022/05/gopro-super-suit.jpg">
-</figure>
-<p>It’s designed to be used for diving under water, but as
-<a href="https://www.hardcoresledder.com/threads/gopro-camera-stops-in-cold-weather.620282/post-20359482">some users</a>
-<a href="https://youtu.be/pXfNA-xqETA">pointed out</a>, it does a great job at
-protecting from the cold too. It seems this is a very little known trick
-for this problem!</p>
-<p>I <a href="https://amzn.to/3wP6ZkX">ordered one</a> and was shocked of the
-difference it made. <strong>I was no longer running out of battery during the
-day.</strong></p>
-<p>I could record as much as I wanted at any time of the day and the GoPro
-was always there and had plenty of battery life!</p>
-<p>I don’t record necessary <em>a lot</em> while I ski: between 30 minutes to 2
-hours of content during a 6 hours ski day. Still, <strong>before the Super
-Suit, the GoPro would die in the first 2 hours of skiing</strong>, regardless
-of whether it was recording or stored in my pocket the whole time.</p>
-<p>After the Super Suit, I can not only record <strong>over 2 hours of content</strong>,
-but I can do so <strong>over the course of the whole day</strong>, as long as I keep
-it in my pocket when it’s not recording!</p>
-<h2 id="impact-on-audio" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/gopro-canadian-winter.html#impact-on-audio"><span>Impact on audio</span></a></h2>
-<p>One of the known downsides of the waterproof housing is that it muffles
-the audio. It <em>does</em> sound like it’s inside a hermetic case.</p>
-<p>This is a problem especially for voice: my own voice is somewhat audible
-although not super crisp, but we can barely hear people talking around
-me. This leads to some scenes where it sounds like I’m talking alone. 😂</p>
-<p>But to be honest my HERO5 built-in audio has never been great, so if I
-want to record somewhat usable vocals, I need to bring a real microphone
-anyways. It seems that a lavalier microphone placed <em>inside</em> the collar
-of a ski jacket is fantastic at recording your voice while skiing,
-although I’ve never tried myself.</p>
-<p>For the ambient sound though, I’ve found the muffled sound of the Super
-Suit <strong>perfect to cancel the wind while skiing</strong>, so that we just hear
-the skis gliding on the snow. This is in fact <strong>much better</strong> than what
-we would otherwise get with the default case or no case (mostly wind,
-skis not so much), and is actually usable as is!</p>
-<p>I’ve also seen in <a href="https://youtu.be/pXfNA-xqETA">this video</a> a setup
-where they drilled tiny holes in the Super Suit around the different
-GoPro microphones locations, and covered them with a wind muff. It seems
-to give pretty solid results, but I don’t have the tools to do that
-myself, and I guess I like that I can actually use my Super Suit for
-diving if I want to. 😄</p>
-<h2 id="in-short" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/05/gopro-canadian-winter.html#in-short"><span>In short</span></a></h2>
-<p>GoPro dies in cold weather?</p>
-<ul>
-<li>Get a Super Suit, <a href="https://amzn.to/3wP6ZkX">Super Suit</a>,
-alias <a href="https://amzn.to/3LMDaaa">“protective housing + waterproof case”</a>
-for newer models.</li>
-<li>Keep the GoPro in your warmest pocket while not recording, don’t let
-it turned off mounted on your helmet all day!</li>
-<li>Record voices with a lavalier microphone if you need quality dialogue.</li>
-</ul>
-<p>I hope those tips help you to record more cool content while you’re
-outside in the cold winter! If you found this post useful, you might also
-like my article about <a href="https://www.codejam.info/2022/05/best-gopro-position-skiing.html">the best GoPro mount position for skiing</a>,
-as well as <a href="https://www.codejam.info/2020/06/my-settings-for-gopro-hero-2018-and-hero5-black.html">my GoPro settings</a>.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

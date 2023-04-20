@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>macOS won’t sleep from the Apple menu</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="macOS won’t sleep from the Apple menu">
+  <meta property="og:description" content="Especially with an external monitor. This one has been bugging me for a while now and I’m so glad I finally found the cause.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>macOS won’t sleep from the Apple menu</h1>
+<p class="tagline">Especially with an external monitor</p>
+<p class="date">April 20, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>This one has been bugging me for a while now and I’m so glad I finally
+found the cause.</p>
+<p>It was <strong>so stupid</strong>: when I clicked <strong>Sleep</strong> in the Apple menu to
+manually put my Mac to sleep, I was leaving my fingers on the trackpad
+for a fraction of a second, and that “trackpad activity” caused it to
+instantly wake up! 🤦‍♀️</p>
+<p>If that was your issue as well, enjoy, you can stop reading here. In
+case you’re bored though, here’s the full story.</p>
+<h2 id="external-monitors-laptop-lid-and-sleep" tabindex="-1"><a class="header-anchor" href="#external-monitors-laptop-lid-and-sleep"><span>External monitors, laptop lid, and sleep</span></a></h2>
+<p>Before I got my external monitor, I was never putting my Mac to sleep
+<em>explicitly</em>. I just closed the lid and that was it.</p>
+<p>But with an external monitor connected, it’s another story.</p>
+<p>This <a href="https://apple.stackexchange.com/q/18037/452681">goes back to 2011</a>,
+with Mountain Lion. Before then, on Snow Leopard, closing the lid of
+your MacBook was putting it to sleep, regardless whether or not an
+external monitor was connected. Since Mountain Lion though, doing so
+puts your MacBook in clamshell mode, where the external screen becomes
+your primary monitor!</p>
+<p>There’s essentially two groups of people when it comes to closing the
+laptop with an external screen connected: the ones who want it to sleep
+and the ones who want it to go in clamshell mode.</p>
+<p>To be fair I could see myself leaning one way or the other depending on
+what I want to do! We can’t have both at the same time, and the option
+that’s not the default will have added friction.</p>
+<p>When sleep was the default and you wanted to close your lid to go in
+clamshell mode, you had to:</p>
+<ol>
+<li>Close the lid and let your laptop go to sleep.</li>
+<li>Wake it up with your external mouse/keyboard.</li>
+</ol>
+<p>With clamshell being the default, if you want to sleep, you have to:</p>
+<ol>
+<li>Unplug the monitor.</li>
+<li>Close the lid.</li>
+<li>Plug the monitor again if you were also charging through it.</li>
+</ol>
+<p>Or even better:</p>
+<ol>
+<li>Click <strong>Sleep</strong> in the Apple menu.</li>
+<li>Close the lid.</li>
+</ol>
+<p>That last one is acceptable to me, except at first, it didn’t seem to
+work!</p>
+<h2 id="waking-up-right-away-after-manually-sleeping" tabindex="-1"><a class="header-anchor" href="#waking-up-right-away-after-manually-sleeping"><span>Waking up right away after manually sleeping</span></a></h2>
+<p>After clicking <strong>Sleep</strong> in the Apple menu, both screens would turn off
+for like a second, and then they would come right up!</p>
+<p>Usually after trying a couple times, it would actually go to sleep, but
+I could never really understand why. This exactly
+<a href="https://discussions.apple.com/thread/253854954">what’s described in this Apple support thread</a>
+although it got locked for inactivity before ever being resolved.
+It just links to a Apple guide about <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp2995/mac">diagnosing sleep issues</a>
+with some generic advice but nothing useful to our case.</p>
+<p>The other day though even after 10 tries, it kept waking up right away,
+so I decided to dig into it.</p>
+<h2 id="the-technical-symptoms" tabindex="-1"><a class="header-anchor" href="#the-technical-symptoms"><span>The technical symptoms</span></a></h2>
+<p>When we look at the Activity Monitor app, I discovered we can show
+additional columns by right clicking on the columns header. In there, we
+have <strong>Preventing Sleep</strong>.</p>
+<figure class="center">
+  <img alt="Activity Monitor column settings" srcset="../../img/2023/04/activity-monitor-sleep.png 2x">
+</figure>
+<p>In my case, it was <code>WindowServer</code>, aka the macOS process responsible for
+managing windows, as well as <code>powerd</code>:</p>
+<figure class="center">
+  <img alt="Processes preventing sleep" srcset="../../img/2023/04/activity-monitor-prevent-sleep.png 2x">
+</figure>
+<div class="note">
+<p><strong>Note:</strong> the <strong>Energy</strong> tab in Activity Monitor is also useful to
+diagnose sleep issues! Not only it displays the power consumption
+details of the currently running apps, <em>but also of the ones that were
+previously closed</em>! And you can directly see if they’re preventing sleep
+or not.</p>
+<p>In our particular case though it wasn’t as useful as the <strong>CPU</strong> tab
+because it doesn’t show the system processes.</p>
+</div>
+<p>Moreover, we can use the <code>pmset</code> command (power management settings) to
+list if anything is preventing sleep (emphasis mine):</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">pmset -g assertions</span>
+Assertion status system-wide:
+   BackgroundTask                 0
+   ApplePushServiceTask           0
+<strong>   UserIsActive                   1</strong>
+   PreventUserIdleDisplaySleep    0
+   PreventSystemSleep             0
+   ExternalMedia                  0
+<strong>   PreventUserIdleSystemSleep     1</strong>
+   NetworkClientActive            0
+Listed by owning process:
+<strong>   powerd: PreventUserIdleSystemSleep named: "Powerd - Prevent sleep while display is on"
+   WindowServer: UserIsActive named: "com.apple.iohideventsystem.queue.tickle service:AppleHIDKeyboardEventDriverV2 product:Apple Internal Keyboard / Trackpad eventType:3"</strong>
+	Timeout will fire in 600 secs Action=TimeoutActionRelease
+</code></pre>
+<h2 id="researching-the-symptoms" tabindex="-1"><a class="header-anchor" href="#researching-the-symptoms"><span>Researching the symptoms</span></a></h2>
+<p>Again, we saw that <code>powerd</code> and <code>WindowServer</code> are the culprits.</p>
+<ul>
+<li><code>powerd</code> has an assertion <code>PreventUserIdleSystemSleep</code> “prevent sleep
+while display is on”.</li>
+<li><code>WindowServer</code> has an assertion <code>UserIsActive</code> materialized by my own
+activity on the keyboard/trackpad.</li>
+</ul>
+<p>Looking for those leads us to a thread on Apple support about
+<a href="https://discussions.apple.com/thread/252520499"><code>WindowServer</code> preventing sleep mode</a>,
+but without any proper resolution: the problem just seems to have gone
+away for some people with an Apple update, but the messages are from a
+few years ago, and in my case I’m running the latest version of macOS.</p>
+<p>We also find two Reddit threads,
+<a href="https://www.reddit.com/r/MacOS/comments/n525zt/windowserver_preventing_my_mbp_from_sleeping/">one for <code>WindowServer</code></a>
+and <a href="https://www.reddit.com/r/macbook/comments/o6kwqp/sleep_prevented_by_powerd/">one for <code>powerd</code></a>,
+again both without a clear resolution.</p>
+<div class="note">
+<p><strong>Note:</strong> The <code>WindowServer</code> thread has <em>unrelated</em> resolutions where
+<code>sharingd</code> and <code>coreaudiod</code> were preventing sleep, which is not what
+we’re looking for here. That being said if you’re currently sharing
+files over the network, or you have music playing, this will prevent
+your Mac to sleep, so look into this first!</p>
+</div>
+<p>On top of that, I’m a bit dubious that <code>powerd</code> and <code>WindowServer</code> are
+the problem here. After all, “preventing sleep while display is on”
+sounds like a very reasonable thing to do, as well as preventing sleep
+when there’s activity on the keyboard/trackpad! And it would be
+logical to expect that manually putting the system to sleep would bypass
+those assertions anyway.</p>
+<p>This is confirmed by <a href="https://www.bravolt.com/post/why-won-t-my-computer-sleep">this post</a>:</p>
+<blockquote>
+<p><code>PreventUserIdleSystemSleep</code>: per the docs, the system should still sleep if you close your
+laptop’s lid, or sleep manually.</p>
+</blockquote>
+<p><a href="https://developer.apple.com/documentation/iokit/kiopmassertiontypepreventuseridlesystemsleep">The <code>PreventUserIdleSystemSleep</code> docs</a>:</p>
+<blockquote>
+<p>The system may still sleep for lid close, Apple menu, low battery, or
+other sleep reasons.</p>
+</blockquote>
+<p>It looks like we’re hitting a rock wall here. No appropriate solution
+out there, my only suspects turned out to be innocent, and I still can’t
+reliably put my Mac to sleep from the Apple menu!</p>
+<h2 id="digging-deeper" tabindex="-1"><a class="header-anchor" href="#digging-deeper"><span>Digging deeper</span></a></h2>
+<p>We already tinkered with <code>pmset</code> earlier, and that’s what we’ll use to
+find more about the problem. We can use <code>pmset -g assertionslog</code> to show
+a log of the sleep assertions! Like <code>pmset -g assertions</code>, it’ll show
+the <em>current</em> assertions (whatever may be preventing sleep), but it will
+keep running and print any further event related to sleep (or not
+sleep)!</p>
+<p>So I can run <code>pmset -g assertionslog</code>, then click the <strong>Sleep</strong> button
+from the Apple menu, and see what’s in the logs when the screens light
+back up right away.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">pmset -g assertionslog</span>
+Showing assertion changes(Press Ctrl-T to log all currently held assertions):
+
+Action      Age       Type                          Name
+======      ========  ====                          ====
+Created     00:00:00  InternalPreventSleep          com.apple.powermanagement.darkwakelinger
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+<strong>Released    00:00:24  PreventUserIdleSystemSleep    Powerd - Prevent sleep while display is on</strong>
+Created     00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-lastpowerassertionlinger
+Released    00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-keepalive-push.apple.com
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-datareceived-push.apple.com
+Released    00:00:00  InteractivePushServiceTask    com.apple.apsd-keepalive-push.apple.com
+Released    00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+<strong>TurnedOn    00:00:00  UserIsActive                  com.apple.iohideventsystem.queue.tickle service:AppleMultitouchDevice product:Apple Internal Keyboard / Trackpad eventType:11</strong>
+Created     00:00:00  InteractivePushServiceTask    com.apple.apsd-login
+Created     00:00:00  PreventUserIdleSystemSleep    Powerd - Prevent sleep while display is on
+Created     00:00:00  NoIdleSleepAssertion          com.apple.timed.ntp
+</code></pre>
+<p>I highlighted the parts that were relevant in our case. First, we can
+see that when we explicitly sleep, <code>powerd</code> do release its “prevent
+sleep while display is on” assertion, so it effectively doesn’t prevent
+sleep anymore!</p>
+<p><strong>However we see just after that <code>UserUsActive</code> was turned on, by
+“tickling” the trackpad. What?</strong></p>
+<h2 id="the-moment-it-clicked" tabindex="-1"><a class="header-anchor" href="#the-moment-it-clicked"><span>The moment it clicked 🤯</span></a></h2>
+<p>Then it occurred to me: when I click the <strong>Sleep</strong> button, my hand is,
+well, on the trackpad, and it stays there for a fraction of a second
+after I click. That’s a fraction of a second too long, because the mere
+fact of me removing my finger from the trackpad triggers an
+<code>UserIsActive</code> event which wakes the system right back up!</p>
+<p>So the solution is simple: I need to remove my finger from the trackpad
+<em>immediately</em> after I click the <strong>Sleep</strong> button!</p>
+<p>I couldn’t believe I spent hours to figure this out. I played around
+with it and it’s 100% that. The <strong>Sleep</strong> button actually works great,
+regardless whether or not I have an external display connected, as long
+as I don’t keep my finger on the damn trackpad for even a fraction of a
+second after clicking it. The gentlest touch will wake everything up
+right away, even if it happens half a second after clicking that button.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/04/macos-wont-sleep.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

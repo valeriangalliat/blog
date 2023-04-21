@@ -5,10 +5,341 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-04-20T21:45:20.828Z</updated>
+  <updated>2023-04-21T17:43:45.054Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Using zx with TypeScript, ESM and top-level await</title>
+    <link href="https://www.codejam.info/2023/04/zx-typescript-esm.html" />
+    <id>https://www.codejam.info/2023/04/zx-typescript-esm.html</id>
+    <updated>2023-04-21T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p><a href="https://github.com/google/zx"><code>zx</code></a> is a cool library by Google to
+write shell-like scripts in Node.js.</p>
+<p>As shown in their main example, you could have a file <code>myscript.mjs</code>:</p>
+<pre><code class="hljs language-js">#!<span class="hljs-regexp">/usr/</span>bin/env zx
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`cat package.json | grep name`</span>
+</code></pre>
+<p>And run it as <code>./myscript.mjs</code>, or even put it in your <code>PATH</code> and run it
+as <code>myscript.mjs</code>.</p>
+<p>This works if you installed <code>zx</code> globally. If you want to keep it local,
+<code>#!/usr/bin/env npx zx</code> should work with most <code>env</code> implementations.</p>
+<p>They say that you <em>have</em> to use a <code>.mjs</code> extension, and if you prefer
+<code>.js</code> or no extension at all, you won’t have access to top-level
+<code>await</code>, and you need to wrap your code in an
+<abbr title="Immediately invoked function expression">IIFE</abbr>:</p>
+<pre><code class="hljs language-js">#!<span class="hljs-regexp">/usr/</span>bin/env zx
+
+<span class="hljs-keyword">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">await</span> $<span class="hljs-string">`cat package.json | grep name`</span>
+}()
+</code></pre>
+<p><strong>This actually doesn’t appear to be necessary!</strong> It looks like when
+invoking the script via <code>zx</code>, it <em>forces</em> it to be interpreted as an
+ECMAScript module, even without extension, so the original example will
+work regardless of how the script is named. Sweet.</p>
+<p>What if you want TypeScript though? They just document that you need to
+explicitly import <code>zx</code> and use an IIFE again:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+<span class="hljs-comment">// Or</span>
+<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;zx/globals&#x27;</span>
+
+<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">await</span> $<span class="hljs-string">`ls -la`</span>
+}()
+</code></pre>
+<p>But they also tell you that you need to set <code>&quot;type&quot;: &quot;module&quot;</code> in your
+<code>package.json</code> and <code>&quot;module&quot;: &quot;esnext&quot;</code> in <code>tsconfig.json</code>. There’s no
+mention what shebang to use, nor what file extension.</p>
+<p>It turns out you don’t necessarily need to do all this. Let’s dig in the
+details.</p>
+<h2 id="shebang-for-a-typescript-script" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#shebang-for-a-typescript-script"><span>Shebang for a TypeScript script</span></a></h2>
+<p>It’s clear that <code>zx</code> doesn’t support TypeScript out of the box, so we
+can ditch the <code>#!/usr/bin/env -S npx zx</code> shebang. We need something that
+will parse TypeScript, and because we can’t rely on the <code>zx</code> wrapper,
+we’ll need to import <code>zx</code> explicitly. No problem.</p>
+<p>Let’s go with <a href="https://www.npmjs.com/package/ts-node"><code>ts-node</code></a> first,
+because it’s one of the most common options to do this.</p>
+<p>TypeScript defaults to transpiling to CommonJS modules, so we won’t be
+able to use top-level <code>await</code> out of the box. We also won’t be able to
+use an <code>import</code> statement (that TypeScript translates to <code>require</code>) to
+import <code>zx</code>, because <code>zx</code> is an ESM-only package. But we can use dynamic
+<code>import</code> for that:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node</span>
+
+<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
+  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+}()
+</code></pre>
+<p>You’ll also need to set <code>&quot;moduleResolution&quot;: &quot;nodenext&quot;</code> in the
+<code>compilerOptions</code> of your <code>tsconfig.json</code> for it to support dynamic
+imports like this, but you have to be careful, because this will change
+the settings for your whole app!</p>
+<p>Alternatively, you could put your script in a subdirectory, and have a
+dedicated <code>tsconfig.json</code> there, then you could set those settings
+locally to this subdirectory without affecting the rest of your app.</p>
+<p>The advantage of this method is that <strong>the extension doesn’t matter</strong>!
+You can have this script in <code>myscript.ts</code> but you can as well have it
+just <code>myscript</code> for being more command-looking. This a pretty good
+advantage of this solution as we’ll see later.</p>
+<div class="note">
+<p><strong>Note:</strong> keep in mind because this will run in whatever directory the
+script was run from, <code>npx</code> will try to install <code>ts-node</code> globally if
+you’re not running this from a directory where <code>ts-node</code> is part of the
+local modules.</p>
+<p>Most of the time this is fine, but if you want a script that can be
+called from anywhere, you would be better off using a wrapper shell
+script, like we’ll see below.</p>
+</div>
+<h2 id="configuring-typescript-in-the-shebang" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#configuring-typescript-in-the-shebang"><span>Configuring TypeScript in the shebang</span></a></h2>
+<p>Alternatively, we can pass <code>--compilerOptions</code> to <code>ts-node</code> directly in
+the shebang to avoid depending on a <code>tsconfig.json</code>. The problem is
+that there’s no cross-platform way to this (this is made harder by the
+fact we have to pass a JSON string).</p>
+<p>On macOS:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env npx ts-node --compilerOptions {&quot;moduleResolution&quot;:&quot;nodenext&quot;}</span>
+</code></pre>
+<p>On Linux:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;}&#x27;</span>
+</code></pre>
+<p>Notice how on macOS, the quotes of the JSON object were <em>not</em> escaped!
+Its implementation of  <code>env</code> doesn’t try to parse quotes in the first
+place, so we can (and need) to give them as is. This also means we can’t
+include spaces as the JSON would be split into multiple arguments.</p>
+<p>For Linux, we have to pass <code>-S</code> (makes <code>env</code> split arguments), but then
+it <em>does</em> support quoting and various escape sequences, so we <em>have</em> to
+add the quotes. macOS “supports” the <code>-S</code> option but currently it just
+ignores it and treats the rest of the string as it normally does.</p>
+<p>Sadly I’m not aware of a way to do this in a cross-platform way, without
+having to resort to a wrapper shell script. If you have a better option,
+let me know!</p>
+<p>Such a script would look like:</p>
+<pre><code class="hljs language-sh"><span class="hljs-meta">#!/bin/sh</span>
+
+<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>&quot;</span>
+npx ts-node --compilerOptions <span class="hljs-string">&#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;}&#x27;</span> myscript.ts
+</code></pre>
+<p>It would be in a <code>myscript</code> file next to <code>myscript.ts</code>, and you invoke
+it with <code>./myscript</code>.</p>
+<div class="note">
+<p>This will not preserve the <abbr title="Current working directory">CWD</abbr>
+information, because it <code>cd</code> into the script directory first. The
+advantage is that now <code>npx</code> will find your local version of <code>ts-node</code>
+regardless where you run the script from.</p>
+</div>
+<p>At that point you could even bypass <code>npx</code>, e.g. if your script is in a
+<code>bin</code> directory at the root of your project, you could run
+<code>../node_modules/.bin/ts-node</code> instead of <code>npx ts-node</code> and remove the
+extra latency from <code>npx</code>.</p>
+<p><strong>For the rest of this post I’ll user the Linux version of the shebang
+for simplicity. Adapt accordingly to your needs, either for macOS or
+using a script wrapper for portability.</strong></p>
+<h2 id="adding-esm-support" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#adding-esm-support"><span>Adding ESM support</span></a></h2>
+<p><strong>If you want to import other parts of your codebase, you should
+probably stick with the previous approach.</strong> I’ll continue by exploring
+options to make <em>this particular script</em> ESM, but keep in mind that if
+you import non-ESM parts of your application, this will confuse
+TypeScript (especially with default exports) and you’ll likely run into
+issues.</p>
+<p>If you don’t though, we have a few ways to force it to be ESM, so we can
+directly import <code>zx</code> and also use top-level <code>await</code>!</p>
+<p><code>ts-node</code> has a <code>--esm</code> option to parse the input as ECMAScript module,
+and even ships a <a href="https://github.com/TypeStrong/ts-node#esm"><code>ts-node-esm</code></a>
+executable to do the same thing.</p>
+<p>On top of that, we need to configure the TypeScript compiler to support
+ESM, which we do by adding the following to our <code>tsconfig.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;compilerOptions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;moduleResolution&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;nodenext&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;module&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;esnext&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;target&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;esnext&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>As we saw earlier, we can pass that to <code>ts-node</code> in a
+<code>--compilerOptions</code> flag. This gives us:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<p>We can now import <code>zx</code> directly and happily use to-level <code>await</code>, and
+get rid of that IIFE!</p>
+<p>One thing we notice right away though is that the <code>ts-node</code> ESM loader
+doesn’t let us use any extension (or in particular, no extension). <strong>It
+<em>needs</em> to be in a <code>.mts</code> file.</strong> This means no more command-looking
+script. It seems to be related to <a href="https://github.com/nodejs/node/issues/34049">this issue</a>
+on the Node.js side.</p>
+<h2 id="making-it-faster" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#making-it-faster"><span>Making it faster</span></a></h2>
+<p><code>ts-node</code> doesn’t have a reputation to be fast, actually quite the
+opposite. Its excuse is that it not only transpiles TypeScript to
+JavaScript, but also performs type checking.</p>
+<h2 id="using-ts-node-transpile-only" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-ts-node-transpile-only"><span>Using <code>ts-node --transpile-only</code></span></a></h2>
+<p>We can pass <code>--transpile-only</code> to skip the type checking part, which
+does improve the performance quite a bit:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --esm --transpile-only --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<p>This small example takes 500 ms to run on my machine, as opposed to 1
+second when it was doing type checking!</p>
+<pre><code class="hljs language-console">time ./myscript.mts
+1.61s user 0.13s system 152% cpu 1.137 total
+
+time ./myscript-transpile-only.mts
+0.48s user 0.09s system 96% cpu 0.587 total
+</code></pre>
+<p>It’s still relatively slow though, considering <a href="https://esbuild.github.io/">esbuild</a>
+takes 15 ms to transpile that file:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time node_modules/.bin/esbuild myscript.mts --target=node16</span>
+0.01s user 0.01s system 79% cpu 0.014 total
+</code></pre>
+<p>But for a fair comparison, we have to consider that <code>npx</code> adds a 200 ms
+overhead:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time npx esbuild myscript.mts --target=node16</span>
+0.21s user 0.04s system 111% cpu 0.227 total
+</code></pre>
+<h3 id="using-tsx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-tsx"><span>Using <code>tsx</code></span></a></h3>
+<p>Interestingly, there’s a cool project called <a href="https://github.com/esbuild-kit/tsx"><code>tsx</code></a>,
+which is TypeScript’s analogue to <code>npx</code>. And it uses esbuild in the
+background.</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx tsx</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<p>But we notice it’s not quite fast, it does barely better than <code>ts-node --transpile-only</code>:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
+0.42s user 0.08s system 120% cpu 0.413 total
+</code></pre>
+<p>There’s <a href="https://github.com/esbuild-kit/tsx/issues/167">an issue open for that</a>,
+and it seems that it’s because <code>tsx</code> target older Node.js versions in a
+way where it transpiles all the imported <code>node_modules</code> too! And it
+seems that there’s currently no way around this behavior.</p>
+<p>And again, this relies on a <code>.mts</code> extension being present for ESM
+support. And even if you go the CommonJS route, you’ll still need a
+<code>.ts</code> extension, unlike when using <code>ts-node</code>. It won’t work with
+extensionless scripts.</p>
+<h3 id="using-swc" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-swc"><span>Using SWC</span></a></h3>
+<p><a href="https://swc.rs/">SWC</a> is a “Rust-based platform for the web”, but
+really the part I care about is that it claims to transpile TypeScript
+to JavaScript <em>pretty damn fast</em>, just like esbuild.</p>
+<p>They provide <a href="https://github.com/swc-project/swc-node"><code>swc-node</code></a> to
+run TypeScript files with Node.js, which is exactly what we want. It’s
+not directly a command we can invoke unlike <code>ts-node</code>, instead we need
+to do:</p>
+<pre><code class="hljs language-sh">node --require @swc-node/register script.ts <span class="hljs-comment"># CJS</span>
+node --loader @swc-node/register/esm script.ts <span class="hljs-comment"># ESM</span>
+</code></pre>
+<p>So we can and that to our shebang!</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S node --loader @swc-node/register/esm</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<p>This is the fastest one so far!</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
+0.28s user 0.04s system 110% cpu 0.289 total
+</code></pre>
+<p>However, we have to consider that it uses <code>node --loader</code>
+instead of <code>npx</code> like the previous examples, and as we saw <code>npx</code> costs
+200 ms by itself.</p>
+<p>Also, even with today’s latest Node.js, custom ESM loaders are
+experimental, so running the script like this will show the following
+warning:</p>
+<pre><code class="hljs">(node:13239) ExperimentalWarning: Custom ESM Loaders is an experimental feature and might change at any time
+</code></pre>
+<p>Also you need to make sure your <code>tsconfig.json</code> contains <code>&quot;target&quot;: &quot;esnext&quot;</code>
+in <code>compilerOptions</code> otherwise SWC will not let you use top-level
+<code>await</code>. Unlike the previous options, we can’t customize this directly
+in the shebang.</p>
+<p>Lastly, we also need a <code>.mts</code> extension for this to work, like with all
+the ESM solutions so far.</p>
+<div class="note">
+<p><strong>Note:</strong> I couldn’t get <code>swc-node</code> to work with a CJS file, with the
+IIFE and dynamic <code>import</code>. Even with a <code>.swcrc</code>, which requires running
+your code as <code>SWCRC=true ./myscript.ts</code>, it keeps transpiling the
+dynamic <code>import</code> into a <code>require</code> statement, which is not supported by
+<code>zx</code>.</p>
+</div>
+<h3 id="using-swc-with-ts-node" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-swc-with-ts-node"><span>Using SWC with <code>ts-node</code></span></a></h3>
+<p>A cool surprised I found while writing this post is that <code>ts-node</code>
+actually have <a href="https://typestrong.org/ts-node/docs/swc/">first-class support for SWC</a>!</p>
+<p>You can simply use <code>ts-node --swc</code>, or set the following in your
+<code>tsconfig.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;ts-node&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;swc&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>In our initial example, this gives us:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
+  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+}()
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> we had to add <code>&quot;module&quot;: &quot;esnext&quot;</code> too, probably because
+<code>ts-node</code> and SWC have different defaults when it comes to this setting.</p>
+</div>
+<p>And for the ESM version:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#conclusion"><span>Conclusion</span></a></h2>
+<p>All things considered, my favorite option is the <code>ts-node</code> approach we
+started from but with a few tweaks that we learnt about along the way:
+plain <code>ts-node</code> in the default CommonJS environment, using an IIFE and
+dynamic <code>import</code>, but with the addition of <code>--compilerOptions</code> and
+<code>--swc</code> (or alternatively, <code>--transpile-only</code>) in the shebang:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
+  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+}()
+</code></pre>
+<ul>
+<li>We can configure TypeScript directly in the shebang, no need to
+maintain a separate <code>tsconfig.json</code> for our executable scripts.</li>
+<li>We can import any of our project TypeScript files with no CJS/ESM
+interoperability issues.</li>
+<li>It’s reasonably fast.</li>
+</ul>
+<p>The downside is that it’s not cross-platform, but we saw we can use a
+wrapper script to work around that if needed.</p>
+<p>And if I don’t need need to import anything local to my CommonJS
+project (or if I’m in a ESM project), I add <code>--esm</code> and <code>&quot;target&quot;: &quot;esnext&quot;</code>
+to benefit from top-level <code>await</code>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
+
+<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
+
+<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
+</code></pre>
+<p>Sweet!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>macOS reset app window to default size and position</title>
     <link href="https://www.codejam.info/2023/04/macos-reset-app-window-size-position.html" />
@@ -2866,405 +3197,6 @@ randomly opening in Photoshop again!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Empty body vs. no body in HTTP/2</title>
-    <link href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html" />
-    <id>https://www.codejam.info/2022/06/empty-body-no-body-http2.html</id>
-    <updated>2022-06-01T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p><abbr title="Today I learnt">TIL</abbr> there’s a (subtle) difference
-in HTTP/2 between sending an empty body, and sending no body at all.</p>
-<p>In this post we’ll look at <strong>how that can happen</strong>, how to <strong>test it
-with cURL</strong>, and the <strong>subtleties of HTTP/2</strong> that make this distinction
-possible.</p>
-<p>But as usual, I’ll start by telling you the story of how I ended up with
-such a hairy bug again <em>(I’m really, really good at getting myself in
-this kind of fucked up situations for some reason)</em>.</p>
-<h2 id="cloudflare-workers-and-the-content-length-header" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#cloudflare-workers-and-the-content-length-header"><span>Cloudflare Workers and the <code>Content-Length</code> header</span></a></h2>
-<p>At <a href="https://hookdeck.com/">Hookdeck</a>, we work heavily with <a href="https://workers.cloudflare.com/">Cloudflare
-Workers</a>. And we also work heavily with
-HTTP payloads.</p>
-<p>One thing we asserted in the past, while it doesn’t seem to be
-officially documented, is that Cloudflare computes the <code>Content-Length</code>
-header if necessary before hitting the worker.</p>
-<p>For example when sending a HTTP/1.1 <code>Transfer-Encoding: chunked</code> payload
-(typically not including <code>Content-Length</code>), Cloudflare <strong>buffers the
-whole body</strong> and sets the <code>Content-Length</code> header before calling the
-worker, despite that header not being set by the client!</p>
-<p>We observe a similar behavior in HTTP/2 (whose <code>DATA</code> frames
-<a href="https://stackoverflow.com/questions/62439557/are-chunk-extensions-supported-by-http-2-and-if-so-how">resemble chunked encoding quite a bit</a>),
-when the client omits the <code>Content-Length</code> header.</p>
-<div class="note">
-<p><strong>Note:</strong> even if we send a payload with an invalid <code>Content-Length</code>
-(e.g. claiming a size much smaller than what we actually send),
-Cloudflare catches it and refuses the request!</p>
-</div>
-<p>This is especially useful: because of that observation, we can actually
-trust the <code>Content-Length</code> header, and rely on it to decide what to do
-next in the worker.</p>
-<h2 id="the-mysterious-requests-without-content-length" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#the-mysterious-requests-without-content-length"><span>The mysterious requests without <code>Content-Length</code></span></a></h2>
-<p>How then, during an incident response, do I find myself dealing with
-<code>POST</code> requests that manifestly don’t have a <code>Content-Length</code> header?</p>
-<p>My blind guess was to look at empty payloads. It’s the only edge case I
-could think of that could, maybe, in some cases, result in Cloudflare
-not enforcing a <code>Content-Length</code> header.</p>
-<p>At first, I try the following:</p>
-<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
-  -X POST \
-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-  --data <span class="hljs-string">&#x27;&#x27;</span> \
-  --verbose
-</code></pre>
-<p>But I notice in the verbose logs that cURL nicely computed and sent
-<code>Content-Length: 0</code>. Luckily we can turn that off by passing an empty
-<code>Content-Length</code> header (which makes cURL omit the header altogether in
-its request):</p>
-<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
-  -X POST \
-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-  -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
-  --data <span class="hljs-string">&#x27;&#x27;</span> \
-  --verbose
-</code></pre>
-<p>But somehow, Cloudflare is still able to catch this and forces a
-<code>Content-Length: 0</code> to be passed to my worker.</p>
-<p>I try something else, which in my understanding <em>should</em> be the same
-thing (omitting the <code>--data</code> parameter altogether):</p>
-<pre><code class="hljs language-sh">curl https://events.hookdeck.com/e/source-id-goes-here \
-  -X POST \
-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-  --verbose
-</code></pre>
-<p>To my surprise, although the verbose logs from cURL look <em>identical</em>,
-<strong>this results in the request hitting my worker without a
-<code>Content-Length</code> header</strong>, bypassing Cloudflare’s “enforcement”. Bingo!</p>
-<p>This is a good step forward, but I’m even more confused. To my knowledge
-those two commands <em>should</em> result in the exact same HTTP requests over
-the wire. 🤔</p>
-<div class="note">
-<p><strong>Note:</strong> at that point I had a confirmation that having no
-<code>Content-Length</code> header here was, in fact, possible (in the case of some
-obscure empty payloads that are different from “normal” empty payloads
-<em>somehow</em>).</p>
-<p>I went on and made sure that the code could handle that, but I wasn’t
-exactly <em>satisfied</em>. The <em>“somehow”</em> part of my previous sentence was
-itching me in a particular manner.</p>
-</div>
-<h2 id="digging-deeper-with-trace" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#digging-deeper-with-trace"><span>Digging deeper with <code>--trace</code></span></a></h2>
-<p>I tried adding <code>--trace</code>, and <code>--trace-ascii</code> to the previous cURL
-commands, in order to dump the raw protocol data and compare it:</p>
-<pre><code class="hljs language-diff:sh"> curl https://events.hookdeck.com/e/source-id-goes-here \
-   -X POST \
-   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
-<span class="hljs-deletion">-  --data <span class="hljs-string">&#x27;&#x27;</span></span>
-<span class="hljs-addition">+  --data <span class="hljs-string">&#x27;&#x27;</span> \</span>
-<span class="hljs-addition">+  --trace empty-body.txt</span>
- 
- curl https://events.hookdeck.com/e/source-id-goes-here \
-   -X POST \
-<span class="hljs-deletion">-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span></span>
-<span class="hljs-addition">+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \</span>
-<span class="hljs-addition">+  --trace no-body.txt</span>
-</code></pre>
-<p>Then diffing it with:</p>
-<pre><code class="hljs language-sh">git diff --no-index empty-body.txt no-body.txt
-</code></pre>
-<p>(I like the output of <code>git diff</code> more than plain old
-<a href="https://linux.die.net/man/1/diff"><code>diff(1)</code></a>.)</p>
-<p>But this shows no relevant differences. Only the “SSL data” bits change,
-but those are unintelligible. It otherwise appears that cURL sends
-<em>exactly</em> the same thing.</p>
-<p>How in hell could Cloudflare distinguish those two different yet
-identical cURL invocations? <em>Hint: probably in the unintelligible
-bits…</em></p>
-<h2 id="what-about-http-1-1" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#what-about-http-1-1"><span>What about HTTP/1.1</span></a></h2>
-<p>So far, cURL defaulted to use HTTP/2, which is great. Maybe it’s a
-HTTP/2-specific thing? (I know, I kinda spoiled it in the title of this
-post.)</p>
-<p>I add <code>--http1.1</code> to the earlier cURL commands to try: both requests
-don’t have the <code>Content-Length</code> header after going through Cloudflare.
-Interesting.</p>
-<p>So there’s absolutely no difference between “no data” and “empty body”
-in HTTP/1.1, which makes a lot of sense based on my understanding of the
-HTTP protocol. There’s, finally, some sanity in this world.</p>
-<p>So my quest is now to figure <strong>how the f*** is Cloudflare able to
-distinguish between “no body” and “empty body” in HTTP/2 specifically</strong>.</p>
-<div class="note">
-<p><strong>Note:</strong> the attentive reader might have noticed that there’s virtually
-no business value in answering that question.</p>
-<p>I already knew a few ways to trigger an undefined <code>Content-Length</code> header,
-and that was enough information for me to fix the bug and replay
-whatever requests needed to.</p>
-<p>At that point I’m only trying to quench my thirst of knowledge for sheer
-pleasure.</p>
-</div>
-<h2 id="making-a-poc-in-c" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#making-a-poc-in-c"><span>Making a PoC in C</span></a></h2>
-<p>I decide to go a bit lower level and instead of using the cURL command,
-I make a C program using <code>libcurl</code> to try and reproduce that behavior.</p>
-<pre><code class="hljs language-c"><span class="hljs-meta">#<span class="hljs-keyword">include</span> <span class="hljs-string">&lt;curl/curl.h&gt;</span></span>
-
-<span class="hljs-type">int</span> <span class="hljs-title function_">main</span> <span class="hljs-params">(<span class="hljs-type">void</span>)</span> {
-    curl_global_init(CURL_GLOBAL_ALL);
-
-    CURL *curl = curl_easy_init();
-
-    curl_easy_setopt(curl, CURLOPT_URL, <span class="hljs-string">&quot;https://events.hookdeck.com/e/source-id-goes-here&quot;</span>);
-    curl_easy_setopt(curl, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_2TLS);
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, <span class="hljs-number">1</span>);
-
-    <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">curl_slist</span> *<span class="hljs-title">list</span> =</span> <span class="hljs-literal">NULL</span>;
-
-    <span class="hljs-built_in">list</span> = curl_slist_append(<span class="hljs-built_in">list</span>, <span class="hljs-string">&quot;Content-Type: text/plain&quot;</span>);
-    <span class="hljs-built_in">list</span> = curl_slist_append(<span class="hljs-built_in">list</span>, <span class="hljs-string">&quot;Content-Length:&quot;</span>);
-
-    curl_easy_setopt(curl, CURLOPT_HTTPHEADER, <span class="hljs-built_in">list</span>);
-
-    <span class="hljs-comment">// Empty body</span>
-    curl_easy_setopt(curl, CURLOPT_POSTFIELDS, <span class="hljs-string">&quot;&quot;</span>);
-
-    <span class="hljs-comment">// No body</span>
-    <span class="hljs-comment">// curl_easy_setopt(curl, CURLOPT_CUSTOMREQUEST, &quot;POST&quot;);</span>
-
-    curl_easy_perform(curl);
-
-    <span class="hljs-keyword">return</span> <span class="hljs-number">0</span>;
-}
-</code></pre>
-<p>Here, the <code>CURLOPT_POSTFIELDS</code> method will result in the “empty body”
-path (where Cloudflare can set <code>Content-Length: 0</code> by itself), while
-the “no body” version will let the request go through all the way
-without <code>Content-Length</code>.</p>
-<p>It can be compiled and run with:</p>
-<pre><code class="hljs language-sh">gcc test.c -o <span class="hljs-built_in">test</span> -lcurl
-./test
-</code></pre>
-<p>But this repro doesn’t really lead me anywhere. This is not
-low-level enough.</p>
-<h2 id="digging-even-deeper-with-netcat" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#digging-even-deeper-with-netcat"><span>Digging even deeper with netcat</span></a></h2>
-<p>If I can’t find on the client side what distinguishes those requests,
-let’s analyze the server side.</p>
-<p>My first bet is to use <a href="https://linux.die.net/man/1/nc"><code>nc(1)</code></a>
-(netcat) in listen mode and send my two <code>curl</code> requests to it. Then I’ll
-be able to see the raw data sent by cURL the underlying socket and
-hopefully tell them apart:</p>
-<pre><code class="hljs language-sh">nc -l -k -p 8888
-</code></pre>
-<p>(This makes netcat listen on port 8888: <code>-l</code> to listen, <code>-k</code> to keep
-listening after the first connection, and <code>-p</code> to specify the port.)</p>
-<p>Then I can hit it:</p>
-<pre><code class="hljs language-diff:sh"><span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
-<span class="hljs-addition">+curl http://localhost:8888/ \</span>
-   -X POST \
-   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
-   --data <span class="hljs-string">&#x27;&#x27;</span>
- 
-<span class="hljs-deletion">-curl https://events.hookdeck.com/e/source-id-goes-here \</span>
-<span class="hljs-addition">+curl http://localhost:8888/ \</span>
-   -X POST \
-   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span>
-</code></pre>
-<p>Sadly this results in the same HTTP/1.1 request in both cases:</p>
-<pre><code class="hljs language-http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/</span> <span class="hljs-meta">HTTP/1.1</span>
-<span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>localhost:8888
-<span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>&lt;3
-<span class="hljs-attribute">Accept</span><span class="hljs-punctuation">: </span>*/*
-<span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>text/plain
-
-</code></pre>
-<p>(Yes <a href="https://github.com/valeriangalliat/dotfiles/blob/40ca54c1d6fdfca33e8dcc4e56807f9bf060de8e/net/curlrc#L1">my user agent is a heart in ASCII</a>,
-what r u gonna do?)</p>
-<p>And adding the <code>--http2</code> flag makes cURL ask for an upgrade to HTTP/2,
-but can’t just send its HTTP/2 traffic right through:</p>
-<pre><code class="hljs language-http"><span class="hljs-keyword">POST</span> <span class="hljs-string">/</span> <span class="hljs-meta">HTTP/1.1</span>
-<span class="hljs-attribute">Host</span><span class="hljs-punctuation">: </span>localhost:8888
-<span class="hljs-attribute">User-Agent</span><span class="hljs-punctuation">: </span>&lt;3
-<span class="hljs-attribute">Accept</span><span class="hljs-punctuation">: </span>*/*
-<span class="hljs-attribute">Connection</span><span class="hljs-punctuation">: </span>Upgrade, HTTP2-Settings
-<span class="hljs-attribute">Upgrade</span><span class="hljs-punctuation">: </span>h2c
-<span class="hljs-attribute">HTTP2-Settings</span><span class="hljs-punctuation">: </span>AAMAAABkAAQCAAAAAAIAAAAA
-<span class="hljs-attribute">Content-Type</span><span class="hljs-punctuation">: </span>text/plain
-
-</code></pre>
-<p>Looks like some <em>negotiation</em> needs to happen prior to using HTTP/2.
-Bummer.</p>
-<h2 id="making-a-http-2-server-with-nodes-js" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#making-a-http-2-server-with-nodes-js"><span>Making a HTTP/2 server with Nodes.js</span></a></h2>
-<p>If we can’t <em>netcat</em> our way out of this, let’s make a real HTTP/2
-server with Node.js.</p>
-<p>First we’ll generate a TLS key and certificate for <code>localhost</code> because
-it appears that the HTTP/2 negotiation happens over TLS. Although it
-doesn’t seem that the HTTP/2 spec <em>requires</em> TLS per se, I couldn’t make
-it work without.</p>
-<pre><code class="hljs language-sh">openssl req -x509 -newkey rsa:2048 -nodes -subj <span class="hljs-string">&#x27;/CN=localhost&#x27;</span> -keyout key.pem -out cert.pem
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> in this command, <code>-nodes</code> <a href="https://stackoverflow.com/a/5087138/4324668">means “no DES” and not “nodes”</a>
-and is used to leave the private key unencrypted. Without it, OpenSSL
-will prompt for a passphrase.</p>
-<p>Also the <code>-subj</code> argument is required otherwise OpenSSL will prompt for
-all the certificate fields.</p>
-</div>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http2 <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:http2&#x27;</span>
-<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
-
-<span class="hljs-keyword">const</span> server = http2.<span class="hljs-title function_">createSecureServer</span>({
-  <span class="hljs-attr">key</span>: <span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;key.pem&#x27;</span>),
-  <span class="hljs-attr">cert</span>: <span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;cert.pem&#x27;</span>)
-})
-
-server.<span class="hljs-title function_">on</span>(<span class="hljs-string">&#x27;stream&#x27;</span>, <span class="hljs-function">(<span class="hljs-params">stream, headers, flags, rawHeaders</span>) =&gt;</span> {
-  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(flags, rawHeaders)
-
-  stream.<span class="hljs-title function_">respond</span>({
-    <span class="hljs-string">&#x27;:status&#x27;</span>: <span class="hljs-number">200</span>,
-    <span class="hljs-string">&#x27;content-type&#x27;</span>: <span class="hljs-string">&#x27;text/plain&#x27;</span>
-  })
-
-  stream.<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Hello&#x27;</span>)
-})
-
-server.<span class="hljs-title function_">listen</span>(<span class="hljs-number">8888</span>)
-</code></pre>
-<p>For each new HTTP/2 stream, this server will log the
-<a href="https://nodejs.org/api/http2.html#event-stream">“associated flags”</a> as
-well as the raw headers, in the hope to find the key difference there.</p>
-<p>As before, we hit it, with the addition of <code>--insecure</code> because we don’t
-want cURL to reject our self-signed certificate:</p>
-<pre><code class="hljs language-diff:sh"> curl http://localhost:8888/ \
-   -X POST \
-   -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \
-   -H <span class="hljs-string">&#x27;Content-Length:&#x27;</span> \
-<span class="hljs-deletion">-  --data <span class="hljs-string">&#x27;&#x27;</span></span>
-<span class="hljs-addition">+  --data <span class="hljs-string">&#x27;&#x27;</span> \</span>
-<span class="hljs-addition">+  --insecure</span>
- 
- curl http://localhost:8888/ \
-   -X POST \
-<span class="hljs-deletion">-  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span></span>
-<span class="hljs-addition">+  -H <span class="hljs-string">&#x27;Content-Type: text/plain&#x27;</span> \</span>
-<span class="hljs-addition">+  --insecure</span>
-</code></pre>
-<p>And while the raw headers are exactly the same, the flag is different:
-in the first case (empty body) it’s set to <strong>4</strong>, while for the second
-one (no body) it’s <strong>5</strong>. Bingo!</p>
-<p>So what are those flags about anyway? The <a href="https://nodejs.org/api/http2.html#event-stream">Node.js documentation</a>
-doesn’t say much…</p>
-<blockquote>
-<p><code>flags</code> <code>&lt;number&gt;</code> The associated numeric flags.</p>
-</blockquote>
-<h2 id="understanding-the-http-2-flags" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#understanding-the-http-2-flags"><span>Understanding the HTTP/2 flags</span></a></h2>
-<p>We get a hint of the available flags in <code>http2.constants</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-title class_">Object</span>.<span class="hljs-title function_">keys</span>(http2.<span class="hljs-property">constants</span>)
-  .<span class="hljs-title function_">filter</span>(<span class="hljs-function"><span class="hljs-params">name</span> =&gt;</span> name.<span class="hljs-title function_">includes</span>(<span class="hljs-string">&#x27;_FLAG_&#x27;</span>))
-  .<span class="hljs-title function_">map</span>(<span class="hljs-function"><span class="hljs-params">name</span> =&gt;</span> <span class="hljs-string">`<span class="hljs-subst">${name}</span>: <span class="hljs-subst">${http2.constants[name]}</span>`</span>)
-  .<span class="hljs-title function_">join</span>(<span class="hljs-string">&#x27;\n&#x27;</span>)
-</code></pre>
-<pre><code class="hljs">NGHTTP2_FLAG_NONE: 0
-NGHTTP2_FLAG_END_STREAM: 1
-NGHTTP2_FLAG_END_HEADERS: 4
-NGHTTP2_FLAG_ACK: 1
-NGHTTP2_FLAG_PADDED: 8
-NGHTTP2_FLAG_PRIORITY: 32
-</code></pre>
-<p>We’re in the presence of bitwise flags. Let’s “flatten” all of that in
-binary, and pad them with zeroes up to 5 digits for display. This can be
-done with:</p>
-<pre><code class="hljs language-js">(number).<span class="hljs-title function_">toString</span>(<span class="hljs-number">2</span>).<span class="hljs-title function_">padStart</span>(<span class="hljs-number">5</span>, <span class="hljs-number">0</span>)
-</code></pre>
-<p>(Parentheses around <code>number</code> required when putting a literal number in
-there.)</p>
-<p>This gives us:</p>
-<pre><code class="hljs">00100 (4) empty body
-00101 (5) no body
-</code></pre>
-<p>And the <code>http2.constants</code> flags:</p>
-<pre><code class="hljs">00000 (0) NGHTTP2_FLAG_NONE
-00001 (1) NGHTTP2_FLAG_END_STREAM
-00100 (4) NGHTTP2_FLAG_END_HEADERS
-00001 (1) NGHTTP2_FLAG_ACK
-01000 (8) NGHTTP2_FLAG_PADDED
-10000 (32) NGHTTP2_FLAG_PRIORITY
-</code></pre>
-<p>Here we can clearly see that “empty body” is just the <code>END_HEADERS</code>
-flag, whereas “no body” is a combination of <code>END_HEADERS</code> <em>and</em>
-<code>END_STREAM</code>.</p>
-<p>This is what makes Cloudflare behave in two different ways based on
-those cURL requests!</p>
-<p>If we go to <a href="https://datatracker.ietf.org/doc/html/rfc7540">the HTTP/2 RFC</a>
-we get extra information in <a href="https://datatracker.ietf.org/doc/html/rfc7540#section-6.2">section 6.2</a>:</p>
-<blockquote>
-<p><code>END_STREAM</code> (0x1): When set, bit 0 indicates that the header block
-is the last that the endpoint will send for the identified stream.</p>
-<p><code>END_HEADERS</code> (0x4): When set, bit 2 indicates that this frame
-contains an entire header block and is not followed by any
-<code>CONTINUATION</code> frames.</p>
-</blockquote>
-<h2 id="in-short" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#in-short"><span>In short</span></a></h2>
-<p>While in HTTP/1.1 a request with no body (<code>curl -X POST</code>) is strictly
-equivalent to a request with an empty body (<code>curl -X POST --data ''</code>),
-there’s a subtle difference when using HTTP/2:</p>
-<p>A “no body” requests sets the <code>END_HEADERS &amp; END_STREAM</code> flags on the
-HTTP/2 stream, whereas an “empty body” will result in only <code>END_HEADERS</code>
-(at least in the cURL implementation).</p>
-<p>This can lead to those requests being treated slightly differently,
-especially when they don’t include a <code>Content-Length</code> header. In the
-case of Cloudflare Workers, here’s a table of <strong>whether or not
-Cloudflare computed the <code>Content-Length</code> header for us</strong> despite not
-being set by the client:</p>
-<table>
-<thead>
-<tr>
-<th>Request</th>
-<th>HTTP/1.1</th>
-<th>HTTP/2</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>non-empty body (chunked)</td>
-<td>Yes</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>non-empty body (not chunked)</td>
-<td>Illegal</td>
-<td>Body is always “chunked” in HTTP/2</td>
-</tr>
-<tr>
-<td>empty body</td>
-<td>No</td>
-<td>Yes</td>
-</tr>
-<tr>
-<td>no body</td>
-<td>No</td>
-<td>No</td>
-</tr>
-</tbody>
-</table>
-<div class="note">
-<p><strong>Note:</strong> in the case of the <code>POST</code> body lacking <code>Content-Length</code> and
-<code>Transfer-Encoding: chunked</code>, this is effectively <a href="https://stackoverflow.com/questions/14758729/http-post-content-length-header-required">forbidden</a>
-in HTTP/1.1.</p>
-<p>Cloudflare still accepts those requests, but the <code>Content-Length</code> header
-will definitely not be set, and the worker will see the body as being
-empty (despite the client sending actual data).</p>
-<p>Not really supposed to happen but good to know.</p>
-</div>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2022/06/empty-body-no-body-http2.html#conclusion"><span>Conclusion</span></a></h2>
-<p>This was a fun issue to dig into. It wasn’t necessary to go that deep in
-the rabbit hole, but it was definitely a fun challenge, plus it made me
-learnt quite a bit about HTTP/2 which I wasn’t really up-to-date with.</p>
-<p>I hope you enjoyed the read. Stay curious! 🤙</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1532007358225862657">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

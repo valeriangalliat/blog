@@ -34,7 +34,7 @@ in my work, it was also not sustainable long-term.
 ## Skiing
 
 After I came back from Guadeloupe, I dedicated my free time to skiing,
-and in particular backcountry skiing with [my new touring skis](/uses.md#skiing).
+and in particular backcountry skiing with [my new touring skis](/gear.md#skiing).
 I read [Die With Zero](https://www.diewithzerobook.com/) recently and
 that made me much more eager to use my time and money for this kind of
 experiences, and especially do them while I'm young and in good shape.

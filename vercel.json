@@ -17,6 +17,16 @@
       "source": "/resources/simple.html",
       "destination": "/simple.html",
       "permanent": true
+    },
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "val.codejam.info"
+        }
+      ],
+      "destination": "https://www.codejam.info/val.html"
     }
   ]
 }

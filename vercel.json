@@ -1,5 +1,22 @@
 {
   "github": {
     "silent": true
-  }
+  },
+  "redirects": [
+    {
+      "source": "/resources/git.html",
+      "destination": "/git.html",
+      "permanent": true
+    },
+    {
+      "source": "/resources/vim.html",
+      "destination": "/vim.html",
+      "permanent": true
+    },
+    {
+      "source": "/resources/simple.html",
+      "destination": "/simple.html",
+      "permanent": true
+    }
+  ]
 }

@@ -2,6 +2,7 @@
   "github": {
     "silent": true
   },
+  "ignoreCommand": "[ \"$VERCEL_ENV\" != \"production\" ]",
   "redirects": [
     {
       "source": "/resources/git.html",

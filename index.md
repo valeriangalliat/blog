@@ -9,7 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
-* [Völkl Touristick ski pole & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
+* [Völkl Touristick ski poles & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
 * [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
 * [Swift: support cut/copy/paste shortcuts in a `NSOpenPanel` and `NSSavePanel`](2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md) <small>July 27, 2023</small>
 * [Swift: `NSMenuItem` title not showing](2023/07/swift-nsmenuitem-title-blank.md) <small>July 27, 2023</small>

@@ -2,7 +2,7 @@
 hero: ../../img/2023/07/poles/hero.jpg
 ---
 
-# Völkl Touristick ski pole & Komperdell Ice-Flex baskets
+# Völkl Touristick ski poles & Komperdell Ice-Flex baskets
 July 27, 2023
 
 I recently bought adjustable ski poles as I was getting into backcountry

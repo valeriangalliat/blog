@@ -103,6 +103,7 @@ installed system.
 
   ```sh
   brew install firefox iterm2
+  # brew install rectangle
   # brew install homebrew/cask-versions/firefox-developer-edition
   # brew install google-chrome
   # brew install visual-studio-code
@@ -145,6 +146,10 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 * Run `defaults write com.apple.dock autohide-delay -float 0; killall Dock`
   to [remove the delay](../../2022/05/macos-faster-desktops-dock.md) to
   show and hide the dock.
+* In **General > Software Update > Automatic updates**, I turn on
+  **Check for updates** and **Download new updates when available**, but
+  make sure **Install macOS updates** is off (I don't want macOS to
+  reboot without my permission and lose any unsaved state).
 * If I installed Visual Studio Code, I run `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
 * for... sanity.
 

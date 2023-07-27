@@ -165,6 +165,13 @@ cache and other local state in the proper user’s home.</li>
 <li>The <code>-u</code> option allows to specify the user to impersonate instead of
 the default of <code>root</code>.</li>
 </ul>
+<div class="note">
+<p><strong>Note:</strong> I’ve <a href="https://twitter.com/sachithm2/status/1657010919107600384">had</a>
+<a href="https://stackoverflow.com/questions/41840479/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup/70012833#comment126730172_70012833">reports</a>
+that some people also needed the <code>-i</code> option (makes <code>sudo</code> start a login
+shell). Depending on where you set your shell environment variables, you
+may or may not need that. Try it for yourself!</p>
+</div>
 <p>This will effectively run <code>brew update</code> like if you had switched to user
 <code>foo</code> prior to running it, but without going through the hassle of
 actually switching users every single time.</p>

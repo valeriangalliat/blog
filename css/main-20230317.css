@@ -270,6 +270,12 @@ iframe {
 .hljs-meta.prompt_ {
     user-select: none;
 }
+
+img.fit-line-height {
+    /* Line height is set to 1.5 above. */
+    max-height: 1.5em;
+    vertical-align: middle;
+}
 .header-anchor {
     color: var(--color-fg-default);
     margin-left: -1.5ch;

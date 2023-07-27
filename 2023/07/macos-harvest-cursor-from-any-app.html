@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>macOS harvest cursor from any app 😏</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="macOS harvest cursor from any app 😏">
+  <meta property="og:description" content="As a pet project I was building a screenshot app, and I wanted its cursors to match the ones of macOS screenshot utility:  and .">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>macOS harvest cursor from any app 😏</h1>
+<p class="date">July 27, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>As a pet project I was building a <a href="https://github.com/valeriangalliat/retina-screenshot">screenshot app</a>,
+and I wanted its cursors to match the ones of macOS screenshot utility:
+<img class="fit-line-height" alt="Crosshair" srcset="../../img/2023/07/macos-cursors/crosshair.png 2x">
+and <img class="fit-line-height" alt="Camera" srcset="../../img/2023/07/macos-cursors/camera.png 2x">.</p>
+<p>This was harder than expected. I’ll tell you the whole story because I
+find it fun and interesting, but feel free to jump straight to <a href="#harvesting-the-cursor-programmatically">the solution</a>.</p>
+<h2 id="default-system-cursors-in-nscursor" tabindex="-1"><a class="header-anchor" href="#default-system-cursors-in-nscursor"><span>Default system cursors in <code>NSCursor</code></span></a></h2>
+<p>In a Mac app, the <code>NSCursor</code> class <a href="https://developer.apple.com/documentation/appkit/nscursor">exposes a number of default cursors</a>,
+like the arrow <img class="fit-line-height" alt="Arrow" srcset="../../img/2023/07/macos-cursors/nscursor/arrow.png 2x">,
+I-beam <img class="fit-line-height" alt="I-beam" srcset="../../img/2023/07/macos-cursors/nscursor/i-beam.png 2x">,
+pointing hand <img class="fit-line-height" alt="Pointing hand" srcset="../../img/2023/07/macos-cursors/nscursor/pointing-hand.png 2x">,
+various resize cursors, and even a cute “disappearing item” cursor <img class="fit-line-height" alt="Disappearing item" srcset="../../img/2023/07/macos-cursors/nscursor/disappearing-item.png 2x">
+(that I kinda want to name “poof” for some reason).</p>
+<p>There is also a crosshair cursor <img class="fit-line-height" alt="Crosshair" srcset="../../img/2023/07/macos-cursors/nscursor/crosshair.png 2x">,
+however it’s not the same that the system screenshot utility uses. And
+the camera cursor is nowhere to be found.</p>
+<p>So our last resort is to set a custom cursor from an image, e.g. for a
+cursor that’s 32x32 pixels where we want the “hot spot” to be in the
+middle:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> <span class="hljs-type">NSImage</span>(named: <span class="hljs-string">&quot;cursor.png&quot;</span>)
+<span class="hljs-keyword">let</span> hotSpot <span class="hljs-operator">=</span> <span class="hljs-type">NSPoint</span>(x: <span class="hljs-number">16</span>, y: <span class="hljs-number">16</span>)
+<span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> <span class="hljs-type">NSCursor</span>(image: image, hotSpot: hotSpot)
+</code></pre>
+<p>But what image do we use here?</p>
+<h2 id="macos-default-cursors-source-location" tabindex="-1"><a class="header-anchor" href="#macos-default-cursors-source-location"><span>macOS default cursors source location?</span></a></h2>
+<p>By doing a bit of digging in the <code>/System</code> directory, we find the
+following path:</p>
+<pre><code class="hljs">/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors
+</code></pre>
+<p>This seems to contain all the system cursors, one directory for each,
+containing a <code>cursor.pdf</code> and <code>info.plist</code>!</p>
+<p>Here, we effectively have <code>screenshotselection</code> that matches the
+screen capture utility’s crosshair, and <code>screenshotwindow</code> that matches
+the camera cursor shown during window selection. Neat.</p>
+<p>Parsing the <code>info.plist</code>, we find the hot spot coordinates:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">plutil -p /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/screenshotselection/info.plist</span>
+{
+  &quot;hotx&quot; =&gt; 15
+  &quot;hotx-scaled&quot; =&gt; 15
+  &quot;hoty&quot; =&gt; 15
+  &quot;hoty-scaled&quot; =&gt; 15
+}
+</code></pre>
+<p>We can now load those programmatically:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">func</span> <span class="hljs-title function_">loadCursor</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">name</span>: <span class="hljs-type">String</span>) -&gt; <span class="hljs-type">NSCursor</span>? {
+  <span class="hljs-keyword">let</span> root <span class="hljs-operator">=</span>
+    <span class="hljs-string">&quot;/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors&quot;</span>
+
+  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> data <span class="hljs-operator">=</span> <span class="hljs-type">FileManager</span>.default.contents(atPath: <span class="hljs-string">&quot;<span class="hljs-subst">\(root)</span>/<span class="hljs-subst">\(name)</span>/info.plist&quot;</span>)
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+  }
+
+  <span class="hljs-keyword">guard</span>
+    <span class="hljs-keyword">let</span> plist <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-type">PropertyListSerialization</span>.propertyList(from: data, options: [], format: <span class="hljs-literal">nil</span>)
+      <span class="hljs-keyword">as?</span> [<span class="hljs-type">String</span>: <span class="hljs-keyword">Any</span>]
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+  }
+
+  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> pdfData <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-type">Data</span>(contentsOf: <span class="hljs-type">URL</span>(fileURLWithPath: <span class="hljs-string">&quot;<span class="hljs-subst">\(root)</span>/<span class="hljs-subst">\(name)</span>/cursor.pdf&quot;</span>))
+  <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+  }
+
+  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> cursorImage <span class="hljs-operator">=</span> <span class="hljs-type">NSImage</span>(data: pdfData) <span class="hljs-keyword">else</span> {
+    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
+  }
+
+  <span class="hljs-keyword">let</span> hotSpot <span class="hljs-operator">=</span> <span class="hljs-type">NSPoint</span>(
+    x: plist[<span class="hljs-string">&quot;hotx&quot;</span>] <span class="hljs-keyword">as!</span> <span class="hljs-type">Int</span>? <span class="hljs-operator">??</span> <span class="hljs-type">Int</span>(cursorImage.size.width) <span class="hljs-operator">/</span> <span class="hljs-number">2</span>,
+    y: plist[<span class="hljs-string">&quot;hoty&quot;</span>] <span class="hljs-keyword">as!</span> <span class="hljs-type">Int</span>? <span class="hljs-operator">??</span> <span class="hljs-type">Int</span>(cursorImage.size.height) <span class="hljs-operator">/</span> <span class="hljs-number">2</span>
+  )
+
+  <span class="hljs-keyword">return</span> <span class="hljs-type">NSCursor</span>(image: cursorImage, hotSpot: hotSpot)
+}
+</code></pre>
+<p>Let’s use this function in a basic example to demonstrate it:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
+
+<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
+
+<span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> loadCursor(<span class="hljs-string">&quot;screenshotselection&quot;</span>) {
+  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() <span class="hljs-operator">+</span> <span class="hljs-number">1</span>) {
+    cursor.set()
+  }
+}
+
+app.setActivationPolicy(.regular)
+app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)
+app.run()
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> here we call <code>cursor.set()</code> after a delay because it
+<a href="https://stackoverflow.com/a/39905020">doesn’t</a>
+<a href="https://stackoverflow.com/a/13848213">always</a> work when called right
+away for reasons that are not familiar to me.</p>
+<p>In a real app, you probably want to subclass <code>NSView</code>, override
+<code>resetCursorRects</code>, and call <code>addCursorRect</code> in it.</p>
+</div>
+<p>This actually looks good for the camera! But for the crosshair, it
+doesn’t seem to match the original one.</p>
+<p>The original crosshair size appears to be 50x50 pixels, while this one
+is 46x46. More importantly, the original one has some kind of light outline
+that makes it visible on darker backgrounds, that is completely missing
+from that cursor PDF we just found. You can see the difference easily:</p>
+<table>
+  <tr>
+    <th>Original</th>
+    <th>Custom</th>
+  </tr>
+  <tr>
+    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/orig-grey.png 2x"></td>
+    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/custom-grey.png 2x"></td>
+  </tr>
+  <tr>
+    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/orig-dark.png 2x"></td>
+    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/custom-dark.png 2x"></td>
+  </tr>
+</table>
+<p>So the screen capture utility doesn’t seem to be using this cursor from
+<code>HIServices.framework</code>.</p>
+<p>I tried exploring the contents of the screen capture app in
+<code>/System/Library/CoreServices/screencaptureui.app</code>, especially the
+<code>Contents/Resources/Assets.car</code> file, exploring it using
+<a href="https://github.com/insidegui/AssetCatalogTinkerer">Asset Catalog Tinkerer</a>,
+but it didn’t contain anything useful.</p>
+<h2 id="harvesting-the-cursor-programmatically" tabindex="-1"><a class="header-anchor" href="#harvesting-the-cursor-programmatically"><span>Harvesting the cursor programmatically</span></a></h2>
+<p>The next idea I tried was to see if I could somehow access the cursor
+data from <em>other</em> apps from my Swift app.</p>
+<p>It turns out <code>NSCursor</code> exposes a <a href="https://developer.apple.com/documentation/appkit/nscursor/1533611-currentsystem"><code>currentSystem</code></a>
+property, containing current system cursor (as opposed to
+<code>NSCursor.current</code> that contains your own application’s current cursor).</p>
+<p>This way we can easily access the image data of the <code>currentSystem</code>
+cursor, as well as its <code>hotSpot</code> to be used later in our own custom
+cursor.</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
+
+<span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>
+
+<span class="hljs-built_in">print</span>(cursor.hotSpot)
+
+<span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> cursor.image.cgImage(forProposedRect: <span class="hljs-literal">nil</span>, context: <span class="hljs-literal">nil</span>, hints: <span class="hljs-literal">nil</span>)<span class="hljs-operator">!</span>
+<span class="hljs-keyword">let</span> bitmap <span class="hljs-operator">=</span> <span class="hljs-type">NSBitmapImageRep</span>(cgImage: image)
+<span class="hljs-keyword">let</span> data <span class="hljs-operator">=</span> bitmap.representation(using: .png, properties: [:])<span class="hljs-operator">!</span>
+<span class="hljs-keyword">try!</span> data.write(to: <span class="hljs-type">URL</span>(fileURLWithPath: <span class="hljs-string">&quot;cursor.png&quot;</span>))
+</code></pre>
+<p>We can put this code in a file <code>test.swift</code>, and run it with <code>sleep 5 &amp;&amp; swift test.swift</code>.
+This gives us 5 seconds to do whatever is needed to show the cursor we
+want to harvest, before our script actually runs and saves the current
+system cursor to a PNG file.</p>
+<p>In the case of the screen capture utility crosshair, I’ve got this
+(pictured over transparent, grey and dark background to show how well it
+reacts to those):</p>
+<table>
+  <tr>
+    <td><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+    <td style="background-color: #3f3f40"><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+    <td style="background-color: #111111"><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+  </tr>
+</table>
+<p>Perfect. 👌</p>
+<p>I didn’t want to get into adding support for showing the dynamic
+coordinates as part of the cursor, so as far as I’m concerned, I got rid
+of those and used just the crosshair in my app.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>I hope you found this post useful! Now if you want to get the cursor
+data from any app, in its original transparent quality, you can use the
+simple script above to do so. Enjoy!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/07/macos-harvest-cursor-from-any-app.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

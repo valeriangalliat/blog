@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Swift: support cut/copy/paste shortcuts in a NSOpenPanel and NSSavePanel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Swift: support cut/copy/paste shortcuts in a NSOpenPanel and NSSavePanel">
+  <meta property="og:description" content="Let’s consider this basic Swift app that simply shows an NSSavePanel:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Swift: support cut/copy/paste shortcuts in a <code>NSOpenPanel</code> and <code>NSSavePanel</code></h1>
+<p class="date">July 27, 2023</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Let’s consider this basic Swift app that simply shows an <code>NSSavePanel</code>:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
+
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
+    <span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
+    app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)
+
+    <span class="hljs-keyword">let</span> savePanel <span class="hljs-operator">=</span> <span class="hljs-type">NSSavePanel</span>()
+    savePanel.runModal()
+  }
+}
+
+<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
+<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
+
+app.setActivationPolicy(.regular)
+app.delegate <span class="hljs-operator">=</span> delegate
+app.run()
+</code></pre>
+<p>This shows a generic open panel as expected:</p>
+<figure class="center">
+  <img alt="Open panel" srcset="../../img/2023/07/open-panel.png 2x">
+</figure>
+<p>However we have a problem: we can’t cut, copy or paste in of the text
+fields (<strong>Save As</strong>, <strong>Tags</strong>, <strong>Search</strong>). We can’t <kbd>Command</kbd>
++ <kbd>X</kbd>, <kbd>C</kbd> or <kbd>V</kbd>. All those shortcuts do is
+playing an annoying <em>beep</em> noise telling us we can’t do that.</p>
+<p><strong>This is because on macOS, those shortcuts are actually tied to menu
+items.</strong> You can’t have <kbd>Command</kbd> + <kbd>C</kbd> work unless
+you have a matching menu item, typically <strong>Edit &gt; Copy</strong>.</p>
+<h2 id="adding-an-edit-menu" tabindex="-1"><a class="header-anchor" href="#adding-an-edit-menu"><span>Adding an edit menu</span></a></h2>
+<p>To solve this, we’re gonna add an edit menu tour app with the proper
+shortcuts.</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> mainMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
+app.mainMenu <span class="hljs-operator">=</span> mainMenu
+
+<span class="hljs-keyword">let</span> appMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
+mainMenu.addItem(appMenu)
+
+<span class="hljs-keyword">let</span> editMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
+mainMenu.addItem(editMenu)
+
+<span class="hljs-keyword">let</span> editSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>(title: <span class="hljs-string">&quot;Edit&quot;</span>)
+editMenu.submenu <span class="hljs-operator">=</span> editSubmenu
+
+editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Cut&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.cut(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;x&quot;</span>)
+editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Copy&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.copy(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;c&quot;</span>)
+editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Paste&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.paste(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;v&quot;</span>)
+
+editSubmenu.addItem(
+  withTitle: <span class="hljs-string">&quot;Select All&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.selectAll(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;a&quot;</span>)
+</code></pre>
+<p>We now have a nice edit menu:</p>
+<figure class="center">
+  <img alt="Edit menu" srcset="../../img/2023/07/edit-menu.png 2x">
+</figure>
+<p>Here, we leverage <em>automatic menu enabling</em> in the <code>action</code> in order to map
+menu items and shortcuts to the first object in the responder chain that
+implements the given action, as explained in <a href="https://stackoverflow.com/a/47577869">this Stack Overflow post</a>.</p>
+<p>This is pretty neat, and thanks to this feature, we now have working
+cut/copy/paste in our dialog!</p>
+<p>As a bonus, it would be a good practice to also add a way to quit our
+app using the same method:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> appSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
+appMenusubmenu <span class="hljs-operator">=</span> appSubmenu
+
+appSubmenu.addItem(
+  withTitle: <span class="hljs-string">&quot;Quit&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSApplication</span>.terminate(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;q&quot;</span>)
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

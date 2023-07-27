@@ -114,6 +114,7 @@ since it’s not really supposed to change anyway. Concretely, I run:</p>
 <li>
 <p>Install Firefox and iTerm2 and optionally other apps:</p>
 <pre><code class="hljs language-sh">brew install firefox iterm2
+<span class="hljs-comment"># brew install rectangle</span>
 <span class="hljs-comment"># brew install homebrew/cask-versions/firefox-developer-edition</span>
 <span class="hljs-comment"># brew install google-chrome</span>
 <span class="hljs-comment"># brew install visual-studio-code</span>
@@ -161,6 +162,10 @@ my exclude list (very specific to my data so not included here).</li>
 <li>Run <code>defaults write com.apple.dock autohide-delay -float 0; killall Dock</code>
 to <a href="../../2022/05/macos-faster-desktops-dock.html">remove the delay</a> to
 show and hide the dock.</li>
+<li>In <strong>General &gt; Software Update &gt; Automatic updates</strong>, I turn on
+<strong>Check for updates</strong> and <strong>Download new updates when available</strong>, but
+make sure <strong>Install macOS updates</strong> is off (I don’t want macOS to
+reboot without my permission and lose any unsaved state).</li>
 <li>If I installed Visual Studio Code, I run <code>defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false</code></li>
 <li>for… sanity.</li>
 </ul>

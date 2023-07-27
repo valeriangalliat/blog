@@ -8,6 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
+* [Swift: support cut/copy/paste shortcuts in a `NSOpenPanel` and `NSSavePanel`](2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md) <small>July 27, 2023</small>
+* [Swift: `NSMenuItem` title not showing](2023/07/swift-nsmenuitem-title-blank.md) <small>July 27, 2023</small>
 * [Using `zx` with TypeScript, ESM and top-level `await`](2023/04/zx-typescript-esm.md) <small>April 21, 2023</small>
 * [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
 * [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>

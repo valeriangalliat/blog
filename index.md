@@ -9,6 +9,9 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
+* [Swift: support cut/copy/paste shortcuts in a `NSOpenPanel` and `NSSavePanel`](2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md) <small>July 27, 2023</small>
+* [Swift: `NSMenuItem` title not showing](2023/07/swift-nsmenuitem-title-blank.md) <small>July 27, 2023</small>
 * [Using `zx` with TypeScript, ESM and top-level `await`](2023/04/zx-typescript-esm.md) <small>April 21, 2023</small>
 * [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
 * [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
@@ -21,9 +24,6 @@ A blog about tech, programming and other things.
 * [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
 * [Recovering Kobo eReader highlights after an accidental factory reset!](2023/04/kobo-highlights-recover.md) <small>April 5, 2023</small>
 * [Postgres casting to `bit` vs. `varbit` vs. `"bit"` (with quotes)](2023/04/postgres-bit-varbit.md) <small>April 5, 2023</small>
-* [Archiving Google Photos offline to free up space](2023/04/archiving-google-photos.md) <small>April 2, 2023</small>
-* [Syncthing: sync phone root directory (all internal storage)](2023/04/syncthing-root-directory.md) <small>April 2, 2023</small>
-* [Getting rid of ghost login items in macOS Ventura](2023/04/ghost-login-items-macos-ventura.md) <small>April 2, 2023</small>
 
 [All the posts](posts.md)
 

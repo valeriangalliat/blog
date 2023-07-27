@@ -167,6 +167,16 @@ sudo -Hu foo brew update
 * The `-u` option allows to specify the user to impersonate instead of
   the default of `root`.
 
+<div class="note">
+
+**Note:** I've [had](https://twitter.com/sachithm2/status/1657010919107600384)
+[reports](https://stackoverflow.com/questions/41840479/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup/70012833#comment126730172_70012833)
+that some people also needed the `-i` option (makes `sudo` start a login
+shell). Depending on where you set your shell environment variables, you
+may or may not need that. Try it for yourself!
+
+</div>
+
 This will effectively run `brew update` like if you had switched to user
 `foo` prior to running it, but without going through the hassle of
 actually switching users every single time.

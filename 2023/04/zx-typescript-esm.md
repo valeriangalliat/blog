@@ -365,8 +365,8 @@ dynamic `import` into a `require` statement, which is not supported by
 A cool surprised I found while writing this post is that `ts-node`
 actually have [first-class support for SWC](https://typestrong.org/ts-node/docs/swc/)!
 
-You can simply use `ts-node --swc`, or set the following in your
-`tsconfig.json`:
+All you need is install `@swc/core` or `@swc/wasm`, and then simply use
+`ts-node --swc`, or set the following in your `tsconfig.json`:
 
 ```json
 {

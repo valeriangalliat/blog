@@ -144,12 +144,12 @@ from that cursor PDF we just found. You can see the difference easily:
     <th>Custom</th>
   </tr>
   <tr>
-    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/orig-grey.png 2x"></td>
-    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/custom-grey.png 2x"></td>
+    <td><img alt="Original crosshair over grey background" srcset="../../img/2023/07/macos-cursors/hiservices/orig-grey.png 2x"></td>
+    <td><img alt="Custom crosshair over grey background" srcset="../../img/2023/07/macos-cursors/hiservices/custom-grey.png 2x"></td>
   </tr>
   <tr>
-    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/orig-dark.png 2x"></td>
-    <td><img alt="" srcset="../../img/2023/07/macos-cursors/hiservices/custom-dark.png 2x"></td>
+    <td><img alt="Original crosshair over dark background" srcset="../../img/2023/07/macos-cursors/hiservices/orig-dark.png 2x"></td>
+    <td><img alt="Custom crosshair over dark background" srcset="../../img/2023/07/macos-cursors/hiservices/custom-dark.png 2x"></td>
   </tr>
 </table>
 
@@ -199,9 +199,9 @@ reacts to those):
 
 <table>
   <tr>
-    <td><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
-    <td style="background-color: #3f3f40"><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
-    <td style="background-color: #111111"><img alt="" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+    <td><img alt="Harvested crosshair" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+    <td style="background-color: #3f3f40"><img alt="Harvested crosshair over grey background" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
+    <td style="background-color: #111111"><img alt="Harvested crosshair over dark background" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
   </tr>
 </table>
 

@@ -293,8 +293,8 @@ dynamic <code>import</code> into a <code>require</code> statement, which is not 
 <h3 id="using-swc-with-ts-node" tabindex="-1"><a class="header-anchor" href="#using-swc-with-ts-node"><span>Using SWC with <code>ts-node</code></span></a></h3>
 <p>A cool surprised I found while writing this post is that <code>ts-node</code>
 actually have <a href="https://typestrong.org/ts-node/docs/swc/">first-class support for SWC</a>!</p>
-<p>You can simply use <code>ts-node --swc</code>, or set the following in your
-<code>tsconfig.json</code>:</p>
+<p>All you need is install <code>@swc/core</code> or <code>@swc/wasm</code>, and then simply use
+<code>ts-node --swc</code>, or set the following in your <code>tsconfig.json</code>:</p>
 <pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
   <span class="hljs-attr">&quot;ts-node&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
     <span class="hljs-attr">&quot;swc&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>

@@ -38,7 +38,7 @@ microphones and jack instruments as well, but it was too big to fit in
 my motorcycle jacket, which turned out to be what allowed me to get the
 [best sounding audio on a motorcycle](#record-motorcycle-sound-rj-style).
 
-Anyways, because I had that mic around when I started [making more YouTube videos](https://www.youtube.com/FunkyVal),
+Anyways, because I had that mic around when I started [making more YouTube videos](https://www.youtube.com/@FunkyVal),
 it became my main device to record voice in various settings (indoors,
 outdoors, multiple people interviews, live streaming). I also use it to
 record acoustic instruments.
@@ -179,7 +179,7 @@ NAME`, and set it to `DATE` there.
 
 ## Hot shoe mount
 
-Because I often record [YouTube videos](https://www.youtube.com/FunkyVal),
+Because I often record [YouTube videos](https://www.youtube.com/@FunkyVal),
 I like to mount my H2n on top of my camera to get high quality audio in
 my videos.
 
@@ -391,7 +391,7 @@ overall!
 ## Zooming out
 
 That's it for today! I hope that you learnt a thing or two today thanks
-to this post. Consider subscribing to my [YouTube channel](https://www.youtube.com/FunkyVal)
+to this post. Consider subscribing to my [YouTube channel](https://www.youtube.com/@FunkyVal)
 where I also share video versions of those articles (and much more).
 Happy recording!
 

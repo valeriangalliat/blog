@@ -64,7 +64,7 @@ touch!
 * ✍️ [Blog](https://www.codejam.info/) <small>| 90% programming, 10% content creation</small>
 * 📸 [Photography](https://photography.codejam.info/) <small>| my photos</small>
 * 🌈 [Instagram](https://www.instagram.com/funkyval_/) <small>| my square photos</small>
-* 🎬 [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
+* 🎬 [YouTube](https://www.youtube.com/@FunkyVal) <small>| music covers, and more</small>
 * 🐦 [Twitter](https://twitter.com/valeriangalliat) <small>| 50% jokes, 50% tips, 100% tech</small>
 * 🧑‍💻 [GitHub](https://github.com/valeriangalliat) <small>| my projects</small>
 * 💸 [Ko-fi](https://ko-fi.com/funkyval) <small>| buy me a coffee</small>

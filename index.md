@@ -48,7 +48,7 @@ A blog about tech, programming and other things.
 * [Gear](gear.md) <small>| the gear I use</small>
 * [About the name](about-the-name.md) <small>| why CodeJam</small>
 * [Photography](https://photography.codejam.info/) <small>| my photos</small>
-* [YouTube](https://www.youtube.com/FunkyVal) <small>| music covers, and more</small>
+* [YouTube](https://www.youtube.com/@FunkyVal) <small>| music covers, and more</small>
 * [More links](val.md#links) <small>| social media, contact, ...</small>
 
 </div>

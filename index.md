@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Branch Verve office chair: make it taller!](2023/07/branch-verve-office-chair-taller.md) <small>July 28, 2023</small>
 * [Völkl Touristick ski poles & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
 * [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
 * [Swift: support cut/copy/paste shortcuts in a `NSOpenPanel` and `NSSavePanel`](2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md) <small>July 27, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [How Firebase `functions.ignore` really works](2023/04/firebase-functions-ignore.md) <small>April 7, 2023</small>
 * [Firebase functions: debugging upload error `EntityTooLarge`](2023/04/firebase-functions-entity-too-large.md) <small>April 7, 2023</small>
 * [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
-* [Recovering Kobo eReader highlights after an accidental factory reset!](2023/04/kobo-highlights-recover.md) <small>April 5, 2023</small>
 
 [All the posts](posts.md)
 

@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2023
 
+* [Branch Verve office chair: make it taller!](2023/07/branch-verve-office-chair-taller.md) <small>July 28, 2023</small>
 * [Völkl Touristick ski poles & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
 * [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
 * [Swift: support cut/copy/paste shortcuts in a `NSOpenPanel` and `NSSavePanel`](2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.md) <small>July 27, 2023</small>

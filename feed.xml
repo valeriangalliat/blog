@@ -5,10 +5,70 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2023-07-27T22:22:28.041Z</updated>
+  <updated>2023-07-28T14:11:05.435Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Branch Verve office chair: make it taller!</title>
+    <link href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html" />
+    <id>https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html</id>
+    <updated>2023-07-28T04:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I recently bought the <a href="https://www.branchfurniture.ca/products/verve-chair">Verve chair</a>
+by Branch as an upgrade for my office. It was quite pricey, but not
+Herman Miller pricey, and it’s really comfortable.</p>
+<p>Before that, I was sitting on the <a href="https://www.ikea.com/ca/en/p/jaervfjaellet-office-chair-with-armrests-grann-white-70521855/">JÄRVFJÄLLET chair from Ikea</a>,
+and to be fair, for half the price of the Verve chair, it was easily 80%
+of the comfort. I had no trouble sitting on it all day long, and that’s
+even without putting the armrests because I like to play guitar!</p>
+<p><strong>Anyways, I’ve had only one complaint about the Verve chair: it’s too
+short!</strong> Its highest setting is still pretty low, and that just doesn’t
+cut it for 1. me being a tall guy and 2. my workstation being a tad
+higher than your typical office desk.</p>
+<p>Quite a number of reviews did mention that issue, but you know how it
+is, I only searched the reviews for that particular problem once I
+encountered it. 😬</p>
+<h2 id="how-to-make-the-chair-taller" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html#how-to-make-the-chair-taller"><span>How to make the chair taller</span></a></h2>
+<p>As far as I know, this is gonna be applicable to pretty much any office
+chair. <strong>The best thing you can do is replace the gas cylinder for a
+taller one.</strong></p>
+<p>Luckily, this seems to be standard, and the Verve chair was no
+exception. I’ve got <a href="https://amzn.to/455kzjv">one off Amazon</a>. Pretty
+much any replacement ones I browsed through were taller than the one
+that came with the chair, and tall enough for me. Double check the size
+for your particular situation though!</p>
+<p>In order to replace the cylinder, I also had to buy a
+<a href="https://amzn.to/44BRIDD">mallet</a> in order to pop the old one out
+without damaging it. (Really, get a mallet if you don’t have one, I
+struggled pretty hard with a hammer and couldn’t get it out, then a
+single tap with the mallet once I got it got the job done.)</p>
+<p>I’ve also got some <a href="https://amzn.to/3Y9d3lr">replacement casters with brakes</a>
+because <a href="https://www.codejam.info/2021/01/ikea-office-chair-lock-wheels-uneven-floor.html">my floor is still slanted</a>.
+If even with a new cylinder your chair is not tall enough, you can
+consider getting some those <a href="https://amzn.to/3OxpnbT">rollerblade-style casters</a>
+that are gonna be taller than standard wheels, and apparently have a
+bunch of advantages like not damaging floors, working better on carpets,
+and being smoother in general, and obviously a sick look. Although I
+didn’t get to try them yet.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html#conclusion"><span>Conclusion</span></a></h2>
+<figure class="center">
+  <img alt="Verve chair in my office" src="https://www.codejam.info/img/2023/07/verve/chair.jpg">
+</figure>
+<p>In the beginning I was so disappointed to find that I couldn’t use my
+brand new chair because it was too short, but at the end of the day it
+was actually pretty easy to fix. A $30 replacement gas cylinder and a
+cheap mallet got the job done in no time.</p>
+<p>That being said, given the price of the chair,  I wish I didn’t have to
+go through that extra trouble.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Völkl Touristick ski poles &amp; Komperdell Ice-Flex baskets</title>
     <link href="https://www.codejam.info/2023/07/volkl-touristick-komperdell-ice-flex.html" />
@@ -2939,79 +2999,6 @@ permission to your terminal app!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Embedding high DPI screenshots at normal size in HTML</title>
-    <link href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html" />
-    <id>https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html</id>
-    <updated>2023-04-02T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Since I moved to a Retina display, the screenshots I take are twice as
-big as before!</p>
-<p>This is a problem because, when embedded in an HTML page, they look
-ginormous.</p>
-<p>Let’s take a dummy example of some UI element screenshot:</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">src</span>=<span class="hljs-string">&quot;save-as-example.png&quot;</span>&gt;</span>
-</code></pre>
-<figure class="center">
-  <img alt="Save as popup" src="https://www.codejam.info/img/2023/04/save-as-example.png">
-</figure>
-<p>This is huge. Crazy huge. It disturbs the reading flow and you only see
-that oversized, slightly blurry image. Just bad.</p>
-<p>How to fix it then?</p>
-<h2 id="downsize-the-image" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#downsize-the-image"><span>Downsize the image</span></a></h2>
-<p>We can resize the image by 50% before embedding it. For example using
-ImageMagick:</p>
-<pre><code class="hljs language-sh">convert save-as-example.png -resize 50% save-as-example-small.png
-</code></pre>
-<p>This will work, but we introduce a loss in quality from the downscaling
-operation. It’s not gonna be as “sharp” as if the UI element was
-rendered at the lower resolution in the first place, without being
-downsized at the pixel level later on.</p>
-<p>On top of that, when viewed on a high DPI screen, the image will not be
-as crisp as what you saw when you took the screenshot, because half the
-pixels got lost.</p>
-<h2 id="take-the-screenshot-on-a-low-dpi-screen" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#take-the-screenshot-on-a-low-dpi-screen"><span>Take the screenshot on a low DPI screen</span></a></h2>
-<p>On macOS, if you have an external screen that has a low DPI, you can
-take the screenshot on that screen. Then the screenshot will be taken at
-a normal-looking native resolution, because there’s no scaling factor.</p>
-<p>The downside is that you need a low DPI screen handy, and to plug it.
-Not always applicable.</p>
-<p>And on top of that, like the previous method, it won’t look as good when
-viewed on a high DPI screen.</p>
-<h2 id="use-srcset-with-a-2x-factor" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/high-dpi-screenshot-size-html.html#use-srcset-with-a-2x-factor"><span>Use <code>srcset</code> with a <code>2x</code> factor!</span></a></h2>
-<p>If you want to go the lazy and easy way, <code>srcset</code> is the way.</p>
-<p>It allows to specify a <em>pixel density descriptor</em> for the image being
-referenced. In our case, because the screenshot was rendered at double
-the size for the Retina display, we can specify <code>2x</code>.</p>
-<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">img</span> <span class="hljs-attr">alt</span>=<span class="hljs-string">&quot;Save as popup&quot;</span> <span class="hljs-attr">srcset</span>=<span class="hljs-string">&quot;save-as-example.png 2x&quot;</span>&gt;</span>
-</code></pre>
-<figure class="center">
-  <img alt="Save as popup" srcset="../../img/2023/04/save-as-example.png 2x">
-</figure>
-<p>This looks perfect! On a high DPI screen, we get the exact original
-quality of the screenshot, as crisp as can be. On a low DPI screen, the
-browser knows how to adapt the size of the screenshot to make it look
-just right.</p>
-<p>The only downside is that for low DPI screens, we’ll still send the
-heavier image with twice as much pixels, even if we don’t need it. If
-that’s a problem for you, then you can use one of the earlier solutions
-to generate a <code>1x</code> version of the screenshot, and use it as part of the
-<code>srcset</code>.</p>
-<div class="note">
-<p><strong>Note:</strong> I also use this technique from phone screenshots! Phones
-typically have high DPI screens too, and they generate pretty large
-screenshots. <code>2x</code> might not be enough to make it look reasonable on a
-web page, so feel free to go <code>3x</code> or <code>4x</code> if you want to reduce the size
-of the image without altering the original and compromising its quality!</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1642615952305954818">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

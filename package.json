@@ -1,7 +1,7 @@
 {
   "scripts": {
     "lint": "standard --fix . scripts/render scripts/generate-feed scripts/colors",
-    "watch": "chokidar css js '**/*.md' -i node_modules -c make -j16"
+    "watch": "chokidar css js api '**/*.md' -i node_modules -c make -j16"
   },
   "dependencies": {
     "@primer/primitives": "^7.8.3",
@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "chokidar-cli": "^2.1.0",
-    "standard": "^16.0.3"
+    "standard": "^17.1.0",
+    "vercel": "^32.3.1"
   }
 }

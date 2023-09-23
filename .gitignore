@@ -1,1 +1,5 @@
+/node_modules
 /1337
+/.vercel
+/.env
+/package-lock.json

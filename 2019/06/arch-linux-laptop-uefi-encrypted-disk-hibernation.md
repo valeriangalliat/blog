@@ -4,7 +4,11 @@ June 8, 2019
 Based on [this Gist](https://gist.github.com/mattiaslundberg/8620837),
 with hibernation added.
 
-Updated on March 27, 2020.
+<div class="note">
+
+**Note:** updated on March 27, 2020.
+
+</div>
 
 ## Installer USB
 

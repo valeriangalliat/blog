@@ -1,6 +1,12 @@
 # Archiving Google Photos offline to free up space
 April 2, 2023
 
+<div class="note">
+
+**Note:** updated on December 30, 2023.
+
+</div>
+
 If you backup your phone photos to Google Photos automatically, and you
 don't pay for some kind of Google One subscription, you'll run sooner or
 later into the 15 GB storage limit of your Google account.
@@ -55,7 +61,7 @@ For this example, let's assume I synced my phone to a
 photos in `/Volumes/Archive/Phone`.
 
 I'll run the following command to copy the phone contents to my archive
-directory:
+directory (but copying from Finder also works):
 
 ```sh
 cp -a /Volumes/Syncthing/Phone/ /Volumes/Archive/Phone/
@@ -87,45 +93,110 @@ you have one!
 
 </div>
 
-### 3. Delete everything from Google Photos
+### 3. Double check I'm not missing anything
+
+If you have photos that are _only_ on Google Photos but not stored on
+your phone storage, the previous step didn't archive them. You need to
+make sure to download them from Google Photos in the first place.
+
+Because there's no way from Google Photos to find all photos that are
+not locally saved to a specific device (other than going through them
+one by one), that's where I [use the Google Photos API](#bonus-script-to-list-all-your-google-photos-using-the-api)
+to make sure I'm not missing anything.
+
+This will get technical, so if you don't care about this part, feel free
+to skip to [the next step](#4-delete-everything-from-google-photos).
+
+First, we need a Google OAuth token with access to Google Photos. We'll
+reuse [my script from this other article](../../2021/02/google-oauth-from-cli-application.md#update-local-server-redirect)
+for this, just replacing the scope with `https://www.googleapis.com/auth/photoslibrary.readonly`.
+Put it in a `token.mjs` file and run it with `node token.mjs`, this will
+go through the OAuth process and after you complete the authentication,
+will log the access token that we'll use in the next script.
+
+The following script can go in `photos.mjs` and be run with `node
+photos.mjs`, reusing the token from the previous step.
+
+```js
+import fs from 'node:fs/promises'
+
+const accessToken = 'YOUR_ACCESS_TOKEN'
+
+let pageToken = ''
+let pages = []
+
+do {
+  const url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100&pageToken=' + encodeURIComponent(pageToken)
+
+  console.log(url)
+
+  const response = await fetch(url, {
+    headers: {
+      'Authorization': `Bearer ${accessToken}`
+    }
+  })
+
+  const json = await response.json()
+
+  pages.push(json)
+
+  pageToken = json.nextPageToken
+} while (pageToken)
+
+await fs.writeFile('pages.json', JSON.stringify(pages, null, 2))
+```
+
+This will fetch all pages from the Google Photos API and dump them in a
+`pages.json` file.
+
+From there, I like to use [jq](https://jqlang.github.io/jq/) to extract
+the filenames:
+
+```sh
+cat pages.json | jq -r '.[].mediaItems[].filename' > filenames
+```
+
+Then I use the following script to check that each filename is indeed
+present in my archive:
+
+```sh
+cat filenames | while read file; do find /Volumes/Archive/Phone -name "$file" | grep -q . || echo "Missing $file"; done
+```
+
+This will print the name of every file that's on Google Photos and not
+part of the backup. If any, you can find more details in `pages.json`
+including a Google Photos link to find out what photo it is that needs
+to be downloaded.
+
+Once everything is confirmed backed up, we can continue.
+
+### 4. Delete everything from Google Photos
 
 Not necessarily everything, but well, everything you want to delete to
 free up space.
 
 You can do it from your phone, or from Google Photos on your computer,
-or on the web.
+or on the web, although in my experience, **I would recommend doing it
+from the phone**.
+
+When deleting _a lot_ of photos from the web version, this tends to
+confuse the phone's syncing algorithm and I've ended up with a bunch of
+photos being re-uploaded and somehow duplicated and it was kind of a
+mess to clean up.
+
+It tends to _just work_ when deleting from the phone. The only downside
+is that the app doesn't make it easy to select a whole bunch of photos
+at once, I just have to hold my thumb for a minute with the super slow
+scroll until everything is selected.
 
 <div class="note">
 
-**Note:** be careful! If you have photos that are _only_ on Google
-Photos but not stored on your phone storage, the previous step didn't
-archive them. You need to make sure to download them from Google Photos
-in the first place. Doing that in an automated way is not covered in
-this post.
+**Note:** at that point I like to take note of how many photos I
+deleted, so I can double check the number in a later step.
 
 </div>
 
-As an abundance of caution, you may want to double check that the number
-of photos/videos you have on Google Photos matches exactly with the
-number of photos/videos you have on your phone before doing that.
-
-If there's any mismatch, try to find where the difference it to make
-sure you're not accidentally losing any photo.
-
-Alternatively, you can [use the Google Photos API](#bonus-script-to-list-all-your-google-photos-using-the-api)
-to list all the filenames on Google Photos, and ensure you have a match
-in your archive prior to deleting. Otherwise, you'll know the names of
-the missing ones that you have to download.
-
-<div class="note">
-
-**Note:** if you deleted the photos from the web or desktop app, make
-sure to wait that the deletion is propagated to your phone before you
-continue!
-
-</div>
-
-### 4. Sync phone to computer again
+### 5. Sync phone to computer again
 
 Again with Syncthing in my case, I do a sync following the deletion.
 
@@ -154,7 +225,7 @@ around unnecessarily!
 
 </div>
 
-### 5. Remove the overlap
+### 6. Remove the overlap
 
 To avoid that duplication, we can remove all files from the archive that
 are still in the Syncthing directory. That is, all the photos/videos we
@@ -168,26 +239,26 @@ by Google Photos.
 Now, the archive directory only contains what we removed from Google
 Photos (and from the phone), but there's no duplicates!
 
-### 6. Profit!
+Bonus: we can remove all empty directories with:
+
+```sh
+find /Volumes/Archive/Phone -type d -empty -delete
+```
+
+At that point, I also count the number of files from the backup and
+makes sure it matches the number of files I deleted from Google Photos
+earlier:
+
+```sh
+find /Volumes/Archive/Phone -type f | grep -v DS_Store | wc -l
+```
+
+### 7. Profit!
 
 You can now enjoy all the space you freed up by archiving your photos
 and videos away from Google Photos!
 
 Repeat every time you're close to running out of storage. 😉
-
-## About the Google Photos app "home page"
-
-I think there may be some display bugs when deleting _a lot_ of photos
-from Google Photos at once. For some reason the main photos list of my
-Google Photos still shows a few of the photos I deleted! They're in a
-weird state where the UI offers me download them to my device (as if
-they're not on the device already), but also shows me a local path to
-the file as if it was on device (but the photo is not actually there).
-
-I'm thinking this issue will be gone when the photos in the trash are
-permanently deleted, so this doesn't concern me too much. What's visible
-in Google Photos on the web (and in their API) is consistent with the
-state I want, and what's on my phone's raw storage is consistent too.
 
 ## What about motion photos?
 
@@ -222,54 +293,6 @@ This means you'll have to `brew install coreutils` and replace `grep` by
 `ggrep` in the script for it to work.
 
 </div>
-
-## Bonus: script to list all your Google Photos using the API
-
-In the previous section, we saw it can be useful to list all the photos
-from Google Photos (not necessarily on any of your devices) prior to
-running the archiving process, to make sure you can catch the ones that
-are not backed up anywhere.
-
-You can put this script in `photos.mjs` and run as `node photos.mjs`.
-You'll need to put a Google OAuth access token with access to your
-Google Photos for this to work.
-
-If you want to generate one from the CLI, check out my
-[article on the subject](../../2021/02/google-oauth-from-cli-application.md#update-local-server-redirect).
-
-```js
-import fs from 'node:fs/promises'
-
-const accessToken = 'YOUR_ACCESS_TOKEN'
-
-let pageToken = ''
-let pages = []
-
-do {
-  const url = 'https://photoslibrary.googleapis.com/v1/mediaItems?pageSize=100&pageToken=' + encodeURIComponent(pageToken)
-
-  console.log(url)
-
-  const response = await fetch(url, {
-    headers: {
-      'Authorization': `Bearer ${accessToken}`
-    }
-  })
-
-  const json = await response.json()
-
-  pages.push(json)
-
-  pageToken = json.nextPageToken
-} while (pageToken)
-
-await fs.writeFile('pages.json', JSON.stringify(pages, null, 2))
-```
-
-This will fetch all pages from the Google Photos API and dump them in a
-`pages.json` file. You can then iterate through it to do whatever
-operations you need to, e.g. making sure you don't leave any photo
-around before deleting them from Google.
 
 ## Conclusion
 

@@ -35,6 +35,7 @@ figure.full {
 figure.center, figure.grid {
     justify-content: center;
     justify-items: center;
+    align-items: center;
 }
 
 .video {

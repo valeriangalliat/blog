@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>
 * [Branch Verve office chair: make it taller!](2023/07/branch-verve-office-chair-taller.md) <small>July 28, 2023</small>
 * [Völkl Touristick ski poles & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
 * [macOS harvest cursor from any app 😏](2023/07/macos-harvest-cursor-from-any-app.md) <small>July 27, 2023</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Firebase functions in a monorepo? A challenging pile of hacks](2023/04/firebase-functions-monorepo.md) <small>April 7, 2023</small>
 * [How Firebase `functions.ignore` really works](2023/04/firebase-functions-ignore.md) <small>April 7, 2023</small>
 * [Firebase functions: debugging upload error `EntityTooLarge`](2023/04/firebase-functions-entity-too-large.md) <small>April 7, 2023</small>
-* [Vercel: custom preview domain for free?](2023/04/vercel-custom-preview-domain.md) <small>April 6, 2023</small>
 
 [All the posts](posts.md)
 
@@ -48,7 +48,8 @@ A blog about tech, programming and other things.
 * [Gear](gear.md) <small>| the gear I use</small>
 * [About the name](about-the-name.md) <small>| why CodeJam</small>
 * [Photography](https://photography.codejam.info/) <small>| my photos</small>
-* [YouTube](https://www.youtube.com/@FunkyVal) <small>| music covers, and more</small>
+* [YouTube <small>(main channel)</small>](https://www.youtube.com/@FunkyVal) <small>| music covers, and more</small>
+* [YouTube <small>(secondary channel)</small>](https://www.youtube.com/@FonkyVal) <small>| mostly just skiing</small>
 * [More links](val.md#links) <small>| social media, contact, ...</small>
 
 </div>

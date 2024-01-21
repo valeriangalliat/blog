@@ -348,6 +348,7 @@ figure.full {
 figure.center, figure.grid {
     justify-content: center;
     justify-items: center;
+    align-items: center;
 }
 
 .video {
@@ -504,11 +505,13 @@ footer a:hover {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .tagline {
+.post .hero .tagline,
+.page-updated .hero .date {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .date {
+.post .hero .date,
+.page-updated .hero .tagline {
     color: var(--color-scale-gray-2);
 }
 

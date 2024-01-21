@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="Val (Valérian Galliat)">
-  <meta property="og:description" content="I’m from Grenoble, in the beautiful French Alps, and currently living in Montreal, Canada.">
+  <meta property="og:description" content="I’m from Grenoble, in the beautiful French Alps, and currently living in Squamish, Canada.">
   <meta property="og:image" content="https://www.codejam.info/img/val.jpg">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -35,11 +35,21 @@
   </header>
   <div class="content">
 <figure class="center">
-  <img alt="Val" src="img/val-summer.jpg">
+  <img id="val" alt="Val" src="img/val-winter.jpg">
 </figure>
+<script>
+
+const month = new Date().getMonth()
+
+// From June to November (included), show summer picture
+if (month >= 5 && month <= 10) {
+  val.src = val.src.replace('winter', 'summer')
+}
+
+</script>
 <h2 id="about" tabindex="-1"><a class="header-anchor" href="#about"><span>About</span></a></h2>
 <p>I’m from <strong>Grenoble</strong>, in the beautiful French Alps, and currently
-living in <strong>Montreal, Canada</strong>.</p>
+living in <strong>Squamish, Canada</strong>.</p>
 <p>I write on this blog about <strong>computers and programming</strong>, but also about
 <strong>music</strong>, <strong>photography</strong>, <strong>video</strong>, <strong>brewing</strong>, and anything else I
 find useful and worth sharing.</p>
@@ -68,14 +78,16 @@ touch!</p>
 <h2 id="links" tabindex="-1"><a class="header-anchor" href="#links"><span>Links</span></a></h2>
 <div class="links">
 <ul>
+<li><a href="now.html">⏰ Now</a> <small>| what I’m doing now</small></li>
 <li>✍️ <a href="https://www.codejam.info/">Blog</a> <small>| 90% programming, 10% content creation</small></li>
-<li>📸 <a href="https://photography.codejam.info/">Photography</a> <small>| my photos</small></li>
 <li>🌈 <a href="https://www.instagram.com/funkyval_/">Instagram</a> <small>| my square photos</small></li>
-<li>🎬 <a href="https://www.youtube.com/@FunkyVal">YouTube</a> <small>| music covers, and more</small></li>
+<li><a href="https://www.youtube.com/@FunkyVal">🎬 YouTube <small>(main channel)</small></a> <small>| music covers, and more</small></li>
+<li><a href="https://www.youtube.com/@FonkyVal">⛷️ YouTube <small>(secondary channel)</small></a> <small>| mostly just skiing</small></li>
 <li>🐦 <a href="https://twitter.com/valeriangalliat">Twitter</a> <small>| 50% jokes, 50% tips, 100% tech</small></li>
 <li>🧑‍💻 <a href="https://github.com/valeriangalliat">GitHub</a> <small>| my projects</small></li>
 <li>💸 <a href="https://ko-fi.com/funkyval">Ko-fi</a> <small>| buy me a coffee</small></li>
 <li>🦄 <a href="https://www.linkedin.com/in/valeriangalliat/">LinkedIn</a> <small>| connect with me</small></li>
+<li>📸 <a href="https://photography.codejam.info/">Photography</a> <small>| my photos</small></li>
 <li>🎸 <a href="https://soundcloud.com/funkyval">SoundCloud</a> <small>| my music</small></li>
 <li>📝 <a href="https://valeriangalliat.github.io/cv/cv.en.pdf">Resume</a> <small>| also in <a href="https://valeriangalliat.github.io/cv/cv.fr.pdf">French</a> and <a href="https://github.com/valeriangalliat/cv">LaTeX</a></small></li>
 <li>📩 <a href="mailto:val@codejam.info">Email</a> <small>| <code>val@codejam.info</code></small></li>

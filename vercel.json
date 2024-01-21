@@ -20,6 +20,11 @@
       "permanent": true
     },
     {
+      "source": "/now.html",
+      "destination": "/2024/01/now.html",
+      "permanent": false
+    },
+    {
       "source": "/(.*)",
       "has": [
         {

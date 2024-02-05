@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
+* [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
 * [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>
 
 ## 2023

@@ -9,6 +9,8 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
+* [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
 * [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>
 * [Branch Verve office chair: make it taller!](2023/07/branch-verve-office-chair-taller.md) <small>July 28, 2023</small>
 * [Völkl Touristick ski poles & Komperdell Ice-Flex baskets](2023/07/volkl-touristick-komperdell-ice-flex.md) <small>July 27, 2023</small>
@@ -22,8 +24,6 @@ A blog about tech, programming and other things.
 * [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
 * [Configuring a GCP Pub/Sub dead letter queue with Pulumi](2023/04/gcp-pubsub-dlq-pulumi.md) <small>April 9, 2023</small>
 * [Firebase functions in a monorepo? A challenging pile of hacks](2023/04/firebase-functions-monorepo.md) <small>April 7, 2023</small>
-* [How Firebase `functions.ignore` really works](2023/04/firebase-functions-ignore.md) <small>April 7, 2023</small>
-* [Firebase functions: debugging upload error `EntityTooLarge`](2023/04/firebase-functions-entity-too-large.md) <small>April 7, 2023</small>
 
 [All the posts](posts.md)
 

@@ -27,13 +27,20 @@ async function * parsePostImpl (line) {
 
   const title = line.split('</a>')[0].replace(/<[^>]*>/g, '').trim()
   const prettyDate = line.split('<small>')[1].split('</small>')[0]
-  const date = new Date(prettyDate).toISOString()
+  const date = new Date(prettyDate)
+
+  // Before I moved to Squamish, force timezone to EST to keep previous feed
+  // entries unchanged. Can be removed once there's enough items in the feed in
+  // the new timezone.
+  if (date.getTime() < new Date('2023-11-01').getTime()) {
+    date.setUTCHours(4)
+  }
 
   yield '  <entry>\n'
   yield `    <title>${title}</title>\n`
   yield `    <link href="${url}" />\n`
   yield `    <id>${url}</id>\n`
-  yield `    <updated>${date}</updated>\n`
+  yield `    <updated>${date.toISOString()}</updated>\n`
 
   if (isExternal) {
     yield '  </entry>\n'

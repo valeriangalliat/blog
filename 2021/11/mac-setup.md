@@ -151,7 +151,7 @@ Now I'm ready to configure the [system preferences](#system-preferences),
   make sure **Install macOS updates** is off (I don't want macOS to
   reboot without my permission and lose any unsaved state).
 * If I installed Visual Studio Code, I run `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
-* for... sanity.
+  for... sanity.
 
 ## iTerm2 preferences
 

@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 * [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
 * [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
 * [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [macOS screenshot: capture selected window but for dialogs](2023/04/macos-screenshot-dialog.md) <small>April 13, 2023</small>
 * [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
 * [Configuring a GCP Pub/Sub dead letter queue with Pulumi](2023/04/gcp-pubsub-dlq-pulumi.md) <small>April 9, 2023</small>
-* [Firebase functions in a monorepo? A challenging pile of hacks](2023/04/firebase-functions-monorepo.md) <small>April 7, 2023</small>
 
 [All the posts](posts.md)
 

@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 * [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
 * [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
 * [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>

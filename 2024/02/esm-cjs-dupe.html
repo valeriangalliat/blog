@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Duplicated ESM and CJS package in bundle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Duplicated ESM and CJS package in bundle">
+  <meta property="og:description" content="Note: for context we’re in a Next.js TypeScript project, using Webpack as a bundler, but I could see this happening with similar tools.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Duplicated ESM and CJS package in bundle</h1>
+<p class="date">February 18, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<p><strong>Note:</strong> for context we’re in a Next.js TypeScript project, using
+Webpack as a bundler, but I could see this happening with similar tools.</p>
+<p>The problem occurred with the <a href="https://www.npmjs.com/package/firebase"><code>firebase</code></a>
+package, but again that could happen with other packages.</p>
+</div>
+<p>So we upgrade the Firebase SDK by a few minor versions, and suddenly,
+our JS bundle size blows up. Like, 50 kB more of (gzipped) JS shipped on
+every page. Not good.</p>
+<p>Luckily we have <a href="https://github.com/hashicorp/nextjs-bundle-analysis">tests</a>
+to catch this kind of thing.</p>
+<p>Further <a href="https://nextjs.org/docs/app/building-your-application/optimizing/bundle-analyzer">investigation</a>
+shown that we were shipping <code>@firebase/app</code> and <code>@firebase/auth</code> twice. 🤔</p>
+<h2 id="the-problem" tabindex="-1"><a class="header-anchor" href="#the-problem"><span>The problem</span></a></h2>
+<p>We use <a href="https://github.com/gladly-team/next-firebase-auth">next-firebase-auth</a>
+to integrate Firebase Auth with Next.js. next-firebase-auth imports
+specifically <code>firebase/app</code> and <code>firebase/auth</code>.</p>
+<p>In our own code, we use <code>import</code> to import our dependencies:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { getApp } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase/app&#x27;</span>
+<span class="hljs-keyword">import</span> { getAuth } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase/auth&#x27;</span>
+</code></pre>
+<p>But next-firebase-auth, while they do the same in their
+<a href="https://github.com/gladly-team/next-firebase-auth/blob/d51bf07eecf727ef3df45587e4008551b0cb4803/src/initFirebaseClientSDK.ts#L1-L2">TypeScript source code</a>,
+is actually bundled down (also with Webpack) to a <a href="https://socket.dev/npm/package/next-firebase-auth/files/1.0.2/build/index.browser.js">CJS file</a>.</p>
+<p>The code is minified, but you can see it uses <code>require</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-number">324</span>:<span class="hljs-function"><span class="hljs-params">e</span>=&gt;</span>{e.<span class="hljs-property">exports</span>=<span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;firebase/app&quot;</span>)},<span class="hljs-number">610</span>:<span class="hljs-function"><span class="hljs-params">e</span>=&gt;</span>{e.<span class="hljs-property">exports</span>=<span class="hljs-built_in">require</span>(<span class="hljs-string">&quot;firebase/auth&quot;</span>)}
+</code></pre>
+<p>The problem is that the version of the Firebase SDK we upgraded to
+contains <a href="https://github.com/firebase/firebase-js-sdk/pull/6981">this PR</a>,
+that makes <code>@firebase/auth</code> export both ESM and CJS variants of their
+<code>browser</code> bundle, whereas before they only exposed the ESM version for
+the browser.</p>
+<p>Concretely, this means that before this PR, the <code>package.json</code> of
+<code>@firebase/auth</code> looked like:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;exports&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;.&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/esm2017/index.js&quot;</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>And after:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;exports&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;.&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;default&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/esm2017/index.js&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;browser&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">&quot;require&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/browser-cjs/index.js&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;import&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist/esm2017/index.js&quot;</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Because initially there was no <code>browser</code> entry, Webpack picked the
+<code>default</code> value for both <code>import</code> and <code>require</code>, which turns out to be
+the ESM bundle.</p>
+<p>However after that change, we now have a different bundle configured
+depending if it’s imported with <code>import</code> or <code>require</code>. As
+<a href="https://webpack.js.org/guides/package-exports/#import">documented</a>
+Webpack will map <code>import</code> calls to the file under <code>import</code> in the
+<code>package.json</code>, and <code>require</code> to the <code>require</code> field, which makes sense.</p>
+<p>However this is a problem for us as we saw earlier, we use <code>import</code> in
+our own codebase, but the distribution bundle of next-firebase-auth
+(like probably many other packages in the ecosystem) only comes with a
+CJS file using <code>require</code>.</p>
+<p>This means our own code will use <code>@firebase/auth/dist/esm2017/index.js</code>,
+while next-firebase-auth will use <code>@firebase/auth/dist/browser-cjs/index.js</code>.</p>
+<p>Not only this increases our bundle size unnecessarily, but it breaks the
+Firebase SDK as it depends on shared global state, and now different
+parts of the codebase point to a different, isolated version of the SDK.</p>
+<h2 id="this-sucks-and-nobody-s-to-blame-really" tabindex="-1"><a class="header-anchor" href="#this-sucks-and-nobody-s-to-blame-really"><span>This sucks, and nobody’s to blame really</span></a></h2>
+<ul>
+<li>It’s absolutely reasonable for the Firebase SDK to expose a different
+browser bundle for <code>import</code> and <code>require</code>.</li>
+<li>It’s absolutely reasonable, and even expected, that Webpack maps
+<code>import</code> and <code>require</code> calls to the matching field in <code>package.json</code>.</li>
+<li>It’s absolutely reasonable for next-firebase-auth to export a single
+CJS bundle (that’s how npm packages look like since npm is a thing).</li>
+</ul>
+<p>It’s just a result of the giant fracture in the ecosystem between CJS
+and ESM imports. It’s probably for the best, and I look forward to ESM
+being widespread enough that we don’t encounter those problems, but the
+transition is long and painful. It’s been 3-4 years I’m dealing with
+this kind of issues as a package maintainer, and they tend to be
+particularly time consuming, and takes away time to fix real problems or
+implement new features.</p>
+<h2 id="the-solution" tabindex="-1"><a class="header-anchor" href="#the-solution"><span>The solution</span></a></h2>
+<p>As far as I’m concerned, for that particular instance of this problem,
+the solution was to configure Webpack to alias <code>firebase/app</code> and
+<code>firebase/auth</code> (the parts of the Firebase SDK used by
+next-firebase-auth) to their ESM bundle, so this same bundle gets used
+regardless if imported with <code>import</code> or <code>require</code>.</p>
+<p>In the Webpack config:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">resolve</span>: {
+    <span class="hljs-attr">alias</span>: {
+      <span class="hljs-string">&#x27;firebase/app&#x27;</span>: <span class="hljs-built_in">require</span>.<span class="hljs-title function_">resolve</span>(<span class="hljs-string">&#x27;firebase/app&#x27;</span>).<span class="hljs-title function_">replace</span>(<span class="hljs-string">&#x27;index.cjs.js&#x27;</span>, <span class="hljs-string">&#x27;index.mjs&#x27;</span>),
+      <span class="hljs-string">&#x27;firebase/auth&#x27;</span>: <span class="hljs-built_in">require</span>.<span class="hljs-title function_">resolve</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>).<span class="hljs-title function_">replace</span>(<span class="hljs-string">&#x27;index.cjs.js&#x27;</span>, <span class="hljs-string">&#x27;index.mjs&#x27;</span>)
+    }
+  }
+}
+</code></pre>
+<p>It’s something we’ll have to maintain as we update the Firebase SDK, if
+they were to change the layout of their distribution files, since this
+doesn’t bother parsing the <code>package.json</code> <code>exports</code> field, but it’s good
+enough.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/02/esm-cjs-dupe.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

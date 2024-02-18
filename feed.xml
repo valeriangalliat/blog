@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-02-18T18:09:08.538Z</updated>
+  <updated>2024-02-18T18:14:31.381Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -122,6 +122,23 @@ regardless if imported with <code>import</code> or <code>require</code>.</p>
 they were to change the layout of their distribution files, since this
 doesn’t bother parsing the <code>package.json</code> <code>exports</code> field, but it’s good
 enough.</p>
+<h2 id="bonus" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/02/esm-cjs-dupe.html#bonus"><span>Bonus</span></a></h2>
+<p>For reference, a <a href="https://github.com/webpack/webpack/issues/15967">related GitHub issue</a>
+and <a href="https://github.com/webpack/webpack/discussions/18082">discussion</a>.</p>
+<p>I’ve also tried using
+<a href="https://webpack.js.org/configuration/resolve/#resolveconditionnames"><code>resolve.conditionNames</code></a>
+as follows, as a more generic fix to force <em>all</em> packages to use the ESM
+build if present:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">resolve</span>: {
+    <span class="hljs-attr">conditionNames</span>: [<span class="hljs-string">&#x27;import&#x27;</span>, <span class="hljs-string">&#x27;default&#x27;</span>]
+  }
+}
+</code></pre>
+<p>This would have been great as it would prevent similar (but maybe less
+noticeable) duplication issues to happen in the dependency graph,
+however, as you can expect, this will break some packages (in my case
+some <code>@babel/runtime</code> imports), so I couldn’t go with that.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

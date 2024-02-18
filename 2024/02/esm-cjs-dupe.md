@@ -143,3 +143,26 @@ It's something we'll have to maintain as we update the Firebase SDK, if
 they were to change the layout of their distribution files, since this
 doesn't bother parsing the `package.json` `exports` field, but it's good
 enough.
+
+## Bonus
+
+For reference, a [related GitHub issue](https://github.com/webpack/webpack/issues/15967)
+and [discussion](https://github.com/webpack/webpack/discussions/18082).
+
+I've also tried using
+[`resolve.conditionNames`](https://webpack.js.org/configuration/resolve/#resolveconditionnames)
+as follows, as a more generic fix to force _all_ packages to use the ESM
+build if present:
+
+```js
+module.exports = {
+  resolve: {
+    conditionNames: ['import', 'default']
+  }
+}
+```
+
+This would have been great as it would prevent similar (but maybe less
+noticeable) duplication issues to happen in the dependency graph,
+however, as you can expect, this will break some packages (in my case
+some `@babel/runtime` imports), so I couldn't go with that.

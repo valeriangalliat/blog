@@ -111,7 +111,7 @@ today, great success)!
 
 First release of [markdown-it-anchor], another of my (relatively) most
 successful projects, this time by number of contributions (5 pull
-requests, and 10 issues, OMG).
+requests and 10 issues omg).
 
 It's a flexible plugin for the [markdown-it] Markdown parser allowing to
 add an ID and an anchor to headings (I'm using it on this very blog). I

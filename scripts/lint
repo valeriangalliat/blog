@@ -33,6 +33,12 @@ process() {
         head=$(grep -A4 '^# ' "$path")
         title=$(echo "$head" | head -1 | sed 's/^# //')
         date=$((echo "$head" && echo) | grep -B1 '^$' | head -1)
+
+        # Special case for "now page"
+        if [[ "$date" =~ ^\*\* ]]; then
+            date=$(echo "$date" | cut -d'*' -f3)
+        fi
+
         expected="* [$title]($path) <small>$date</small>"
 
         if [ "$line" != "$expected" ]; then

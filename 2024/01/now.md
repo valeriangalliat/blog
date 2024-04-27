@@ -6,7 +6,7 @@ focus: 50% 25%
 
 # Life update: Squamish, climbing, skiing...
 This is a [now page](https://nownownow.com/about).  
-**January 21, 2023**, from **Squamish, Canada**.
+**January 21, 2024**, from **Squamish, Canada**.
 
 In last [update](../../2023/03/now.md), I was [reflecting](../../2023/03/now.md#what-do-you-think-of-the-now-page)
 on how I didn't like that the content of the now page was ephemeral. So

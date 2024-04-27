@@ -8,6 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
+* [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>
+* [Encrypted offsite backup system: storage 💾](2024/04/offsite-backup-storage.md) <small>April 26, 2024</small>
 * [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 * [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
 * [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>

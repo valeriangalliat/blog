@@ -9,6 +9,9 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
+* [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>
+* [Encrypted offsite backup system: storage 💾](2024/04/offsite-backup-storage.md) <small>April 26, 2024</small>
 * [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 * [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
 * [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
@@ -21,9 +24,6 @@ A blog about tech, programming and other things.
 * [Using `zx` with TypeScript, ESM and top-level `await`](2023/04/zx-typescript-esm.md) <small>April 21, 2023</small>
 * [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
 * [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
-* [macOS screenshot: capture selected window but for dialogs](2023/04/macos-screenshot-dialog.md) <small>April 13, 2023</small>
-* [Changing default mail client on macOS without signing in to the Mail app](2023/04/macos-default-mail-client.md) <small>April 13, 2023</small>
-* [Configuring a GCP Pub/Sub dead letter queue with Pulumi](2023/04/gcp-pubsub-dlq-pulumi.md) <small>April 9, 2023</small>
 
 [All the posts](posts.md)
 

@@ -205,6 +205,16 @@ Photos (and from the phone), but there’s no duplicates!</p>
 <p>Bonus: we can remove all empty directories with:</p>
 <pre><code class="hljs language-sh">find /Volumes/Archive/Phone -<span class="hljs-built_in">type</span> d -empty -delete
 </code></pre>
+<div class="note">
+<p><strong>Note:</strong> sometimes this is not enough, e.g. WhatsApp has some
+<code>.nomedia</code> files in empty directories that prevent them to be cleaned
+up, and if you browsed with Finder you may have some <code>.DS_Store</code> too,
+so:</p>
+<pre><code class="hljs language-sh">find . -<span class="hljs-built_in">type</span> f -name .nomedia -delete
+find . -<span class="hljs-built_in">type</span> f -name .DS_Store -delete
+find /Volumes/Archive/Phone -<span class="hljs-built_in">type</span> d -empty -delete
+</code></pre>
+</div>
 <p>At that point, I also count the number of files from the backup and
 makes sure it matches the number of files I deleted from Google Photos
 earlier:</p>

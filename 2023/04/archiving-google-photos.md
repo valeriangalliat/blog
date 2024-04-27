@@ -3,7 +3,7 @@ April 2, 2023
 
 <div class="note">
 
-**Note:** updated on December 30, 2023.
+**Note:** updated on April 26, 2024.
 
 </div>
 
@@ -44,7 +44,7 @@ With that said, here's how I do it.
 ### 1. Sync phone to computer
 
 First, I use [Syncthing](https://syncthing.net/) to sync the contents of
-my phone to a hard drive connected to my computer.
+my phone to my computer.
 
 I configure Syncthing as "send only" on my phone, and "receive only" on
 my computer, and I configure it to sync the root directory of my phone
@@ -54,58 +54,19 @@ my computer, and I configure it to sync the root directory of my phone
 make sure no incremental updates will happen during the archive
 process.**
 
-### 2. Copy synced folder to archive
+### 2. Double check I'm not missing anything
 
-For this example, let's assume I synced my phone to a
-`/Volumes/Syncthing/Phone` directory, and I want to archive my old
-photos in `/Volumes/Archive/Phone`.
-
-I'll run the following command to copy the phone contents to my archive
-directory (but copying from Finder also works):
-
-```sh
-cp -a /Volumes/Syncthing/Phone/ /Volumes/Archive/Phone/
-```
-
-<div class="note">
-
-**Note:** the reason I copy the whole phone contents is because I want
-to catch _all_ photos and videos that are backed up to Google Photos.
-Typically, apps like Messenger, Whats App, Signal, etc. all store photos
-in different directories, so syncing only `DCIM/Camera` would not be
-enough.
-
-</div>
-
-If the target directory already exists, this will append new files to it
-(and overwrite them if a file already exists there)!
-
-Also if the directory already exists, the trailing slashes are
-important.
-
-<div class="note">
-
-**Note:** if both directories are on the same filesystem, and you're not
-appending to an existing archive, you may use `mv` instead, but then
-make sure to recreate the Syncthing directory and put back its
-`.stfolder` (required for Syncthing to recognize it) and `.stignore` if
-you have one!
-
-</div>
-
-### 3. Double check I'm not missing anything
-
-If you have photos that are _only_ on Google Photos but not stored on
-your phone storage, the previous step didn't archive them. You need to
-make sure to download them from Google Photos in the first place.
+If some photos are _only_ on Google Photos but not stored on the phone,
+the previous step didn't archive them. We need to make sure to download
+them from Google Photos in the first place.
 
 Because there's no way from Google Photos to find all photos that are
 not locally saved to a specific device (other than going through them
-one by one), that's where I [use the Google Photos API](#bonus-script-to-list-all-your-google-photos-using-the-api)
-to make sure I'm not missing anything.
+one by one), that's where I use the Google Photos API to make sure I'm
+not missing anything.
 
 This will get technical, so if you don't care about this part, feel free
-to skip to [the next step](#4-delete-everything-from-google-photos).
+to skip to [the next step](#3-copy-synced-folder-to-archive).
 
 First, we need a Google OAuth token with access to Google Photos. We'll
 reuse [my script from this other article](../../2021/02/google-oauth-from-cli-application.md#update-local-server-redirect)
@@ -153,22 +114,100 @@ From there, I like to use [jq](https://jqlang.github.io/jq/) to extract
 the filenames:
 
 ```sh
-cat pages.json | jq -r '.[].mediaItems[].filename' > filenames
+cat pages.json | jq -r '.[].mediaItems[].filename' | sort > gphoto-files
 ```
 
-Then I use the following script to check that each filename is indeed
-present in my archive:
+Now, let's make a list of all the files local to the phone. I'll only
+scan the directories I configured to be backed up on Google Photos.
+Adjust this to your needs.
 
 ```sh
-cat filenames | while read file; do find /Volumes/Archive/Phone -name "$file" | grep -q . || echo "Missing $file"; done
+find DCIM Pictures Movies Download \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \) > ~/phone-files
+cat phone-files | xargs basename | sort > phone-basefiles
 ```
 
-This will print the name of every file that's on Google Photos and not
-part of the backup. If any, you can find more details in `pages.json`
-including a Google Photos link to find out what photo it is that needs
-to be downloaded.
+<div class="note">
 
-Once everything is confirmed backed up, we can continue.
+**Note:** to find the list of relevant extensions I used the following command:
+
+```sh
+cat gphoto-files | awk -F. '{print $NF}' | sort | uniq
+```
+
+</div>
+
+Now we have a sorted list of the files on Google Photos and on the
+phone, we can use the `comm` command to find missing entries:
+
+```sh
+# See what's on the phone but not on Google Photos
+comm -23 phone-basefiles gphoto-files
+
+# See what's on Google Photos but not on the phone
+comm -23 gphoto-files phone-basefiles
+```
+
+If I'm missing some files, I'll go on and download them from Google
+Photos to my phone and run the sync again, and repeat this process until
+everything is consistent.
+
+When a file is missing from the phone, look at `pages.json` to find the
+corresponding Google Photos link!
+
+<div class="note">
+
+**Note:** here's an alternative script I've also been using to check if
+the files from Google Photos are missing in my backup:
+
+```sh
+cat gphoto-files | while read file; do find . -name "$file" | grep -q . || echo "Missing $file"; done
+```
+
+</div>
+
+### 3. Copy synced folder to archive
+
+For this example, let's assume I synced my phone to a
+`/Volumes/Syncthing/Phone` directory, and I want to archive my old
+photos in `/Volumes/Archive/Phone`.
+
+I'll run the following command to copy the phone contents to my archive
+directory (but copying from Finder also works). Here I'm only copying
+the directories I configured to be backed up to Google Photos in the
+first place.
+
+```sh
+mkdir -p /Volumes/Archive/Phone
+cp -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} /Volumes/Archive/Phone
+```
+
+If the target directory already exists, this will append new files to it
+(and overwrite them if a file already exists there)!
+
+<div class="note">
+
+**Note:** if both directories are on the same filesystem, and you're not
+appending to an existing archive, you may use `mv` instead, but then
+make sure to recreate the Syncthing directory and put back its
+`.stfolder` (required for Syncthing to recognize it) and `.stignore` if
+you have one!
+
+</div>
+
+At that point I like to remove empty directories from the archive. This
+also involves removing `.DS_Store` files on Mac, and `.nomedia` if you
+use WhatsApp, to make sure the empty directories can actually be
+identified as such.
+
+```sh
+find . -type f -name .nomedia -delete
+find . -type f -name .DS_Store -delete
+find . -type d -empty | while read dir; do rmdir -v "$dir"; done
+```
+
+The last command is not recursive so you may need to run it a few times
+in the case a parent directory only contained empty directories. It's
+done when it outputs nothing.
 
 ### 4. Delete everything from Google Photos
 
@@ -203,8 +242,8 @@ Again with Syncthing in my case, I do a sync following the deletion.
 <div class="note">
 
 **Note:** you may want to exclude `.trashed-*` files in your
-`.stignore`, otherwise the photos you deleted will still be synced while
-they're in the trash.
+`.stignore`, otherwise the photos you deleted will still be transferred
+while they're in the trash.
 
 </div>
 
@@ -212,18 +251,6 @@ Now in our example, `/Volumes/Syncthing/Phone` contains just the
 photos we decided to keep around in Google Photos, while
 `/Volumes/Archive/Phone` contains _all_ the photos (also including the
 ones we kept around).
-
-On top of that, both directories contains _all other files_ from the
-phone, that are not managed by Google Photos.
-
-<div class="note">
-
-**Note:** this process is not very efficient if you have a lot of files
-that are not photos and videos, e.g. music and downloads. You may want
-to ignore those directories in the earlier steps to avoid copying them
-around unnecessarily!
-
-</div>
 
 ### 6. Remove the overlap
 
@@ -233,40 +260,34 @@ kept, as well as all the files in the phone storage that are not managed
 by Google Photos.
 
 ```sh
-(cd /Volumes/Syncthing/Phone && find . -type f) | while read f; do rm -v "/Volumes/Archive/Phone/$f"; done
+(cd /Volumes/Syncthing/Phone && find . -type f) | while read f; do
+  file="/Volumes/Archive/Phone/$f"
+
+  if [ -f "$file" ]; then
+    rm -v "$file"
+  fi
+done
 ```
 
 Now, the archive directory only contains what we removed from Google
-Photos (and from the phone), but there's no duplicates!
+Photos (and from the phone).
 
-Bonus: we can remove all empty directories with:
-
-```sh
-find /Volumes/Archive/Phone -type d -empty -delete
-```
-
-<div class="note">
-
-**Note:** sometimes this is not enough, e.g. WhatsApp has some
-`.nomedia` files in empty directories that prevent them to be cleaned
-up, and if you browsed with Finder you may have some `.DS_Store` too,
-so:
-
-```sh
-find . -type f -name .nomedia -delete
-find . -type f -name .DS_Store -delete
-find /Volumes/Archive/Phone -type d -empty -delete
-```
-
-</div>
-
-At that point, I also count the number of files from the backup and
-makes sure it matches the number of files I deleted from Google Photos
-earlier:
+We can confirm with the following command:
 
 ```sh
 find /Volumes/Archive/Phone -type f | grep -v DS_Store | wc -l
 ```
+
+It should match the number of files deleted from Google Photos earlier.
+
+We can also one last check:
+
+```sh
+find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \) | wc -l
+```
+
+This should match the number of photos _currently_ on Google Photos (if
+you kept any).
 
 ### 7. Profit!
 

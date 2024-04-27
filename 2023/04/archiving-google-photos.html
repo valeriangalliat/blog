@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="Archiving Google Photos offline to free up space">
-  <meta property="og:description" content="Note: updated on December 30, 2023.">
+  <meta property="og:description" content="Note: updated on April 26, 2024.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -36,7 +36,7 @@
   </header>
   <div class="content">
 <div class="note">
-<p><strong>Note:</strong> updated on December 30, 2023.</p>
+<p><strong>Note:</strong> updated on April 26, 2024.</p>
 </div>
 <p>If you backup your phone photos to Google Photos automatically, and you
 don’t pay for some kind of Google One subscription, you’ll run sooner or
@@ -64,49 +64,23 @@ the same Google Photos is not supported.</p>
 <p>With that said, here’s how I do it.</p>
 <h3 id="1-sync-phone-to-computer" tabindex="-1"><a class="header-anchor" href="#1-sync-phone-to-computer"><span>1. Sync phone to computer</span></a></h3>
 <p>First, I use <a href="https://syncthing.net/">Syncthing</a> to sync the contents of
-my phone to a hard drive connected to my computer.</p>
+my phone to my computer.</p>
 <p>I configure Syncthing as “send only” on my phone, and “receive only” on
 my computer, and I configure it to sync the root directory of my phone
 (which can be tricky, <a href="syncthing-root-directory.html">but possible</a>).</p>
 <p><strong>After the sync is complete, I turn off Syncthing from my computer, to
 make sure no incremental updates will happen during the archive
 process.</strong></p>
-<h3 id="2-copy-synced-folder-to-archive" tabindex="-1"><a class="header-anchor" href="#2-copy-synced-folder-to-archive"><span>2. Copy synced folder to archive</span></a></h3>
-<p>For this example, let’s assume I synced my phone to a
-<code>/Volumes/Syncthing/Phone</code> directory, and I want to archive my old
-photos in <code>/Volumes/Archive/Phone</code>.</p>
-<p>I’ll run the following command to copy the phone contents to my archive
-directory (but copying from Finder also works):</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/ /Volumes/Archive/Phone/
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> the reason I copy the whole phone contents is because I want
-to catch <em>all</em> photos and videos that are backed up to Google Photos.
-Typically, apps like Messenger, Whats App, Signal, etc. all store photos
-in different directories, so syncing only <code>DCIM/Camera</code> would not be
-enough.</p>
-</div>
-<p>If the target directory already exists, this will append new files to it
-(and overwrite them if a file already exists there)!</p>
-<p>Also if the directory already exists, the trailing slashes are
-important.</p>
-<div class="note">
-<p><strong>Note:</strong> if both directories are on the same filesystem, and you’re not
-appending to an existing archive, you may use <code>mv</code> instead, but then
-make sure to recreate the Syncthing directory and put back its
-<code>.stfolder</code> (required for Syncthing to recognize it) and <code>.stignore</code> if
-you have one!</p>
-</div>
-<h3 id="3-double-check-i-m-not-missing-anything" tabindex="-1"><a class="header-anchor" href="#3-double-check-i-m-not-missing-anything"><span>3. Double check I’m not missing anything</span></a></h3>
-<p>If you have photos that are <em>only</em> on Google Photos but not stored on
-your phone storage, the previous step didn’t archive them. You need to
-make sure to download them from Google Photos in the first place.</p>
+<h3 id="2-double-check-i-m-not-missing-anything" tabindex="-1"><a class="header-anchor" href="#2-double-check-i-m-not-missing-anything"><span>2. Double check I’m not missing anything</span></a></h3>
+<p>If some photos are <em>only</em> on Google Photos but not stored on the phone,
+the previous step didn’t archive them. We need to make sure to download
+them from Google Photos in the first place.</p>
 <p>Because there’s no way from Google Photos to find all photos that are
 not locally saved to a specific device (other than going through them
-one by one), that’s where I <a href="#bonus-script-to-list-all-your-google-photos-using-the-api">use the Google Photos API</a>
-to make sure I’m not missing anything.</p>
+one by one), that’s where I use the Google Photos API to make sure I’m
+not missing anything.</p>
 <p>This will get technical, so if you don’t care about this part, feel free
-to skip to <a href="#4-delete-everything-from-google-photos">the next step</a>.</p>
+to skip to <a href="#3-copy-synced-folder-to-archive">the next step</a>.</p>
 <p>First, we need a Google OAuth token with access to Google Photos. We’ll
 reuse <a href="../../2021/02/google-oauth-from-cli-application.html#update-local-server-redirect">my script from this other article</a>
 for this, just replacing the scope with <code>https://www.googleapis.com/auth/photoslibrary.readonly</code>.
@@ -145,17 +119,69 @@ will log the access token that we’ll use in the next script.</p>
 <code>pages.json</code> file.</p>
 <p>From there, I like to use <a href="https://jqlang.github.io/jq/">jq</a> to extract
 the filenames:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> pages.json | jq -r <span class="hljs-string">&#x27;.[].mediaItems[].filename&#x27;</span> &gt; filenames
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> pages.json | jq -r <span class="hljs-string">&#x27;.[].mediaItems[].filename&#x27;</span> | <span class="hljs-built_in">sort</span> &gt; gphoto-files
 </code></pre>
-<p>Then I use the following script to check that each filename is indeed
-present in my archive:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> filenames | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> file; <span class="hljs-keyword">do</span> find /Volumes/Archive/Phone -name <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q . || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Missing <span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span>
+<p>Now, let’s make a list of all the files local to the phone. I’ll only
+scan the directories I configured to be backed up on Google Photos.
+Adjust this to your needs.</p>
+<pre><code class="hljs language-sh">find DCIM Pictures Movies Download \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) &gt; ~/phone-files
+<span class="hljs-built_in">cat</span> phone-files | xargs <span class="hljs-built_in">basename</span> | <span class="hljs-built_in">sort</span> &gt; phone-basefiles
 </code></pre>
-<p>This will print the name of every file that’s on Google Photos and not
-part of the backup. If any, you can find more details in <code>pages.json</code>
-including a Google Photos link to find out what photo it is that needs
-to be downloaded.</p>
-<p>Once everything is confirmed backed up, we can continue.</p>
+<div class="note">
+<p><strong>Note:</strong> to find the list of relevant extensions I used the following command:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> gphoto-files | awk -F. <span class="hljs-string">&#x27;{print $NF}&#x27;</span> | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span>
+</code></pre>
+</div>
+<p>Now we have a sorted list of the files on Google Photos and on the
+phone, we can use the <code>comm</code> command to find missing entries:</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># See what&#x27;s on the phone but not on Google Photos</span>
+<span class="hljs-built_in">comm</span> -23 phone-basefiles gphoto-files
+
+<span class="hljs-comment"># See what&#x27;s on Google Photos but not on the phone</span>
+<span class="hljs-built_in">comm</span> -23 gphoto-files phone-basefiles
+</code></pre>
+<p>If I’m missing some files, I’ll go on and download them from Google
+Photos to my phone and run the sync again, and repeat this process until
+everything is consistent.</p>
+<p>When a file is missing from the phone, look at <code>pages.json</code> to find the
+corresponding Google Photos link!</p>
+<div class="note">
+<p><strong>Note:</strong> here’s an alternative script I’ve also been using to check if
+the files from Google Photos are missing in my backup:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> gphoto-files | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> file; <span class="hljs-keyword">do</span> find . -name <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q . || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Missing <span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span>
+</code></pre>
+</div>
+<h3 id="3-copy-synced-folder-to-archive" tabindex="-1"><a class="header-anchor" href="#3-copy-synced-folder-to-archive"><span>3. Copy synced folder to archive</span></a></h3>
+<p>For this example, let’s assume I synced my phone to a
+<code>/Volumes/Syncthing/Phone</code> directory, and I want to archive my old
+photos in <code>/Volumes/Archive/Phone</code>.</p>
+<p>I’ll run the following command to copy the phone contents to my archive
+directory (but copying from Finder also works). Here I’m only copying
+the directories I configured to be backed up to Google Photos in the
+first place.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> -p /Volumes/Archive/Phone
+<span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} /Volumes/Archive/Phone
+</code></pre>
+<p>If the target directory already exists, this will append new files to it
+(and overwrite them if a file already exists there)!</p>
+<div class="note">
+<p><strong>Note:</strong> if both directories are on the same filesystem, and you’re not
+appending to an existing archive, you may use <code>mv</code> instead, but then
+make sure to recreate the Syncthing directory and put back its
+<code>.stfolder</code> (required for Syncthing to recognize it) and <code>.stignore</code> if
+you have one!</p>
+</div>
+<p>At that point I like to remove empty directories from the archive. This
+also involves removing <code>.DS_Store</code> files on Mac, and <code>.nomedia</code> if you
+use WhatsApp, to make sure the empty directories can actually be
+identified as such.</p>
+<pre><code class="hljs language-sh">find . -<span class="hljs-built_in">type</span> f -name .nomedia -delete
+find . -<span class="hljs-built_in">type</span> f -name .DS_Store -delete
+find . -<span class="hljs-built_in">type</span> d -empty | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> <span class="hljs-built_in">dir</span>; <span class="hljs-keyword">do</span> <span class="hljs-built_in">rmdir</span> -v <span class="hljs-string">&quot;<span class="hljs-variable">$dir</span>&quot;</span>; <span class="hljs-keyword">done</span>
+</code></pre>
+<p>The last command is not recursive so you may need to run it a few times
+in the case a parent directory only contained empty directories. It’s
+done when it outputs nothing.</p>
 <h3 id="4-delete-everything-from-google-photos" tabindex="-1"><a class="header-anchor" href="#4-delete-everything-from-google-photos"><span>4. Delete everything from Google Photos</span></a></h3>
 <p>Not necessarily everything, but well, everything you want to delete to
 free up space.</p>
@@ -178,48 +204,37 @@ deleted, so I can double check the number in a later step.</p>
 <p>Again with Syncthing in my case, I do a sync following the deletion.</p>
 <div class="note">
 <p><strong>Note:</strong> you may want to exclude <code>.trashed-*</code> files in your
-<code>.stignore</code>, otherwise the photos you deleted will still be synced while
-they’re in the trash.</p>
+<code>.stignore</code>, otherwise the photos you deleted will still be transferred
+while they’re in the trash.</p>
 </div>
 <p>Now in our example, <code>/Volumes/Syncthing/Phone</code> contains just the
 photos we decided to keep around in Google Photos, while
 <code>/Volumes/Archive/Phone</code> contains <em>all</em> the photos (also including the
 ones we kept around).</p>
-<p>On top of that, both directories contains <em>all other files</em> from the
-phone, that are not managed by Google Photos.</p>
-<div class="note">
-<p><strong>Note:</strong> this process is not very efficient if you have a lot of files
-that are not photos and videos, e.g. music and downloads. You may want
-to ignore those directories in the earlier steps to avoid copying them
-around unnecessarily!</p>
-</div>
 <h3 id="6-remove-the-overlap" tabindex="-1"><a class="header-anchor" href="#6-remove-the-overlap"><span>6. Remove the overlap</span></a></h3>
 <p>To avoid that duplication, we can remove all files from the archive that
 are still in the Syncthing directory. That is, all the photos/videos we
 kept, as well as all the files in the phone storage that are not managed
 by Google Photos.</p>
-<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find . -<span class="hljs-built_in">type</span> f) | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> f; <span class="hljs-keyword">do</span> <span class="hljs-built_in">rm</span> -v <span class="hljs-string">&quot;/Volumes/Archive/Phone/<span class="hljs-variable">$f</span>&quot;</span>; <span class="hljs-keyword">done</span>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find . -<span class="hljs-built_in">type</span> f) | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> f; <span class="hljs-keyword">do</span>
+  file=<span class="hljs-string">&quot;/Volumes/Archive/Phone/<span class="hljs-variable">$f</span>&quot;</span>
+
+  <span class="hljs-keyword">if</span> [ -f <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
+    <span class="hljs-built_in">rm</span> -v <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span>
+  <span class="hljs-keyword">fi</span>
+<span class="hljs-keyword">done</span>
 </code></pre>
 <p>Now, the archive directory only contains what we removed from Google
-Photos (and from the phone), but there’s no duplicates!</p>
-<p>Bonus: we can remove all empty directories with:</p>
-<pre><code class="hljs language-sh">find /Volumes/Archive/Phone -<span class="hljs-built_in">type</span> d -empty -delete
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> sometimes this is not enough, e.g. WhatsApp has some
-<code>.nomedia</code> files in empty directories that prevent them to be cleaned
-up, and if you browsed with Finder you may have some <code>.DS_Store</code> too,
-so:</p>
-<pre><code class="hljs language-sh">find . -<span class="hljs-built_in">type</span> f -name .nomedia -delete
-find . -<span class="hljs-built_in">type</span> f -name .DS_Store -delete
-find /Volumes/Archive/Phone -<span class="hljs-built_in">type</span> d -empty -delete
-</code></pre>
-</div>
-<p>At that point, I also count the number of files from the backup and
-makes sure it matches the number of files I deleted from Google Photos
-earlier:</p>
+Photos (and from the phone).</p>
+<p>We can confirm with the following command:</p>
 <pre><code class="hljs language-sh">find /Volumes/Archive/Phone -<span class="hljs-built_in">type</span> f | grep -v DS_Store | <span class="hljs-built_in">wc</span> -l
 </code></pre>
+<p>It should match the number of files deleted from Google Photos earlier.</p>
+<p>We can also one last check:</p>
+<pre><code class="hljs language-sh">find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) | <span class="hljs-built_in">wc</span> -l
+</code></pre>
+<p>This should match the number of photos <em>currently</em> on Google Photos (if
+you kept any).</p>
 <h3 id="7-profit" tabindex="-1"><a class="header-anchor" href="#7-profit"><span>7. Profit!</span></a></h3>
 <p>You can now enjoy all the space you freed up by archiving your photos
 and videos away from Google Photos!</p>

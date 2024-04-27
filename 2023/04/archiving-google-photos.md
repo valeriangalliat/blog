@@ -245,6 +245,21 @@ Bonus: we can remove all empty directories with:
 find /Volumes/Archive/Phone -type d -empty -delete
 ```
 
+<div class="note">
+
+**Note:** sometimes this is not enough, e.g. WhatsApp has some
+`.nomedia` files in empty directories that prevent them to be cleaned
+up, and if you browsed with Finder you may have some `.DS_Store` too,
+so:
+
+```sh
+find . -type f -name .nomedia -delete
+find . -type f -name .DS_Store -delete
+find /Volumes/Archive/Phone -type d -empty -delete
+```
+
+</div>
+
 At that point, I also count the number of files from the backup and
 makes sure it matches the number of files I deleted from Google Photos
 earlier:

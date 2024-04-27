@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1684688732694130688
+---
+
 # macOS harvest cursor from any app 😏
 July 27, 2023
 

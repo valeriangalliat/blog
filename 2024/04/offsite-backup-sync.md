@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1784030027967062106
+---
+
 # Encrypted offsite backup system: syncing 📲
 Or how to encrypt a rsync backup  
 April 26, 2024

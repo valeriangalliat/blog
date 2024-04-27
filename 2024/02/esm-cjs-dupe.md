@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1759280799852179929
+---
+
 # Duplicated ESM and CJS package in bundle
 February 18, 2024
 

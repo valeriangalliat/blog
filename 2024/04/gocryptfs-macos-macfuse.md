@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1784030029187588316
+---
+
 # gocryptfs on macOS (with and without macFUSE)
 Doing FUSE stuff on a Mac  
 April 26, 2024

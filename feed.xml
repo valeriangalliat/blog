@@ -5,10 +5,719 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-02-18T18:14:31.381Z</updated>
+  <updated>2024-04-27T01:11:58.771Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>gocryptfs on macOS (with and without macFUSE)</title>
+    <link href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html" />
+    <id>https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html</id>
+    <updated>2024-04-26T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>In this post I’m taking gocryptfs as an example because that’s what I
+use to encrypt my <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">offsite backups</a>, but this
+can probably be applied to doing anything FUSE-related on a Mac.</p>
+<h2 id="gocryptfs-on-macos" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#gocryptfs-on-macos"><span>gocryptfs on macOS</span></a></h2>
+<p>Using gocryptfs on macOS requires <a href="https://osxfuse.github.io/">macFUSE</a>.
+macFUSE (previously known as <a href="https://web.archive.org/web/20130710220229/https://osxfuse.github.io/">OSXFUSE</a>
+(previously known as <a href="https://web.archive.org/web/20130704045540/http://code.google.com/p/macfuse/">MacFUSE</a>
+lol TIL)) is an awesome project that allows to mount
+<a href="https://www.kernel.org/doc/html/next/filesystems/fuse.html">FUSE</a>
+filesystems on macOS.</p>
+<p>All it takes is:</p>
+<pre><code class="hljs language-sh">brew --cask install macfuse
+
+<span class="hljs-comment"># Do the reboot dance to allow the kernel extension (see &quot;concerns&quot; below)</span>
+
+brew install gromgit/fuse/gocryptfs-mac
+
+<span class="hljs-comment"># Not needed but might as well have SSHFS around too</span>
+brew install gromgit/fuse/sshfs-mac
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> gocryptfs and SSHFS can’t be installed from Homebrew’s main
+registry anymore <a href="https://github.com/Homebrew/homebrew-core/pull/74812#issuecomment-826895526">because</a>
+they depend on macFUSE, which is not open source.</p>
+<p>This is why the above command installs from <a href="https://github.com/gromgit/homebrew-fuse">this repository</a>,
+which hosts the Homebrew formulas that depend on FUSE that were dropped
+from Homebrew.</p>
+</div>
+<h2 id="concerns-about-macfuse" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#concerns-about-macfuse"><span>Concerns about macFUSE</span></a></h2>
+<p>Sadly, macFUSE is not open source. But at least it’s been updated
+regularly for over 10 years, and keeps supporting the latest macOS
+versions, so as long as this stays the case, I don’t mind using it.</p>
+<p>That said, depending on macFUSE for a process as critical as my <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">offsite backups</a>
+means that I will need to wait for it to support a new macOS version
+before I deem to upgrade. Because it’s a kernel extension, it’s
+not necessarily as easy to upgrade as other userland programs.</p>
+<p>The other problem is that Apple <a href="https://developer.apple.com/support/kernel-extensions/">deprecated kernel extensions</a>
+in 2020 with macOS Catalina (although they still work up to this date on
+later versions). This is tracked in <a href="https://github.com/osxfuse/osxfuse/issues/987">this macFUSE issue</a>
+but at the time of writing, Apple doesn’t provide APIs that allow to
+implement macFUSE outside of a (now deprecated) kernel extension.</p>
+<p>On top of that, going with the deprecation, Apple made it
+<a href="https://github.com/osxfuse/osxfuse/issues/814">annoying</a>
+to install kernel extensions on ARM Macs, by having to reboot in
+recovery and enabling “reduced security” mode (which is now <a href="https://support.apple.com/en-ca/guide/security/sec7d92dc49f/web">required</a>
+for kernel extensions).</p>
+<p>While macFUSE works now, and have been working for many years after the
+original deprecation of kernel extensions by Apple, its future is still
+somewhat unclear.</p>
+<p>In future versions, will macOS drop some the APIs that macFUSE depend
+on, without providing viable alternatives? Or will they entirely block
+kernel extensions? And in the event they do provide viable alternative
+APIs, how long will it take for macFUSE to support that new version?</p>
+<p>Otherwise, is any of the alternatives like
+<a href="https://www.fuse-t.org/">FUSE-T</a> gonna be solid enough by then? And
+more importantly, is gocryptfs gonna work with those alternatives?
+Actually, it won’t, because right now
+<a href="https://github.com/hanwen/go-fuse">go-fuse</a> depends explicitly on
+macFUSE.</p>
+<p>So, I wasn’t ready to commit to that setup without having a somewhat
+viable fallback.</p>
+<h2 id="gocryptfs-on-macos-without-macfuse" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#gocryptfs-on-macos-without-macfuse"><span>gocryptfs on macOS without macFUSE</span></a></h2>
+<p>While FUSE, as we saw, is a bit of a challenge on macOS, it’s perfectly
+fine on Linux. gocryptfs and FUSE on Linux are not going anywhere.</p>
+<p>Now, <a href="https://github.com/lima-vm/lima">Lima</a> is a pretty sweet way to
+run a Linux VM on macOS. Similarly to <a href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a>
+on Windows, Lima can drop you in a Linux shell on your Mac, with
+transparent access to your files.</p>
+<p>This means you can easily install gocryptfs in that Lima environment,
+and use it there. Assuming I want to get an encrypted mount of my home
+directory (<code>~</code>):</p>
+<pre><code class="hljs language-sh">brew install lima
+
+limactl start
+
+lima sudo apt install gocryptfs
+
+<span class="hljs-comment"># Init in a temp dir because Lima can&#x27;t write to the host filesystem</span>
+lima gocryptfs -init -reverse /tmp/lima
+
+<span class="hljs-comment"># From the host move the config file in the right place</span>
+<span class="hljs-built_in">mv</span> /tmp/lima/.gocryptfs.reverse.conf ~
+
+lima <span class="hljs-built_in">mkdir</span> -p /tmp/encrypted
+lima gocryptfs -reverse ~ /tmp/encrypted
+lima rsync --archive /tmp/encrypted <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> Depending on how you connect to <code>$DESTINATION</code>, you may want to
+copy/link your SSH config and keys inside the Linux home of the VM
+user. For example:</p>
+<pre><code class="hljs language-sh">lima <span class="hljs-built_in">ln</span> -s ~/.ssh/{config,id_ed25519*} <span class="hljs-string">&quot;<span class="hljs-subst">$(lima sh -c &#x27;echo $HOME&#x27;)</span>/.ssh&quot;</span>
+</code></pre>
+</div>
+<h2 id="decrypting-remote-files" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#decrypting-remote-files"><span>Decrypting remote files</span></a></h2>
+<p>We can as easily do the opposite: use SSHFS to mount the remote
+encrypted directory locally, then use gocryptfs to decrypt it and access
+the files transparently.</p>
+<pre><code class="hljs language-sh">lima sudo apt install sshfs
+
+lima <span class="hljs-built_in">mkdir</span> -p /tmp/encrypted /tmp/decrypted
+sshfs -o idmap=user <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> /tmp/encrypted
+gocryptfs /tmp/encrypted /tmp/decrypted
+</code></pre>
+<p>At that point we can browse the decrypted tree from the Lima shell,
+however we can’t access it from the host.</p>
+<h2 id="accessing-decrypted-files-from-the-host" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#accessing-decrypted-files-from-the-host"><span>Accessing decrypted files from the host</span></a></h2>
+<p>If Lima can access files from the host, why can’t the host access files
+from Lima?</p>
+<p>Well, it comes down again to the ability to us FUSE. In order to access
+host files, Lima starts a SSHFS server on the macOS host, and then
+mounts it via SSHFS (FUSE) inside the Linux VM. That’s fine, because
+Linux have absolutely no issue with FUSE stuff.</p>
+<p>The other way around however, we would need FUSE on the macOS side in
+order to mount a SSHFS server running inside the VM. No bueno, because
+we’re doing all this jazz to avoid dealing with FUSE on macOS in the
+first place. 😬</p>
+<p>So if we’re not gonna use FUSE, we need to fallback to another protocol
+that’s better supported on Mac, like WebDAV.</p>
+<p>The best way I’ve found to do that is actually to use a simple, plain Go
+WebDAV server such as <a href="https://taoofmac.com/space/til/2022/11/25/2200">this one</a>.</p>
+<p>Just point the server to serve the decrypted mount point from earlier.</p>
+<p>We also need to edit the Lima VM config in
+<code>~/.lima/default/lima.yaml</code> to forward the port the WebDAV server is
+listening on, so we can access it from the host system, such as:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">portForwards:</span>
+  <span class="hljs-bullet">-</span> <span class="hljs-attr">guestPort:</span> <span class="hljs-number">1234</span>
+</code></pre>
+<p>Then on the macOS side we can do:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> -p mountpoint
+mount_webdav http://localhost:1234 mountpoint
+</code></pre>
+<p>Before going with the custom Go solution, I’ve tried
+<a href="https://wiki.gnome.org/phodav">phởdav</a>, because unlike most WebDAV
+servers, it doesn’t require any kind of hairy configuration, and can be
+spawned in a ad hoc way that just works. But the performance wasn’t as
+good as the Go version. I’ve also tried NFS, but that was much even
+slower.</p>
+<p>That said, don’t get your hopes too high. Even with the Go version, the
+performance wasn’t super fast, but I believe it’s mainly because of
+being run over SSHFS, so your mileage may vary depending on the network
+bandwidth you have with your offsite server. But as a fallback, I’ll
+call it good enough anyway.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Encrypted offsite backup system: syncing 📲</title>
+    <link href="https://www.codejam.info/2024/04/offsite-backup-sync.html" />
+    <id>https://www.codejam.info/2024/04/offsite-backup-sync.html</id>
+    <updated>2024-04-26T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<div class="note">
+<ol>
+<li><a href="https://www.codejam.info/2024/04/offsite-backup-storage.html">Encrypted offsite backup system: storage 💾</a></li>
+<li>Encrypted offsite backup system: syncing 📲</li>
+</ol>
+</div>
+<p>In <a href="https://www.codejam.info/2024/04/offsite-backup-storage.html">the previous post</a> I decided to go with
+a <a href="https://www.hetzner.com/storage/storage-box/">Hetzner Storage Box</a>
+for my backups.</p>
+<p>It supports a number of file transfer protocols as well as first-class
+support for backup protocols like BorgBackup and Restic, and of course,
+the venerated rsync.</p>
+<p>I ended up settling for rsync, because it’s a lower level option than
+BorgBackup and Restic, that gives me a ton of freedom do design my
+backup system the way I want.</p>
+<p>rsync is also incredibly simple to use and understand, and at the end of
+the day it just syncs files from one place to another. There’s nothing
+specific to rsync in the layout of my backups, so I don’t actually
+<em>need</em> rsync for the backups to be usable. That’s a massive advantage.</p>
+<p>It comes to the cost of having to take care of everything else myself,
+in particular encryption, as well as incremental backups (which I chose
+to not implement, although it’s <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html#bonus-implementing-incremental-backups">possible</a>).</p>
+<h2 id="other-tools-i-tried" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#other-tools-i-tried"><span>Other tools I tried</span></a></h2>
+<p>I also tried BorgBackup, Restic, Kopia, Duplicaciy, Duplicity.</p>
+<p>Having chosen Hetzner as a backend, Kopia, Duplicacy and Duplicity
+didn’t have native support so they were reduced to syncing over SFTP
+which put them at a disadvantaged for speed compared to the other
+options that had native support on Hetzner.</p>
+<p>On top of that here’s a few notes of what turned me off for each of
+those:</p>
+<ul>
+<li><strong>Kopia:</strong> I encountered issues setting it up with SFTP.</li>
+<li><strong>Duplicacy:</strong>
+<ul>
+<li>Setting up the CLI wasn’t straightforward, had to resort to finding
+info in some random forum posts.</li>
+<li>Doesn’t support SSH aliases.</li>
+<li>No way to configure a SSH key without being prompted every time.</li>
+<li>May ask for SSH password / key in the middle of a backup so you
+can’t just walk away.</li>
+</ul>
+</li>
+<li><strong>Duplicity:</strong> can’t easily garbage collect old backups because they
+all depend on each other, so it makes regaining space pretty cumbersome.</li>
+<li><strong>Restic:</strong> was pretty impressed overall but rsync was significantly
+faster despite both having native support on Hetzner.</li>
+<li><strong>BorgBackup:</strong> I definitely tried it back then but it doesn’t seem
+that I took any notes like for the other ones… maybe I should try it
+again at some point? With rsync it’s probably the one that would fit
+the best my use case, but I guess I like how transparent is rsync.</li>
+</ul>
+<h2 id="syncing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#syncing"><span>Syncing</span></a></h2>
+<p>The actual syncing part is super easy. I’m just going with a basic:</p>
+<pre><code class="hljs language-sh">rsync <span class="hljs-string">&quot;<span class="hljs-variable">$SOURCE</span>&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> --archive --delete
+</code></pre>
+<p>I’m also adding <code>--no-specials</code> and <code>--no-devices</code> if I’m backing up a
+directory that could have some of those special handles.</p>
+<p>I add <code>--exclude-from exclude-file</code> to ignore a bunch of patterns that
+don’t need to be backed up.</p>
+<p>And finally, I’m customizing the output with <code>--itemize-changes</code> and
+<code>--info=progress2</code>.</p>
+<h2 id="encryption" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#encryption"><span>Encryption</span></a></h2>
+<p>That’s where things get spicy, because rsync doesn’t do encryption
+itself.</p>
+<p>I found a blog post about <a href="https://www.gamecreatures.com/blog/2016/06/19/encrypted-offsite-rsync-backups/">encrypted offsite backups with rsync</a>
+which is exactly what I was trying to do. It uses
+<a href="https://vgough.github.io/encfs/">EncFS</a> as the encryption layer.</p>
+<p>I ended up using <a href="https://nuetzlich.net/gocryptfs/">gocryptfs</a> on my
+side, mainly because it’s still actively maintained.</p>
+<p>gocryptfs allows you to have an encrypted directory on disk, and mount
+the decrypted version to use it. But they also have a “reverse” mode,
+where you can mount a directory into its encrypted representation.
+That’s what I need. (I just want the encryption for syncing to my remote
+storage, the data is already encrypted on disk at a lower level
+otherwise.)</p>
+<p>With gocryptfs, that looks like:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -init /path/to/directory
+gocryptfs -reverse /path/to/directory /path/to/mount
+</code></pre>
+<p>From there, I can apply my rsync command to sync the encrypted
+<code>/path/to/mount</code> with my Hetzner server!</p>
+<p>Not that complicated after all.</p>
+<p>Well… except if you’re running macOS. This rabbit hole is deep enough
+that it <a href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html">deserves its own blog post</a>. 🙃</p>
+<h2 id="making-the-encrypted-rsync-output-intelligible" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#making-the-encrypted-rsync-output-intelligible"><span>Making the encrypted rsync output intelligible</span></a></h2>
+<p>Now we’re syncing an encrypted directory, the output of rsync only shows
+the encrypted paths. That’s OK, but I don’t like it. I wish I saw the
+<em>actual</em> files it was transferring, so that if one of them takes a long
+time, I can instantly identify if it’s a file that should or not be
+included in the backup anyway. Maybe just add it to my ignore list.</p>
+<p>Luckily, gocryptfs provides an API to translated encrypted paths to
+their plaintext version!</p>
+<p>This comes through a separate util, <code>gocryptfs-xray</code>, that’s not
+included in the Homebrew version, so we need to compile gocryptfs from
+source:</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/rfjakob/gocryptfs
+
+<span class="hljs-comment"># Checkout the version you actually want, or YOLO and build from `main`</span>
+<span class="hljs-comment"># git checkout v2.4.0</span>
+
+./build-without-openssl
+</code></pre>
+<p>Then make sure to add the <code>gocryptfs</code> and <code>gocryptfs-xray</code> binaries
+somewhere that’s in your <code>PATH</code> (or just run them from there if you
+prefer).</p>
+<p><code>gocryptfs-xray</code> needs access to the gocryptfs <code>ctlsock</code>, a socket to
+communicate with the gocryptfs process. You get one by adding <code>-ctlsock /path/to/ctlsock</code> to your <code>gocryptfs</code> invocation.</p>
+<p>Then, we can parse the rsync output and translate any encrypted path in
+its decrypted version. I made a script for that:
+<a href="https://github.com/valeriangalliat/gocryptfs-rsync/blob/master/gocryptfs-rsync-pretty"><code>gocryptfs-rsync-pretty</code></a>.
+Just pipe the rsync output to it:</p>
+<pre><code class="hljs language-sh">rsync ... 2&gt;&amp;1 | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<h2 id="putting-it-all-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#putting-it-all-together"><span>Putting it all together</span></a></h2>
+<p>We now have a functional encrypted offsite backup system! It’s a
+combination of:</p>
+<ul>
+<li>gocryptfs to mount an encrypted representation of a directory,</li>
+<li>rsync to sync it to a remote host,</li>
+<li>a small script to make the rsync output intelligible.</li>
+</ul>
+<p>In <a href="https://github.com/valeriangalliat/gocryptfs-rsync">this repo</a> you
+can find the code I use to combine those 3 elements.</p>
+<p>It’s not much more than:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -ctlsock /path/to/ctlsock /path/to/directory /path/to/mount
+
+rsync <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span> /path/to/mount <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> 2&gt;&amp;1 \
+    | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<h2 id="bonus-implementing-incremental-backups" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#bonus-implementing-incremental-backups"><span>Bonus: implementing incremental backups</span></a></h2>
+<p>In my solution above, the backups are not incremental. I’m just syncing
+the <em>current</em> state to the remote host, but I keep no history of the
+previous “snapshots”. This could be an issue, for example, if I end up
+running a backup <em>after</em> my systems gets compromised or after I lose
+some data, then my backup is useless.</p>
+<p>This is fine with me because I also do incremental backups that just
+don’t happen to be offsite. I guess I’m not edging against my house
+burning down or getting my computers and drives robbed, <em>while at the
+same time</em> having experienced some kind of data loss that I’ve
+accidentally propagated to my offsite server. 🙃</p>
+<p>Anyway, in order to add incremental backups to the equation, we could
+use <a href="https://github.com/cytopia/linux-timemachine">Linux Time Machine</a>
+(which also works very well on Mac despite the name 😁).</p>
+<p>It works very much like macOS Time Machine, pretty much down to the
+underlying way the incremental backups are implemented on the
+filesystem: each “snapshot” gets its own directory, but then files that
+didn’t change since the latest snapshot are just hardlinked to avoid
+duplication! So essentially, only the files that changed get stored, but
+you still have a full picture of the snapshot because the other files
+are hardlinked in the right place!</p>
+<p>This is genius, and turns out this is provided by rsync through the
+<code>--link-dest</code> option. Linux Time Machine adds a nice, easy to use
+frontend to it which is very appreciated.</p>
+<p>Building off our work from above, we can simply replace the <code>rsync</code>
+command by <code>timemachine</code>:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -ctlsock /path/to/ctlsock /path/to/directory /path/to/mount
+
+timemachine <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span> /path/to/mount <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> 2&gt;&amp;1 \
+    | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<p>This is possible because hard links are supported by Hetzner, and thanks
+to native rsync support, they can be preserved along the way!</p>
+<div class="note">
+<p><strong>Note:</strong> I haven’t tested <code>gocryptfs-rsync-pretty</code> with the output of
+<code>timemachine</code>, but because <code>timemachine</code> wraps rsync, it should work out
+of the box, or require only basic tuning of the underlying rsync output.
+Let me know if you try it!</p>
+</div>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-sync.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>Despite only writing this today, I’ve been using this system for <em>two
+years</em> already! (Time flies omg.)</p>
+<p>The commits I’ve added over time were mostly to refine the rsync output
+parsing, so looks like the core of the script was pretty solid from the
+get go.</p>
+<p>That setup survived at least two macOS upgrades, and I’ve been using it
+on my Linux machines as well.</p>
+<p>So feel free to use <a href="https://github.com/valeriangalliat/gocryptfs-rsync">gocryptfs-rsync</a>
+for your own backups, or use it as an inspiration to build your own
+backup system! Cheers. ✌️</p>
+<div class="note">
+<ol>
+<li><a href="https://www.codejam.info/2024/04/offsite-backup-storage.html">Encrypted offsite backup system: storage 💾</a></li>
+<li>Encrypted offsite backup system: syncing 📲</li>
+</ol>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Encrypted offsite backup system: storage 💾</title>
+    <link href="https://www.codejam.info/2024/04/offsite-backup-storage.html" />
+    <id>https://www.codejam.info/2024/04/offsite-backup-storage.html</id>
+    <updated>2024-04-26T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<div class="note">
+<ol>
+<li>Encrypted offsite backup system: storage 💾</li>
+<li><a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">Encrypted offsite backup system: syncing 📲</a></li>
+</ol>
+</div>
+<p><strong>Threat model:</strong> my house burns. Or someone breaks in and takes my
+computers and hard drives. Everything’s encrypted so I’m not so worried
+about them gaining access to my data but I’m concerned about losing my
+data.<br>
+<strong>Solution:</strong> offsite backup system.</p>
+<p><strong>But then… threat model:</strong> breach in the company / data center that hosts
+my offsite backups, from a third-party attack or from maleovlent
+employees.<br>
+<strong>Solution:</strong> <em>end-to-end encrypted</em> offsite backup system.</p>
+<h2 id="requirements" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#requirements"><span>Requirements</span></a></h2>
+<p>I have over 4 TB of data and I want a bit of buffer, so I’m only gonna
+consider solutions for 5 TB of storage.</p>
+<h2 id="comparison" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#comparison"><span>Comparison</span></a></h2>
+<p>Let’s start with everything I considered for offsite storage. If you
+know better options, let me know!</p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Plan</th>
+      <th>Storage</th>
+      <th>Monthly price (billed annually)</th>
+      <th>Monthly price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://www.sync.com/pricing/">Sync</a></td>
+      <td>Teams+ Unlimited</td>
+      <td>6 TB</td>
+      <td>20 CAD</td>
+      <td>24 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://web.archive.org/web/20221101213929/https://www.dropbox.com/plans"><s>Dropbox</s></a></td>
+      <td><s>Standard</s></td>
+      <td><s>5 TB</s></td>
+      <td><s>15 USD</s></td>
+      <td><s>18 USD</s></td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.dropbox.com/plans">Dropbox</a></td>
+      <td>Business</td>
+      <td>9 TB</td>
+      <td>26 CAD</td>
+      <td>31 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://one.google.com/about/plans"><s>Google One</s></a></td>
+      <td><s>5 TB</s></td>
+      <td><s>5 TB</s></td>
+      <td><s>20.83 USD</s></td>
+      <td><s>24.99 USD</s></td>
+    </tr>
+    <tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued. Google One doesn't offer more than 2 TB now so
+        it's not an option anymore.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://learn.microsoft.com/en-us/answers/questions/577943/how-to-get-unlimited-onedrive-storage-for-my-enter"><s>OneDrive</s></a></td>
+      <td><s>Business (Plan 2)</s></td>
+      <td><s>Unlimited</s></td>
+      <td><s>65 USD</s></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued. OneDrive only offers up to 1 TB now. They used
+        to have unlimited storage if you have 5 or more users with
+        "Business (Plan 2)" at 13 USD per user.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.box.com/en-ca/pricing">Box Drive</a></td>
+      <td>Business</td>
+      <td>Unlimited</td>
+      <td>63 CAD</td>
+      <td>84 CAD</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>21/28 CAD per user per month but need at least 3 users.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://mega.io/pricing">MEGA</a></td>
+      <td>Pro II</td>
+      <td>8 TB</td>
+      <td>16.66 EUR</td>
+      <td>19.99 EUR</td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.backblaze.com/cloud-storage/pricing">Backblaze B2</a></td>
+      <td>5 TB</td>
+      <td colspan="2">30 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*And $0.01/GB to access the data, so that would be 50 USD
+        for me to download my entire 5 TB backup once.</em>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.backblaze.com/cloud-backup/pricing">Backblaze Computer Backup</a></td>
+      <td>Unlimited</td>
+      <td>8.25 USD*</td>
+      <td>9 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*Per machine. And can only use through their own proprietary
+        backup software with serious limitations.</em>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.linode.com/products/object-storage/">Linode Object Storage</a></td>
+      <td>5 TB</td>
+      <td colspan="2">100 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*1 TB outbound transfer included, after that $0.005/GB, so
+        that would be 20 USD for me to download my entire 5 TB backup
+        once.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.apple.com/ca/icloud/#compare-plans">iCloud</a></td>
+      <td>6 TB</td>
+      <td>6 TB</td>
+      <td colspan="2">39.99 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.hetzner.com/storage/storage-box/">Hetzner Storage Box</a></td>
+      <td>BX21</td>
+      <td>5 TB</td>
+      <td colspan="2">10.90 EUR</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.hetzner.com/storage/storage-share/">Hetzner Storage Share</a></td>
+      <td>NX21</td>
+      <td>5 TB</td>
+      <td colspan="2">14.19 EUR</td>
+    </tr>
+  </tbody>
+</table>
+<h2 id="diving-in" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#diving-in"><span>Diving in</span></a></h2>
+<h3 id="backblaze-computer-backup" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#backblaze-computer-backup"><span>Backblaze Computer Backup</span></a></h3>
+<p>Backblaze Computer Backup is incredibly cheap with 9 USD per month for
+<em>unlimited storage</em>, but keep in mind the price is per machine, and
+everything needs to go through their own proprietary backup software. No
+Linux support, no way to customize the backup strategy, no way to script
+it. The software needs to call home at least once a month otherwise data
+gets deleted.</p>
+<p>While the backups are encrypted, by default <a href="https://help.backblaze.com/hc/en-us/articles/217664688-Can-you-tell-me-more-about-the-encryption-Backblaze-uses">Backblaze can decrypt them</a>,
+however they also provide a way to make the backups end-to-end
+encrypted, which is nice.</p>
+<p>So if you’re fine with the terms and limitations of their backup
+software, then it’s by far the cheapest option and it seems convenient
+to use.</p>
+<h3 id="box-drive" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#box-drive"><span>Box Drive</span></a></h3>
+<p>Another “unlimited storage” option without as many limitations as
+Backblaze Computer Backup is Box Drive. It’s 63 CAD per month
+though so quite a lot pricier. But if you have <em>a lot</em> of data and want
+more control over it, that may be very well worth it.</p>
+<p>It’s even cheaper than the unlimited OneDrive storage that Microsoft was
+offering at some point for 65 USD per month.</p>
+<p>Box Drive comes with a decent web interface as well as a native app for
+macOS, Windows, iPhone and Android.</p>
+<p>However keep in mind that it’s gonna behave like Dropbox and iCloud:
+it’s great as a virtual remote drive that has a local copy of some or
+all files, but it may not be what you want from a backup solution.</p>
+<div class="note">
+<p><strong>Note:</strong> on macOS, the app uses the <a href="https://developer.apple.com/documentation/fileprovider/nonreplicated_file_provider_extension">Nonreplicated File Provider extension</a>
+to provide the syncing.</p>
+</div>
+<p>As far as encryption goes, it doesn’t seem that anything prevents Box to
+access your data, so it’s something you have to be comfortable with.</p>
+<h3 id="mega" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#mega"><span>MEGA</span></a></h3>
+<p>Pretty decent option at 16.66 EUR for 8 TB. Like the above, it comes
+with an app, and it also supports Linux on top of macOS and Windows!</p>
+<p>It’s basically a mix of the 2 products mentioned above. You can back up
+entire devices to it, but also use it as a shared drive, so that’s
+pretty neat.</p>
+<p>However unlike the Box Drive app, all the files in the synced folder
+must be present locally. There’s no way to have synced files being on
+the server only and being downloaded on demand only when you need them
+(and delete just the local copy afterwards).</p>
+<div class="note">
+<p><strong>Note:</strong> it seems that MEGA uses its own watching and syncing
+algorithm, and they only use macOS’s <a href="https://developer.apple.com/documentation/findersync">Finder Sync API</a>
+in order to provide feedback in the Finder UI about whether files are
+synced or not.</p>
+</div>
+<p>So like for Box Drive, if you like the way it behaves, it’s a pretty
+cheap and convenient solution. If you want more flexibility, they do
+offer a SDK but you’ll have to write C++. There’s also a
+<a href="https://rclone.org/mega/">Rclone integration for MEGA</a> so that’s neat
+to interact with the storage from the CLI and make something more custom
+with it.</p>
+<p>In terms of encryption, MEGA seems pretty solid because everything is
+end-to-end encrypted with a key derived from your account password. If
+you forget your password and recovery key, you’re out of luck, but that
+also means MEGA can’t read your data. Thumbs up for me.</p>
+<h3 id="hetzner-storage-box" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#hetzner-storage-box"><span>Hetzner Storage Box</span></a></h3>
+<p>At 10.90 EUR for 5 TB, it’s the cheapest option here to be <em>actually</em>
+flexible. You don’t need a proprietary app to use it. Instead it
+supports the following <a href="https://www.hetzner.com/storage/storage-box/">protocols</a>:</p>
+<ul>
+<li>FTP</li>
+<li>FTPS</li>
+<li>SFTP</li>
+<li>SCP</li>
+<li>Samba/CIFS</li>
+<li>BorgBackup over SSH</li>
+<li>Restic over SSH</li>
+<li>Rclone over SFTP</li>
+<li>rsync over SSH</li>
+<li>HTTPS</li>
+<li>WebDAV</li>
+</ul>
+<p>This is quite impressive, as it supports a number of popular backup
+software, so unlike the options above, you don’t need to use a backup
+or syncing software made by the storage provider. Hetzner only does the
+storage (and does it well), and you can use the backup or syncing
+software of your choice, whose only focus is to do just that (and do it
+well). Now we’re talking.</p>
+<p>Most of those protocols are gonna be useful for listing, retrieving and
+uploading files, and the few options “over SSH” are gonna be
+particularly performant at incremental backups.</p>
+<p>While backup and syncing software often have an option to working over
+SFTP or similar, it’s usually pretty inefficient when you need to diff
+the local and remote state in order to upload only what changed.</p>
+<p>However, when paired with a companion command on the server, like is the
+case with BorgBackup, Restic and rsync above, the process can be much,
+much more efficient, because the client/server programs can exchange
+just the minimum amount of metadata in order to determine what changed
+and what needs to be transferred.</p>
+<p><strong>This makes the Hetzner Storage Box a killer option if you’re gonna use
+one of those natively supported options above.</strong></p>
+<p>The encryption is gonna depend on the protocol you use. The files are
+obviously stored encrypted on disk, and everything but FTP will transfer
+the files encrypted, however only BorgBackup and Restic actually perform
+end-to-end encryption of the files (meaning that Hetzner can’t decrypt
+them).</p>
+<p>If you want to use any other protocol and also want end-to-end
+encryption, you can still implement it yourself as another layer. See
+more <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">in the next article</a>. 😉</p>
+<h3 id="hetzner-storage-share" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#hetzner-storage-share"><span>Hetzner Storage Share</span></a></h3>
+<p>A bit pricier than the Storage Box at 14.19 EUR for 5 TB, and the use
+case is a bit different. It’s a hosted
+<a href="https://nextcloud.com/">Nextcloud</a> instance.</p>
+<p>They have an app for Windows, macOS and Linux, as well as mobile apps. I
+only tried the macOS app and it acts as a shared folder just like
+Dropbox would.</p>
+<p>At the time of writing, the desktop app will download all the files
+locally, <a href="https://help.nextcloud.com/t/mac-desktop-client-dont-download-files-only-show-the-files/101987/4">there’s no way</a>
+to browse the remote data without downloading everything locally first.
+For me and my 5 TB, that’s a problem.</p>
+<p>Also keep in mind Nextcloud <a href="https://help.nextcloud.com/t/end-to-end-encryption-zero-knowledge/172209">doesn’t support end-to-end encryption</a>.</p>
+<p>So the Hetzner Storage Share looks like a pretty sweet option with a
+decent price if you want a synced folder, but it doesn’t cut it for my
+backups.</p>
+<h2 id="bonus-why-not-gcp-and-aws" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#bonus-why-not-gcp-and-aws"><span>Bonus: why not GCP and AWS?</span></a></h2>
+<p><a href="https://cloud.google.com/">Google Cloud Platform</a> and <a href="https://aws.amazon.com/">Amazon Web Services</a>
+both offer solutions that could help. So you may wonder why I’m not
+considering a pure cloud storage service like <a href="https://cloud.google.com/storage">GCS</a>
+or <a href="https://aws.amazon.com/s3/">S3</a>, or alternatively, a VM with
+persistent disk on <a href="https://cloud.google.com/products/compute">GCE</a> or
+<a href="https://aws.amazon.com/ec2/">EC2</a>.</p>
+<p>Well, I did consider those option, that’s actually the one I
+professionally work with most of the time, but they definitely did not
+fit the bill for my personal usage.</p>
+<h3 id="gcs-s3" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#gcs-s3"><span>GCS/S3</span></a></h3>
+<p>As usual with cloud computing, the pricing is hard to predict. Not
+because the pricing model is unpredictable <em>per se</em> (although it’s
+complex, it’s also relatively clear). But because my potential usage is
+unpredictable without gathering data by running real-world simulations.</p>
+<p>GCS and S3 charge not only for the amount of data stored, but also the
+read/write operations and download bandwidth.</p>
+<p>Depending on the selected storage class, either the storage itself is
+expensive but reading/writing and downloading are relatively cheap, or
+the storage is cheap but reading/writing and downloading gets much, much
+more expensive.</p>
+<p>GCS and S3 are pretty similar for this in pricing. So for my 5 TB, I
+could either:</p>
+<ul>
+<li>Pay $100 per month for storage and spend $15 to download my entire backup.</li>
+<li>Pay $50 per month for storage and spend $50 to download my entire backup.</li>
+<li>Pay $20 per month for storage and spend $200 to download my entire backup.</li>
+</ul>
+<p>And it’s not a precise number because it’s really, really hard to
+predict how many operations I will actually use. And it would be totally
+possible that I’m missing some egress bandwidth fee on top of what’s
+already factored in the data retrieval fees, and it could easily
+surprise bump the bill by something like $400 in case of downloading the
+entire backup.</p>
+<p>Not down to take the risk.</p>
+<h3 id="gce-ec2-vm" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#gce-ec2-vm"><span>GCE/EC2 VM</span></a></h3>
+<p>On GCE, it would cost ~$200 per month for a 5 TB HDD. Downloading the
+entire backup would cost $400.</p>
+<p>On EC2, that would be ~$80 per month for a 5 TB HDD, and $500 to
+download the entire backup.</p>
+<p>Not in my price range <em>at all</em>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/offsite-backup-storage.html#conclusion"><span>Conclusion</span></a></h2>
+<p>The <a href="https://www.codejam.info/2024/04/offsite-backup-storage.html#hetzner-storage-box">Hetzner Storage Box</a> was by far the best
+option for me. It’s pretty cheap, and offers a ton of flexibility with
+SFTP access as well as support for a number of protocols like rsync,
+Restic and BorgBackup. End-to-end encryption comes for free with Restic
+and BorgBackup, and can still be implemented “manually” otherwise.</p>
+<p>All the other storage providers require a specific app that can’t be
+customized to my needs, except for the <a href="https://www.codejam.info/2024/04/offsite-backup-storage.html#bonus-why-not-gcp-and-aws">cloud providers</a>
+that are even more flexible but also insanely more expensive (and whose
+pricing model can easily result in very costly surprises).</p>
+<p>Also except for MEGA and Backblaze Computer Backup (as an option), the
+other solutions don’t support end-to-end encryption.</p>
+<p>So I subscribed for a 5 TB Hetzner Storage Box. Now, let’s see how I
+<a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">implemented end-to-end encryption and syncing</a>
+with it!</p>
+<div class="note">
+<ol>
+<li>Encrypted offsite backup system: storage 💾</li>
+<li><a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">Encrypted offsite backup system: syncing 📲</a></li>
+</ol>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Duplicated ESM and CJS package in bundle</title>
     <link href="https://www.codejam.info/2024/02/esm-cjs-dupe.html" />
@@ -2690,520 +3399,6 @@ with tips to troubleshoot it.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Firebase functions: debugging upload error EntityTooLarge</title>
-    <link href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html" />
-    <id>https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html</id>
-    <updated>2023-04-07T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>So during a <code>firebase deploy</code>, you ran into the following error:</p>
-<pre><code class="hljs">Upload Error: HTTP Error: 400
-</code></pre>
-<pre><code class="hljs language-xml"><span class="hljs-meta">&lt;?xml version=<span class="hljs-string">&quot;1.0&quot;</span> encoding=<span class="hljs-string">&quot;UTF-8&quot;</span>?&gt;</span>
-<span class="hljs-tag">&lt;<span class="hljs-name">Error</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Code</span>&gt;</span>EntityTooLarge<span class="hljs-tag">&lt;/<span class="hljs-name">Code</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Message</span>&gt;</span>Your proposed upload is larger than the maximum object size specified in your Policy Document.<span class="hljs-tag">&lt;/<span class="hljs-name">Message</span>&gt;</span>
-  <span class="hljs-tag">&lt;<span class="hljs-name">Details</span>&gt;</span>Content-length exceeds upper bound on range<span class="hljs-tag">&lt;/<span class="hljs-name">Details</span>&gt;</span>
-<span class="hljs-tag">&lt;/<span class="hljs-name">Error</span>&gt;</span>
-</code></pre>
-<p>What to do from there?</p>
-<p>This happens because your functions source was too large: over 100 MB
-for the compressed source, or 500 MB for the uncompressed source and its
-dependencies, as documented in <a href="https://cloud.google.com/functions/quotas#resource_limits">resource limits</a>.</p>
-<p>Now, there may be ways you can reduce that, particularly using the
-<a href="https://firebase.google.com/docs/cli/#functions-ignored-files"><code>functions.ignore</code></a>
-list in <code>firebase.json</code> to ignore unnecessary (and possibly heavy)
-files.</p>
-<p>But it’s not necessarily easy to write this list. The ignore patterns
-are not well documented and can be quirky, enough that I <a href="https://www.codejam.info/2023/04/firebase-functions-ignore.html">wrote another
-blog post</a> to demistify them. You can
-easily end up in a loop of trial and error until you get the patterns
-right, and some guesswork to find what files and directories can be
-exceeding the size limit.</p>
-<p>Firebase doesn’t give us any way to inspect the functions packed source
-to diagnose what failed to be ignored and is taking all that space.
-Luckily, it’s pretty easy to hack that around.</p>
-<h2 id="catching-the-temporary-zip-as-it-s-generated" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html#catching-the-temporary-zip-as-it-s-generated"><span>Catching the temporary ZIP as it’s generated</span></a></h2>
-<p>By looking at the source code of Firebase, we can see they
-<a href="https://github.com/firebase/firebase-tools/blob/b0798fb1fe96499e1404d6fea6c181735e3a8f11/src/deploy/functions/prepareFunctionsUpload.ts#L63">use the <code>tmp</code> module</a>
-in order to generate the ZIP archive for Cloud Functions.</p>
-<p>Let’s see where <code>tmp</code> creates the files. On macOS, that’s what I got:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">node -p <span class="hljs-string">&quot;require(&#x27;tmp&#x27;).fileSync({ prefix: &#x27;firebase-functions-&#x27;, postfix: &#x27;.zip&#x27; }).name&quot;</span></span>
-/var/folders/8g/6ch743rn6p990xxbsd757yfm0000gn/T/firebase-functions--35549-LDS1bLg78ajZ.zip
-</code></pre>
-<p>Sweet. So we can look for <code>firebase-functions-*.zip</code> inside
-<code>/var/folders</code> to find the archive that’s being uploaded!</p>
-<p>Now, we just have to watch for those logs during the deploy:</p>
-<pre><code class="hljs">i  functions: preparing . directory for uploading...
-i  functions: packaged /path/to/repo (123.45 MB) for uploading
-</code></pre>
-<p>This tells us that the archive is ready. Be quick (or cancel the
-deploy), because Firebase will clean it up pretty fast!</p>
-<p>You can use a command like this to show the creation time of the files
-that matched. Then just pick the most recent one.</p>
-<pre><code class="hljs language-sh">find /var/folders -name <span class="hljs-string">&#x27;firebase-functions-*.zip&#x27;</span> -<span class="hljs-built_in">ls</span> 2&gt; /dev/null
-</code></pre>
-<p>The <code>2&gt; /dev/null</code> part is to ignore the error stream since a lot of
-stuff in <code>/var/folders</code> will get permission denied errors.</p>
-<p>Now you have the source ZIP file, you can uncompress it and see what
-failed to be ignored, or what’s left in there that is too heavy and
-needs to be added to the ignore list!</p>
-<div class="note">
-<p><strong>Note:</strong> while trying to find leftover files that are too large,
-<a href="https://dev.yorhel.nl/ncdu">ncdu</a> is really useful. It’s a small CLI
-tool that allows to browse a directory, showing the largest files and
-folders on top, with their size. I can only highly recommend it when you
-need to identify large files.</p>
-<p>You may install it with one of the following commands, depending on your
-system:</p>
-<pre><code class="hljs language-sh">apt install ncdu
-pacman -S ncdu
-brew install ncdu
-</code></pre>
-</div>
-<h2 id="an-even-better-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html#an-even-better-solution"><span>An even better solution</span></a></h2>
-<p>While this first solution worked, I didn’t like having to catch the ZIP
-files fast before Firebase removes it. I kept digging through the code,
-and I found a way to call the Firebase archiving code directly,
-instead of running <code>firebasde deploy</code>!</p>
-<pre><code class="hljs language-js"><span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-tools/lib/deploy/functions/prepareFunctionsUpload&#x27;</span>).<span class="hljs-title function_">prepareFunctionsUpload</span>(
-  process.<span class="hljs-title function_">cwd</span>(),
-  <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./firebase.json&#x27;</span>).<span class="hljs-property">functions</span>
-).<span class="hljs-title function_">then</span>(<span class="hljs-function"><span class="hljs-params">x</span> =&gt;</span> <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(x.<span class="hljs-property">pathToSource</span>))
-</code></pre>
-<p>Running this from our Firebase root directory (the one where
-<code>firebase.json</code> is in), it will generate the ZIP archive and output its
-temporary path!</p>
-<p>You can then decompress it and analyze it as we just saw.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Vercel: custom preview domain for free?</title>
-    <link href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html" />
-    <id>https://www.codejam.info/2023/04/vercel-custom-preview-domain.html</id>
-    <updated>2023-04-06T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If you host your app on Vercel, you must be familiar with how preview
-deployments are a first-class citizen, and each pull request you make gets
-a preview deployment.</p>
-<p>Those preview deployments default to be hosted on <code>vercel.app</code>, and
-Vercel provisions two preview domains for it, with the following
-patterns:</p>
-<ul>
-<li><code>{app}-{id}-{org}.vercel.app</code></li>
-<li><code>{app}-git-{branch}-{org}.vercel.app</code></li>
-</ul>
-<p>So if you make a PR on an app called <code>my-app</code> in an organization
-<code>my-org</code>, on a branch called <code>hello-world</code>, and the deployment ID for
-this commit was <code>lkj8trp27</code>, your URLs would be:</p>
-<ul>
-<li><code>https://my-app-lkj8trp27-my-org.vercel.app/</code></li>
-<li><code>https://my-app-git-hello-world-my-org.vercel.app/</code></li>
-</ul>
-<p>But what if you want, for example, to allow OAuth on your preview
-domains? Whitelisting <code>vercel.app</code> is out of the question since it would
-allow <em>any</em> Vercel website (including an attacker’s website) to be a
-valid redirect URI for our OAuth provider!</p>
-<p>And we can’t typically whitelist a domain pattern like <code>*-my-org.vercel.app</code>,
-not that this would be a good idea anyway because <strong>this pattern is
-<em>not</em> private to your organization</strong>. Any random Vercel user can use
-it in their own app!</p>
-<p>Then, it would be useful to use your own domain instead of <code>vercel.app</code>.
-Turns out Vercel supports this, and <a href="https://vercel.com/docs/concepts/deployments/generated-urls#preview-deployment-suffix">charges $100/month</a>
-for it! Steep.</p>
-<p>Steep, but if you’re looking for a turnkey solution, it’s definitely
-worth it. Otherwise, keep reading.</p>
-<h2 id="using-the-vercel-cli" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#using-the-vercel-cli"><span>Using the Vercel CLI</span></a></h2>
-<p>An interesting thing in the Vercel CLI is that it lets us manually
-associate a custom domain to a given deployment using
-<a href="https://vercel.com/docs/cli/alias"><code>vercel alias</code></a>. 😏</p>
-<p>Let’s say <code>codejam.info</code> is part of my Vercel-managed domains:</p>
-<pre><code class="hljs language-sh">vercel <span class="hljs-built_in">alias</span> <span class="hljs-built_in">set</span> my-app-lkj8trp27-my-org.vercel.app hello-world.preview.codejam.info
-</code></pre>
-<p>This will associate the deployment example from earlier to my custom
-domain!</p>
-<p>We can literally put anything we want under <code>codejam.info</code> there, and it
-will happily generate a SSL certificate for that arbitrary subdomain,
-and associate it to our deployment.</p>
-<p>This will work as long you associated a wildcard subdomain on your DNS
-to Vercel, like <code>*.preview.codejam.info</code> in our example.</p>
-<p>This is a good start, but it doesn’t scale!</p>
-<h2 id="using-the-vercel-api" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#using-the-vercel-api"><span>Using the Vercel API</span></a></h2>
-<p>Luckily, the Vercel API exposes an endpoint to do just the same thing:
-<a href="https://vercel.com/docs/rest-api/endpoints#assign-an-alias"><code>POST /v2/deployments/{id}/aliases</code></a>.
-In our example, we can call it with:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;alias&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;hello-world.preview.codejam.info&quot;</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>How do we find the deployment ID though? We need the full deployment ID,
-something looking like <code>dpl_hgLKkCqMExSzNpTtA3Dy6sVfWuYj</code>.</p>
-<p>Vercel gives us a handy <a href="https://vercel.com/docs/rest-api/endpoints#get-a-deployment-by-id-or-url"><code>GET /v13/deployments/{idOrUrl}</code></a>
-endpoint for this, where we can pass our deployment URL and get the
-deployment object back, including its full <code>id</code>.</p>
-<p>By combining those two endpoints, we can dynamically associate our
-custom domain to any Vercel preview deployment. 🙏</p>
-<h2 id="getting-an-api-token" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#getting-an-api-token"><span>Getting an API token</span></a></h2>
-<p>In order to call the API, we need to pass a bearer token in the
-<code>Authorization</code> header. You can create a token from your
-<a href="https://vercel.com/account/tokens">Vercel account settings</a>.</p>
-<p>Then, you can put it in your app’s environment variables, e.g. as
-<code>VERCEL_TOKEN</code>, so it’s available in your server-side code environment.</p>
-<h2 id="associating-the-domain-on-the-fly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#associating-the-domain-on-the-fly"><span>Associating the domain on the fly</span></a></h2>
-<p>From there, we can detect when we’re running under a <code>vercel.app</code>
-preview domain, call the API to associate our own custom domain, and
-finally redirect to it. This will add a bit of delay when loading our
-preview deployments from the <code>vercel.app</code> domains, but no big deal.</p>
-<p>Where you hook in order to do that is up to you. <code>_app.jsx</code> may be a
-good start, or maybe some component that’s included in all of your
-pages, maybe just the home page if you don’t expect any deep link on
-your <code>vercel.app</code> preview domains, or maybe even somewhere in
-<code>getServerSideProps</code>?</p>
-<p>If you do this client-side, you’ll want to add an API route or go
-through a SSR page that will be doing the call to the Vercel API (you
-don’t want to expose your Vercel API token client-side), but if you’re
-hooking directly in <code>getServerSideProps</code>, you can skip that step.</p>
-<p>On the client, you could do something like this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> router = <span class="hljs-title function_">useRouter</span>()
-
-<span class="hljs-keyword">if</span> (location.<span class="hljs-property">host</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;-my-org.vercel.app&#x27;</span>)) {
-  <span class="hljs-comment">// Preview env</span>
-  router.<span class="hljs-title function_">push</span>(<span class="hljs-string">&#x27;/preview-redirect&#x27;</span>)
-}
-</code></pre>
-<p>Then, implement a <code>preview-redirect</code> page to associate your custom
-domain to the current preview environment, then redirect to it.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getServerSideProps</span> (context) {
-  <span class="hljs-keyword">const</span> deployment = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDeployment</span>(context.<span class="hljs-property">req</span>.<span class="hljs-property">headers</span>.<span class="hljs-property">host</span>)
-
-  <span class="hljs-keyword">const</span> domain = <span class="hljs-string">`pr-<span class="hljs-subst">${deployment.gitSource.prId}</span>.preview.codejam.info`</span>
-
-  <span class="hljs-keyword">await</span> <span class="hljs-title function_">associateDomainToDeployment</span>(deployment.<span class="hljs-property">id</span>, domain)
-
-  <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">redirect</span>: {
-      <span class="hljs-attr">destination</span>: <span class="hljs-string">`https://<span class="hljs-subst">${domain}</span>`</span>
-    }
-  }
-}
-</code></pre>
-<p>Where <code>getDeployment</code> is a wrapper to <a href="https://vercel.com/docs/rest-api/endpoints#get-a-deployment-by-id-or-url"><code>GET /v13/deployments/{idOrUrl}</code></a>,
-and <code>associateDomainToDeployment</code> wraps <a href="https://vercel.com/docs/rest-api/endpoints#assign-an-alias"><code>POST /v2/deployments/{id}/aliases</code></a>
-(writing those is left as an exercise to the reader).</p>
-<p>Here, I chose to prefix the domain with <code>pr-</code> and the PR number, but
-you’re free to construct your preview domains however you want.</p>
-<p>You’ll notice this works the first time, but obviously if you open again
-the <code>vercel.app</code> preview URL, it will fail because the domain was
-already assigned! To cover that, you need to call <a href="https://vercel.com/docs/rest-api/endpoints#list-deployment-aliases"><code>/v2/deployments/{id}/aliases</code></a>
-and redirecting to the existing domain if you already associated it
-before.</p>
-<p>We can add something like this in the beginning of our previous
-function:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> aliases = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDeploymentAliases</span>(deployment.<span class="hljs-property">id</span>)
-
-<span class="hljs-keyword">const</span> existingDomain = aliases.<span class="hljs-title function_">find</span>(<span class="hljs-function"><span class="hljs-params">alias</span> =&gt;</span>
-  alias.<span class="hljs-property">alias</span>.<span class="hljs-title function_">endsWith</span>(<span class="hljs-string">&#x27;.preview.codejam.info&#x27;</span>)
-)
-
-<span class="hljs-keyword">if</span> (existingDomain) {
-  <span class="hljs-keyword">return</span> {
-    <span class="hljs-attr">redirect</span>: {
-      <span class="hljs-attr">destination</span>: <span class="hljs-string">`https://<span class="hljs-subst">${existingDomain.alias}</span>`</span>
-    }
-  }
-}
-</code></pre>
-<p>After this, you should have your free custom preview domains working,
-congrats!</p>
-<h2 id="about-vercel-certificates" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#about-vercel-certificates"><span>About Vercel certificates</span></a></h2>
-<p>However, you may realize this is bloating your domain’s SSL certificates
-list on Vercel. Every single preview deployment will add a new entry in
-your SSL certificates list, and because the Vercel UI for this doesn’t
-really expect an infinitely growing list of certificates, it’ll make it
-a pain for you to manage your “actual” certificates!</p>
-<p>To prevent this, you need to manually create a wildcard certificate for
-the domain you use for your preview deployments. In the example featured
-in this post, that would be <code>*.preview.codejam.info</code>.</p>
-<p>Vercel is smart enough to notice when we associate a new domain to a
-deployment, that a wildcard certificate covering it already exists, and
-so doesn’t create an <em>individual</em> certificate for <em>that</em> particular
-preview. This will keep your certificates list clean and tidy!</p>
-<p>You can’t create the wildcard certificate from the dashboard directly,
-but you can do so with the CLI using <a href="https://vercel.com/docs/cli/certs#extended-usage"><code>vercel certs issue</code></a>.</p>
-<pre><code class="hljs language-sh">vercel certs issue <span class="hljs-string">&#x27;*.preview.codejam.info&#x27;</span>
-</code></pre>
-<p>Note that this will only work if you use Vercel’s nameservers. This
-means the following won’t work (e.g. in the <code>codejam.info</code> DNS zone):</p>
-<pre><code class="hljs">*.preview CNAME cname.vercel-dns.com
-</code></pre>
-<p>But the following will work:</p>
-<pre><code class="hljs">preview NS ns1.vercel-dns.com
-preview NS ns2.vercel-dns.com
-</code></pre>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/vercel-custom-preview-domain.html#conclusion"><span>Conclusion</span></a></h2>
-<p>If you made it here, congrats! You now have everything you need in order
-to implement your own custom preview domains, without paying Vercel big
-money for it.</p>
-<p>Is going through all of this worth saving $100/month? That’s up to you.
-But as far as I’m concerned, the joy of putting together this little
-system was well worth the savings. 😜</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1644037565907890180">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Recovering Kobo eReader highlights after an accidental factory reset!</title>
-    <link href="https://www.codejam.info/2023/04/kobo-highlights-recover.html" />
-    <id>https://www.codejam.info/2023/04/kobo-highlights-recover.html</id>
-    <updated>2023-04-05T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>The other day my Kobo eReader had some issues where it was instantly
-dying when not plugged in, despite showing a full battery! This happened
-after I let it charge overnight on an external battery. 😬</p>
-<p>I restarted it a few times, hoping this would fix the issue, but without
-luck. Until… the last restart was a bit different: <strong>it asked me to
-chose a language</strong>.</p>
-<p>At this very moment, I knew I fucked up.</p>
-<p>I somehow managed to accidentally factory reset my eReader!</p>
-<h2 id="limiting-the-damage-make-a-disk-image" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#limiting-the-damage-make-a-disk-image"><span>Limiting the damage: make a disk image</span></a></h2>
-<p>Because I was in denial, I didn’t instantly accept that a factory reset
-had happened. So I went on, picked my language and connected it again to
-my Wi-Fi, so I could access the main screen.</p>
-<p>Indeed, all my books were gone. Not a big deal because I have a copy on
-my computer. More problematic though, my highlights and notes were
-gone too!</p>
-<p>I do back them up once in a while, but I’ve been neglecting that, so my
-last backup was over 4 months old! I’ve read a bunch of books since
-then, and highlighted quite some stuff I would have been happy to go
-through again in the future. Bummer.</p>
-<p>To prevent further damage, once I realized my data was gone, I stopped
-doing anything with the device that could write to the storage.</p>
-<p>As any good data recovery starts, I plugged it to my laptop and cloned
-the entire storage to an image file:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=/dev/sdb of=kobo-raw-disk bs=1M
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> I used <code>dd</code> because the storage of the eReader was presumably
-healthy, if not for the fact that a factory reset had happened.</p>
-<p>If I had actual corruption issues with the disk, it would have been good
-to use <a href="https://www.gnu.org/software/ddrescue/"><code>ddrescue</code></a>.</p>
-</div>
-<h2 id="testdisk-trying-to-recover-the-original-partition" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#testdisk-trying-to-recover-the-original-partition"><span>TestDisk: trying to recover the original partition</span></a></h2>
-<p>The first thing I tried was to use <a href="https://www.cgsecurity.org/wiki/TestDisk">TestDisk</a>
-to recover the partition table from before the factory reset, but this
-wasn’t successful.</p>
-<p>I think it would have been a more appropriate tool to recover specific
-partitions that were deleted without being written over, or if only the
-partition table was corrupted or lost.</p>
-<p>Here though, I think the factory reset process overwrote too much data
-to make TestDisk successful. It didn’t hurt to try though!</p>
-<h2 id="photorec-extract-recognizable-file-formats-from-raw-disk" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#photorec-extract-recognizable-file-formats-from-raw-disk"><span>PhotoRec: extract recognizable file formats from raw disk</span></a></h2>
-<p>Had I been successful with TestDisk, I would have recovered the original
-partition and filesystem, with the entire directory structure and
-filenames.</p>
-<p>As a fallback though, I decided to use
-<a href="https://www.cgsecurity.org/wiki/PhotoRec">PhotoRec</a>
-(another tool by the same creators as TestDisk), to try and identify
-well-known file formats from the raw disk image.</p>
-<p>The inconvenient of that is that we lose all the filenames and their
-arborescence, but I can live with that.</p>
-<p>The output of PhotoRec was 7304 files, split in directories containing
-500 files each, going from <code>recup_dir.1</code> to <code>recup_dir.15</code>.</p>
-<p>Each file is named after the logical sector it was found at, which is
-not very useful to me here, and has the extension of the filetype that
-was identified.</p>
-<p>Here’s all the extensions it was able to find, along with the number of
-files for that extension:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">find photorec-out -<span class="hljs-built_in">type</span> f | sed <span class="hljs-string">&#x27;s/.*\.//&#x27;</span> | <span class="hljs-built_in">sort</span> | <span class="hljs-built_in">uniq</span> -c</span>
-      5 c
-      1 csv
-      2 elf
-     77 epub
-      5 f
-     11 gz
-     18 h
-     18 html
-      1 ico
-   1493 ini
-    154 java
-   3964 jpg
-      4 pdf
-      3 plist
-    161 png
-     27 py
-      6 sqlite
-      1 sxw
-      1 tar
-   1343 txt
-      1 xml
-      8 zip
-</code></pre>
-<h2 id="trying-to-recover-the-sqlite-databases" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#trying-to-recover-the-sqlite-databases"><span>Trying to recover the SQLite databases</span></a></h2>
-<p>I knew that Kobo stores the highlights in a SQLite database, located in
-<code>.kobo/KoboReader.sqlite</code>. If this was intact, I had all my highlights
-back!</p>
-<p>I tried to open the 6 identified SQLite databases, but sadly, the few
-that weren’t corrupted didn’t have the tables I was looking for, and the
-only one that was about as large as what I would expect for my
-<code>KoboReader.sqlite</code> (a bit bigger than the one of my last backup) was
-corrupted.</p>
-<p>I tried using the <a href="https://www.sqlite.org/recovery.html"><code>.recover</code></a>
-SQLite command, but that didn’t work either:</p>
-<pre><code class="hljs language-sh">sqlite3 corrupt.db .recover &gt; data.sql
-</code></pre>
-<p>I tried <a href="https://www.nucleustechnologies.com/blog/best-6-sqlite-database-recovery-tools/">a whole bunch</a>
-of different proprietary tools to recover corrupted SQLite databases,
-but none of them was able to do anything.</p>
-<p>When I was looking at the raw contents of the SQLite database though,
-e.g. using <code>less</code> directly on the binary file, or using <code>xxd</code> or
-<code>strings</code>, I could see some highlights data, but definitely not as much
-as I expected.</p>
-<h2 id="looking-at-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#looking-at-the-raw-disk-directly"><span>Looking at the raw disk directly</span></a></h2>
-<p>I tried pretty hard for that SQLite database, but I had to come to the
-fact it wasn’t gonna be my savior here. However there was something I
-liked about this idea of looking at the raw binary data directly.</p>
-<p>I had a light of hope when I decided to <code>grep</code> into the corrupted SQLite
-database, as well as the raw disk image, for fragments of sentences I
-definitely remembered having highlighted. The binary files, in fact,
-matched! There was after all a chance that at least some of my
-highlights were there, but it wasn’t exactly clear where, how many, and
-under what form.</p>
-<p>Since I couldn’t do anything with the database, I decided to focus on
-the raw disk image. Using <code>less</code> and <code>xxd</code> to visualize it wasn’t very
-successful (it took too long to go through the huge amounts of
-unreadable data to notice anything actually usable). However, <code>strings</code>,
-that only outputs printable data, made it much easier for me to filter
-through its contents.</p>
-<p>When I looked up in the <code>strings</code> output for some sentence I remembered
-highlighting, it was, in fact, part of a fairly large XML string! What?</p>
-<h2 id="looking-at-the-recovered-xml-files" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#looking-at-the-recovered-xml-files"><span>Looking at the recovered XML files</span></a></h2>
-<p>It turned out that whole time, the Kobo eReader was storing annotations
-not only in a database, but also in XML files!</p>
-<p>For some reason PhotoRec identified them all as <code>txt</code> instead of <code>xml</code>,
-but it was pretty easy to extract them. All the annotations XML started
-with <code>&lt;annotationSet</code>.</p>
-<pre><code class="hljs language-sh">grep -R --files-with-match <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> photorec-out/**/*.txt
-</code></pre>
-<p>With <code>-R</code> for recursive, and <code>--files-with-match</code>, this command printed
-the filenames of all the files that contained <code>&lt;annotationSet</code>.</p>
-<p>I copied them to a separate directory for analysis.</p>
-<p>I quickly identified a pattern: each XML file contained all the
-annotations for a given book, but I had many different XML files for the
-same books, with more or less annotations in them. It was like I had the
-history of every single time each file was written to as I added new
-highlights!</p>
-<p>I wrote a quick script to validate this theory, and surely, the XML with
-the most annotations for each book systematically contained all of the
-annotations of the other, smaller XML files for that same book. This
-allowed me to filter quite a lot amongst those files.</p>
-<h2 id="integrity-check-comparing-with-my-backup-database" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#integrity-check-comparing-with-my-backup-database"><span>Integrity check: comparing with my backup database</span></a></h2>
-<p>Remember, I still had that copy of the database from a few months ago. I
-decided to check the integrity of the XMLs I recovered against what was
-in my backup, so I wrote a quick script to compare them.</p>
-<p>I wasn’t happy with what I found though. For the books for which I did
-have a backup, this showed that I recovered <em>most</em> of the highlights in
-the XML files, but not <em>all</em>. This means that for the ones where I
-didn’t have a backup, I couldn’t hope to have recovered <em>everything</em>.</p>
-<p>This was better than nothing, but I was pretty uncomfortable with that
-state of having recovered <em>some</em> data but not knowing what data I had
-actually lost. 😅</p>
-<p>I scratched my head a bit, and surely enough, I was able to recall a few
-words for a sentence that I definitely remembered highlighting recently,
-and that was not part of the XMLs that PhotoRec recovered.</p>
-<p>What was exciting though, is that I could successfully <code>grep</code> for this
-sentence in the binary disk image! Did PhotoRec miss some XML files
-somehow?</p>
-<h2 id="grepping-for-xml-files-on-the-raw-disk-directly" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#grepping-for-xml-files-on-the-raw-disk-directly"><span>Grepping for XML files on the raw disk directly!</span></a></h2>
-<p>Only one way to know. Since I knew exactly the patterns to look for at
-the start and end of the annotations XML, I could find them in the raw
-disk image, extract the byte offset, and then <code>dd</code> everything
-in between each start and end offset!</p>
-<p>Using <code>grep</code> with <code>--text</code> to force it to treat the disk binary data as text,
-and <code>--byte-offset</code> to get the byte offset of the matches, I was able to
-extract the position of the markers:</p>
-<pre><code class="hljs language-sh">grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;annotationSet&#x27;</span> kobo-raw-disk &gt; xml-start-markers-offsets
-grep --byte-offset --text -o <span class="hljs-string">&#x27;&lt;/annotationSet&gt;&#x27;</span> kobo-raw-disk &gt; xml-end-markers-offsets
-</code></pre>
-<p>Each file looked like this:</p>
-<pre><code class="hljs">199089105:&lt;annotationSet
-222029926:&lt;annotationSet
-799936271:&lt;annotationSet
-830499395:&lt;annotationSet
-839015506:&lt;annotationSet
-</code></pre>
-<p>From there, I used the <code>paste</code> command to merge both files side by side
-(using a <code>cut</code> subshell in order to keep only the offset before the
-<code>:</code>):</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets)
-</code></pre>
-<p>Which gave me something like:</p>
-<pre><code class="hljs">199089105	199091941
-222029926	222031623
-799936271	799937945
-830499395	830499742
-839015506	839016589
-</code></pre>
-<p>I could then use <code>dd</code> to extract the bytes from the raw disk image
-in between those offsets:</p>
-<pre><code class="hljs language-sh">start=199089105
-end=199091941
-<span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
-</code></pre>
-<p>What’s the 16 in that command? It’s the length of the end marker
-<code>&lt;/annotationSet&gt;</code>! Because <code>grep</code> gave us the offset of the <em>start</em> of
-the search.</p>
-<p>So I piped both of those commands together through a <code>while</code> loop to
-extract all the XMLs:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">paste</span> &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-start-markers-offsets) &lt;(<span class="hljs-built_in">cut</span> -d: -f1 xml-end-markers-offsets) \
-   | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> start end; <span class="hljs-keyword">do</span>
-      <span class="hljs-built_in">dd</span> <span class="hljs-keyword">if</span>=kobo-raw-disk of=raw-xml-dump/<span class="hljs-variable">$start</span>.xml bs=1 skip=<span class="hljs-variable">$start</span> count=$((end - start + <span class="hljs-number">16</span>))
-   <span class="hljs-keyword">done</span>
-</code></pre>
-<p>With that method, I was able to find 287 XMLs, where PhotoRec only
-recovered 234!</p>
-<p>I ran my integrity check script against this new output, and was
-astonished: <em>it was a perfect match</em>!</p>
-<p>Every single highlight I had i my backup were found in those XMLs, which
-gave me confidence that the ones that were <em>not</em> in my backup were most
-likely there too.</p>
-<h2 id="confidence-checking" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#confidence-checking"><span>Confidence checking</span></a></h2>
-<p>In order to be even more sure about this, I checked the last recovered
-highlight for all of the books I’ve read since my last backup. Each
-highlight contains a <code>progress</code> attribute, between 0 and 1, representing
-how far in the book it’s situated.</p>
-<p>For all of the books I finished, the last highlight was pretty close to
-the end of the book, and since we saw earlier that the file with the
-most highlights always contained the highlights of the previous versions
-of that file, I was pretty confident I’ve recovered all of my data at
-that point! 🎉</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/kobo-highlights-recover.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>This was a rollercoaster of emotions! Between losing all my highlights,
-recovering a database that turned out to be unusable, finding the XMLs
-with PhotoRec but noticing they were incomplete, and finally using
-<code>grep</code> and <code>dd</code> to extract the XML files myself directly from the raw
-disk. Luckily, I was able to recover everything I was looking for thanks
-to the last method!</p>
-<p>But really, the morale of this story is that, <strong>if you care about some
-data, you better make sure that you back it up</strong>, and that you do so
-rigorously and frequently (or even better, automatically).</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1643793553032617986">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

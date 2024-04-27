@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Encrypted offsite backup system: storage 💾</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Encrypted offsite backup system: storage 💾">
+  <meta property="og:description" content="Comparing “cloud” storage solutions. Encrypted offsite backup system: storage 💾">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Encrypted offsite backup system: storage 💾</h1>
+<p class="tagline">Comparing “cloud” storage solutions</p>
+<p class="date">April 26, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<ol>
+<li>Encrypted offsite backup system: storage 💾</li>
+<li><a href="offsite-backup-sync.html">Encrypted offsite backup system: syncing 📲</a></li>
+</ol>
+</div>
+<p><strong>Threat model:</strong> my house burns. Or someone breaks in and takes my
+computers and hard drives. Everything’s encrypted so I’m not so worried
+about them gaining access to my data but I’m concerned about losing my
+data.<br>
+<strong>Solution:</strong> offsite backup system.</p>
+<p><strong>But then… threat model:</strong> breach in the company / data center that hosts
+my offsite backups, from a third-party attack or from maleovlent
+employees.<br>
+<strong>Solution:</strong> <em>end-to-end encrypted</em> offsite backup system.</p>
+<h2 id="requirements" tabindex="-1"><a class="header-anchor" href="#requirements"><span>Requirements</span></a></h2>
+<p>I have over 4 TB of data and I want a bit of buffer, so I’m only gonna
+consider solutions for 5 TB of storage.</p>
+<h2 id="comparison" tabindex="-1"><a class="header-anchor" href="#comparison"><span>Comparison</span></a></h2>
+<p>Let’s start with everything I considered for offsite storage. If you
+know better options, let me know!</p>
+<table>
+  <thead>
+    <tr>
+      <th>Name</th>
+      <th>Plan</th>
+      <th>Storage</th>
+      <th>Monthly price (billed annually)</th>
+      <th>Monthly price</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><a href="https://www.sync.com/pricing/">Sync</a></td>
+      <td>Teams+ Unlimited</td>
+      <td>6 TB</td>
+      <td>20 CAD</td>
+      <td>24 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://web.archive.org/web/20221101213929/https://www.dropbox.com/plans"><s>Dropbox</s></a></td>
+      <td><s>Standard</s></td>
+      <td><s>5 TB</s></td>
+      <td><s>15 USD</s></td>
+      <td><s>18 USD</s></td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.dropbox.com/plans">Dropbox</a></td>
+      <td>Business</td>
+      <td>9 TB</td>
+      <td>26 CAD</td>
+      <td>31 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://one.google.com/about/plans"><s>Google One</s></a></td>
+      <td><s>5 TB</s></td>
+      <td><s>5 TB</s></td>
+      <td><s>20.83 USD</s></td>
+      <td><s>24.99 USD</s></td>
+    </tr>
+    <tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued. Google One doesn't offer more than 2 TB now so
+        it's not an option anymore.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://learn.microsoft.com/en-us/answers/questions/577943/how-to-get-unlimited-onedrive-storage-for-my-enter"><s>OneDrive</s></a></td>
+      <td><s>Business (Plan 2)</s></td>
+      <td><s>Unlimited</s></td>
+      <td><s>65 USD</s></td>
+      <td></td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>Discontinued. OneDrive only offers up to 1 TB now. They used
+        to have unlimited storage if you have 5 or more users with
+        "Business (Plan 2)" at 13 USD per user.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.box.com/en-ca/pricing">Box Drive</a></td>
+      <td>Business</td>
+      <td>Unlimited</td>
+      <td>63 CAD</td>
+      <td>84 CAD</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>21/28 CAD per user per month but need at least 3 users.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://mega.io/pricing">MEGA</a></td>
+      <td>Pro II</td>
+      <td>8 TB</td>
+      <td>16.66 EUR</td>
+      <td>19.99 EUR</td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.backblaze.com/cloud-storage/pricing">Backblaze B2</a></td>
+      <td>5 TB</td>
+      <td colspan="2">30 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*And $0.01/GB to access the data, so that would be 50 USD
+        for me to download my entire 5 TB backup once.</em>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.backblaze.com/cloud-backup/pricing">Backblaze Computer Backup</a></td>
+      <td>Unlimited</td>
+      <td>8.25 USD*</td>
+      <td>9 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*Per machine. And can only use through their own proprietary
+        backup software with serious limitations.</em>
+      </td>
+    </tr>
+    <tr>
+      <td colspan="2"><a href="https://www.linode.com/products/object-storage/">Linode Object Storage</a></td>
+      <td>5 TB</td>
+      <td colspan="2">100 USD*</td>
+    </tr>
+    <tr>
+      <td colspan="5">
+        <em>*1 TB outbound transfer included, after that $0.005/GB, so
+        that would be 20 USD for me to download my entire 5 TB backup
+        once.</em>
+      </td>
+    </tr>
+    <tr>
+      <td><a href="https://www.apple.com/ca/icloud/#compare-plans">iCloud</a></td>
+      <td>6 TB</td>
+      <td>6 TB</td>
+      <td colspan="2">39.99 CAD</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.hetzner.com/storage/storage-box/">Hetzner Storage Box</a></td>
+      <td>BX21</td>
+      <td>5 TB</td>
+      <td colspan="2">10.90 EUR</td>
+    </tr>
+    <tr>
+      <td><a href="https://www.hetzner.com/storage/storage-share/">Hetzner Storage Share</a></td>
+      <td>NX21</td>
+      <td>5 TB</td>
+      <td colspan="2">14.19 EUR</td>
+    </tr>
+  </tbody>
+</table>
+<h2 id="diving-in" tabindex="-1"><a class="header-anchor" href="#diving-in"><span>Diving in</span></a></h2>
+<h3 id="backblaze-computer-backup" tabindex="-1"><a class="header-anchor" href="#backblaze-computer-backup"><span>Backblaze Computer Backup</span></a></h3>
+<p>Backblaze Computer Backup is incredibly cheap with 9 USD per month for
+<em>unlimited storage</em>, but keep in mind the price is per machine, and
+everything needs to go through their own proprietary backup software. No
+Linux support, no way to customize the backup strategy, no way to script
+it. The software needs to call home at least once a month otherwise data
+gets deleted.</p>
+<p>While the backups are encrypted, by default <a href="https://help.backblaze.com/hc/en-us/articles/217664688-Can-you-tell-me-more-about-the-encryption-Backblaze-uses">Backblaze can decrypt them</a>,
+however they also provide a way to make the backups end-to-end
+encrypted, which is nice.</p>
+<p>So if you’re fine with the terms and limitations of their backup
+software, then it’s by far the cheapest option and it seems convenient
+to use.</p>
+<h3 id="box-drive" tabindex="-1"><a class="header-anchor" href="#box-drive"><span>Box Drive</span></a></h3>
+<p>Another “unlimited storage” option without as many limitations as
+Backblaze Computer Backup is Box Drive. It’s 63 CAD per month
+though so quite a lot pricier. But if you have <em>a lot</em> of data and want
+more control over it, that may be very well worth it.</p>
+<p>It’s even cheaper than the unlimited OneDrive storage that Microsoft was
+offering at some point for 65 USD per month.</p>
+<p>Box Drive comes with a decent web interface as well as a native app for
+macOS, Windows, iPhone and Android.</p>
+<p>However keep in mind that it’s gonna behave like Dropbox and iCloud:
+it’s great as a virtual remote drive that has a local copy of some or
+all files, but it may not be what you want from a backup solution.</p>
+<div class="note">
+<p><strong>Note:</strong> on macOS, the app uses the <a href="https://developer.apple.com/documentation/fileprovider/nonreplicated_file_provider_extension">Nonreplicated File Provider extension</a>
+to provide the syncing.</p>
+</div>
+<p>As far as encryption goes, it doesn’t seem that anything prevents Box to
+access your data, so it’s something you have to be comfortable with.</p>
+<h3 id="mega" tabindex="-1"><a class="header-anchor" href="#mega"><span>MEGA</span></a></h3>
+<p>Pretty decent option at 16.66 EUR for 8 TB. Like the above, it comes
+with an app, and it also supports Linux on top of macOS and Windows!</p>
+<p>It’s basically a mix of the 2 products mentioned above. You can back up
+entire devices to it, but also use it as a shared drive, so that’s
+pretty neat.</p>
+<p>However unlike the Box Drive app, all the files in the synced folder
+must be present locally. There’s no way to have synced files being on
+the server only and being downloaded on demand only when you need them
+(and delete just the local copy afterwards).</p>
+<div class="note">
+<p><strong>Note:</strong> it seems that MEGA uses its own watching and syncing
+algorithm, and they only use macOS’s <a href="https://developer.apple.com/documentation/findersync">Finder Sync API</a>
+in order to provide feedback in the Finder UI about whether files are
+synced or not.</p>
+</div>
+<p>So like for Box Drive, if you like the way it behaves, it’s a pretty
+cheap and convenient solution. If you want more flexibility, they do
+offer a SDK but you’ll have to write C++. There’s also a
+<a href="https://rclone.org/mega/">Rclone integration for MEGA</a> so that’s neat
+to interact with the storage from the CLI and make something more custom
+with it.</p>
+<p>In terms of encryption, MEGA seems pretty solid because everything is
+end-to-end encrypted with a key derived from your account password. If
+you forget your password and recovery key, you’re out of luck, but that
+also means MEGA can’t read your data. Thumbs up for me.</p>
+<h3 id="hetzner-storage-box" tabindex="-1"><a class="header-anchor" href="#hetzner-storage-box"><span>Hetzner Storage Box</span></a></h3>
+<p>At 10.90 EUR for 5 TB, it’s the cheapest option here to be <em>actually</em>
+flexible. You don’t need a proprietary app to use it. Instead it
+supports the following <a href="https://www.hetzner.com/storage/storage-box/">protocols</a>:</p>
+<ul>
+<li>FTP</li>
+<li>FTPS</li>
+<li>SFTP</li>
+<li>SCP</li>
+<li>Samba/CIFS</li>
+<li>BorgBackup over SSH</li>
+<li>Restic over SSH</li>
+<li>Rclone over SFTP</li>
+<li>rsync over SSH</li>
+<li>HTTPS</li>
+<li>WebDAV</li>
+</ul>
+<p>This is quite impressive, as it supports a number of popular backup
+software, so unlike the options above, you don’t need to use a backup
+or syncing software made by the storage provider. Hetzner only does the
+storage (and does it well), and you can use the backup or syncing
+software of your choice, whose only focus is to do just that (and do it
+well). Now we’re talking.</p>
+<p>Most of those protocols are gonna be useful for listing, retrieving and
+uploading files, and the few options “over SSH” are gonna be
+particularly performant at incremental backups.</p>
+<p>While backup and syncing software often have an option to working over
+SFTP or similar, it’s usually pretty inefficient when you need to diff
+the local and remote state in order to upload only what changed.</p>
+<p>However, when paired with a companion command on the server, like is the
+case with BorgBackup, Restic and rsync above, the process can be much,
+much more efficient, because the client/server programs can exchange
+just the minimum amount of metadata in order to determine what changed
+and what needs to be transferred.</p>
+<p><strong>This makes the Hetzner Storage Box a killer option if you’re gonna use
+one of those natively supported options above.</strong></p>
+<p>The encryption is gonna depend on the protocol you use. The files are
+obviously stored encrypted on disk, and everything but FTP will transfer
+the files encrypted, however only BorgBackup and Restic actually perform
+end-to-end encryption of the files (meaning that Hetzner can’t decrypt
+them).</p>
+<p>If you want to use any other protocol and also want end-to-end
+encryption, you can still implement it yourself as another layer. See
+more <a href="offsite-backup-sync.html">in the next article</a>. 😉</p>
+<h3 id="hetzner-storage-share" tabindex="-1"><a class="header-anchor" href="#hetzner-storage-share"><span>Hetzner Storage Share</span></a></h3>
+<p>A bit pricier than the Storage Box at 14.19 EUR for 5 TB, and the use
+case is a bit different. It’s a hosted
+<a href="https://nextcloud.com/">Nextcloud</a> instance.</p>
+<p>They have an app for Windows, macOS and Linux, as well as mobile apps. I
+only tried the macOS app and it acts as a shared folder just like
+Dropbox would.</p>
+<p>At the time of writing, the desktop app will download all the files
+locally, <a href="https://help.nextcloud.com/t/mac-desktop-client-dont-download-files-only-show-the-files/101987/4">there’s no way</a>
+to browse the remote data without downloading everything locally first.
+For me and my 5 TB, that’s a problem.</p>
+<p>Also keep in mind Nextcloud <a href="https://help.nextcloud.com/t/end-to-end-encryption-zero-knowledge/172209">doesn’t support end-to-end encryption</a>.</p>
+<p>So the Hetzner Storage Share looks like a pretty sweet option with a
+decent price if you want a synced folder, but it doesn’t cut it for my
+backups.</p>
+<h2 id="bonus-why-not-gcp-and-aws" tabindex="-1"><a class="header-anchor" href="#bonus-why-not-gcp-and-aws"><span>Bonus: why not GCP and AWS?</span></a></h2>
+<p><a href="https://cloud.google.com/">Google Cloud Platform</a> and <a href="https://aws.amazon.com/">Amazon Web Services</a>
+both offer solutions that could help. So you may wonder why I’m not
+considering a pure cloud storage service like <a href="https://cloud.google.com/storage">GCS</a>
+or <a href="https://aws.amazon.com/s3/">S3</a>, or alternatively, a VM with
+persistent disk on <a href="https://cloud.google.com/products/compute">GCE</a> or
+<a href="https://aws.amazon.com/ec2/">EC2</a>.</p>
+<p>Well, I did consider those option, that’s actually the one I
+professionally work with most of the time, but they definitely did not
+fit the bill for my personal usage.</p>
+<h3 id="gcs-s3" tabindex="-1"><a class="header-anchor" href="#gcs-s3"><span>GCS/S3</span></a></h3>
+<p>As usual with cloud computing, the pricing is hard to predict. Not
+because the pricing model is unpredictable <em>per se</em> (although it’s
+complex, it’s also relatively clear). But because my potential usage is
+unpredictable without gathering data by running real-world simulations.</p>
+<p>GCS and S3 charge not only for the amount of data stored, but also the
+read/write operations and download bandwidth.</p>
+<p>Depending on the selected storage class, either the storage itself is
+expensive but reading/writing and downloading are relatively cheap, or
+the storage is cheap but reading/writing and downloading gets much, much
+more expensive.</p>
+<p>GCS and S3 are pretty similar for this in pricing. So for my 5 TB, I
+could either:</p>
+<ul>
+<li>Pay $100 per month for storage and spend $15 to download my entire backup.</li>
+<li>Pay $50 per month for storage and spend $50 to download my entire backup.</li>
+<li>Pay $20 per month for storage and spend $200 to download my entire backup.</li>
+</ul>
+<p>And it’s not a precise number because it’s really, really hard to
+predict how many operations I will actually use. And it would be totally
+possible that I’m missing some egress bandwidth fee on top of what’s
+already factored in the data retrieval fees, and it could easily
+surprise bump the bill by something like $400 in case of downloading the
+entire backup.</p>
+<p>Not down to take the risk.</p>
+<h3 id="gce-ec2-vm" tabindex="-1"><a class="header-anchor" href="#gce-ec2-vm"><span>GCE/EC2 VM</span></a></h3>
+<p>On GCE, it would cost ~$200 per month for a 5 TB HDD. Downloading the
+entire backup would cost $400.</p>
+<p>On EC2, that would be ~$80 per month for a 5 TB HDD, and $500 to
+download the entire backup.</p>
+<p>Not in my price range <em>at all</em>.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>The <a href="#hetzner-storage-box">Hetzner Storage Box</a> was by far the best
+option for me. It’s pretty cheap, and offers a ton of flexibility with
+SFTP access as well as support for a number of protocols like rsync,
+Restic and BorgBackup. End-to-end encryption comes for free with Restic
+and BorgBackup, and can still be implemented “manually” otherwise.</p>
+<p>All the other storage providers require a specific app that can’t be
+customized to my needs, except for the <a href="#bonus-why-not-gcp-and-aws">cloud providers</a>
+that are even more flexible but also insanely more expensive (and whose
+pricing model can easily result in very costly surprises).</p>
+<p>Also except for MEGA and Backblaze Computer Backup (as an option), the
+other solutions don’t support end-to-end encryption.</p>
+<p>So I subscribed for a 5 TB Hetzner Storage Box. Now, let’s see how I
+<a href="offsite-backup-sync.html">implemented end-to-end encryption and syncing</a>
+with it!</p>
+<div class="note">
+<ol>
+<li>Encrypted offsite backup system: storage 💾</li>
+<li><a href="offsite-backup-sync.html">Encrypted offsite backup system: syncing 📲</a></li>
+</ol>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/04/offsite-backup-storage.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Encrypted offsite backup system: syncing 📲</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Encrypted offsite backup system: syncing 📲">
+  <meta property="og:description" content="Or how to encrypt a rsync backup. Encrypted offsite backup system: storage 💾">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Encrypted offsite backup system: syncing 📲</h1>
+<p class="tagline">Or how to encrypt a rsync backup</p>
+<p class="date">April 26, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<div class="note">
+<ol>
+<li><a href="offsite-backup-storage.html">Encrypted offsite backup system: storage 💾</a></li>
+<li>Encrypted offsite backup system: syncing 📲</li>
+</ol>
+</div>
+<p>In <a href="offsite-backup-storage.html">the previous post</a> I decided to go with
+a <a href="https://www.hetzner.com/storage/storage-box/">Hetzner Storage Box</a>
+for my backups.</p>
+<p>It supports a number of file transfer protocols as well as first-class
+support for backup protocols like BorgBackup and Restic, and of course,
+the venerated rsync.</p>
+<p>I ended up settling for rsync, because it’s a lower level option than
+BorgBackup and Restic, that gives me a ton of freedom do design my
+backup system the way I want.</p>
+<p>rsync is also incredibly simple to use and understand, and at the end of
+the day it just syncs files from one place to another. There’s nothing
+specific to rsync in the layout of my backups, so I don’t actually
+<em>need</em> rsync for the backups to be usable. That’s a massive advantage.</p>
+<p>It comes to the cost of having to take care of everything else myself,
+in particular encryption, as well as incremental backups (which I chose
+to not implement, although it’s <a href="#bonus-implementing-incremental-backups">possible</a>).</p>
+<h2 id="other-tools-i-tried" tabindex="-1"><a class="header-anchor" href="#other-tools-i-tried"><span>Other tools I tried</span></a></h2>
+<p>I also tried BorgBackup, Restic, Kopia, Duplicaciy, Duplicity.</p>
+<p>Having chosen Hetzner as a backend, Kopia, Duplicacy and Duplicity
+didn’t have native support so they were reduced to syncing over SFTP
+which put them at a disadvantaged for speed compared to the other
+options that had native support on Hetzner.</p>
+<p>On top of that here’s a few notes of what turned me off for each of
+those:</p>
+<ul>
+<li><strong>Kopia:</strong> I encountered issues setting it up with SFTP.</li>
+<li><strong>Duplicacy:</strong>
+<ul>
+<li>Setting up the CLI wasn’t straightforward, had to resort to finding
+info in some random forum posts.</li>
+<li>Doesn’t support SSH aliases.</li>
+<li>No way to configure a SSH key without being prompted every time.</li>
+<li>May ask for SSH password / key in the middle of a backup so you
+can’t just walk away.</li>
+</ul>
+</li>
+<li><strong>Duplicity:</strong> can’t easily garbage collect old backups because they
+all depend on each other, so it makes regaining space pretty cumbersome.</li>
+<li><strong>Restic:</strong> was pretty impressed overall but rsync was significantly
+faster despite both having native support on Hetzner.</li>
+<li><strong>BorgBackup:</strong> I definitely tried it back then but it doesn’t seem
+that I took any notes like for the other ones… maybe I should try it
+again at some point? With rsync it’s probably the one that would fit
+the best my use case, but I guess I like how transparent is rsync.</li>
+</ul>
+<h2 id="syncing" tabindex="-1"><a class="header-anchor" href="#syncing"><span>Syncing</span></a></h2>
+<p>The actual syncing part is super easy. I’m just going with a basic:</p>
+<pre><code class="hljs language-sh">rsync <span class="hljs-string">&quot;<span class="hljs-variable">$SOURCE</span>&quot;</span> <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> --archive --delete
+</code></pre>
+<p>I’m also adding <code>--no-specials</code> and <code>--no-devices</code> if I’m backing up a
+directory that could have some of those special handles.</p>
+<p>I add <code>--exclude-from exclude-file</code> to ignore a bunch of patterns that
+don’t need to be backed up.</p>
+<p>And finally, I’m customizing the output with <code>--itemize-changes</code> and
+<code>--info=progress2</code>.</p>
+<h2 id="encryption" tabindex="-1"><a class="header-anchor" href="#encryption"><span>Encryption</span></a></h2>
+<p>That’s where things get spicy, because rsync doesn’t do encryption
+itself.</p>
+<p>I found a blog post about <a href="https://www.gamecreatures.com/blog/2016/06/19/encrypted-offsite-rsync-backups/">encrypted offsite backups with rsync</a>
+which is exactly what I was trying to do. It uses
+<a href="https://vgough.github.io/encfs/">EncFS</a> as the encryption layer.</p>
+<p>I ended up using <a href="https://nuetzlich.net/gocryptfs/">gocryptfs</a> on my
+side, mainly because it’s still actively maintained.</p>
+<p>gocryptfs allows you to have an encrypted directory on disk, and mount
+the decrypted version to use it. But they also have a “reverse” mode,
+where you can mount a directory into its encrypted representation.
+That’s what I need. (I just want the encryption for syncing to my remote
+storage, the data is already encrypted on disk at a lower level
+otherwise.)</p>
+<p>With gocryptfs, that looks like:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -init /path/to/directory
+gocryptfs -reverse /path/to/directory /path/to/mount
+</code></pre>
+<p>From there, I can apply my rsync command to sync the encrypted
+<code>/path/to/mount</code> with my Hetzner server!</p>
+<p>Not that complicated after all.</p>
+<p>Well… except if you’re running macOS. This rabbit hole is deep enough
+that it <a href="gocryptfs-macos-macfuse.html">deserves its own blog post</a>. 🙃</p>
+<h2 id="making-the-encrypted-rsync-output-intelligible" tabindex="-1"><a class="header-anchor" href="#making-the-encrypted-rsync-output-intelligible"><span>Making the encrypted rsync output intelligible</span></a></h2>
+<p>Now we’re syncing an encrypted directory, the output of rsync only shows
+the encrypted paths. That’s OK, but I don’t like it. I wish I saw the
+<em>actual</em> files it was transferring, so that if one of them takes a long
+time, I can instantly identify if it’s a file that should or not be
+included in the backup anyway. Maybe just add it to my ignore list.</p>
+<p>Luckily, gocryptfs provides an API to translated encrypted paths to
+their plaintext version!</p>
+<p>This comes through a separate util, <code>gocryptfs-xray</code>, that’s not
+included in the Homebrew version, so we need to compile gocryptfs from
+source:</p>
+<pre><code class="hljs language-sh">git <span class="hljs-built_in">clone</span> https://github.com/rfjakob/gocryptfs
+
+<span class="hljs-comment"># Checkout the version you actually want, or YOLO and build from `main`</span>
+<span class="hljs-comment"># git checkout v2.4.0</span>
+
+./build-without-openssl
+</code></pre>
+<p>Then make sure to add the <code>gocryptfs</code> and <code>gocryptfs-xray</code> binaries
+somewhere that’s in your <code>PATH</code> (or just run them from there if you
+prefer).</p>
+<p><code>gocryptfs-xray</code> needs access to the gocryptfs <code>ctlsock</code>, a socket to
+communicate with the gocryptfs process. You get one by adding <code>-ctlsock /path/to/ctlsock</code> to your <code>gocryptfs</code> invocation.</p>
+<p>Then, we can parse the rsync output and translate any encrypted path in
+its decrypted version. I made a script for that:
+<a href="https://github.com/valeriangalliat/gocryptfs-rsync/blob/master/gocryptfs-rsync-pretty"><code>gocryptfs-rsync-pretty</code></a>.
+Just pipe the rsync output to it:</p>
+<pre><code class="hljs language-sh">rsync ... 2&gt;&amp;1 | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<h2 id="putting-it-all-together" tabindex="-1"><a class="header-anchor" href="#putting-it-all-together"><span>Putting it all together</span></a></h2>
+<p>We now have a functional encrypted offsite backup system! It’s a
+combination of:</p>
+<ul>
+<li>gocryptfs to mount an encrypted representation of a directory,</li>
+<li>rsync to sync it to a remote host,</li>
+<li>a small script to make the rsync output intelligible.</li>
+</ul>
+<p>In <a href="https://github.com/valeriangalliat/gocryptfs-rsync">this repo</a> you
+can find the code I use to combine those 3 elements.</p>
+<p>It’s not much more than:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -ctlsock /path/to/ctlsock /path/to/directory /path/to/mount
+
+rsync <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span> /path/to/mount <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> 2&gt;&amp;1 \
+    | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<h2 id="bonus-implementing-incremental-backups" tabindex="-1"><a class="header-anchor" href="#bonus-implementing-incremental-backups"><span>Bonus: implementing incremental backups</span></a></h2>
+<p>In my solution above, the backups are not incremental. I’m just syncing
+the <em>current</em> state to the remote host, but I keep no history of the
+previous “snapshots”. This could be an issue, for example, if I end up
+running a backup <em>after</em> my systems gets compromised or after I lose
+some data, then my backup is useless.</p>
+<p>This is fine with me because I also do incremental backups that just
+don’t happen to be offsite. I guess I’m not edging against my house
+burning down or getting my computers and drives robbed, <em>while at the
+same time</em> having experienced some kind of data loss that I’ve
+accidentally propagated to my offsite server. 🙃</p>
+<p>Anyway, in order to add incremental backups to the equation, we could
+use <a href="https://github.com/cytopia/linux-timemachine">Linux Time Machine</a>
+(which also works very well on Mac despite the name 😁).</p>
+<p>It works very much like macOS Time Machine, pretty much down to the
+underlying way the incremental backups are implemented on the
+filesystem: each “snapshot” gets its own directory, but then files that
+didn’t change since the latest snapshot are just hardlinked to avoid
+duplication! So essentially, only the files that changed get stored, but
+you still have a full picture of the snapshot because the other files
+are hardlinked in the right place!</p>
+<p>This is genius, and turns out this is provided by rsync through the
+<code>--link-dest</code> option. Linux Time Machine adds a nice, easy to use
+frontend to it which is very appreciated.</p>
+<p>Building off our work from above, we can simply replace the <code>rsync</code>
+command by <code>timemachine</code>:</p>
+<pre><code class="hljs language-sh">gocryptfs -reverse -ctlsock /path/to/ctlsock /path/to/directory /path/to/mount
+
+timemachine <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span> /path/to/mount <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> 2&gt;&amp;1 \
+    | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
+</code></pre>
+<p>This is possible because hard links are supported by Hetzner, and thanks
+to native rsync support, they can be preserved along the way!</p>
+<div class="note">
+<p><strong>Note:</strong> I haven’t tested <code>gocryptfs-rsync-pretty</code> with the output of
+<code>timemachine</code>, but because <code>timemachine</code> wraps rsync, it should work out
+of the box, or require only basic tuning of the underlying rsync output.
+Let me know if you try it!</p>
+</div>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>Despite only writing this today, I’ve been using this system for <em>two
+years</em> already! (Time flies omg.)</p>
+<p>The commits I’ve added over time were mostly to refine the rsync output
+parsing, so looks like the core of the script was pretty solid from the
+get go.</p>
+<p>That setup survived at least two macOS upgrades, and I’ve been using it
+on my Linux machines as well.</p>
+<p>So feel free to use <a href="https://github.com/valeriangalliat/gocryptfs-rsync">gocryptfs-rsync</a>
+for your own backups, or use it as an inspiration to build your own
+backup system! Cheers. ✌️</p>
+<div class="note">
+<ol>
+<li><a href="offsite-backup-storage.html">Encrypted offsite backup system: storage 💾</a></li>
+<li>Encrypted offsite backup system: syncing 📲</li>
+</ol>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/04/offsite-backup-sync.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

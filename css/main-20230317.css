@@ -202,6 +202,10 @@ ul {
     padding-left: 1em;
 }
 
+ul ul {
+    margin-bottom: 0;
+}
+
 ol {
     /* Try to match roughly a single digit and a dot. */
     padding-left: 2ch;

@@ -1,0 +1,236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Use Gmail to send emails with a custom domain for free (secret trick) 😏</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Use Gmail to send emails with a custom domain for free (secret trick) 😏">
+  <meta property="og:description" content="So you want to use Gmail with a custom domain without paying a Google Workspace subscription? Well, it’s possible!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Use Gmail to send emails with a custom domain for free (secret trick) 😏</h1>
+<p class="date">May 3, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So you want to use Gmail with a custom domain without paying a Google
+Workspace subscription? Well, it’s possible!</p>
+<p>The main tradeoff with that is that Gmail will
+<a href="https://support.google.com/mail/answer/1311182">display</a>
+your emails on the recipient side with a “via gmail.com” next to your
+email.</p>
+<figure class="center">
+  <img alt="Sender card showing “via gmail.com”" srcset="../../img/2024/04/gmail/via.png 2x">
+</figure>
+<p>The second tradeoff is that while the email will appear with your custom
+domain, the Gmail address that you use will also show in the source
+headers of the email, so a technical user could find it.</p>
+<p>The last tradeoff is that you won’t be able to sign your emails with
+DKIM.</p>
+<p>If you’re fine with that, then read on!</p>
+<h2 id="configuring-gmail-smtp-as-an-external-smtp-in-gmail" tabindex="-1"><a class="header-anchor" href="#configuring-gmail-smtp-as-an-external-smtp-in-gmail"><span>Configuring Gmail SMTP as an external SMTP in Gmail 🙃</span></a></h2>
+<p>Gmail allows you to add external SMTP servers, to send emails using
+other email addresses that you own. You can find that in <strong>Settings &gt;
+Accounts and Import &gt; Send mail as</strong>.</p>
+<p>However, Gmail can itself be used as a SMTP server for <em>other apps</em> to
+send emails via your Gmail account. That in itself is a bit of a hidden
+trick, and is explained <a href="https://noted.lol/setup-gmail-smtp-sending-2023/">here</a>.</p>
+<p>In short: <a href="https://myaccount.google.com/security">in your Google account security settings</a>,
+in <strong>2-Step Verification &gt; App passwords</strong>, add a new app password.</p>
+<figure class="center">
+  <img alt="App passwords" srcset="../../img/2024/04/gmail/app-passwords.png 2x">
+</figure>
+<div class="note">
+<p><strong>Note:</strong> that section may not show for you… on my side it seems to
+show only if I already have existing app passwords but it’s completely
+missing otherwise!</p>
+<p>Luckily you can still access it via its <a href="https://myaccount.google.com/apppasswords">direct URL</a>.</p>
+</div>
+<p>Then you can use the following SMTP settings:</p>
+<pre><code class="hljs">Host: smtp.gmail.com
+Port: 587
+Encryption: TLS
+User: you@gmail.com
+Password: the password generated earlier
+</code></pre>
+<p>Where it gets funky is that you can use those SMTP settings from inside
+Gmail itself, like if you were adding an external SMTP server!</p>
+<p>Again, in <strong>Settings &gt; Accounts and Import &gt; Send mail as</strong>, you can
+<strong>Add another email address</strong>. Use your custom email address in the
+email field e.g. <code>you@yourdomain.com</code>. Then use the SMTP settings from
+above. In the SMTP settings, the user needs to be your Gmail account,
+e.g. <code>you@gmail.com</code>, and not <code>you@yourdomain.com</code>.</p>
+<p>Gmail will then need to verify that you own that email by sending you a
+confirmation email. Once the verification done, you can start sending
+emails using your custom domain! (You may have to reload the page as I
+did otherwise sending an email using the new address would hang
+forever.)</p>
+<h2 id="why-is-that-even-allowed" tabindex="-1"><a class="header-anchor" href="#why-is-that-even-allowed"><span>Why is that even allowed?</span></a></h2>
+<p>It’s nice that Gmail does that verification step to confirm you do
+really own that address, because they definitely don’t want Gmail
+servers to be used to send nonlegitimate emails. But not all providers
+and SMTP servers are that cautious. If I can make Gmail servers send
+emails on the behalf of my domain, what prevents anyone to do the same
+with their own servers?</p>
+<p>Well, I’m glad you asked. Turns out anyone can, unless you configure
+DKIM and DMARC.</p>
+<h3 id="dkim-and-dmarc" tabindex="-1"><a class="header-anchor" href="#dkim-and-dmarc"><span>DKIM &amp; DMARC</span></a></h3>
+<p>With DKIM, you generate a keypair, configure the private key on your
+SMTP server to sign your emails, and configure the public key on your
+DNS so that the servers receiving your emails can check the signature
+against your public key.</p>
+<p>DMARC is also configured on your DNS and lets you define rules about how
+to deal with emails that don’t pass DKIM validation (ignore, mark as
+spam, or block), as well as endpoints to receive reports (so you have a
+way to know if you misconfigured something and your emails are getting
+blocked).</p>
+<h3 id="you-need-google-workspace-for-that" tabindex="-1"><a class="header-anchor" href="#you-need-google-workspace-for-that"><span>You need Google Workspace for that</span></a></h3>
+<p>However as I mentioned in the beginning, that nifty Gmail setup doesn’t
+let you use DKIM. You can’t configure a private key on Gmail’s SMTP
+servers for them to sign emails from your custom domain. That’s a Google
+Workspace <a href="https://support.google.com/a/answer/180504">feature</a> that you
+have to pay for.</p>
+<p>So for this trick to work, you need to not have DMARC configured, or
+have your DMARC configuration allow unsigned emails.</p>
+<h3 id="what-about-spf" tabindex="-1"><a class="header-anchor" href="#what-about-spf"><span>What about SPF?</span></a></h3>
+<p>Interestingly, SPF doesn’t help with that situation, because it
+<a href="https://postmarkapp.com/guides/spf#understanding-the-limitations-of-spf">acts on the <code>Return-Path</code></a>
+and not the <code>From</code> header.</p>
+<p>In the case of the Gmail setup above, the email headers would look like:</p>
+<pre><code class="hljs">From: you@yourdomain.com
+Return-Path: you@gmail.com
+</code></pre>
+<p>(As I mentioned above, that’s where the Gmail email appears in the
+source and could be seen by technical users.)</p>
+<p>SPF validates against the <code>Return-Path</code>, so it will check that the
+server sending the email is indeed allowed to send emails on behalf of
+<code>gmail.com</code>, which Gmail servers are. No fucks are given about
+<code>yourdomain.com</code> at that point.</p>
+<p>Because of this weakness in SPF, that’s why even if SPF validation
+passes, Gmail displays the “via” label when the <code>From</code> and <code>Return-Path</code>
+domains don’t match <a href="https://postmarkapp.com/blog/dkim-and-the-via-label-in-gmail">and the email is not signed with DKIM</a>.
+This gives you a chance to know that the email is not authenticated and
+sent through a third party.</p>
+<h2 id="it-doesn-t-work-across-gmail-accounts" tabindex="-1"><a class="header-anchor" href="#it-doesn-t-work-across-gmail-accounts"><span>It doesn’t work across Gmail accounts</span></a></h2>
+<p>One thing to note, which you’re probably not likely to run into, but
+well, I do weird things sometimes, is that this setup <em>doesn’t work
+across different Gmail accounts</em>.</p>
+<p>By that, I mean that if you set up an “app password” on <code>you2@gmail.com</code>,
+and you configure it as the outbound SMTP server for <code>you@gmail.com</code> to
+send emails from <code>you@yourdomain.com</code>, <strong>it won’t work</strong>.</p>
+<p>Your emails will be sent, but it won’t show the custom email domain, it
+will show from <code>you2@gmail.com</code> instead. The trick only works when the
+same Gmail account is used in both places.</p>
+<p>If this section makes no sense to you, don’t worry about it. It’s quite
+a niche setup to try, but I thought I’d mention anyway if it can be
+useful to anyone trying to do the same thing.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>I hope this trick will be useful to you!</p>
+<p>As far as I’m concerned, because I wanted to avoid the “via” label and I
+wanted to be able to set up DKIM, I went with <a href="https://www.zoho.com/mail/">Zoho Mail</a>
+(not affiliated). They try really hard to hide it, but they
+<a href="https://help.zoho.com/portal/en/community/topic/free-plan-mail-accounts-details">actually</a>
+have a <a href="https://www.zoho.com/mail/help/adminconsole/subscription.html#:~:text=under%20Zoho%20Workplace-,free%20plan,-%3A%20Using%20this%20plan">free plan</a>
+with up to 5 GB of storage, which I don’t care about because I just
+configure it as an outbound SMTP server that doesn’t store anything. 😄</p>
+<p>Either way, you should now be all set to send emails with your own
+domain. Enjoy! 🤙</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/gmail-send-custom-domain-free.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

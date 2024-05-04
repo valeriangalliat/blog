@@ -5,10 +5,146 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-04-27T01:24:32.487Z</updated>
+  <updated>2024-05-04T00:25:35.537Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Use Gmail to send emails with a custom domain for free (secret trick) 😏</title>
+    <link href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html" />
+    <id>https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html</id>
+    <updated>2024-05-03T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So you want to use Gmail with a custom domain without paying a Google
+Workspace subscription? Well, it’s possible!</p>
+<p>The main tradeoff with that is that Gmail will
+<a href="https://support.google.com/mail/answer/1311182">display</a>
+your emails on the recipient side with a “via gmail.com” next to your
+email.</p>
+<figure class="center">
+  <img alt="Sender card showing “via gmail.com”" srcset="../../img/2024/04/gmail/via.png 2x">
+</figure>
+<p>The second tradeoff is that while the email will appear with your custom
+domain, the Gmail address that you use will also show in the source
+headers of the email, so a technical user could find it.</p>
+<p>The last tradeoff is that you won’t be able to sign your emails with
+DKIM.</p>
+<p>If you’re fine with that, then read on!</p>
+<h2 id="configuring-gmail-smtp-as-an-external-smtp-in-gmail" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#configuring-gmail-smtp-as-an-external-smtp-in-gmail"><span>Configuring Gmail SMTP as an external SMTP in Gmail 🙃</span></a></h2>
+<p>Gmail allows you to add external SMTP servers, to send emails using
+other email addresses that you own. You can find that in <strong>Settings &gt;
+Accounts and Import &gt; Send mail as</strong>.</p>
+<p>However, Gmail can itself be used as a SMTP server for <em>other apps</em> to
+send emails via your Gmail account. That in itself is a bit of a hidden
+trick, and is explained <a href="https://noted.lol/setup-gmail-smtp-sending-2023/">here</a>.</p>
+<p>In short: <a href="https://myaccount.google.com/security">in your Google account security settings</a>,
+in <strong>2-Step Verification &gt; App passwords</strong>, add a new app password.</p>
+<figure class="center">
+  <img alt="App passwords" srcset="../../img/2024/04/gmail/app-passwords.png 2x">
+</figure>
+<div class="note">
+<p><strong>Note:</strong> that section may not show for you… on my side it seems to
+show only if I already have existing app passwords but it’s completely
+missing otherwise!</p>
+<p>Luckily you can still access it via its <a href="https://myaccount.google.com/apppasswords">direct URL</a>.</p>
+</div>
+<p>Then you can use the following SMTP settings:</p>
+<pre><code class="hljs">Host: smtp.gmail.com
+Port: 587
+Encryption: TLS
+User: you@gmail.com
+Password: the password generated earlier
+</code></pre>
+<p>Where it gets funky is that you can use those SMTP settings from inside
+Gmail itself, like if you were adding an external SMTP server!</p>
+<p>Again, in <strong>Settings &gt; Accounts and Import &gt; Send mail as</strong>, you can
+<strong>Add another email address</strong>. Use your custom email address in the
+email field e.g. <code>you@yourdomain.com</code>. Then use the SMTP settings from
+above. In the SMTP settings, the user needs to be your Gmail account,
+e.g. <code>you@gmail.com</code>, and not <code>you@yourdomain.com</code>.</p>
+<p>Gmail will then need to verify that you own that email by sending you a
+confirmation email. Once the verification done, you can start sending
+emails using your custom domain! (You may have to reload the page as I
+did otherwise sending an email using the new address would hang
+forever.)</p>
+<h2 id="why-is-that-even-allowed" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#why-is-that-even-allowed"><span>Why is that even allowed?</span></a></h2>
+<p>It’s nice that Gmail does that verification step to confirm you do
+really own that address, because they definitely don’t want Gmail
+servers to be used to send nonlegitimate emails. But not all providers
+and SMTP servers are that cautious. If I can make Gmail servers send
+emails on the behalf of my domain, what prevents anyone to do the same
+with their own servers?</p>
+<p>Well, I’m glad you asked. Turns out anyone can, unless you configure
+DKIM and DMARC.</p>
+<h3 id="dkim-and-dmarc" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#dkim-and-dmarc"><span>DKIM &amp; DMARC</span></a></h3>
+<p>With DKIM, you generate a keypair, configure the private key on your
+SMTP server to sign your emails, and configure the public key on your
+DNS so that the servers receiving your emails can check the signature
+against your public key.</p>
+<p>DMARC is also configured on your DNS and lets you define rules about how
+to deal with emails that don’t pass DKIM validation (ignore, mark as
+spam, or block), as well as endpoints to receive reports (so you have a
+way to know if you misconfigured something and your emails are getting
+blocked).</p>
+<h3 id="you-need-google-workspace-for-that" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#you-need-google-workspace-for-that"><span>You need Google Workspace for that</span></a></h3>
+<p>However as I mentioned in the beginning, that nifty Gmail setup doesn’t
+let you use DKIM. You can’t configure a private key on Gmail’s SMTP
+servers for them to sign emails from your custom domain. That’s a Google
+Workspace <a href="https://support.google.com/a/answer/180504">feature</a> that you
+have to pay for.</p>
+<p>So for this trick to work, you need to not have DMARC configured, or
+have your DMARC configuration allow unsigned emails.</p>
+<h3 id="what-about-spf" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#what-about-spf"><span>What about SPF?</span></a></h3>
+<p>Interestingly, SPF doesn’t help with that situation, because it
+<a href="https://postmarkapp.com/guides/spf#understanding-the-limitations-of-spf">acts on the <code>Return-Path</code></a>
+and not the <code>From</code> header.</p>
+<p>In the case of the Gmail setup above, the email headers would look like:</p>
+<pre><code class="hljs">From: you@yourdomain.com
+Return-Path: you@gmail.com
+</code></pre>
+<p>(As I mentioned above, that’s where the Gmail email appears in the
+source and could be seen by technical users.)</p>
+<p>SPF validates against the <code>Return-Path</code>, so it will check that the
+server sending the email is indeed allowed to send emails on behalf of
+<code>gmail.com</code>, which Gmail servers are. No fucks are given about
+<code>yourdomain.com</code> at that point.</p>
+<p>Because of this weakness in SPF, that’s why even if SPF validation
+passes, Gmail displays the “via” label when the <code>From</code> and <code>Return-Path</code>
+domains don’t match <a href="https://postmarkapp.com/blog/dkim-and-the-via-label-in-gmail">and the email is not signed with DKIM</a>.
+This gives you a chance to know that the email is not authenticated and
+sent through a third party.</p>
+<h2 id="it-doesn-t-work-across-gmail-accounts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#it-doesn-t-work-across-gmail-accounts"><span>It doesn’t work across Gmail accounts</span></a></h2>
+<p>One thing to note, which you’re probably not likely to run into, but
+well, I do weird things sometimes, is that this setup <em>doesn’t work
+across different Gmail accounts</em>.</p>
+<p>By that, I mean that if you set up an “app password” on <code>you2@gmail.com</code>,
+and you configure it as the outbound SMTP server for <code>you@gmail.com</code> to
+send emails from <code>you@yourdomain.com</code>, <strong>it won’t work</strong>.</p>
+<p>Your emails will be sent, but it won’t show the custom email domain, it
+will show from <code>you2@gmail.com</code> instead. The trick only works when the
+same Gmail account is used in both places.</p>
+<p>If this section makes no sense to you, don’t worry about it. It’s quite
+a niche setup to try, but I thought I’d mention anyway if it can be
+useful to anyone trying to do the same thing.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>I hope this trick will be useful to you!</p>
+<p>As far as I’m concerned, because I wanted to avoid the “via” label and I
+wanted to be able to set up DKIM, I went with <a href="https://www.zoho.com/mail/">Zoho Mail</a>
+(not affiliated). They try really hard to hide it, but they
+<a href="https://help.zoho.com/portal/en/community/topic/free-plan-mail-accounts-details">actually</a>
+have a <a href="https://www.zoho.com/mail/help/adminconsole/subscription.html#:~:text=under%20Zoho%20Workplace-,free%20plan,-%3A%20Using%20this%20plan">free plan</a>
+with up to 5 GB of storage, which I don’t care about because I just
+configure it as an outbound SMTP server that doesn’t store anything. 😄</p>
+<p>Either way, you should now be all set to send emails with your own
+domain. Enjoy! 🤙</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>gocryptfs on macOS (with and without macFUSE)</title>
     <link href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html" />
@@ -3269,136 +3405,6 @@ functions in a monorepo easier, don’t hesitate to <a href="https://www.codejam
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1644495294803898369">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How Firebase functions.ignore really works</title>
-    <link href="https://www.codejam.info/2023/04/firebase-functions-ignore.html" />
-    <id>https://www.codejam.info/2023/04/firebase-functions-ignore.html</id>
-    <updated>2023-04-07T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Maybe you ran into <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">Firebase functions space issues</a>,
-which is not uncommon if you’re <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html">moving Firebase functions inside a monorepo</a>.
-Anyhow, you’re now playing with the <code>functions.ignore</code> list in your
-<code>firebase.json</code>.</p>
-<p>The ignore list is not well documented, nor is the whole
-<code>firebase.json</code> really, but there is <a href="https://firebase.google.com/docs/cli/#the_firebasejson_file">a section on it</a>
-in the Firebase CLI reference. I always struggle to find this page, and
-I systematically find it through <a href="https://github.com/firebase/firebase-tools/issues/1409">this GitHub issue</a>
-about documenting it.</p>
-<p>It says the following <a href="https://firebase.google.com/docs/cli/#functions-ignored-files">about the ignore list</a>:</p>
-<blockquote>
-<p>The list of files ignored by default, shown in JSON format, is:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;ignore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-    <span class="hljs-string">&quot;.git&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-string">&quot;.runtimeconfig.json&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-string">&quot;firebase-debug.log&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-string">&quot;firebase-debug.*.log&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-string">&quot;node_modules&quot;</span>
-  <span class="hljs-punctuation">]</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>If you add your own custom values for ignore in <code>firebase.json</code>, make
-sure that you keep (or add, if it is missing) the list of files shown
-above.</p>
-</blockquote>
-<p>Let’s dig into it in a bit more details.</p>
-<h2 id="if-you-set-an-ignore-list-it-overrides-the-defaults" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#if-you-set-an-ignore-list-it-overrides-the-defaults"><span>If you set an ignore list, it overrides the defaults!</span></a></h2>
-<p>That’s the only thing the docs say about the ignore list. It’s important
-to note because otherwise, you may notice that setting <code>&quot;ignore&quot;: []</code>
-ends up including <em>much more stuff</em> than not setting it, and
-<a href="https://github.com/firebase/firebase-tools/issues/1602">this can be surprising</a>.</p>
-<p>This is actually partially true (but mostly true to be fair).</p>
-<p>We can see <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/deploy/functions/prepareFunctionsUpload.ts#L75-L80">in the source code</a>
-the following:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> ignore = config.<span class="hljs-property">ignore</span> || [<span class="hljs-string">&#x27;node_modules&#x27;</span>, <span class="hljs-string">&#x27;.git&#x27;</span>]
-
-ignore.<span class="hljs-title function_">push</span>(
-  <span class="hljs-string">&#x27;firebase-debug.log&#x27;</span>,
-  <span class="hljs-string">&#x27;firebase-debug.*.log&#x27;</span>,
-  <span class="hljs-string">&#x27;.runtimeconfig.json&#x27;</span>
-)
-</code></pre>
-<p>This means that regardless if you customize or not <code>functions.ignore</code>,
-the debug logs and runtime config will always be ignored. But it’s also
-true that if you explicitly set <code>functions.ignore</code> and forget to add
-<code>node_modules</code> and <code>.git</code>, those will indeed be included. Now you know.</p>
-<h2 id="you-can-t-use-to-refer-to-the-functions-root" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#you-can-t-use-to-refer-to-the-functions-root"><span>You can’t use <code>/</code> to refer to the functions root</span></a></h2>
-<p>In <code>.gitignore</code> and any sane ignore format, you can use <code>/</code> to refer to
-the project root. E.g. ignoring <code>/bar</code> will ignore <code>bar</code> at the top
-level, but will still include <code>foo/bar</code>.</p>
-<p>This is pretty handy in a number of situations, and just a good practice
-in general to be more intentional about what you <em>mean</em> to exclude. If
-you have a <code>data</code> directory that you want to ignore, but you just put
-<code>data</code> in your ignore file, and later on you add <code>src/api/data/load.js</code>,
-guess what, <code>src/api/data</code> will be ignored and you’ll be confused until
-you figure out the sneaky ignore pattern. You really should be ignoring
-<code>/data</code> in that case.</p>
-<p>So again, we can’t do that in <code>functions.ignore</code>. Why? Ultimately, this
-is because Firebase uses <a href="https://github.com/isaacs/minimatch">minimatch</a>
-for this <a href="https://github.com/firebase/firebase-tools/blob/8976456eebf75ab9ab2a1299c0d6561f324db7f8/src/fsAsync.ts#L53">here</a>,
-but they pass the system-wide absolute path as the first argument! So
-that’s what ends up happening when using a <code>/</code> pattern (using
-<code>matchBase</code> and <code>dot</code> to mimic how Firebase uses it):</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">false</span>
-</code></pre>
-<p>What would be great is if the first argument was “scoped” to the
-functions root. Then we would have nice things:</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/foo&#x27;</span>, <span class="hljs-string">&#x27;/foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">true</span>
-</code></pre>
-<p>But because we can’t have nice things, we have to resort to using a
-wider pattern (without the <code>/</code>):</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">true</span>
-</code></pre>
-<p>This is a problem though because as we saw earlier, it’s <em>too</em> wide:</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/src/foo&#x27;</span>, <span class="hljs-string">&#x27;foo&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">true</span>
-</code></pre>
-<h2 id="can-t-use-in-base-patterns" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#can-t-use-in-base-patterns"><span>Can’t use <code>/</code> in base patterns</span></a></h2>
-<p>The last example works only because <code>matchBase</code> is enabled, but if you
-look at the <a href="https://github.com/isaacs/minimatch#matchbase"><code>matchBase</code> documentation</a>,
-you see that it breaks down as soon as our pattern includes a <code>/</code>:</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">false</span>
-</code></pre>
-<p>But since root patterns don’t work <em>anyway</em> as we just saw, we can get
-around this by using wildcards:</p>
-<pre><code class="hljs language-js">&gt; <span class="hljs-title function_">minimatch</span>(<span class="hljs-string">&#x27;/path/to/functions/foo/bar&#x27;</span>, <span class="hljs-string">&#x27;**/foo/bar&#x27;</span>, { <span class="hljs-attr">matchBase</span>: <span class="hljs-literal">true</span>, <span class="hljs-attr">dot</span>: <span class="hljs-literal">true</span> })
-<span class="hljs-literal">true</span>
-</code></pre>
-<h2 id="there-s-no-pattern-negation" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#there-s-no-pattern-negation"><span>There’s no pattern negation</span></a></h2>
-<p>Pattern negation is what allows you do do something like this in a
-<code>.gitignore</code>:</p>
-<pre><code class="hljs language-gitignore">/dist/*
-!/dist/package.json
-</code></pre>
-<p>This would ignore everything in the <code>dist</code> directory except for
-<code>dist/package.json</code>.</p>
-<p>This is particularly handy in a number of situations, especially when
-you consider the alternative which is to <em>explicitly ignore every single
-file or directory you have in <code>dist</code></em>. And obviously, remembering to add
-any <em>new</em> file to your ignore list when you create them, or when tools
-you use create other random files you don’t even know exist.</p>
-<p>All that to say, you guessed it, that Firebase <code>functions.ignore</code>
-<a href="https://github.com/firebase/firebase-tools/issues/2677">doesn’t support this</a>.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-ignore.html#conclusion"><span>Conclusion</span></a></h2>
-<p>That’s all I have for today. If you’re working with Firebase
-<code>functions.ignore</code> right now and noticed a few quirks, I hope this made
-it easier for you to understand what’s going on.</p>
-<p>And if you’re trying to fix a Firebase functions source being too large
-to be deployed, I also <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">wrote a post</a>
-with tips to troubleshoot it.</p>
-<p>Peace. ✌️</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

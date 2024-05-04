@@ -105,16 +105,48 @@ being flagged as spam, whereas a hard fail gets downright rejected.</p>
 rejected the <code>@gmx.com</code> email being forwarded by my OVH relay.</p>
 <p>If you want to learn more about this issue, <a href="https://support.tigertech.net/spf">this post from Tiger Technologies</a>
 is a very good read.</p>
-<h2 id="the-fix" tabindex="-1"><a class="header-anchor" href="#the-fix"><span>The fix</span></a></h2>
-<p>Sadly there’s no trivial fix for this. The post linked just above
-mentions a few solutions in the last section but notes that they’re not
-widely available and might cause other issues. Their conclusion is:
-<strong>for now, we’d recommend simply not forwarding important mail to other
-ISPs</strong>.</p>
-<p>What can we do from there? Well in my case, I had to reverse the
-relationship between my OVH address and Gmail: instead of my OVH address
-forwarding emails to Gmail, I removed the redirect and <strong>configured
-Gmail to fetch emails from my OVH address via POP3</strong>.</p>
+<h2 id="use-cloudflare" tabindex="-1"><a class="header-anchor" href="#use-cloudflare"><span>Use Cloudflare!</span></a></h2>
+<div class="note">
+<p><strong>Note:</strong> section added on April 27, 2024.</p>
+</div>
+<p>Since writing this post, I transferred my domain to Cloudflare. For
+multiple reasons. On of them was related to this email routing issue!</p>
+<p>Cloudflare <a href="https://community.cloudflare.com/t/email-routing-and-spf/341490">goes further</a>
+than OVH in that regard:</p>
+<blockquote>
+<p>Cloudflare rewrites the <code>Return-Path</code> to be your own domain, which is
+what SPF is checked against (it’s not checked against the friendly
+<code>From</code>, as most people believe).</p>
+</blockquote>
+<p>This is genius! It means that if <code>bar@gmx.com</code> sends you an email to
+<code>foo@foo.com</code> (configured on Cloudflare to redirect to <code>foo@gmail.com</code>),
+Cloudflare will rewrite the email headers with a <code>Return-Path</code> of
+<code>gmx.com=bar@foo.com</code>. Because you own <code>foo.com</code>, you can allow
+Cloudflare servers in your SPF policy, and the email does not get
+blocked!</p>
+<p>And the actual email in the <code>From</code> header is the one that gets shown on
+your email client, so it looks totally transparent.</p>
+<p>The redirected email still passes DKIM signature verification since the
+<code>Return-Path</code> is typically not included in the headers used to compute
+the DKIM signature, so it can be freely altered.</p>
+<p>The only non-transparent thing is if the original email does <em>not</em> have
+a DKIM signature. Then that’s where clients like Gmail <a href="https://support.google.com/mail/answer/1311182">show a “via” domain</a>
+next to the sender’s name.</p>
+<p>For example if the sender uses the
+<a href="../../2024/05/gmail-send-custom-domain-free.html">trick to use Gmail SMTP to send mails with a custom domain</a>,
+they have no means to configure a DKIM signature, and the recipient will
+see it as from “Sender’s Name via gmail.com”.</p>
+<p>In that case, if as the recipient, you’re using Cloudflare email
+redirects, then it will show up as “Sender’s Name via
+cloudflare-email.net” instead.</p>
+<p>A bit of an edge case, but something to know.</p>
+<h2 id="the-fix-without-changing-providers" tabindex="-1"><a class="header-anchor" href="#the-fix-without-changing-providers"><span>The fix without changing providers</span></a></h2>
+<p>If your existing email redirect provider is not as smooth as Cloudflare
+and you’re not willing to move, then what’s left?</p>
+<p>Well in my case, I had to reverse the relationship between my OVH
+address and Gmail: instead of my OVH address forwarding emails to Gmail,
+I removed the redirect and <strong>configured Gmail to fetch emails from my
+OVH address via POP3</strong>.</p>
 <div class="note">
 <p><strong>Note:</strong> this alternative method is not specific to OVH and Gmail. It
 will work as long as:</p>

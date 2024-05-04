@@ -8,7 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
-* [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 3, 2024</small>
+* [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 4, 2024</small>
 * [Use Gmail to send emails with a custom domain for free (secret trick) 😏](2024/05/gmail-send-custom-domain-free.md) <small>May 3, 2024</small>
 * [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
 * [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>

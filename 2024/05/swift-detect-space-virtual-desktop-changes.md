@@ -1,5 +1,5 @@
 # Swift: detect space (virtual desktop) changes
-May 3, 2024
+May 4, 2024
 
 In a macOS app, you can
 [get an event](https://stackoverflow.com/a/56435288/4324668)

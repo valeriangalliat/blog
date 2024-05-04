@@ -64,8 +64,9 @@ User: you@gmail.com
 Password: the password generated earlier
 ```
 
-Where it gets funky is that you can use those SMTP settings from inside
-Gmail itself, like if you were adding an external SMTP server!
+Where it gets funky is that you can use those SMTP settings
+[from inside Gmail itself](https://support.google.com/domains/answer/9437157),
+like if you were adding an external SMTP server!
 
 Again, in **Settings > Accounts and Import > Send mail as**, you can
 **Add another email address**. Use your custom email address in the

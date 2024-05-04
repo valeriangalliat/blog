@@ -5,10 +5,406 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-16T00:13:21.996Z</updated>
+  <updated>2024-05-16T00:34:05.967Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>How to sign and notarize an Electron app for macOS</title>
+    <link href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html" />
+    <id>https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html</id>
+    <updated>2024-05-15T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So you made a macOS app, shared it with your friends, and they
+encountered one of those dreaded popups:</p>
+<figure class="grid">
+  <img alt="App cannot be opened because it is from an unidentified developer" srcset="../../img/2024/05/electron-signature/unidentified-developer.png 2x">
+  <img alt="App can’t be opened because Apple cannot check it for malicious software" srcset="../../img/2024/05/electron-signature/cannot-check.png 2x">
+</figure>
+<p>Then you need to sign (left) and notarize (right) your app!</p>
+<div class="note">
+<p><strong>Note:</strong> in the meantime, the app
+<a href="https://support.apple.com/en-ca/guide/mac-help/mh40616/mac">can still</a>
+<a href="https://support.apple.com/en-ca/guide/mac-help/mchleab3a043/mac">be opened</a>
+by right clicking on it and clicking <strong>Open</strong> from the context menu.</p>
+</div>
+<p>Signing consists in buying a developer membership with Apple, which will
+let you create a key that you can use to <code>codesign</code> your app with.</p>
+<p>Notarizing consists in uploading your app to an Apple service that scans
+it for malware. If it passes the process, your app gets a “stamp of
+approval” that is <a href="https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution">bundled with your app and also mirrored</a>
+on Apple’s Gatekeeper servers.</p>
+<p>In the case of Electron, here’s some relevant docs this article is based
+on:</p>
+<ul>
+<li><a href="https://www.electronjs.org/docs/latest/tutorial/code-signing#signing--notarizing-macos-builds">Electron: Signing &amp; notarizing macOS builds</a></li>
+<li><a href="https://www.electronforge.io/guides/code-signing/code-signing-macos">Electron Forge: Signing a macOS app</a></li>
+</ul>
+<h2 id="get-a-signing-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#get-a-signing-certificate"><span>Get a signing certificate</span></a></h2>
+<p>The first step is to generate a signing keypair, and get a signing
+certificate from Apple, which requires you to subscribe to
+<a href="https://developer.apple.com/">Apple’s developer program</a>.</p>
+<p>Then, follow <a href="https://developer.apple.com/help/account/create-certificates/create-a-certificate-signing-request">create a certificate signing request</a>.</p>
+<p>In my experience, it doesn’t seem that the <strong>User Email Address</strong> you
+input matters.</p>
+<p>As for <strong>Common Name</strong>, it seems to only affect how the private and
+public key are named in Keychain Access.</p>
+<p>By saving the request to disk, you will get a
+<code>CertificateSigningRequest.certSigningRequest</code> file.</p>
+<p>This will also create a <code>Common Name.p12</code> and <code>Common Name.pem</code> entry in
+your Keychain Access. The <code>.p12</code> is the private key, and the <code>.pem</code> is
+the public key, that are going to be associated with the certificate
+you’re requesting.</p>
+<p>You should now upload the <code>.certSigningRequest</code> file to your Apple
+Developer account, in <strong>Certificates, IDs &amp; Profiles</strong>. Choose the
+<strong>Developer ID Application</strong> certificate type.</p>
+<p>This will give you a certificate <code>developerID_application.cer</code> that you
+need to import in Keychain Access (by simply opening it).</p>
+<h2 id="get-the-intermediate-certificates" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#get-the-intermediate-certificates"><span>Get the intermediate certificates</span></a></h2>
+<p>I don’t fully understand this part, but the above is not enough to sign
+your app. You also need some extra root and/or intermediate certificates
+to be present in your Keychain Access, but it’s not exactly clear which
+ones or where to get them.</p>
+<p>What I know is that by using Xcode and messing with their certificate
+management settings, it downloads the extra stuff that is needed for
+code signing to work.</p>
+<p>So:</p>
+<ol>
+<li>Install Xcode.</li>
+<li>In <strong>Xcode &gt; Settings… &gt; Accounts</strong>, add your Apple account.</li>
+<li>Click <strong>Download Manual Profiles</strong>.</li>
+<li>Click <strong>Manage Certificates</strong> and request a new <strong>Apple Development</strong>
+certificate that you can delete right after.</li>
+</ol>
+<p>Executing part or all of those steps may download the extra certificates
+you need in Keychain Access. It’s not 100% clear to me what did it for
+me. 😅 Don’t hesitate to <a href="https://www.codejam.info/val.html#contact">let me know</a> if you have more
+details on this!</p>
+<h2 id="manually-sign-your-app" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#manually-sign-your-app"><span>Manually sign your app</span></a></h2>
+<p>You’re now in a place where you can manually sign your app:</p>
+<pre><code class="hljs language-sh">codesign --sign <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span> MyApp.app
+</code></pre>
+<p>To find the identify to pass to <code>--sign</code>:</p>
+<pre><code class="hljs language-sh">security find-identity -v -p codesigning
+</code></pre>
+<p><code>-v</code> will show only valid identities. <code>-p</code> is for selecting a specific
+policy, here we care about <code>codesigning</code>.</p>
+<h2 id="signing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#signing-your-app-with-electron-forge"><span>Signing your app with Electron Forge</span></a></h2>
+<p>Add <code>osxSign</code> to your <code>forge.config.js</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">packagerConfig</span>: {
+    <span class="hljs-attr">osxSign</span>: {
+      <span class="hljs-attr">identity</span>: <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span>
+    }
+  }
+}
+</code></pre>
+<p>If you only have one valid code signing identity configured on your Mac,
+you can omit the <code>identity</code> parameter. You still need to pass an empty
+object <code>osxSign: {}</code>.</p>
+<h2 id="notarizing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#notarizing-your-app-with-electron-forge"><span>Notarizing your app with Electron Forge</span></a></h2>
+<p>Add <code>osxNotarize</code> to your <code>forge.config.js</code>. There’s a few ways to
+configure it <a href="https://www.electronforge.io/guides/code-signing/code-signing-macos#osxnotarize-options">documented here</a>.</p>
+<p>The documentation is pretty clear and complete so I won’t bother
+repeating anything here. 🙂</p>
+<h2 id="debugging-osxsign-and-osxnotarize" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#debugging-osxsign-and-osxnotarize"><span>Debugging <code>osxSign</code> and <code>osxNotarize</code></span></a></h2>
+<p>If you encounter issues where Electron is not properly signing or
+notarizing your app, you can debug the signing and notarizing process
+that way:</p>
+<pre><code class="hljs language-sh">DEBUG=electron-osx-sign,electron-notarize* npx electron-forge package
+</code></pre>
+<p>This will output detailed logs that should help you identify the
+culprit.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#conclusion"><span>Conclusion</span></a></h2>
+<p>That should be all you need to have your app approved by Apple so that
+you can share it with the world. 🌎</p>
+<p>Happy building! 🚀</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to use Electron auto updater ⚛️</title>
+    <link href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html" />
+    <id>https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html</id>
+    <updated>2024-05-15T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I’m <a href="https://www.arcade.software/download">writing an Electron app for the first time</a>,
+and I was wondering how to make it auto update. Turns out it’s
+relatively easy, but I found a ton of conflicting documentations about
+it and was quite confused for a while, which is why I’m writing this
+post.</p>
+<p>In this post, I’m gonna focus on a macOS app. I’m not sure how much of
+this applies to Windows. I’ll update this post when we eventually port
+the app to Windows!</p>
+<h2 id="how-does-the-auto-updater-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#how-does-the-auto-updater-works"><span>How does the auto updater works?</span></a></h2>
+<p>On macOS, Electron auto updater uses the <a href="https://github.com/Squirrel/Squirrel.Mac">Squirrel.Mac</a>
+framework, a “Cocoa framework for updating macOS apps”.</p>
+<p>So ultimately, when it comes to the distribution of auto updates, your
+source of truth is gonna be Squirrel.</p>
+<p>Electron has a <a href="https://www.electronjs.org/docs/latest/api/auto-updater">built-in <code>autoUpdater</code> API</a>
+that lets you <a href="https://www.electronjs.org/docs/latest/api/auto-updater#autoupdatersetfeedurloptions"><code>setFeedURL</code></a>,
+<a href="https://www.electronjs.org/docs/latest/api/auto-updater#autoupdatercheckforupdates"><code>checkForUpdates</code></a>,
+and <a href="https://www.electronjs.org/docs/latest/api/auto-updater#autoupdaterquitandinstall"><code>quitAndInstall</code></a>.</p>
+<p>On boot, you configure the auto updater with a mysterious, undocumented
+“feed URL”, and then you check for updates periodically, and when an
+update is found, you can prompt the user to install the update.</p>
+<div class="note">
+<p><strong>Note:</strong> for auto updates to work, your releases must be
+<a href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html">signed</a>.</p>
+</div>
+<h2 id="what-about-update-electron-app" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#what-about-update-electron-app"><span>What about <code>update-electron-app</code>?</span></a></h2>
+<p>If you read the <a href="https://www.electronjs.org/docs/latest/tutorial/updates">Electron reference on updating applications</a>,
+they mention a <a href="https://github.com/electron/update-electron-app"><code>update-electron-app</code></a>
+package, that identifies as “a drop-in module that adds auto updating
+capabilities to Electron apps”.</p>
+<p>This module implements the logic described in the previous section for
+you, so you just have to call one function on boot and let it deal with
+periodic checking, and prompting the user to install the update. Cool.</p>
+<p>However it’s only meant to <a href="https://github.com/electron/update-electron-app?tab=readme-ov-file#with-updateelectronjsorg">work with Electron’s public update service</a>,
+or static file storage that <a href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#static-updates-format">we’ll talk about later</a></p>
+<p>The typical usage looks like this when using Electron’s public update
+service:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { updateElectronApp, <span class="hljs-title class_">UpdateSourceType</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;update-electron-app&#x27;</span>)
+
+<span class="hljs-title function_">updateElectronApp</span>({
+  <span class="hljs-attr">updateSource</span>: {
+    <span class="hljs-attr">type</span>: <span class="hljs-title class_">UpdateSourceType</span>.<span class="hljs-property">ElectronPublicUpdateService</span>,
+    <span class="hljs-attr">repo</span>: <span class="hljs-string">&#x27;github-user/repo&#x27;</span>
+  }
+})
+</code></pre>
+<h2 id="using-update-electronjs-org" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#using-update-electronjs-org"><span>Using <code>update.electronjs.org</code>?</span></a></h2>
+<p>That public update service is hosted by Electron and serves the obscure
+“feed URL” that we encountered earlier.</p>
+<p>In order to use it, you need to point it to a public GitHub repository
+where you publish <a href="https://docs.github.com/en/repositories/releasing-projects-on-github/managing-releases-in-a-repository">releases</a>
+of your app.</p>
+<p>Their service can then respond to auto update requests by checking if
+there’s a newer release. The app binary is downloaded directly from
+GitHub releases.</p>
+<p>You can also <a href="https://www.electronjs.org/docs/latest/tutorial/updates#step-1-deploying-an-update-server">host your own update server</a>.
+There’s actually a few options you can chose from, and they all comply
+to this undocumented feed format we still know nothing about.</p>
+<p>When using the <code>autoUpdater</code> module, you can configure it like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { autoUpdater } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;electron&#x27;</span>)
+
+autoUpdater.<span class="hljs-title function_">setFeedURL</span>({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;https://server/path/to/feed&#x27;</span>
+})
+</code></pre>
+<p>That URL seems arbitrary and typically contains the <code>process.platform</code>,
+maybe <code>process.arch</code>, and your program’s version.</p>
+<p>As we saw before, a custom dynamic server won’t work with
+<code>update-electron-app</code> so you’ll have to implement the logic yourself.
+Luckily, <a href="https://github.com/electron/update-electron-app/blob/515ab245a429a4790b9209f8d2073edddb980717/src/index.ts">it’s not very complicated</a>.</p>
+<h2 id="what-s-behind-this-feed-url-and-format" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#what-s-behind-this-feed-url-and-format"><span>What’s behind this feed URL and format?</span></a></h2>
+<p>This format is actually <a href="https://github.com/Squirrel/Squirrel.Mac?tab=readme-ov-file#update-requests">defined by the Squirrel framework</a>.</p>
+<p>In case of a dynamic server like in the previous section, the request is
+as an arbitrary <code>GET</code> request to the URL you configured. It’s important
+for that URL to include the current app version because your server is
+expected to respond based on whether or not a new version is available
+for the given version.</p>
+<p>In case no update is available, you <a href="https://github.com/Squirrel/Squirrel.Mac?tab=readme-ov-file#server-support">should return</a>
+a <code>204 No Content</code>.</p>
+<p>If an update is available, you should return a <code>200 OK</code> with the
+<a href="https://github.com/Squirrel/Squirrel.Mac?tab=readme-ov-file#update-server-json-format">following</a>
+JSON response:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;url&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://server/path/to/release.zip&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional Release Name&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;notes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional release notes&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;pub_date&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2024-05-03T12:34:56Z&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Now this makes a bit more sense. You can easily make your own server
+that implements this protocol. Actually, you can probably get away with
+adding just another endpoint to your existing app. 😎 No need to depend
+on a third-party service or to self-host and maintain another app. 😅</p>
+<h2 id="static-updates-format" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#static-updates-format"><span>Static updates format</span></a></h2>
+<p>What’s a bit lesser known is that you don’t even need a dynamic server
+at all. You can implement auto updates with static files only. 🪶</p>
+<p>There’s hints of that in <code>update-electron-app</code> that has a
+<a href="https://github.com/electron/update-electron-app/tree/main?tab=readme-ov-file#with-static-file-storage">static storage option</a>,
+as well as Squirrel’s docs that mention a <a href="https://github.com/Squirrel/Squirrel.Mac?tab=readme-ov-file#update-file-json-format">static JSON format</a>.</p>
+<p>With <code>update-electron-app</code>, it would look like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { updateElectronApp, <span class="hljs-title class_">UpdateSourceType</span> } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;update-electron-app&#x27;</span>)
+
+<span class="hljs-title function_">updateElectronApp</span>({
+  <span class="hljs-attr">updateSource</span>: {
+    <span class="hljs-attr">type</span>: <span class="hljs-title class_">UpdateSourceType</span>.<span class="hljs-property">StaticStorage</span>,
+    <span class="hljs-attr">baseUrl</span>: <span class="hljs-string">&#x27;https://server/path/to/feed&#x27;</span>
+  }
+})
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> when using <code>update-electron-app</code>, on macOS, it will
+<a href="https://github.com/electron/update-electron-app/blob/515ab245a429a4790b9209f8d2073edddb980717/src/index.ts#L121">append</a>
+<code>/RELEASES.json</code> to the <code>baseUrl</code> URL that you give when in
+<code>StaticStorage</code> mode, meaning in the above example, the final URL would
+be <code>https://server/path/to/feed/RELEASES.json</code>.</p>
+<p>There’s no way to opt out of that, so if you’re gonna use this module,
+that’s something to know when you create the layout of your static file
+storage. Luckily the <a href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#auto-generating-the-static-update-files">automated way to provision static updates with Electron Forge</a>
+generates a <code>RELEASES.json</code> file by default so it should work out of the
+box.</p>
+</div>
+<p>As for the native <code>autoUpdater</code>, you need to pass the
+<a href="https://www.electronjs.org/docs/latest/api/auto-updater#autoupdatersetfeedurloptions">little documented <code>serverType: 'json'</code></a>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { autoUpdater } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;electron&#x27;</span>)
+
+autoUpdater.<span class="hljs-title function_">setFeedURL</span>({
+  <span class="hljs-attr">url</span>: <span class="hljs-string">&#x27;https://server/path/to/feed.json&#x27;</span>,
+  <span class="hljs-attr">serverType</span>: <span class="hljs-string">&#x27;json&#x27;</span>
+})
+</code></pre>
+<p>In both cases, the feed URL typically contains <code>process.platofrm</code> and maybe <code>process.arch</code> again, but that seems to be really up to you.</p>
+<p>It is supposed to respond with the following <a href="https://github.com/Squirrel/Squirrel.Mac?tab=readme-ov-file#update-file-json-format">schema</a>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;currentRelease&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;releases&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.1&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;updateTo&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.1&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;url&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://server/path/to/1.2.1.zip&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional Release Name&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;notes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional release notes&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;pub_date&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2024-05-02T12:34:56Z&quot;</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;updateTo&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;url&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://server/path/to/1.2.3.zip&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional Release Name&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;notes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional release notes&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;pub_date&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2024-05-03T12:34:56Z&quot;</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>From this static response, Squirrel is able to determine whether it
+needs to update, and where to fetch the update from.</p>
+<p>Don’t get confused by the <code>updateTo</code> naming. <code>releases</code> contains all the
+releases of your software, and <code>updateTo</code> just contains some metadata
+about that release, with the <code>url</code> being the only really important part.</p>
+<p>I haven’t tested this, but my guess is that all you really need is the
+entry containing the <code>currentRelease</code>, e.g.:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;currentRelease&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;releases&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;updateTo&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+        <span class="hljs-attr">&quot;version&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1.2.3&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;url&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://server/path/to/1.2.3.zip&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;name&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional Release Name&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;notes&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Optional release notes&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-attr">&quot;pub_date&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;2024-05-03T12:34:56Z&quot;</span>
+      <span class="hljs-punctuation">}</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>That should be enough for Squirrel to know there’s an update available.
+I’m not sure keeping the entire history of older releases adds any value.</p>
+<h2 id="auto-generating-the-static-update-files" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#auto-generating-the-static-update-files"><span>Auto generating the static update files</span></a></h2>
+<p>From the above section, you should have everything you need to manually
+craft that updates feed and push it on your static file server with your
+ZIP updates.</p>
+<p>However, if you use <a href="https://www.electronforge.io/">Electron Forge</a>,
+there’s (again little documented) ways to generate this static structure
+automatically!</p>
+<p><code>update-electron-app</code> <a href="https://github.com/electron/update-electron-app/tree/main?tab=readme-ov-file#requirements">hints</a>
+at <a href="https://www.electronforge.io/config/publishers/s3"><code>@electron-forge/publisher-s3</code></a>,
+but there’s also <a href="https://www.electronforge.io/config/publishers/gcs"><code>@electron-forge/publisher-gcs</code></a>,
+allowing you to generate and upload that static update structure
+respectively to AWS S3 or Google Cloud Storage.</p>
+<p>They both work the same but the documentation of the S3 plugin is more
+complete when it comes to <a href="https://www.electronforge.io/config/publishers/s3#auto-updating-from-s3">auto updating</a>.</p>
+<p>You need not only to add the S3 or GCS publisher, but also configure
+<a href="https://www.electronforge.io/config/makers/zip"><code>@electron-forge/maker-zip</code></a>
+with the undocumented option <code>macUpdateManifestBaseUrl</code>.</p>
+<p>During the “make” step, Electron will build the ZIP file for the
+release, but with that option, it will also fetch your current static
+“update feed”, update the <code>currentRelease</code>, and add a new release entry
+to the <code>releases</code> array, then output that updated <code>RELEASES.json</code> file
+next to your ZIP files.</p>
+<p>Then the S3 or GCS publisher will know to put that new update feed in
+the right place in your bucket.</p>
+<p>In <code>forge.config.js</code>, it looks like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">makers</span>: [
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;@electron-forge/maker-zip&#x27;</span>,
+      <span class="hljs-attr">config</span>: <span class="hljs-function"><span class="hljs-params">arch</span> =&gt;</span> ({
+        <span class="hljs-attr">macUpdateManifestBaseUrl</span>: <span class="hljs-string">`https://my-bucket.s3.amazonaws.com/custom/folder/darwin/<span class="hljs-subst">${arch}</span>`</span>
+      })
+    }
+  ],
+  <span class="hljs-attr">publishers</span>: [
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;@electron-forge/publisher-s3&#x27;</span>,
+      <span class="hljs-attr">config</span>: {
+        <span class="hljs-attr">bucket</span>: <span class="hljs-string">&#x27;my-bucket&#x27;</span>,
+        <span class="hljs-attr">folder</span>: <span class="hljs-string">&#x27;custom/folder&#x27;</span>,
+        <span class="hljs-attr">public</span>: <span class="hljs-literal">true</span>
+      }
+    }
+    <span class="hljs-comment">// {</span>
+    <span class="hljs-comment">//   name: &#x27;@electron-forge/publisher-gcs&#x27;,</span>
+    <span class="hljs-comment">//   config: {</span>
+    <span class="hljs-comment">//     bucket: &#x27;my-bucket&#x27;,</span>
+    <span class="hljs-comment">//     folder: &#x27;custom/folder&#x27;,</span>
+    <span class="hljs-comment">//     public: true</span>
+    <span class="hljs-comment">//   }</span>
+    <span class="hljs-comment">// }</span>
+  ]
+}
+</code></pre>
+<p>In the case of <code>macUpdateManifestBaseUrl</code>, like for
+<code>update-electron-app</code> in JSON mode, it will <a href="https://github.com/electron/forge/blob/ce2b03934ecf600525366a252e5bcb5491708a27/packages/maker/zip/src/MakerZIP.ts#L50">automatically append</a>
+<code>/RELEASES.json</code>, so in the above example, if <code>arch</code> is <code>arm64</code>, the
+complete feed URL would be <code>https://my-bucket.s3.amazonaws.com/custom/folder/darwin/arm64/RELEASES.json</code>.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re doing universal builds by running <code>electron-forge package --arch universal</code>, then the <code>arch</code> path component will be
+<code>universal</code>, so in the above example, you would need to configure
+<code>@electron-forge/maker-zip</code> like this:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">makers</span>: [
+    {
+      <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;@electron-forge/maker-zip&#x27;</span>,
+      <span class="hljs-attr">config</span>: <span class="hljs-function">() =&gt;</span> ({
+        <span class="hljs-attr">macUpdateManifestBaseUrl</span>: <span class="hljs-string">&#x27;https://my-bucket.s3.amazonaws.com/custom/folder/darwin/universal&#x27;</span>
+      })
+    }
+  ]
+}
+</code></pre>
+</div>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/how-to-use-electron-auto-updater.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Will you use Electron’s hosted update service? Or self-host an
+open-source update server? Or instead implement your own dynamic
+endpoint? Or maybe you’ll just push static updates on S3, GCS, or your
+own file server?</p>
+<p>Regardless what you chose, you should now have all the elements you need
+to implement auto updates in your Electron app on macOS the way that
+suits you best! Cheers. ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Invoking a Firebase callable function from the Firebase Admin SDK</title>
     <link href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html" />
@@ -2383,213 +2779,6 @@ app.run()
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Swift: convert a delegate to async</title>
-    <link href="https://www.codejam.info/2024/02/swift-delegate-to-async.html" />
-    <id>https://www.codejam.info/2024/02/swift-delegate-to-async.html</id>
-    <updated>2024-02-04T08:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Let’s say we’re using
-<a href="https://developer.apple.com/documentation/avfoundation">AVFoundation</a>
-to do a screen capture in Swift. We want to response to
-<code>didStartRecordingTo</code> and <code>didFinishRecordingTo</code> “events”, which is done
-through the use of a delegate such as:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">AVCaptureFileOutputRecordingDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">fileOutput</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">AVCaptureFileOutput</span>, <span class="hljs-params">didStartRecordingTo</span> <span class="hljs-keyword">_</span>: <span class="hljs-type">URL</span>, <span class="hljs-params">from</span> <span class="hljs-keyword">_</span>: [<span class="hljs-type">AVCaptureConnection</span>])
-  {
-    <span class="hljs-comment">// Stuff</span>
-  }
-
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">fileOutput</span>(
-    <span class="hljs-keyword">_</span>: <span class="hljs-type">AVCaptureFileOutput</span>, <span class="hljs-params">didFinishRecordingTo</span> <span class="hljs-keyword">_</span>: <span class="hljs-type">URL</span>, <span class="hljs-params">from</span> <span class="hljs-keyword">_</span>: [<span class="hljs-type">AVCaptureConnection</span>],
-    <span class="hljs-params">error</span>: <span class="hljs-type">Error</span>?
-  ) {
-    <span class="hljs-comment">// Stuff</span>
-  }
-}
-
-<span class="hljs-keyword">let</span> session <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureSession</span>()
-<span class="hljs-keyword">let</span> input <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureScreenInput</span>()
-<span class="hljs-keyword">let</span> output <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureMovieFileOutput</span>()
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">RecordingDelegate</span>()
-
-session.addInput(input)
-session.addOutput(output)
-session.startRunning()
-output.startRecording(to: <span class="hljs-type">URL</span>(filePath: <span class="hljs-string">&quot;test.mov&quot;</span>), recordingDelegate: delegate)
-</code></pre>
-<p>That’s all good but the delegate makes my life a bit harder in terms of
-managing the control flow of the code.</p>
-<p>I would much rather something using async/await, e.g. (hypothetical code):</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> events <span class="hljs-operator">=</span> output.startRecording(to: <span class="hljs-type">URL</span>(filePath: <span class="hljs-string">&quot;test.mov&quot;</span>))
-
-<span class="hljs-keyword">await</span> events.didStartRecording
-
-<span class="hljs-comment">// Do stuff now the recording has started</span>
-
-output.stopRecording()
-
-<span class="hljs-keyword">await</span> events.didFinishRecording
-
-<span class="hljs-comment">// Do stuff now the recording is finished</span>
-</code></pre>
-<p>In order to achieve that, we need a bit of plumbing code. Let’s add
-callbacks to our delegate:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">AVCaptureFileOutputRecordingDelegate</span> {
-  <span class="hljs-keyword">var</span> didStartRecording: () -&gt; <span class="hljs-type">Void</span> <span class="hljs-operator">=</span> {}
-  <span class="hljs-keyword">var</span> didFinishRecording: (<span class="hljs-keyword">_</span> error: <span class="hljs-type">Error</span>?) -&gt; <span class="hljs-type">Void</span> <span class="hljs-operator">=</span> { <span class="hljs-keyword">_</span> <span class="hljs-keyword">in</span> }
-
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">fileOutput</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">AVCaptureFileOutput</span>, <span class="hljs-params">didStartRecordingTo</span> <span class="hljs-keyword">_</span>: <span class="hljs-type">URL</span>, <span class="hljs-params">from</span> <span class="hljs-keyword">_</span>: [<span class="hljs-type">AVCaptureConnection</span>])
-  {
-    <span class="hljs-keyword">self</span>.didStartRecording()
-  }
-
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">fileOutput</span>(
-    <span class="hljs-keyword">_</span>: <span class="hljs-type">AVCaptureFileOutput</span>, <span class="hljs-params">didFinishRecordingTo</span> <span class="hljs-keyword">_</span>: <span class="hljs-type">URL</span>, <span class="hljs-params">from</span> <span class="hljs-keyword">_</span>: [<span class="hljs-type">AVCaptureConnection</span>],
-    <span class="hljs-params">error</span>: <span class="hljs-type">Error</span>?
-  ) {
-    <span class="hljs-keyword">self</span>.didFinishRecording(error)
-  }
-}
-</code></pre>
-<p>From there, we can use the <a href="https://developer.apple.com/documentation/swift/withcheckedcontinuation(function:_:)"><code>withCheckedContinuation</code></a>
-function to convert a callback to an async result:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">RecordingDelegate</span>()
-
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> didStartRecording: () <span class="hljs-operator">=</span> withCheckedContinuation { continuation <span class="hljs-keyword">in</span>
-  delegate.didStartRecording <span class="hljs-operator">=</span> {
-    continuation.resume()
-  }
-}
-
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">let</span> didFinishRecording: () <span class="hljs-operator">=</span> withCheckedContinuation { continuation <span class="hljs-keyword">in</span>
-  delegate.didFinishRecording <span class="hljs-operator">=</span> { error <span class="hljs-keyword">in</span>
-    <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> error <span class="hljs-operator">=</span> error {
-      continuation.resume(throwing: error)
-    } <span class="hljs-keyword">else</span> {
-      continuation.resume()
-    }
-  }
-}
-
-output.startRecording(to: <span class="hljs-type">URL</span>(filePath: <span class="hljs-string">&quot;test.mov&quot;</span>), recordingDelegate: delegate)
-
-<span class="hljs-keyword">await</span> didStartRecording
-
-<span class="hljs-comment">// Do stuff now the recording has started</span>
-
-output.stopRecording()
-
-<span class="hljs-keyword">await</span> didFinishRecording
-
-<span class="hljs-comment">// Do stuff now the recording is finished</span>
-</code></pre>
-<p>Thanks to <code>withCheckedContinuation</code>, we can get an async result for the
-<code>didStartRecording</code> and <code>didFinishRecording</code> events, that we’re free to
-<code>await</code> whenever is most convenient!</p>
-<div class="note">
-<p><strong>Note:</strong> the code above is not perfect. In some cases, we may get an
-event on <code>didFinishRecordingTo</code> with an error, before
-<code>didStartRecordingTo</code> was called at all. In that case, that example
-would just hang forever.</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Life update: Squamish, climbing, skiing…</title>
-    <link href="https://www.codejam.info/2024/01/now.html" />
-    <id>https://www.codejam.info/2024/01/now.html</id>
-    <updated>2024-01-21T08:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>In last <a href="https://www.codejam.info/2023/03/now.html">update</a>, I was <a href="https://www.codejam.info/2023/03/now.html#what-do-you-think-of-the-now-page">reflecting</a>
-on how I didn’t like that the content of the now page was ephemeral. So
-I moved it to a normal blog post, a bit like a year in review post
-except it doesn’t have to be about a particular year, but just some ad
-hoc update.</p>
-<h2 id="moved-to-squamish" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/01/now.html#moved-to-squamish"><span>Moved to Squamish</span></a></h2>
-<p>In November 2023, I moved from Montreal to Squamish in western Canada,
-British Columbia.</p>
-<p>Squamish is a relatively small town (25,000 people), 1 hour drive north
-of Vancouver. It’s in the middle of mountains and that’s why I’m here.</p>
-<p>After 8 years in Montreal, in flat, flat Quebec, it was time for me to
-move back to the mountains. While the BC mountains are 8,000 km away
-from the ones I grew up in (French Alps), it instantly felt like home.</p>
-<figure class="grid">
-  <img alt="Plane" srcset="../../img/2024/01/now/plane.jpg 2x">
-  <img alt="City" srcset="../../img/2024/01/now/city.jpg 2x">
-</figure>
-<p>I packed a U-Haul U-Box container from Montreal and had it shipped to
-Vancouver. Took approximately 2 weeks, not too bad. Then rented a van to
-move my stuff back home. Experience was flawless, and hardly beatable
-for the price.</p>
-<p>I didn’t bring any furniture, but it allowed me to keep my guitars and
-vinyls collection and other emotional items, as well as all my sport
-gear (including my road bike), tools, kitchen stuff and so on, so I
-didn’t have to start from scratch all over again. It’s good not having
-to buy a screwdriver, can opener and all those small things you think
-about only when you need them.</p>
-<figure class="grid">
-  <img alt="U-Box" srcset="../../img/2024/01/now/box.jpg 2x">
-  <img alt="Van" srcset="../../img/2024/01/now/van.jpg 2x">
-</figure>
-<p>Despite being small, the place I moved in has quite a nice view. Also
-bought a car for the first time since I’m in Canada. Quite necessary
-since there’s no carsharing option in Squamish.</p>
-<figure class="grid">
-  <img alt="View" srcset="../../img/2024/01/now/view.jpg 2x">
-  <img alt="Car" srcset="../../img/2024/01/now/car.jpg 2x">
-</figure>
-<p>Overall, it’s a perfect base camp for rock climbing, mountain and gravel
-biking, hiking, trail running and skiing (resort and backcountry).
-That’s for the sports I’m doing, but there’s even more to this place!</p>
-<h2 id="climbed-in-red-rocks-nevada" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/01/now.html#climbed-in-red-rocks-nevada"><span>Climbed in Red Rocks, Nevada</span></a></h2>
-<p>With a couple of friends, spent two weeks in Las Vegas to go climb in
-the Red Rocks canyon. This was an epic trip, and had fantastic climbing,
-bouldering and hiking. (Last picture was during a day trip to Zion.)</p>
-<figure class="grid">
-  <img alt="Red Rocks" srcset="../../img/2024/01/now/red-rocks-1.jpg 2x">
-  <img alt="Red Rocks" srcset="../../img/2024/01/now/red-rocks-2.jpg 2x">
-  <img alt="Red Rocks" srcset="../../img/2024/01/now/red-rocks-3.jpg 2x">
-  <img alt="Red Rocks" srcset="../../img/2024/01/now/red-rocks-4.jpg 2x">
-  <img alt="Zion" srcset="../../img/2024/01/now/zion.jpg 2x">
-</figure>
-<h2 id="scarface" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/01/now.html#scarface"><span>Scarface</span></a></h2>
-<p>A month before moving to Squamish, I crashed on my bike while commuting.
-A combination of tires being too old, low pressure, being on gravel,
-going fast, and a small bump, resulted in blowing the front tire, which
-somehow escalated into dislodging the front wheel.</p>
-<p>It felt like the ground vanishing under me (super weird feeling), and a
-fraction of a second later I was on the floor.</p>
-<p>Cracked my helmet (no brain damage thankfully), teared open my face in a
-major way along the line of my jaw, and “road rash” all over my arms and
-hands. Had to get stitches on my face. Wound got infected after that (if
-the wound smells funky, take antibiotics, lesson learnt). Left me with a
-fat scar on my face.</p>
-<p>It’s mostly just cosmetic as far as I can tell. Life goes on.</p>
-<h2 id="skiing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/01/now.html#skiing"><span>Skiing</span></a></h2>
-<p>Ski season’s on! Apparently not the best season here in BC in terms of
-snow, but still orders of magnitude better than what I was used to
-around Montreal. Can’t complain. Got big mountains and more powder than
-I’ve ever seen even on “bad” days.</p>
-<p>Did some backcountry early season when avalanche risk was essentially
-non-existent. Moved to the resort (Whistler) as snow piled up and
-avalanche risk increased. Bought a beacon, shovel and probe and gonna do
-an avalanche training soon so I can go back to the backcountry safely.</p>
-<figure class="video">
-  <iframe src="https://www.youtube.com/embed/FdTZBoKhI4g" allowfullscreen></iframe>
-</figure>
-<p>The video above is on the main channel, but I’ve started using my
-<a href="https://www.youtube.com/@FonkyVal">secondary channel</a> a bit more to
-publish skiing videos! I didn’t want to flood the main channel with
-skiing stuff since it’s mostly focused on music in the first place. Go
-subscribe!</p>
 ]]></content>
   </entry>
 </feed>

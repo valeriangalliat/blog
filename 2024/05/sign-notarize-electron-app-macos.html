@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>How to sign and notarize an Electron app for macOS</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="How to sign and notarize an Electron app for macOS">
+  <meta property="og:description" content="So you made a macOS app, shared it with your friends, and they encountered one of those dreaded popups:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>How to sign and notarize an Electron app for macOS</h1>
+<p class="date">May 15, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So you made a macOS app, shared it with your friends, and they
+encountered one of those dreaded popups:</p>
+<figure class="grid">
+  <img alt="App cannot be opened because it is from an unidentified developer" srcset="../../img/2024/05/electron-signature/unidentified-developer.png 2x">
+  <img alt="App can’t be opened because Apple cannot check it for malicious software" srcset="../../img/2024/05/electron-signature/cannot-check.png 2x">
+</figure>
+<p>Then you need to sign (left) and notarize (right) your app!</p>
+<div class="note">
+<p><strong>Note:</strong> in the meantime, the app
+<a href="https://support.apple.com/en-ca/guide/mac-help/mh40616/mac">can still</a>
+<a href="https://support.apple.com/en-ca/guide/mac-help/mchleab3a043/mac">be opened</a>
+by right clicking on it and clicking <strong>Open</strong> from the context menu.</p>
+</div>
+<p>Signing consists in buying a developer membership with Apple, which will
+let you create a key that you can use to <code>codesign</code> your app with.</p>
+<p>Notarizing consists in uploading your app to an Apple service that scans
+it for malware. If it passes the process, your app gets a “stamp of
+approval” that is <a href="https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution">bundled with your app and also mirrored</a>
+on Apple’s Gatekeeper servers.</p>
+<p>In the case of Electron, here’s some relevant docs this article is based
+on:</p>
+<ul>
+<li><a href="https://www.electronjs.org/docs/latest/tutorial/code-signing#signing--notarizing-macos-builds">Electron: Signing &amp; notarizing macOS builds</a></li>
+<li><a href="https://www.electronforge.io/guides/code-signing/code-signing-macos">Electron Forge: Signing a macOS app</a></li>
+</ul>
+<h2 id="get-a-signing-certificate" tabindex="-1"><a class="header-anchor" href="#get-a-signing-certificate"><span>Get a signing certificate</span></a></h2>
+<p>The first step is to generate a signing keypair, and get a signing
+certificate from Apple, which requires you to subscribe to
+<a href="https://developer.apple.com/">Apple’s developer program</a>.</p>
+<p>Then, follow <a href="https://developer.apple.com/help/account/create-certificates/create-a-certificate-signing-request">create a certificate signing request</a>.</p>
+<p>In my experience, it doesn’t seem that the <strong>User Email Address</strong> you
+input matters.</p>
+<p>As for <strong>Common Name</strong>, it seems to only affect how the private and
+public key are named in Keychain Access.</p>
+<p>By saving the request to disk, you will get a
+<code>CertificateSigningRequest.certSigningRequest</code> file.</p>
+<p>This will also create a <code>Common Name.p12</code> and <code>Common Name.pem</code> entry in
+your Keychain Access. The <code>.p12</code> is the private key, and the <code>.pem</code> is
+the public key, that are going to be associated with the certificate
+you’re requesting.</p>
+<p>You should now upload the <code>.certSigningRequest</code> file to your Apple
+Developer account, in <strong>Certificates, IDs &amp; Profiles</strong>. Choose the
+<strong>Developer ID Application</strong> certificate type.</p>
+<p>This will give you a certificate <code>developerID_application.cer</code> that you
+need to import in Keychain Access (by simply opening it).</p>
+<h2 id="get-the-intermediate-certificates" tabindex="-1"><a class="header-anchor" href="#get-the-intermediate-certificates"><span>Get the intermediate certificates</span></a></h2>
+<p>I don’t fully understand this part, but the above is not enough to sign
+your app. You also need some extra root and/or intermediate certificates
+to be present in your Keychain Access, but it’s not exactly clear which
+ones or where to get them.</p>
+<p>What I know is that by using Xcode and messing with their certificate
+management settings, it downloads the extra stuff that is needed for
+code signing to work.</p>
+<p>So:</p>
+<ol>
+<li>Install Xcode.</li>
+<li>In <strong>Xcode &gt; Settings… &gt; Accounts</strong>, add your Apple account.</li>
+<li>Click <strong>Download Manual Profiles</strong>.</li>
+<li>Click <strong>Manage Certificates</strong> and request a new <strong>Apple Development</strong>
+certificate that you can delete right after.</li>
+</ol>
+<p>Executing part or all of those steps may download the extra certificates
+you need in Keychain Access. It’s not 100% clear to me what did it for
+me. 😅 Don’t hesitate to <a href="/val.html#contact">let me know</a> if you have more
+details on this!</p>
+<h2 id="manually-sign-your-app" tabindex="-1"><a class="header-anchor" href="#manually-sign-your-app"><span>Manually sign your app</span></a></h2>
+<p>You’re now in a place where you can manually sign your app:</p>
+<pre><code class="hljs language-sh">codesign --sign <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span> MyApp.app
+</code></pre>
+<p>To find the identify to pass to <code>--sign</code>:</p>
+<pre><code class="hljs language-sh">security find-identity -v -p codesigning
+</code></pre>
+<p><code>-v</code> will show only valid identities. <code>-p</code> is for selecting a specific
+policy, here we care about <code>codesigning</code>.</p>
+<h2 id="signing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="#signing-your-app-with-electron-forge"><span>Signing your app with Electron Forge</span></a></h2>
+<p>Add <code>osxSign</code> to your <code>forge.config.js</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">packagerConfig</span>: {
+    <span class="hljs-attr">osxSign</span>: {
+      <span class="hljs-attr">identity</span>: <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span>
+    }
+  }
+}
+</code></pre>
+<p>If you only have one valid code signing identity configured on your Mac,
+you can omit the <code>identity</code> parameter. You still need to pass an empty
+object <code>osxSign: {}</code>.</p>
+<h2 id="notarizing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="#notarizing-your-app-with-electron-forge"><span>Notarizing your app with Electron Forge</span></a></h2>
+<p>Add <code>osxNotarize</code> to your <code>forge.config.js</code>. There’s a few ways to
+configure it <a href="https://www.electronforge.io/guides/code-signing/code-signing-macos#osxnotarize-options">documented here</a>.</p>
+<p>The documentation is pretty clear and complete so I won’t bother
+repeating anything here. 🙂</p>
+<h2 id="debugging-osxsign-and-osxnotarize" tabindex="-1"><a class="header-anchor" href="#debugging-osxsign-and-osxnotarize"><span>Debugging <code>osxSign</code> and <code>osxNotarize</code></span></a></h2>
+<p>If you encounter issues where Electron is not properly signing or
+notarizing your app, you can debug the signing and notarizing process
+that way:</p>
+<pre><code class="hljs language-sh">DEBUG=electron-osx-sign,electron-notarize* npx electron-forge package
+</code></pre>
+<p>This will output detailed logs that should help you identify the
+culprit.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>That should be all you need to have your app approved by Apple so that
+you can share it with the world. 🌎</p>
+<p>Happy building! 🚀</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/sign-notarize-electron-app-macos.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

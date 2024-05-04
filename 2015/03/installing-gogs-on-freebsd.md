@@ -2,7 +2,7 @@
 March 7, 2015
 
 [Gogs] is a self-hosted Git service, not unlike GitHub, but lightweight
-and open source. Here's a small tutorial to install it in its own jail
+and open-source. Here's a small tutorial to install it in its own jail
 on a FreeBSD host.
 
 [Gogs]: http://gogs.io/

@@ -108,7 +108,7 @@ context about the way I use a password manager.
 * I use Firefox passwords autosave/autofill feature (offline) as a
   companion to my current CLI password manager. I want to keep at least
   the same level of convenience, and ideally a better integration.
-* I need my password manager to be open source. If I can't review the
+* I need my password manager to be open-source. If I can't review the
   code that's going to deal with my passwords, I can't trust it.
 * I currently don't pay for any subscription other than my ISP and
   mobile carrier, and I'd like to keep things this way.

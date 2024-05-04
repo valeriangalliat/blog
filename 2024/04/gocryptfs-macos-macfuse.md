@@ -36,7 +36,7 @@ brew install gromgit/fuse/sshfs-mac
 
 **Note:** gocryptfs and SSHFS can't be installed from Homebrew's main
 registry anymore [because](https://github.com/Homebrew/homebrew-core/pull/74812#issuecomment-826895526)
-they depend on macFUSE, which is not open source.
+they depend on macFUSE, which is not open-source.
 
 This is why the above command installs from [this repository](https://github.com/gromgit/homebrew-fuse),
 which hosts the Homebrew formulas that depend on FUSE that were dropped
@@ -46,7 +46,7 @@ from Homebrew.
 
 ## Concerns about macFUSE
 
-Sadly, macFUSE is not open source. But at least it's been updated
+Sadly, macFUSE is not open-source. But at least it's been updated
 regularly for over 10 years, and keeps supporting the latest macOS
 versions, so as long as this stays the case, I don't mind using it.
 

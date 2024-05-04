@@ -25,7 +25,7 @@ momentum being part of the [SassDoc][sassdoc] team gave me since mid 2014.
 I'm especially super thankful to [Kitty][tw-kitty], [Pascal][tw-pascal]
 and [Fabrice][tw-fabrice], we made an awesome team that I'm really proud
 being part of. I learnt so much by building SassDoc together, as much in
-programming as in open source project handling and team building.
+programming as in open-source project handling and team building.
 
 [sassdoc]: http://sassdoc.com/
 [tw-kitty]: https://twitter.com/KittyGiraudel

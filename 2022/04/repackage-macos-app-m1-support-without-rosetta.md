@@ -254,7 +254,7 @@ deciding to not install this package after all).
 
 For this specific program, we're in luck because
 [osquery](https://github.com/osquery/osquery) is actually an
-open source program!
+open-source program!
 
 This means that even if they don't provide an ARM version, hopefully
 with little work we can compile from source for ARM and use that for our

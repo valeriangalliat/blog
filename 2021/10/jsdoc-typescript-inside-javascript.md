@@ -62,7 +62,7 @@ Static types are useful and there's no argument that having type
 checking is generally a beneficial thing. For that reason, more and more
 people want types with the libraries they're going to use.
 
-I maintain [quite a few](https://github.com/valeriangalliat) open source
+I maintain [quite a few](https://github.com/valeriangalliat) open-source
 JavaScript libraries, and on the most popular ones, people have
 requested (or better, contributed) TypeScript definitions, whether it's
 directly in the package repository or on [Definitely Typed](https://github.com/DefinitelyTyped/DefinitelyTyped).

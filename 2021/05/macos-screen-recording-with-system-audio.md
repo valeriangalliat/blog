@@ -7,7 +7,7 @@ natively on macOS (I'm currently on Big Sur), and you need an external
 software to do the magic.
 
 As of today there's essentially 3 options: [Background Music],
-[BlackHole] and [Loopback]. The first two are free and open source, and
+[BlackHole] and [Loopback]. The first two are free and open-source, and
 the last one is proprietary and costs 99 USD before tax.
 
 [Background Music]: https://github.com/kyleneideck/BackgroundMusic

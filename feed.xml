@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-04T16:27:59.482Z</updated>
+  <updated>2024-05-04T18:18:56.721Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -108,8 +108,9 @@ Encryption: TLS
 User: you@gmail.com
 Password: the password generated earlier
 </code></pre>
-<p>Where it gets funky is that you can use those SMTP settings from inside
-Gmail itself, like if you were adding an external SMTP server!</p>
+<p>Where it gets funky is that you can use those SMTP settings
+<a href="https://support.google.com/domains/answer/9437157">from inside Gmail itself</a>,
+like if you were adding an external SMTP server!</p>
 <p>Again, in <strong>Settings &gt; Accounts and Import &gt; Send mail as</strong>, you can
 <strong>Add another email address</strong>. Use your custom email address in the
 email field e.g. <code>you@yourdomain.com</code>. Then use the SMTP settings from

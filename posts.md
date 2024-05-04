@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
+* [How to use Electron auto updater ⚛️](2024/05/how-to-use-electron-auto-updater.md) <small>May 15, 2024</small>
 * [Invoking a Firebase callable function from the Firebase Admin SDK](2024/05/firebase-callable-admin-sdk.md) <small>May 15, 2024</small>
 * [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 * [Using Google Chrome instead of Chromium in Google Cloud Functions](2024/05/google-chrome-cloud-functions.md) <small>May 5, 2024</small>

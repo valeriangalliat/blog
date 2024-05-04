@@ -9,6 +9,8 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
+* [How to use Electron auto updater ⚛️](2024/05/how-to-use-electron-auto-updater.md) <small>May 15, 2024</small>
 * [Invoking a Firebase callable function from the Firebase Admin SDK](2024/05/firebase-callable-admin-sdk.md) <small>May 15, 2024</small>
 * [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 * [Using Google Chrome instead of Chromium in Google Cloud Functions](2024/05/google-chrome-cloud-functions.md) <small>May 5, 2024</small>
@@ -22,8 +24,6 @@ A blog about tech, programming and other things.
 * [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>
 * [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 4, 2024</small>
 * [Use Gmail to send emails with a custom domain for free (secret trick) 😏](2024/05/gmail-send-custom-domain-free.md) <small>May 3, 2024</small>
-* [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
-* [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>
 
 [All the posts](posts.md)
 

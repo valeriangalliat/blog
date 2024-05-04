@@ -5,10 +5,64 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-04T00:28:31.622Z</updated>
+  <updated>2024-05-04T16:27:59.482Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Swift: detect space (virtual desktop) changes</title>
+    <link href="https://www.codejam.info/2024/05/swift-detect-space-virtual-desktop-changes.html" />
+    <id>https://www.codejam.info/2024/05/swift-detect-space-virtual-desktop-changes.html</id>
+    <updated>2024-05-04T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>In a macOS app, you can
+<a href="https://stackoverflow.com/a/56435288/4324668">get an event</a>
+when <a href="https://stackoverflow.com/a/73548661/4324668">the active space changes</a>.
+This happens e.g. if you have multiple virtual desktops, or full screen
+windows, and you swap between “spaces”, using the 3 fingers swipe on the
+trackpad, or the <kbd>Ctrl</kbd> + <kbd>Left</kbd> and <kbd>Right</kbd>
+shortcuts.</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyObserver</span> {
+  <span class="hljs-keyword">init</span>() {
+    <span class="hljs-type">NSWorkspace</span>.shared.notificationCenter.addObserver(
+      forName: <span class="hljs-type">NSWorkspace</span>.activeSpaceDidChangeNotification,
+      object: <span class="hljs-literal">nil</span>,
+      queue: <span class="hljs-literal">nil</span>,
+      using: <span class="hljs-keyword">self</span>.spaceDidChange
+    )
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">spaceDidChange</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Desktop (space) changed&quot;</span>)
+  }
+}
+</code></pre>
+<p>Looks like there’s an alternative way to call it:</p>
+<pre><code class="hljs language-swift">
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyObserver</span> {
+  <span class="hljs-keyword">init</span>() {
+    <span class="hljs-type">NSWorkspace</span>.shared.notificationCenter.addObserver(
+      <span class="hljs-keyword">self</span>,
+      selector: <span class="hljs-keyword">#selector</span>(<span class="hljs-keyword">self</span>.spaceDidChange),
+      name: <span class="hljs-type">NSWorkspace</span>.activeSpaceDidChangeNotification,
+      object: <span class="hljs-literal">nil</span>
+    )
+  }
+
+  <span class="hljs-keyword">func</span> <span class="hljs-title function_">spaceDidChange</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
+    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Desktop (space) changed&quot;</span>)
+  }
+}
+</code></pre>
+<p>Whatever works for you!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Use Gmail to send emails with a custom domain for free (secret trick) 😏</title>
     <link href="https://www.codejam.info/2024/05/gmail-send-custom-domain-free.html" />
@@ -21,7 +75,7 @@ Workspace subscription? Well, it’s possible!</p>
 your emails on the recipient side with a “via gmail.com” next to your
 email.</p>
 <figure class="center">
-  <img alt="Sender card showing “via gmail.com”" srcset="../../img/2024/04/gmail/via.png 2x">
+  <img alt="Sender card showing “via gmail.com”" srcset="../../img/2024/05/gmail/via.png 2x">
 </figure>
 <p>The second tradeoff is that while the email will appear with your custom
 domain, the Gmail address that you use will also show in the source
@@ -39,7 +93,7 @@ trick, and is explained <a href="https://noted.lol/setup-gmail-smtp-sending-2023
 <p>In short: <a href="https://myaccount.google.com/security">in your Google account security settings</a>,
 in <strong>2-Step Verification &gt; App passwords</strong>, add a new app password.</p>
 <figure class="center">
-  <img alt="App passwords" srcset="../../img/2024/04/gmail/app-passwords.png 2x">
+  <img alt="App passwords" srcset="../../img/2024/05/gmail/app-passwords.png 2x">
 </figure>
 <div class="note">
 <p><strong>Note:</strong> that section may not show for you… on my side it seems to
@@ -173,13 +227,13 @@ brew install gromgit/fuse/sshfs-mac
 <div class="note">
 <p><strong>Note:</strong> gocryptfs and SSHFS can’t be installed from Homebrew’s main
 registry anymore <a href="https://github.com/Homebrew/homebrew-core/pull/74812#issuecomment-826895526">because</a>
-they depend on macFUSE, which is not open source.</p>
+they depend on macFUSE, which is not open-source.</p>
 <p>This is why the above command installs from <a href="https://github.com/gromgit/homebrew-fuse">this repository</a>,
 which hosts the Homebrew formulas that depend on FUSE that were dropped
 from Homebrew.</p>
 </div>
 <h2 id="concerns-about-macfuse" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#concerns-about-macfuse"><span>Concerns about macFUSE</span></a></h2>
-<p>Sadly, macFUSE is not open source. But at least it’s been updated
+<p>Sadly, macFUSE is not open-source. But at least it’s been updated
 regularly for over 10 years, and keeps supporting the latest macOS
 versions, so as long as this stays the case, I don’t mind using it.</p>
 <p>That said, depending on macFUSE for a process as critical as my <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">offsite backups</a>
@@ -2949,462 +3003,6 @@ notification channels including their full ID:</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Firebase functions in a monorepo? A challenging pile of hacks</title>
-    <link href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html" />
-    <id>https://www.codejam.info/2023/04/firebase-functions-monorepo.html</id>
-    <updated>2023-04-07T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I recently went through the trouble of migrating a Firebase app to a
-monorepo, in particular the Cloud Functions part. While doing so, I went
-through a total of 3 different “methods”, all of which were full of
-surprises that I discovered along the way.</p>
-<p>In this blog post I’ll go through those 3 options, and highlight their
-tradeoffs, in order to help you pick the one that’s the most appropriate
-to your workflow. It’s a long post, so feel free to jump to the
-<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison">comparison</a> directly, and then cherry pick what to read
-from there. 😄</p>
-<p>Here, I assume that your monorepo uses something like npm or Yarn
-workspaces. It may be applicable to pnpm but I didn’t try it.</p>
-<h2 id="the-common-ground" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-common-ground"><span>The common ground</span></a></h2>
-<p>Before we get started with the 3 options, they all share a common
-ground. And for the sake of this blog post, I’ll start with an
-hypothetical base monorepo structure which I’ll lay down below.</p>
-<h3 id="the-base-monorepo" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-base-monorepo"><span>The base monorepo</span></a></h3>
-<p>This is a basic monorepo with two websites and a shared package, e.g.
-for helper functions, types or any other common code.</p>
-<pre><code class="hljs">monorepo
-├── apps
-│   ├── website1
-│   │   └── package.json
-│   └── website2
-│       └── package.json
-├── packages
-│   └── shared
-│       └── package.json
-├── package-lock.json
-└── package.json
-</code></pre>
-<p>The top-level <code>package.json</code> contains:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;workspaces&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-    <span class="hljs-string">&quot;apps/*&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-string">&quot;packages/*&quot;</span>
-  <span class="hljs-punctuation">]</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<h3 id="the-firebase-functions-in-its-own-repo" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-firebase-functions-in-its-own-repo"><span>The Firebase functions in its own repo</span></a></h3>
-<p>In another repo, you have a Firebase app with functions:</p>
-<pre><code class="hljs">firebase
-├── functions
-│   ├── src
-│   │   └── index.js
-│   ├── package-lock.json
-│   └── package.json
-└── firebase.json
-</code></pre>
-<p>Where your <code>firebase.json</code> contains:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;functions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;functions&quot;</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<h3 id="merging-them-together" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#merging-them-together"><span>Merging them together</span></a></h3>
-<p>Since in a Firebase repo, <code>functions</code> is already its own subdirectory
-with its own <code>package.json</code>, it feels pretty natural to just “merge”
-both repos together, maybe  renaming <code>functions</code> into <code>apps/functions</code>
-to match our initial structure better, but no more than that:</p>
-<pre><code class="hljs language-diff"> monorepo
- ├── apps
- │   ├── website1
- │   │   └── package.json
- │   ├── website2
- │   │   └── package.json
-<span class="hljs-addition">+│   └── functions</span>
-<span class="hljs-addition">+│       ├── src</span>
-<span class="hljs-addition">+│       │   └── index.js</span>
-<span class="hljs-addition">+│       └── package.json</span>
- ├── packages
- │   └── shared
- │       └── package.json
-<span class="hljs-addition">+├── firebase.json</span>
- ├── package-lock.json
- └── package.json
-</code></pre>
-<p>In <code>firebase.json</code>, we just update the <code>source</code> to be <code>apps/functions</code>,
-and we remove the <code>functions/package-lock.json</code> to let npm merge the
-functions dependencies in the top-level <code>package-lock.json</code>. This way,
-we only need to run <code>npm install</code> at the root of the monorepo, instead
-of having to go inside <code>apps/functions</code> and run <code>npm install</code> there
-again. After all, that’s part of the point of a monorepo.</p>
-<p>Great, so we’re done? That was easy.</p>
-<h2 id="why-this-works-but-not-really" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#why-this-works-but-not-really"><span>Why this works, but not really</span></a></h2>
-<p>Not so fast. This will seemingly work, but it will do so kind of by
-chance, as a somewhat lucky accident.</p>
-<h3 id="how-firebase-deploy-works" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#how-firebase-deploy-works"><span>How <code>firebase deploy</code> works</span></a></h3>
-<p>See, when <code>firebase deploy</code> deploys the functions, it will make a ZIP
-archive of the functions source directory (as defined in <code>firebase.json</code>).</p>
-<p>Then, it will deploy the function from that ZIP. The Cloud Functions
-deploy process will send that ZIP to Cloud Build, which will:</p>
-<ol>
-<li>Run some variant of <code>npm install</code> or <code>yarn install</code>.</li>
-<li>Run the <code>gcp-build</code> script if defined in <code>package.json</code>.</li>
-<li>Prune development dependencies from <code>node_modules</code> if needed.</li>
-<li>Use the output of that process as the source for the function
-runtime.</li>
-</ol>
-<p>This is defined in GCP buildpacks, e.g. <a href="https://github.com/GoogleCloudPlatform/buildpacks/blob/99553d0a2051834324d621f20ad5355453f675a1/cmd/nodejs/npm/main.go">for npm</a>
-and <a href="https://github.com/GoogleCloudPlatform/buildpacks/blob/99553d0a2051834324d621f20ad5355453f675a1/cmd/nodejs/yarn/main.go">for Yarn</a>.</p>
-<p>We can already see a bit of a problem. Because we’re sending only the
-<code>apps/functions</code> context to Cloud Build, it doesn’t have access to the
-top-level <code>package-lock.json</code>, which means the install output will be
-nondeterministic, and each deploy is subject to using different versions
-of different packages and potentially break your code without you
-knowing.</p>
-<p><strong>This can introduce a whole range of sneaky errors that will be a pain to
-debug!</strong></p>
-<h3 id="using-shared-packages" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#using-shared-packages"><span>Using shared packages</span></a></h3>
-<p>Moreover, we now understand that this will not allow using <em>shared
-packages</em> inside the monorepo!</p>
-<p>If we wanted to use <code>packages/shared</code> inside <code>apps/functions</code>, by adding
-<code>&quot;shared&quot;: &quot;*&quot;</code> in our <code>dependencies</code>, letting npm or Yarn resolve it to
-the local workspace version, it wouldn’t actually work.</p>
-<p>Or actually, it will work in development, because we have the whole
-monorepo there. And in our particular example, even the Firebase
-deployment will surprisingly succeed, <strong>but only as an accident because
-<a href="https://www.npmjs.com/package/shared"><code>shared</code></a> is a valid npm
-package</strong>! It will break at runtime when you try to use a package that
-doesn’t contain the code you expect at all.</p>
-<p>Other names for common monorepo shared packages that are also valid npm
-packages would be <a href="https://www.npmjs.com/package/eslint-config"><code>eslint-config</code></a>
-and <a href="https://www.npmjs.com/package/tsconfig"><code>tsconfig</code></a>, so they would
-also result in this kind of collision.</p>
-<div class="note">
-<p><strong>Note:</strong> if you use Yarn, you can prevent those collisions by prefixing
-your version specifier for your shared dependencies with <code>workspace:</code>,
-e.g. <code>&quot;shared&quot;: &quot;workspace:*&quot;</code> to use any version. This will ensure the
-dependency is <em>always</em> installed from the local workspace and not from
-the registry.</p>
-<p>npm doesn’t support that, but you can still add a layer of safety by
-making sure all your shared package names don’t conflict with anything
-on npm, for example by prefixing them with <code>@myorg</code> such as
-<code>@myorg/shared</code>, <code>@myorg/eslint-config</code>, <code>@myorg/tsconfig</code> and so on.</p>
-<p>Or as an abundance of caution if you use Yarn, maybe do both. 😬</p>
-</div>
-<h2 id="the-good-enough-for-me-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach"><span>The “good enough for me” approach</span></a></h2>
-<p>We’re now in a situation where 1. the top-level <code>package-lock.json</code> is
-not respected when deploying Cloud Functions, and 2. we cannot use any
-workspace shared package in our functions.</p>
-<p>You may actually be fine with that. Maybe you don’t care that your
-production functions have an unpredictable dependency tree every time
-you deploy, and maybe you don’t want to use shared packages in your
-functions anyway!</p>
-<div class="note">
-<p><strong>Note:</strong> you can even use shared packages in your <code>devDependencies</code>
-with that setup, as long as you don’t have a <code>gcp-build</code> script that
-depends on them!</p>
-<p>At least if you use npm. Because there’s currently a bug with the Yarn
-Cloud Build buildpack that makes it install <code>devDependencies</code> before
-pruning them right after, even when no build script is present. 😅</p>
-<p>This would fail your build if the shared package from your
-<code>devDependencies</code> don’t exist on npm. It’s one of those cases where
-having a shared package name that collisions with a npm package would
-help, although I wouldn’t really recommend this as a fix.</p>
-</div>
-<p>If that works for you, congratulations, your job here is done.
-Otherwise, let’s dig in the two other options. 👇</p>
-<h2 id="the-full-context-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach"><span>The full context approach</span></a></h2>
-<p>There’s a <a href="https://github.com/firebase/firebase-tools/issues/653">long thread</a>
-in the <code>firebase-tools</code> repo about monorepo support. The majority of the
-solutions described there are some variation of a deploy script that
-packs your shared dependencies into <code>.tgz</code> files, and patch the
-<code>functions/package.json</code> file to reference them with <code>file:</code> for the
-time of the deployment. We’ll explore this in details in the last solution: <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">the hybrid approach</a>.</p>
-<p>However, there’s <a href="https://github.com/firebase/firebase-tools/issues/653#issuecomment-1371306331">a particular comment</a>
-in that thread that describes something very different, and caught my
-attention despite not being given very much interest there.</p>
-<figure class="center">
-  <img alt="A comment suggesting to put the monorepo root as the functions source" srcset="../../img/2023/04/firebase-monorepo-comment.png 2x">
-</figure>
-<p>This comment suggests that we put the monorepo root as the functions
-source in <code>firebase.json</code> (ignoring unnecessary files as needed), to
-ensure we send the whole relevant monorepo context to Cloud Build!</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;functions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;source&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;.&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;ignore&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-      <span class="hljs-string">&quot;firebase.json&quot;</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-string">&quot;**/.*&quot;</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-string">&quot;**/node_modules/**&quot;</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-string">&quot;**/packages/@(web|mobile)/**&quot;</span>
-    <span class="hljs-punctuation">]</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>Then, adding the functions entrypoint in the top-level <code>package.json</code>,
-because Cloud Functions still don’t know about monorepos, and expects the
-functions <code>package.json</code> to be at the root.</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;main&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./packages/functions/dist/index.js&quot;</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> if you use <code>.env</code> files in your functions, e.g. <code>.env</code>,
-<code>.env.production</code>, <code>.env.staging</code>, and any other project aliases you may
-have, which is becoming more and more common <a href="https://firebase.google.com/docs/functions/config-env#environment_configuration">now Firebase deprecated
-<code>functions.config()</code></a>,
-you also need to put them at the root of your monorepo with this
-solution, otherwise they will be ignored during deploy!</p>
-</div>
-<p>To me, this sounds <em>much more elegant</em> than the hacks with deploy
-scripts and <code>file:</code> references! But after using this approach in
-production for a few weeks, I decided to rollback, because there was too
-many downsides for my use case.</p>
-<h3 id="the-ignore-list-is-quirky" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-ignore-list-is-quirky"><span>The ignore list is quirky</span></a></h3>
-<p>The ignore list is not exactly intuitive to work with. And if you forget
-to ignore anything somewhat large, <a href="https://www.codejam.info/2023/04/firebase-functions-entity-too-large.html">your functions will fail to deploy</a>.
-It struggled so much to figure out the precise rules of this ignore list
-that I had to go in the <code>firebase-tools</code> source code in order to
-understand it, and I wrote <a href="https://www.codejam.info/2023/04/firebase-functions-ignore.html">another blog post</a>
-to explain how it really works, and how to test your ignore patterns!</p>
-<p>The main caveat is that you <a href="https://github.com/firebase/firebase-tools/issues/2677">can’t use negative ignore rules</a>
-like you could in <code>.gitignore</code> and most ignore systems, e.g.:</p>
-<pre><code class="hljs language-gitignore">/apps/website1/*
-!/apps/website1/package.json
-/apps/website2/*
-!/apps/website2/package.json
-</code></pre>
-<p>In a <code>.gitignore</code>, this would ignore everything in <code>apps/website1</code> and
-<code>apps/website2</code> except for their <code>package.json</code>. If you use “a modern
-version of Yarn” (not 1.x), this is something you would need to do, because
-<code>yarn install --immutable</code> will fail if the workspaces identified in
-your <code>yarn.lock</code> don’t actually point to directories with a
-<code>package.json</code> in them!</p>
-<p>If you use npm or Yarn 1.x though, <code>npm ci</code> and <code>yarn install --frozen-lockfile</code> won’t care, so you’re good to go.</p>
-<div class="note">
-<p><strong>Note:</strong> just keep in mind that Yarn 1.x doesn’t let you install
-dependencies for a single workspace, you systematically have to install
-all dependencies for the whole monorepo, which can be a pretty bad hit
-for any pipeline that works only on a small subset of the monorepo.</p>
-<p>While you can <a href="https://classic.yarnpkg.com/en/docs/cli/install#toc-yarn-install-focus"><code>yarn install --focus</code></a>
-with 1.x, which kind of sounds like this, it doesn’t work with
-dependencies that are local to the monorepo, they <em>need</em> to be fetched
-from a registry.</p>
-</div>
-<p>But on new Yarn versions, this is a pretty big deal because you can’t
-ignore a whole workspace from your functions deploy, and because there’s
-no negative patterns to ignore everything but the <code>package.json</code> in a
-given workspace, you’re stuck with having to <em>explicitly</em> ignore
-everything but the <code>package.json</code> in each of the workspaces you want to
-exclude. And it’s a list you’ll now have to maintain forever every time
-you add new things to your monorepo.</p>
-<p>This is even more of a problem because if you have any kind of secret in
-your repo, and you fail to add them to your <code>functions.ignore</code> list,
-they’ll be packaged in your functions source and you won’t notice. Your
-functions source is private to your Google Cloud account by default, but
-this is silently waiting to make a future security issue much worse.</p>
-<h3 id="all-the-other-workspace-dependencies-are-installed" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#all-the-other-workspace-dependencies-are-installed"><span>All the other workspace dependencies are installed</span></a></h3>
-<p>This is the one that made me give up this solution. I could deal with
-the ignore list issues, but this was another level.</p>
-<p>As we saw earlier, Cloud Functions use Cloud Build to install your
-dependencies. The whole thing is not designed for monorepos, which is
-why we had to put our <code>main</code> entrypoint in the root <code>package.json</code>. A
-more concerning effect of that though, is that Cloud Build will run <code>npm install</code>
-at the top level of the monorepo.</p>
-<p>This means installing all the dependencies of all your apps and
-packages. This is big problem if you have a lot of unrelated
-dependencies across your different workspaces.</p>
-<p>Firebase doesn’t let you configure the install command either, to run
-e.g. <code>npm install --workspace functions</code> or <code>yarn workspace function workspaces focus</code>
-(I know, awkward command), which would install only the functions
-dependencies. <em>This can speed up your install times drastically</em> in
-remote build environments, but here it’s not an option.</p>
-<p>For us, the difference was 10 minutes to deploy Firebase functions vs. 2
-minutes, if we could install the dependencies of the functions only.</p>
-<p>This was to much, which is why I ended up with the last approach.</p>
-<div class="note">
-<p><strong>Note:</strong> the build time issue was heavily magnified in my case by the
-fact Cloud Build <a href="https://github.com/GoogleCloudPlatform/buildpacks/issues/203">doesn’t do any caching for Yarn 2.x and greater</a>
-if it’s not used in <a href="https://yarnpkg.com/features/pnp">PnP mode</a>.
-Proper caching may help a bit with npm and Yarn 1.x, even though it’s
-still not ideal.</p>
-<p>There may be a way though, for example by replacing the top-level
-<code>package.json</code> and <code>package-lock.json</code> by dummy ones during <code>firebase deploy</code> so that from Cloud Build’s perspective it looks like you have no
-dependencies, and then hijacking the <code>gcp-build</code> script to <em>actually</em>
-install your dependencies yourself using the appropriate command that
-doesn’t install the whole world at the same time. 🥹</p>
-<p>I haven’t tested this but it may work. However, if you’re gonna get that
-hacky, you might as well embrace the third solution.</p>
-</div>
-<h2 id="the-hybrid-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach"><span>The hybrid approach</span></a></h2>
-<p>This is an improved version of <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">the first “good enough for me” solution</a>,
-where in our development environment, we work with a full-fledged
-monorepo, with shared packages and everything, but when we deploy the
-Firebase functions, we narrow it down to its own independent-repo-like
-entity, but in a way that will actually work with our
-<code>package-lock.json</code> and shared packages!</p>
-<p>This will take a bit of code though, in the form of a <code>predeploy</code> and
-<code>postdeploy</code> script for our functions. The <code>predeploy</code> script needs to:</p>
-<ol>
-<li>Do anything you were already doing in a <code>predeploy</code> script like
-linting and building your app.</li>
-<li>Copy all the shared packages you depend on in your functions
-directory, either through <code>.tgz</code> files from using <code>npm pack</code> or <code>yarn pack</code>, or the directories themselves (see below for the difference).</li>
-<li>Patch your functions <code>package.json</code> to reference the internal
-dependencies using <code>file:</code> references to the <code>.tgz</code> files or
-directories you just created.</li>
-<li><strong>Do so recursively for your whole graph of internal dependencies.</strong>
-Hopefully it’s small enough to be manageable, but I can see this
-turning into a living hell in complex monorepos.</li>
-<li>Copy the top-level lock file in the functions directory. If you use
-Yarn 2.x and greater, you’ll need to do a bit more than that, see
-below.</li>
-</ol>
-<p>As for the <code>postdeploy</code> script, it needs to undo everything that
-<code>predeploy</code> did.</p>
-<p>Of course, your repo will be in an inconsistent state for the duration
-of <code>firebase deploy</code>, so maybe run that from another copy of your
-monorepo that you don’t work from, or make sure to not mess with your
-dependencies during the deploy, or things will fall apart!</p>
-<p>You’ll find a number of examples of those <code>predeploy</code> and <code>postdeploy</code>
-scripts in the issue thread I linked earlier. Here’s
-<a href="https://github.com/firebase/firebase-tools/issues/653#issuecomment-1464911379">one of the most recent ones</a>
-that you can take inspiration from.</p>
-<p>For the part where you replace the versions of your internal packages in
-your <code>package.json</code>, you can use <a href="https://docs.npmjs.com/cli/v7/commands/npm-pkg"><code>npm pkg set</code></a></p>
-<pre><code class="hljs language-sh">npm pkg <span class="hljs-built_in">set</span> <span class="hljs-string">&#x27;dependencies.@myorg/shared=file:shared.tgz&#x27;</span> <span class="hljs-string">&#x27;dependencies.@myorg/tsconfig=file:tsconfig.tgz&#x27;</span>
-</code></pre>
-<p>Just make a backup of your original <code>package.json</code> so you can restore it
-in the <code>postdeploy</code> script. Feel free to use it with Yarn as well since
-this really just edits your <code>package.json</code> from the command line.</p>
-<p>Now, about the downsides.</p>
-<h3 id="you-have-to-recursively-package-your-internal-dependencies" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#you-have-to-recursively-package-your-internal-dependencies"><span>You have to recursively package your internal dependencies</span></a></h3>
-<p>And to do so, you have to patch your <code>package.json</code> files all the way
-down the internal dependency graph for your functions. Nasty.</p>
-<p>As for using <code>.tgz</code> files from <code>npm pack</code> or <code>yarn pack</code> vs. copying the
-directories directly, it comes down to personal preference with npm, but
-if you use Yarn and you have nested internal dependencies, you’re much
-better off going with the directory approach.</p>
-<p>That’s because npm can resolve <code>file:</code> references to <code>.tgz</code> files
-relative to <em>where <code>npm install</code> is ran from</em>, but Yarn only looks for
-the <code>.tgz</code> files relative to the <code>package.json</code> referencing it.</p>
-<p>You can see how this becomes a problem with more than one level of
-dependency, because you would have to embed the archive of the same
-packages in all the packages that reference it, and do so recursively,
-which can get exponentially heavy and inefficient! Not to mention that
-you’d end up with a lot of duplicated dependencies, which can cause a
-whole lot of other problems on its own.</p>
-<p>It will work with the directory approach though:</p>
-<ol>
-<li>You make your functions depend on <code>&quot;@myorg/shared&quot;: &quot;file:shared&quot;</code>.</li>
-<li>You make <code>shared/package.json</code> depends on <code>&quot;@myorg/tsconfig&quot;: &quot;file:../tsconfig&quot;</code>.</li>
-<li>You copy both <code>shared</code> and <code>tsconfig</code> under your functions directory
-and you’re god to go.</li>
-</ol>
-<h3 id="you-need-to-mirror-some-top-level-logic" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#you-need-to-mirror-some-top-level-logic"><span>You need to mirror some top-level logic</span></a></h3>
-<p>In the previous solution, we saw how we had to copy some functions logic
-at the top level (<code>main</code> inside <code>package.json</code> as well as <code>.env</code> files).
-Here, we have the opposite problem.</p>
-<p>Because we’re shipping only the functions directory to Cloud Functions,
-it’s missing your <code>package-lock.json</code> or <code>yarn.lock</code> from the top
-level (and maybe a number of other files you may need without knowing it).</p>
-<p>For example, if you use “a modern version of Yarn” aka not Yarn 1.x, it
-also needs its <code>.yarnrc.yml</code> as well as <code>.yarn/releases</code> and
-<code>.yarn/plugins</code> directories in order to function!</p>
-<p>If you forget to copy any of those inside your functions directory,
-Cloud Build will either use the wrong package manager or the wrong
-version of your package manager, which may result in the best case in a
-broken deploy, or worst, resolving and linking dependencies differently
-than in your local environment, which can lead to a number of sneaky
-issues.</p>
-<p>This is not something that’s accounted for in any of the solutions from
-<a href="https://github.com/firebase/firebase-tools/issues/653">the thread</a>
-I linked earlier. <strong>They all ship a lonely <code>functions/package.json</code> that
-will end up installing unpredictable dependency versions in their
-production environment.</strong></p>
-<p>Luckily, this is easy to fix! Just copy your top-level
-<code>package-lock.json</code> or <code>yarn.lock</code> in the functions directory as part of
-your <code>predeploy</code> script.</p>
-<p>npm and Yarn 1.x are resilient enough to do the right thing from a
-<em>superset</em> of the lock file. More recent versions of Yarn though, are
-pretty strict and will refuse to install if it finds anything
-<em>superfluous</em> in <code>yarn.lock</code> (from its partial perspective).</p>
-<p>There’s a whole bunch of ways to addresses this, tracked in
-<a href="https://github.com/yarnpkg/yarn/issues/5428">those</a> <a href="https://github.com/yarnpkg/berry/issues/1223">issues</a>,
-with the emerging of various experimental Yarn plugins to fix it like
-<a href="https://github.com/andreialecu/yarn-plugin-workspace-lockfile">yarn-plugin-workspace-lockfile</a>
-(<a href="https://github.com/bertho-zero/yarn-plugin-workspace-lockfile">and</a>
-<a href="https://github.com/milesforks/yarn-plugin-workspace-lockfile">its</a>
-<a href="https://github.com/jakebailey/yarn-plugin-workspace-lockfile">forks</a>)
-or <a href="https://github.com/JanVoracek/yarn-plugin-entrypoint-lockfiles">yarn-plugin-entrypoint-lockfiles</a>
-that maintains individual lock files for each workspaces (or
-“entrypoint”) at the cost of slightly slower installs when you add or
-remove dependencies.</p>
-<p>I initially used some version of this, but while writing this blog post,
-I stumbled upon <a href="https://stackoverflow.com/a/73118909/4324668">this StackOverflow comment</a>
-that mentions <code>yarn install --mode update-lockfile</code>. This is <em>exactly
-what we want</em>! So as of Yarn 3.x, we can just do the following:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cp</span> yarn.lock apps/functions
-<span class="hljs-built_in">cd</span> apps/functions
-yarn install --mode update-lockfile
-</code></pre>
-<p>This will updates <code>apps/functions/yarn.lock</code> to contain <em>only</em> the
-entries <em>necessary</em> for your functions, while keeping the versions that
-were pinned in the original lock file. This will happily work when Cloud
-Build runs <code>yarn install --immutable</code> later on. 😍</p>
-<p>Again, this is something you need to do in your <code>predeploy</code> script, and
-undo in your <code>postdeploy</code>.</p>
-<h2 id="comparison" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison"><span>Comparison</span></a></h2>
-<p>Let’s compare the pros and cons of those 3 options.</p>
-<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">Good enough</a></strong></p>
-<ul>
-<li>🟢 Easy AF.</li>
-<li>🟡  Doesn’t use your lock file, you’re installing nondeterministic
-versions of your dependencies in production (easily fixable by taking
-that specific part of the hybrid approach though).</li>
-<li>🔴 Can’t use workspace shared packages.</li>
-</ul>
-<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach">Full context</a></strong></p>
-<ul>
-<li>🟢 Supports your lock file and any other monorepo-wide config
-(Yarn version, etc.) by design and out of the box.</li>
-<li>🟢 Supports shared workspaces packages by design and out of the box.</li>
-<li>🟡 Need to proxy the functions <code>main</code> entrypoint in the top-level <code>package.json</code>,
-as well as other things like functions <code>.env</code> files.</li>
-<li>🟠 Need to maintain the <code>functions.ignore</code> list which is clunky,
-and gets significantly worst when using modern Yarn versions.</li>
-<li>🔴 It installs your whole monorepo dependencies instead of just your
-functions dependencies.</li>
-</ul>
-<p><strong><a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">Hybrid</a></strong></p>
-<ul>
-<li>🟢 None of the downsides of the previous approach.</li>
-<li>🟡 You have to copy your lock file and maybe other global requirements
-like your <code>.yarnrc.yml</code>, <code>.yarn</code> folder and alike inside your
-functions directory.</li>
-<li>🔴 Needs a <code>predeploy</code> and <code>postdeploy</code> script to package workspace
-dependencies inside the functions directories, and recursively patch
-their <code>package.json</code> to reference them with <code>file:</code>.</li>
-</ul>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#conclusion"><span>Conclusion</span></a></h2>
-<p>Today, we went through 3 methods to make Firebase functions <em>somewhat</em>
-work with a monorepo: <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-good-enough-for-me-approach">the “good enough for me” approach</a>,
-<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-full-context-approach">the full context approach</a>
-and <a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#the-hybrid-approach">the hybrid approach</a>. Finally, we
-<a href="https://www.codejam.info/2023/04/firebase-functions-monorepo.html#comparison">compared their pros and cons</a>.</p>
-<p>By now, you should have everything you need in order to make an educated
-decision about which method to pick.</p>
-<p>And if you find any other cool trick to make working with Firebase
-functions in a monorepo easier, don’t hesitate to <a href="https://www.codejam.info/val.html#contact">let me know</a>!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1644495294803898369">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

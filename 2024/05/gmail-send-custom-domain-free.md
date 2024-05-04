@@ -14,7 +14,7 @@ your emails on the recipient side with a "via gmail.com" next to your
 email.
 
 <figure class="center">
-  <img alt="Sender card showing &quot;via gmail.com&quot;" srcset="../../img/2024/04/gmail/via.png 2x">
+  <img alt="Sender card showing &quot;via gmail.com&quot;" srcset="../../img/2024/05/gmail/via.png 2x">
 </figure>
 
 The second tradeoff is that while the email will appear with your custom
@@ -40,7 +40,7 @@ In short: [in your Google account security settings](https://myaccount.google.co
 in **2-Step Verification > App passwords**, add a new app password.
 
 <figure class="center">
-  <img alt="App passwords" srcset="../../img/2024/04/gmail/app-passwords.png 2x">
+  <img alt="App passwords" srcset="../../img/2024/05/gmail/app-passwords.png 2x">
 </figure>
 
 <div class="note">

@@ -103,18 +103,62 @@ rejected the `@gmx.com` email being forwarded by my OVH relay.
 If you want to learn more about this issue, [this post from Tiger Technologies](https://support.tigertech.net/spf)
 is a very good read.
 
-## The fix
+## Use Cloudflare!
 
-Sadly there's no trivial fix for this. The post linked just above
-mentions a few solutions in the last section but notes that they're not
-widely available and might cause other issues. Their conclusion is:
-**for now, we'd recommend simply not forwarding important mail to other
-ISPs**.
+<div class="note">
 
-What can we do from there? Well in my case, I had to reverse the
-relationship between my OVH address and Gmail: instead of my OVH address
-forwarding emails to Gmail, I removed the redirect and **configured
-Gmail to fetch emails from my OVH address via POP3**.
+**Note:** section added on April 27, 2024.
+
+</div>
+
+Since writing this post, I transferred my domain to Cloudflare. For
+multiple reasons. On of them was related to this email routing issue!
+
+Cloudflare [goes further](https://community.cloudflare.com/t/email-routing-and-spf/341490)
+than OVH in that regard:
+
+> Cloudflare rewrites the `Return-Path` to be your own domain, which is
+> what SPF is checked against (it's not checked against the friendly
+> `From`, as most people believe).
+
+This is genius! It means that if `bar@gmx.com` sends you an email to
+`foo@foo.com` (configured on Cloudflare to redirect to `foo@gmail.com`),
+Cloudflare will rewrite the email headers with a `Return-Path` of
+`gmx.com=bar@foo.com`. Because you own `foo.com`, you can allow
+Cloudflare servers in your SPF policy, and the email does not get
+blocked!
+
+And the actual email in the `From` header is the one that gets shown on
+your email client, so it looks totally transparent.
+
+The redirected email still passes DKIM signature verification since the
+`Return-Path` is typically not included in the headers used to compute
+the DKIM signature, so it can be freely altered.
+
+The only non-transparent thing is if the original email does _not_ have
+a DKIM signature. Then that's where clients like Gmail [show a "via" domain](https://support.google.com/mail/answer/1311182)
+next to the sender's name.
+
+For example if the sender uses the
+[trick to use Gmail SMTP to send mails with a custom domain](../../2024/05/gmail-send-custom-domain-free.md),
+they have no means to configure a DKIM signature, and the recipient will
+see it as from "Sender's Name via gmail.com".
+
+In that case, if as the recipient, you're using Cloudflare email
+redirects, then it will show up as "Sender's Name via
+cloudflare-email.net" instead.
+
+A bit of an edge case, but something to know.
+
+## The fix without changing providers
+
+If your existing email redirect provider is not as smooth as Cloudflare
+and you're not willing to move, then what's left?
+
+Well in my case, I had to reverse the relationship between my OVH
+address and Gmail: instead of my OVH address forwarding emails to Gmail,
+I removed the redirect and **configured Gmail to fetch emails from my
+OVH address via POP3**.
 
 <div class="note">
 

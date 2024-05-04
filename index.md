@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Use Gmail to send emails with a custom domain for free (secret trick) 😏](2024/05/gmail-send-custom-domain-free.md) <small>May 3, 2024</small>
 * [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
 * [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>
 * [Encrypted offsite backup system: storage 💾](2024/04/offsite-backup-storage.md) <small>April 26, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Swift: `NSMenuItem` title not showing](2023/07/swift-nsmenuitem-title-blank.md) <small>July 27, 2023</small>
 * [Using `zx` with TypeScript, ESM and top-level `await`](2023/04/zx-typescript-esm.md) <small>April 21, 2023</small>
 * [macOS reset app window to default size and position](2023/04/macos-reset-app-window-size-position.md) <small>April 20, 2023</small>
-* [macOS won't sleep from the Apple menu](2023/04/macos-wont-sleep.md) <small>April 20, 2023</small>
 
 [All the posts](posts.md)
 

@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vercel monorepo: properly cache Yarn installs</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Vercel monorepo: properly cache Yarn installs">
+  <meta property="og:description" content="So you have a Vercel app that’s part of a monorepo. You may have noticed that by default it installs the whole monorepo dependencies, and you may have already addressed that!">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Vercel monorepo: properly cache Yarn installs</h1>
+<p class="date">May 4, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So you have a Vercel app that’s part of a monorepo. You may have noticed
+that by default it installs the whole monorepo dependencies, and you may
+have already <a href="vercel-monorepo-single-project-dependencies-yarn.html">addressed that</a>!</p>
+<p>But either way, you have another problem: Yarn downloads all your
+dependencies on every single build. That’s pretty time consuming. It
+doesn’t seem that dependencies are getting cached at all.</p>
+<p>Vercel <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-2036114">recommends</a>
+setting a <code>ENABLE_ROOT_PATH_BUILD_CACHE=1</code> environment variable to
+<a href="https://vercel.com/changelog/faster-build-times-for-monorepos">make build times faster in monorepos</a>.</p>
+<p>It sounds great, but in my experience it didn’t do anything, and I’m not
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-2745510">the</a>
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5105483">only</a>
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-7077684">one</a>.</p>
+<p>It <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5166537"><em>seems</em></a>
+that regardless of <code>ENABLE_ROOT_PATH_BUILD_CACHE</code>, Vercel doesn’t
+cache Yarn’s cache folder <code>.yarn/cache</code>, and Yarn 3 and greater will
+download everything again if this directory is not present, regardless
+of the state of <code>node_modules</code>.</p>
+<p>So the key is to force Yarn’s cache folder to be inside a directory that
+Vercel actually caches.</p>
+<p>I <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-4295643">tried</a>
+setting it inside the root <code>node_modules</code> by doing
+<code>YARN_CACHE_FOLDER=../../node_modules/.yarn-cache yarn workspaces focus</code>,
+which worked at first, but quickly encountered some
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5165657">issues</a>
+when the cache was reused across different build states.</p>
+<p>Luckily, thanks to <a href="https://github.com/vercel/turbo/issues/785#issuecomment-1060054306">this comment</a>
+on a totally unrelated issue, I discovered I could put the cache in
+<code>.next/cache</code> instead, and I never had issues since then!</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;YARN_CACHE_FOLDER=.next/cache/yarn-cache yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/vercel-monorepo-cache-yarn-installs.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

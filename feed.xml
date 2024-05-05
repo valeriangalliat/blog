@@ -5,10 +5,121 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-04T18:18:56.721Z</updated>
+  <updated>2024-05-05T00:40:12.319Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Vercel monorepo: properly cache Yarn installs</title>
+    <link href="https://www.codejam.info/2024/05/vercel-monorepo-cache-yarn-installs.html" />
+    <id>https://www.codejam.info/2024/05/vercel-monorepo-cache-yarn-installs.html</id>
+    <updated>2024-05-04T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So you have a Vercel app that’s part of a monorepo. You may have noticed
+that by default it installs the whole monorepo dependencies, and you may
+have already <a href="https://www.codejam.info/2024/05/vercel-monorepo-single-project-dependencies-yarn.html">addressed that</a>!</p>
+<p>But either way, you have another problem: Yarn downloads all your
+dependencies on every single build. That’s pretty time consuming. It
+doesn’t seem that dependencies are getting cached at all.</p>
+<p>Vercel <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-2036114">recommends</a>
+setting a <code>ENABLE_ROOT_PATH_BUILD_CACHE=1</code> environment variable to
+<a href="https://vercel.com/changelog/faster-build-times-for-monorepos">make build times faster in monorepos</a>.</p>
+<p>It sounds great, but in my experience it didn’t do anything, and I’m not
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-2745510">the</a>
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5105483">only</a>
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-7077684">one</a>.</p>
+<p>It <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5166537"><em>seems</em></a>
+that regardless of <code>ENABLE_ROOT_PATH_BUILD_CACHE</code>, Vercel doesn’t
+cache Yarn’s cache folder <code>.yarn/cache</code>, and Yarn 3 and greater will
+download everything again if this directory is not present, regardless
+of the state of <code>node_modules</code>.</p>
+<p>So the key is to force Yarn’s cache folder to be inside a directory that
+Vercel actually caches.</p>
+<p>I <a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-4295643">tried</a>
+setting it inside the root <code>node_modules</code> by doing
+<code>YARN_CACHE_FOLDER=../../node_modules/.yarn-cache yarn workspaces focus</code>,
+which worked at first, but quickly encountered some
+<a href="https://github.com/orgs/vercel/discussions/222#discussioncomment-5165657">issues</a>
+when the cache was reused across different build states.</p>
+<p>Luckily, thanks to <a href="https://github.com/vercel/turbo/issues/785#issuecomment-1060054306">this comment</a>
+on a totally unrelated issue, I discovered I could put the cache in
+<code>.next/cache</code> instead, and I never had issues since then!</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;YARN_CACHE_FOLDER=.next/cache/yarn-cache yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>Vercel monorepo: install only a single project dependencies with Yarn</title>
+    <link href="https://www.codejam.info/2024/05/vercel-monorepo-single-project-dependencies-yarn.html" />
+    <id>https://www.codejam.info/2024/05/vercel-monorepo-single-project-dependencies-yarn.html</id>
+    <updated>2024-05-04T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>If you have a Vercel app as part of a monorepo, it may bother you that
+by default every build installs the whole monorepo dependencies.</p>
+<p>If the Vercel app is the <em>main</em> project in the monorepo, it should go
+unnoticed, but if you have a bunch of other packages whose dependencies
+differ a lot from that of the Vercel app, then it will be very obvious
+that you’re spending a lot of time installing useless stuff on every
+build.</p>
+<p>If you’re using a modern version of Yarn, aka not “Yarn classic”, aka
+Yarn “Berry” and later, which would be Yarn 4 today, then you can use
+<a href="https://yarnpkg.com/cli/workspaces/focus"><code>yarn workspaces focus</code></a> to
+do just that.</p>
+<p><a href="https://v3.yarnpkg.com/cli/workspaces/focus">In Yarn 3</a>, you need to
+install the <code>workspace-tools</code> plugin via <code>yarn plugin import workspace-tools</code> for this to work. In Yarn 4, the command is supported
+out of the box.</p>
+<p><code>yarn workspaces focus</code>, when run from inside a specific workspace
+directory, will install that workspace dependencies, as well as the
+dependencies of all the workspaces it depends on.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re using <code>nodeLinker: node-modules</code>, the <code>node_modules</code>
+layout may differ a bit, especially the fact that packages from your
+other workspaces are no longer installed at the root of the monorepo.</p>
+<p>This will make it obvious if you’re implicitly depending on packages
+that are part of your monorepo but not depended on by your specific
+workspace.</p>
+</div>
+<p>In order to configure that on Vercel, you can configure the following in
+<code>vercel.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> you’ll probably want to mirror that configuration inside your
+app settings in the Vercel dashboard in <strong>Settings &gt; Build &amp; Development
+Settings &gt; Install Command</strong>, otherwise after you deploy, Vercel will
+warn you that “the configuration of the current production deployment
+differ from your current project settings”.</p>
+</div>
+<h2 id="making-it-work-with-vercel-cache" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/vercel-monorepo-single-project-dependencies-yarn.html#making-it-work-with-vercel-cache"><span>Making it work with Vercel cache</span></a></h2>
+<p>There’s one more problem. Now you download only the dependencies of your
+project, which is much better, but on subsequent builds, Yarn keeps
+re-downloading everything again. It’s like there’s no cache!</p>
+<p>That’s because Vercel and Yarn 3 and greater don’t play well together.
+Yarn needs its <code>.yarn/cache</code> and Vercel doesn’t cache it between builds.</p>
+<p>More details in <a href="https://www.codejam.info/2024/05/vercel-monorepo-cache-yarn-installs.html">this other post</a>. 😉</p>
+<p>TLDR: use the following command.</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;YARN_CACHE_FOLDER=.next/cache/yarn-cache yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Swift: detect space (virtual desktop) changes</title>
     <link href="https://www.codejam.info/2024/05/swift-detect-space-virtual-desktop-changes.html" />
@@ -2715,291 +2826,6 @@ the thread and made the menu unresponsive (I use a menu to handle
 inside an application delegate resolved that.</p>
 <p>Take a look at <a href="https://github.com/valeriangalliat/windowify/blob/main/windowify">the code</a>
 if you want to know in more details how this all works!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Changing default mail client on macOS without signing in to the Mail app</title>
-    <link href="https://www.codejam.info/2023/04/macos-default-mail-client.html" />
-    <id>https://www.codejam.info/2023/04/macos-default-mail-client.html</id>
-    <updated>2023-04-13T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>The things we have to do sometimes… 🙈</p>
-<p>Maybe you use another mail client than the Mail app on macOS, and you
-want to make it the default, so that when you click <code>mailto:</code> links, it
-actually opens the app you want.</p>
-<p>Apple documents how to do that in <a href="https://support.apple.com/en-ca/HT201607">change the default email app</a>:</p>
-<blockquote>
-<ol>
-<li>Open the Mail app.</li>
-<li>From the menu bar, choose <strong>Mail &gt; Settings</strong>.</li>
-<li>Click <strong>General</strong>.</li>
-<li>Choose an email app from the <strong>Default email reader</strong> menu.</li>
-</ol>
-</blockquote>
-<p>That’s great, except it doesn’t work. If you never used the Mail app,
-which you probably didn’t if you use another mail client, you can’t
-access the settings! You’re greeted with this screen:</p>
-<figure class="center">
-  <img alt="A dialog prompting you to set up a mail account" srcset="../../img/2023/04/mail/01-blocking-dialog.png 2x">
-</figure>
-<p>And the settings are greyed out!</p>
-<figure class="center">
-  <img alt="Greyed out settings menu" srcset="../../img/2023/04/mail/02-disabled-settings.png 2x">
-</figure>
-<p>What to do then? There’s <a href="https://apple.stackexchange.com/q/261881/452681">a number of solutions</a>:</p>
-<ul>
-<li>Connect your mail account to the Mail app to go through this dialog
-and finally access the settings.</li>
-<li>Use a number of different third-party apps that can change default
-associations.</li>
-<li>Write a script to mess with the <code>LaunchServices</code> API.</li>
-</ul>
-<p>But <a href="https://apple.stackexchange.com/a/422772/452681">my</a>
-<a href="https://osxdaily.com/2014/05/06/change-default-mail-app-mac/#comment-745047">favorite</a>,
-that doesn’t require any third-party app, consists in selecting <strong>Other
-Mail Account</strong>, putting garbage in the fields, and let it fail a few
-times until it works!</p>
-<figure class="center">
-  <img alt="Mail account settings" srcset="../../img/2023/04/mail/03-add-account.png 2x">
-</figure>
-<p>This will obviously fail, and prompt you for more information:</p>
-<figure class="center">
-  <img alt="Advanced account settings" srcset="../../img/2023/04/mail/04-add-account-error.png 2x">
-</figure>
-<p>Just keep hitting the <strong>Sign In</strong> button until it gives up and lets you
-through! You now have access to the settings menu.</p>
-<figure class="center">
-  <img alt="Active settings menu" srcset="../../img/2023/04/mail/05-settings-menu.png 2x">
-</figure>
-<p>From there, you can set your <strong>Default email reader</strong> to your favorite
-app.</p>
-<figure class="center">
-  <img alt="Default email reader settings" srcset="../../img/2023/04/mail/06-settings.png 2x">
-</figure>
-<h2 id="using-gmail-inside-firefox-as-default-email-reader-on-macos" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-default-mail-client.html#using-gmail-inside-firefox-as-default-email-reader-on-macos"><span>Using Gmail inside Firefox as default email reader on macOS</span></a></h2>
-<p>In my case, I selected the Firefox app in the previous step, because I
-want to use Gmail inside Firefox as my default email reader.</p>
-<p>With that, the next time you open a <code>mailto:</code> link from anywhere on your
-system, it’s going to open Firefox, and Firefox will then need to know
-you want to use Gmail for this. Normally it’ll prompt you the first
-time, but you can also configure it in the <strong>Applications</strong> settings:</p>
-<figure class="center">
-  <img alt="Firefox settings" srcset="../../img/2023/04/mail/07-firefox-settings.png 2x">
-</figure>
-<p>I hope this helps!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Configuring a GCP Pub/Sub dead letter queue with Pulumi</title>
-    <link href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html" />
-    <id>https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html</id>
-    <updated>2023-04-09T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I’ve been playing a bit with <a href="https://www.pulumi.com/">Pulumi</a> lately,
-and it quickly became one of my favorite infrastructure as code tools.
-It feels like the power of <a href="https://aws.amazon.com/cdk/">AWS CDK</a> which
-lets you code your infrastructure in a full-fledged scripting language,
-but without being limited to AWS!</p>
-<p>I like coding my infrastructure in TypeScript because the typing,
-autocomplete and IDE integrations makes it particularly nice to discover
-the SDK on the fly as you’re creating your infrastructure, so that’s
-what I’ll use in the examples.</p>
-<p>Today, we’re gonna see how to programmatically create a Pub/Sub topic
-and subscription on GCP, with a matching dead letter queue. Finally,
-we’ll add a monitoring alert policy to warn us when our
-<abbr title="Dead letter queue">DLQ</abbr> is not empty.</p>
-<h2 id="getting-started" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html#getting-started"><span>Getting started</span></a></h2>
-<p>If you already have Pulumi installed, and an existing project, you can
-skip this. In order to install Pulumi on macOS, run:</p>
-<pre><code class="hljs language-sh">brew install pulumi
-</code></pre>
-<p>Create an account on Pulumi if you don’t have one already, then create a
-new directory for your project, and inside it, run:</p>
-<pre><code class="hljs language-sh">pulumi new gcp-typescript
-</code></pre>
-<p>Follow the instructions to initialize your project and connect it to
-your GCP account.</p>
-<p>Finally, you can remove the default code from <code>index.ts</code> that creates a
-test bucket.</p>
-<h2 id="creating-a-topic-and-a-subscription" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html#creating-a-topic-and-a-subscription"><span>Creating a topic and a subscription</span></a></h2>
-<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> gcp <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@pulumi/gcp&#x27;</span>
-
-<span class="hljs-keyword">const</span> topic = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Topic</span>(<span class="hljs-string">&#x27;hello-world-topic&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;hello-world&#x27;</span> })
-
-<span class="hljs-keyword">const</span> subscription = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Subscription</span>(<span class="hljs-string">&#x27;hello-world-subscription&#x27;</span>, {
-  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;hello-world&#x27;</span>,
-  <span class="hljs-attr">topic</span>: topic.<span class="hljs-property">id</span>
-})
-</code></pre>
-<p>This will create a topic and a basic pull subscription, that you can…
-subscribe to using the Google Cloud SDK in your favorite language.</p>
-<h2 id="adding-the-dead-letter-queue" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html#adding-the-dead-letter-queue"><span>Adding the dead letter queue</span></a></h2>
-<p>On GCP, a dead letter queue consists in configuring an existing
-subscription to send messages that failed a number of times to another
-topic. Having a subscription on that dead letter topic, even if it has
-no consumer, lets us store those messages for a period of time, so we
-can eventually do something with them.</p>
-<p>Here’s our DLQ:</p>
-<pre><code class="hljs language-ts"><span class="hljs-keyword">const</span> dlqTopic = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Topic</span>(<span class="hljs-string">&#x27;hello-world-dl-topic&#x27;</span>, { <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;helo-world-dl&#x27;</span> })
-
-<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Subscription</span>(<span class="hljs-string">&#x27;hello-world-dl-subscription&#x27;</span>, {
-  <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;hello-world-dl&#x27;</span>,
-  <span class="hljs-attr">topic</span>: dlqTopic.<span class="hljs-property">id</span>
-})
-</code></pre>
-<p>Then we can add the dead letter policy to our existing subscription:</p>
-<pre><code class="hljs language-diff:ts"> <span class="hljs-keyword">const</span> subscription = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Subscription</span>(<span class="hljs-string">&#x27;hello-world-subscription&#x27;</span>, {
-   <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;hello-world&#x27;</span>,
-   <span class="hljs-attr">topic</span>: topic.<span class="hljs-property">name</span>,
-<span class="hljs-addition">+  <span class="hljs-attr">deadLetterPolicy</span>: {</span>
-<span class="hljs-addition">+    <span class="hljs-attr">deadLetterTopic</span>: dlqTopic.<span class="hljs-property">id</span>,</span>
-<span class="hljs-addition">+    <span class="hljs-attr">maxDeliveryAttempts</span>: <span class="hljs-number">5</span></span>
-<span class="hljs-addition">+  }</span>
- })
-</code></pre>
-<p><code>maxDepliveryAttempts</code> is optional and defaults to 5. When a messaged
-failed to be delivered that many times, it’ll be sent to the DLQ.</p>
-<p>You may also like to tweak your subscription’s retry policy at that
-point. By default, it retries a failed message immediately, but you can
-configure an exponential backoff instead:</p>
-<pre><code class="hljs language-diff:ts"> <span class="hljs-keyword">const</span> subscription = <span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">Subscription</span>(<span class="hljs-string">&#x27;hello-world-subscription&#x27;</span>, {
-   <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;hello-world&#x27;</span>,
-   <span class="hljs-attr">topic</span>: topic.<span class="hljs-property">id</span>,
-<span class="hljs-addition">+  <span class="hljs-attr">retryPolicy</span>: {</span>
-<span class="hljs-addition">+    <span class="hljs-attr">minimumBackoff</span>: <span class="hljs-string">&#x27;10s&#x27;</span>,</span>
-<span class="hljs-addition">+    <span class="hljs-attr">maximumBackoff</span>: <span class="hljs-string">&#x27;600s&#x27;</span></span>
-<span class="hljs-addition">+  },</span>
-   <span class="hljs-attr">deadLetterPolicy</span>: {
-     <span class="hljs-attr">deadLetterTopic</span>: dlqTopic.<span class="hljs-property">id</span>,
-     <span class="hljs-attr">maxDeliveryAttempts</span>: <span class="hljs-number">5</span>
-   }
- })
-</code></pre>
-<p>While you don’t have precise control over the exponential backoff
-behavior, you can tweak the minimum and maximum duration that Pub/Sub
-will wait before retrying a message. Anything in between is out of your
-control.</p>
-<h2 id="handling-permissions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html#handling-permissions"><span>Handling permissions</span></a></h2>
-<p>But we’re not done yet! If you go to your subscription page, you’ll
-notice the following issues warnings:</p>
-<figure class="center">
-  <img alt="Permission issues with dead letter queue" srcset="../../img/2023/04/pubsub-dlq-warning.png 2x">
-</figure>
-<blockquote>
-<p>❗️ <strong>Assign Publisher role</strong></p>
-<p>The Cloud Pub/Sub service account for this project needs the publisher
-role to publish dead-lettered messages to the dead letter topic.</p>
-<p>❗️ <strong>Assign Subscriber role</strong></p>
-<p>The Cloud Pub/Sub service account for this project needs the subscriber
-role to forward messages from this subscription to the dead letter topic.</p>
-</blockquote>
-<p>You can identify the Pub/Sub service account in your IAM principals
-list, by ticking “include Google-provided role grants”. It’s always
-under the form <code>service-{projectId}@gcp-sa-pubsub.iam.gserviceaccount.com</code>.</p>
-<p>We can fix that in our Pulumi code by adding the following:</p>
-<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> * <span class="hljs-keyword">as</span> pulumi <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@pulumi/pulumi&#x27;</span>
-
-<span class="hljs-keyword">const</span> project = gcp.<span class="hljs-property">organizations</span>.<span class="hljs-title function_">getProjectOutput</span>()
-
-<span class="hljs-keyword">const</span> pubSubServiceAccountPublisherPolicy =
-  gcp.<span class="hljs-property">organizations</span>.<span class="hljs-title function_">getIAMPolicyOutput</span>({
-    <span class="hljs-attr">bindings</span>: [
-      {
-        <span class="hljs-attr">role</span>: <span class="hljs-string">&#x27;roles/pubsub.publisher&#x27;</span>,
-        <span class="hljs-attr">members</span>: [
-          pulumi.<span class="hljs-property">interpolate</span><span class="hljs-string">`serviceAccount:service-<span class="hljs-subst">${project.<span class="hljs-built_in">number</span>}</span>@gcp-sa-pubsub.iam.gserviceaccount.com`</span>
-        ]
-      }
-    ]
-  })
-
-<span class="hljs-keyword">const</span> pubSubServiceAccountSubscriberPolicy =
-  gcp.<span class="hljs-property">organizations</span>.<span class="hljs-title function_">getIAMPolicyOutput</span>({
-    <span class="hljs-attr">bindings</span>: [
-      {
-        <span class="hljs-attr">role</span>: <span class="hljs-string">&#x27;roles/pubsub.subscriber&#x27;</span>,
-        <span class="hljs-attr">members</span>: [
-          pulumi.<span class="hljs-property">interpolate</span><span class="hljs-string">`serviceAccount:service-<span class="hljs-subst">${project.<span class="hljs-built_in">number</span>}</span>@gcp-sa-pubsub.iam.gserviceaccount.com`</span>
-        ]
-      }
-    ]
-  })
-
-<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">TopicIAMPolicy</span>(<span class="hljs-string">&#x27;hello-world-dl-topic-policy&#x27;</span>, {
-  <span class="hljs-attr">topic</span>: dlqTopic.<span class="hljs-property">name</span>,
-  <span class="hljs-attr">policyData</span>: pubSubServiceAccountPublisherPolicy.<span class="hljs-property">policyData</span>
-})
-
-<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">pubsub</span>.<span class="hljs-title class_">SubscriptionIAMPolicy</span>(<span class="hljs-string">&#x27;hello-world-subscription-policy&#x27;</span>, {
-  <span class="hljs-attr">subscription</span>: subscription.<span class="hljs-property">name</span>,
-  <span class="hljs-attr">policyData</span>: pubSubServiceAccountSubscriberPolicy.<span class="hljs-property">policyData</span>
-})
-</code></pre>
-<p>Now our Pub/Sub DLQ page should be all green!</p>
-<h2 id="getting-alerted-for-new-messages-in-the-dlq" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/gcp-pubsub-dlq-pulumi.html#getting-alerted-for-new-messages-in-the-dlq"><span>Getting alerted for new messages in the DLQ</span></a></h2>
-<p>The first thing you usually do when you create a DLQ is add a mechanism
-to <em>know</em> when messages hit the DLQ, so that you can act on them.</p>
-<p>When it comes to alert policies, I typically create them in the GCP
-console, then I use the “download as JSON” button in the policy details.
-I can use this verbatim inside Pulumi’s <code>gcp.monitoring.AlertPolicy</code>
-constructor!</p>
-<p>Here’s what I’ve got when I made an alert policy to get notified when
-any of my subscriptions whose name ends with <code>-dl</code> has undelivered
-messages.</p>
-<pre><code class="hljs language-ts"><span class="hljs-keyword">const</span> notificationChannels = [
-  <span class="hljs-string">&#x27;projects/{projectId}/notificationChannels/{channelId}&#x27;</span>
-]
-
-<span class="hljs-keyword">new</span> gcp.<span class="hljs-property">monitoring</span>.<span class="hljs-title class_">AlertPolicy</span>(<span class="hljs-string">&#x27;alert-policy-pubsub-dl&#x27;</span>, {
-  <span class="hljs-attr">alertStrategy</span>: {
-    <span class="hljs-attr">autoClose</span>: <span class="hljs-string">&#x27;604800s&#x27;</span>
-  },
-  <span class="hljs-attr">combiner</span>: <span class="hljs-string">&#x27;OR&#x27;</span>,
-  <span class="hljs-attr">conditions</span>: [
-    {
-      <span class="hljs-attr">conditionThreshold</span>: {
-        <span class="hljs-attr">aggregations</span>: [
-          {
-            <span class="hljs-attr">alignmentPeriod</span>: <span class="hljs-string">&#x27;300s&#x27;</span>,
-            <span class="hljs-attr">perSeriesAligner</span>: <span class="hljs-string">&#x27;ALIGN_MEAN&#x27;</span>
-          }
-        ],
-        <span class="hljs-attr">comparison</span>: <span class="hljs-string">&#x27;COMPARISON_GT&#x27;</span>,
-        <span class="hljs-attr">duration</span>: <span class="hljs-string">&#x27;0s&#x27;</span>,
-        <span class="hljs-attr">filter</span>: <span class="hljs-string">`
-              resource.type = &quot;pubsub_subscription&quot;
-          AND metric.type = &quot;pubsub.googleapis.com/subscription/num_undelivered_messages&quot;
-          AND resource.labels.subscription_id = ends_with(&quot;-dl&quot;)
-        `</span>,
-        <span class="hljs-attr">thresholdValue</span>: <span class="hljs-number">0</span>,
-        <span class="hljs-attr">trigger</span>: {
-          <span class="hljs-attr">count</span>: <span class="hljs-number">1</span>
-        }
-      },
-      <span class="hljs-attr">displayName</span>: <span class="hljs-string">&#x27;Cloud Pub/Sub Subscription - Unacked messages&#x27;</span>
-    }
-  ],
-  notificationChannels,
-  <span class="hljs-attr">displayName</span>: <span class="hljs-string">&#x27;Pub/Sub messages in dead letter&#x27;</span>
-})
-</code></pre>
-<p>Just put the ID of your notification channel in the array on top. To
-find it, you can use the following command that will list all your
-notification channels including their full ID:</p>
-<pre><code class="hljs language-sh">gcloud alpha monitoring channels list
-</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

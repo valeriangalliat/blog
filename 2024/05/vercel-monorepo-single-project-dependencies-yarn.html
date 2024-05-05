@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Vercel monorepo: install only a single project dependencies with Yarn</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Vercel monorepo: install only a single project dependencies with Yarn">
+  <meta property="og:description" content="If you have a Vercel app as part of a monorepo, it may bother you that by default every build installs the whole monorepo dependencies.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Vercel monorepo: install only a single project dependencies with Yarn</h1>
+<p class="date">May 4, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>If you have a Vercel app as part of a monorepo, it may bother you that
+by default every build installs the whole monorepo dependencies.</p>
+<p>If the Vercel app is the <em>main</em> project in the monorepo, it should go
+unnoticed, but if you have a bunch of other packages whose dependencies
+differ a lot from that of the Vercel app, then it will be very obvious
+that you’re spending a lot of time installing useless stuff on every
+build.</p>
+<p>If you’re using a modern version of Yarn, aka not “Yarn classic”, aka
+Yarn “Berry” and later, which would be Yarn 4 today, then you can use
+<a href="https://yarnpkg.com/cli/workspaces/focus"><code>yarn workspaces focus</code></a> to
+do just that.</p>
+<p><a href="https://v3.yarnpkg.com/cli/workspaces/focus">In Yarn 3</a>, you need to
+install the <code>workspace-tools</code> plugin via <code>yarn plugin import workspace-tools</code> for this to work. In Yarn 4, the command is supported
+out of the box.</p>
+<p><code>yarn workspaces focus</code>, when run from inside a specific workspace
+directory, will install that workspace dependencies, as well as the
+dependencies of all the workspaces it depends on.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re using <code>nodeLinker: node-modules</code>, the <code>node_modules</code>
+layout may differ a bit, especially the fact that packages from your
+other workspaces are no longer installed at the root of the monorepo.</p>
+<p>This will make it obvious if you’re implicitly depending on packages
+that are part of your monorepo but not depended on by your specific
+workspace.</p>
+</div>
+<p>In order to configure that on Vercel, you can configure the following in
+<code>vercel.json</code>:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> you’ll probably want to mirror that configuration inside your
+app settings in the Vercel dashboard in <strong>Settings &gt; Build &amp; Development
+Settings &gt; Install Command</strong>, otherwise after you deploy, Vercel will
+warn you that “the configuration of the current production deployment
+differ from your current project settings”.</p>
+</div>
+<h2 id="making-it-work-with-vercel-cache" tabindex="-1"><a class="header-anchor" href="#making-it-work-with-vercel-cache"><span>Making it work with Vercel cache</span></a></h2>
+<p>There’s one more problem. Now you download only the dependencies of your
+project, which is much better, but on subsequent builds, Yarn keeps
+re-downloading everything again. It’s like there’s no cache!</p>
+<p>That’s because Vercel and Yarn 3 and greater don’t play well together.
+Yarn needs its <code>.yarn/cache</code> and Vercel doesn’t cache it between builds.</p>
+<p>More details in <a href="vercel-monorepo-cache-yarn-installs.html">this other post</a>. 😉</p>
+<p>TLDR: use the following command.</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;installCommand&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;YARN_CACHE_FOLDER=.next/cache/yarn-cache yarn workspaces focus&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/vercel-monorepo-single-project-dependencies-yarn.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

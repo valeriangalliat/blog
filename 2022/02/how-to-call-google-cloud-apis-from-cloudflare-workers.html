@@ -224,14 +224,14 @@ use case.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pem = serviceAccount.<span class="hljs-property">private_key</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\n/g</span>, <span class="hljs-string">&#x27;&#x27;</span>)
 </code></pre>
 <p>Then we strip the PEM header and footer markers:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pemHeader = <span class="hljs-string">&#x27;-----BEGIN PRIVATE KEY-----&#x27;</span>;
-<span class="hljs-keyword">const</span> pemFooter = <span class="hljs-string">&#x27;-----END PRIVATE KEY-----&#x27;</span>;
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> pemHeader = <span class="hljs-string">&#x27;-----BEGIN PRIVATE KEY-----&#x27;</span>
+<span class="hljs-keyword">const</span> pemFooter = <span class="hljs-string">&#x27;-----END PRIVATE KEY-----&#x27;</span>
 
 <span class="hljs-keyword">if</span> (!pem.<span class="hljs-title function_">startsWith</span>(pemHeader) || !pem.<span class="hljs-title function_">endsWith</span>(pemFooter)) {
-  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;Invalid service account private key&#x27;</span>);
+  <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Error</span>(<span class="hljs-string">&#x27;Invalid service account private key&#x27;</span>)
 }
 
-<span class="hljs-keyword">const</span> pemContents = pem.<span class="hljs-title function_">substring</span>(pemHeader.<span class="hljs-property">length</span>, pem.<span class="hljs-property">length</span> - pemFooter.<span class="hljs-property">length</span>);
+<span class="hljs-keyword">const</span> pemContents = pem.<span class="hljs-title function_">substring</span>(pemHeader.<span class="hljs-property">length</span>, pem.<span class="hljs-property">length</span> - pemFooter.<span class="hljs-property">length</span>)
 </code></pre>
 <p>This leaves us with a Base64-encoded string that we can decode to a
 <code>Uint8Array</code>. For that I like to use the <a href="https://www.npmjs.com/package/js-base64"><code>js-base64</code></a>
@@ -314,7 +314,7 @@ the header:</p>
 <p>Off to the payload. We need 5 fields:</p>
 <ul>
 <li><code>iss</code> and <code>sub</code>, both set to the service account email</li>
-<li><code>aud</code>, the API endpoint we want to use, in our case, Pub/Sub (not the
+<li><code>aud</code>, the API endpoint we want to use, in our case, Pub/Sub (note the
 trailing slash is important)</li>
 <li><code>iat</code>, the Unix time at the moment the token was issued (now)</li>
 <li><code>exp</code>, the Unix time when the JWT will expire, which can be maximum an

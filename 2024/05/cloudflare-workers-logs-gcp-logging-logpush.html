@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Send Cloudflare Workers logs to Google Cloud Logging using Logpush</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Send Cloudflare Workers logs to Google Cloud Logging using Logpush">
+  <meta property="og:description" content="Cloudflare Workers are great, until they become a key part of your production system and you realize you don’t have any logs. 😅">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Send Cloudflare Workers logs to Google Cloud Logging using Logpush</h1>
+<p class="date">May 5, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Cloudflare Workers are great, until they become a key part of your
+production system and you realize you don’t have any logs. 😅</p>
+<p>Something didn’t work the way it should? Woops, sorry, can’t do much
+about that, I have no trace of what happened. 🤷</p>
+<p>Not ideal.</p>
+<div class="note">
+<p><strong>Note:</strong> sure there’s the option to tail logs from the dashboard and
+the CLI, but it turns out most of the logs I need don’t get logged while
+I’m watching. 👀</p>
+</div>
+<p>For a while, the alternative was to replace <code>console.log</code> statements by
+<code>fetch</code> requests to something that will actually persist logs. Fine, but
+still not ideal.</p>
+<p>Thankfully they introduced <a href="https://blog.cloudflare.com/logpush-for-workers/">Logpush for Workers</a>
+back in 2022, which finally gave us a way to forward worker logs to a
+number of <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/">destinations</a>,
+including Amazon S3, Google Cloud Storage, Datadog, Elasticsearch,
+BigQuery and more.</p>
+<p>But none of those options was Google Cloud Logging. And I like to
+centralize my logs in Google Cloud Logging. Bummer.</p>
+<h2 id="leveraging-the-http-destination" tabindex="-1"><a class="header-anchor" href="#leveraging-the-http-destination"><span>Leveraging the HTTP destination</span></a></h2>
+<p>One of those options though is an arbitrary <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/http/">HTTP destination</a>.</p>
+<p>With that, I should be able to integrate any log backend I want.</p>
+<p>What if I made a Cloudflare Worker to handle the logs of my other
+workers? That log drain worker probably shouldn’t drain logs to itself
+to avoid an infinite recursion, but I could fallback in one of the other
+integrations just for this one.</p>
+<h2 id="configuring-a-logpush-handler" tabindex="-1"><a class="header-anchor" href="#configuring-a-logpush-handler"><span>Configuring a Logpush handler</span></a></h2>
+<p>In order to use Cloudflare Logpush, <a href="https://developers.cloudflare.com/logs/about/">you need to be under the Cloudflare Enterprise plan</a>.
+However there’s an exception for the Cloudflare Workers logs! Then all
+you need is the <a href="https://developers.cloudflare.com/workers/platform/pricing/">Workers Paid</a>
+plan.</p>
+<p>You can configure a log handler from your dashboard, in <strong>Analytics &amp;
+Logs &gt; Logs &gt; Add Logpush job</strong>. Select <strong>Workers trace events</strong> as a
+dataset, select the fields you care about (more on that later), and
+configure your HTTP endpoint.</p>
+<p>This UI looks like a recent addition! When I originally worked on this,
+Logpush was only configurable <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/http/#manage-via-api">by using the Cloudflare HTTP API</a>.</p>
+<p>For the record, and because it gives you more control over the Logpush
+settings, here’s how you would do this with the API.</p>
+<p>First, you need an API token, which you can create from <strong>My Profile &gt;
+API Tokens</strong>.</p>
+<p>While the API docs often reference the usage of API keys with
+<code>X-Auth-Email</code> and <code>X-Auth-Key</code> headers, those API keys have complete
+permissions over your account, and I would recommend against using them
+if you have a better alternative.</p>
+<p>The better alternative: API <em>tokens</em>, which lets you scope permissions.
+In our case, we want to create a custom token with permissions of
+<code>Zone.Logs.Edit</code>. That token can then be used in a <code>Authorization: Bearer</code> header.</p>
+<p>Here’s how you would list existing Logpush jobs:</p>
+<pre><code class="hljs language-sh">curl \
+  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
+</code></pre>
+<p>Where <code>my-account-id</code> is your account ID, that you can find for example
+in the <strong>Workers &amp; Pages &gt; Overview</strong> page on the right.</p>
+<p>To create a job:</p>
+<pre><code class="hljs language-sh">curl \
+  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+  -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
+  --data <span class="hljs-string">&#x27;{
+  &quot;name&quot;: &quot;test&quot;,
+  &quot;output_options&quot;: {
+    &quot;field_names&quot;: [&quot;DispatchNamespace&quot;, &quot;Entrypoint&quot;, &quot;Event&quot;, &quot;EventTimestampMs&quot;, &quot;EventType&quot;, &quot;Exceptions&quot;, &quot;Logs&quot;, &quot;Outcome&quot;, &quot;ScriptName&quot;, &quot;ScriptTags&quot;, &quot;ScriptVersion&quot;],
+    &quot;timestamp_format&quot;: &quot;rfc3339&quot;
+  },
+  &quot;destination_conf&quot;: &quot;https://my.worker.workers.dev&quot;,
+  &quot;dataset&quot;: &quot;workers_trace_events&quot;,
+  &quot;enabled&quot;: true
+}&#x27;</span>
+</code></pre>
+<p>Where the API shines compared to the UI, is that you can configure a
+number of <a href="https://developers.cloudflare.com/api/operations/post-accounts-account_identifier-logpush-jobs#request-body">extra options</a>
+like <code>max_upload_bytes</code>, <code>max_upload_interval_seconds</code> and
+<code>max_upload_records</code>, to make sure Logpush makes requests within
+acceptable limits for your endpoint.</p>
+<p>In our case, the Logpush handler is also a Cloudflare worker so the max
+body size will be between 100 MB and 500 MB <a href="https://developers.cloudflare.com/workers/platform/limits/#request-limits">depending on your plan</a>.
+But also, Cloudflare workers have a <a href="https://developers.cloudflare.com/workers/platform/limits/">memory limit</a>
+of 128 MB so that’s something to take into account as well. Oh and keep
+in mind <a href="https://community.cloudflare.com/t/workers-memory-limit/491329/2">this memory limit is per-isolate</a>
+meaning that multiple requests could hit the same isolate. So adjust
+accordingly, but I don’t have a silver bullet for this one. 🙃</p>
+<div class="note">
+<p><strong>Note:</strong> in my experience, setting <code>timestamp_format</code> to <code>rfc3339</code>
+doesn’t do anything? I’m still only getting <code>TimestampMs</code> fields in
+milliseconds (which interestingly is neither a <code>unix</code> (seconds) nor
+<code>unixnano</code> (nanoseconds) timestamp, which are the other two possible
+options).</p>
+</div>
+<p>In order to update a job, you’ll need the <code>id</code> that was returned by the
+create request, or simply fetch it with the list request. It’s gonna be
+like the create request but you append the log ID in the end, e.g.
+<code>logpush/jobs/12345</code>, it’s a <code>PUT</code> request, and all fields are optional.</p>
+<p>To delete a job, same but it’s a <code>DELETE</code> request with no body.</p>
+<h2 id="the-logpush-http-destination-protocol" tabindex="-1"><a class="header-anchor" href="#the-logpush-http-destination-protocol"><span>The Logpush HTTP destination protocol</span></a></h2>
+<p>I didn’t find documentation about what the HTTP destination is supposed
+to accept, so here’s what I figured out:</p>
+<ul>
+<li>It sends a <code>POST</code> request to the configured URL.</li>
+<li>The body is gzipped.</li>
+<li>The uncompressed body is a newline-delimited JSON of “events”, e.g.:</li>
+</ul>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;87ed87f80cf22d84&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">200</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560011</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;foo&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560016</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;87ed87fb49cb2d84&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">200</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560532</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;foo&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560532</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span>
+</code></pre>
+<p>When you configure the HTTP destination, you get a chance to choose
+which of those fields are included. You’ll get a different set of fields
+depending on the kind of dataset you’re dealing with, but in the scope
+of this article we’re focusing on worker logs.</p>
+<p>For reference, here’s the list of supported <a href="https://developers.cloudflare.com/logs/reference/log-fields/zone/">zone-scoped datasets</a>
+and <a href="https://developers.cloudflare.com/logs/reference/log-fields/account/">account-scoped datasets</a>.
+Zone-scoped datasets like DNS logs are tied to a specific “zone”
+(a specific domain), while account-scoped datasets like worker logs are
+global to your account (workers don’t belong to a particular zone).</p>
+<h2 id="writing-the-worker" tabindex="-1"><a class="header-anchor" href="#writing-the-worker"><span>Writing the worker</span></a></h2>
+<p>The worker will need to decompress the gzipped body, split it into lines
+and send the individual logs to the Google Cloud Logging API.</p>
+<p>Calling Google Cloud APIs from Cloudflare Workers is a bit of a
+challenge because the Node.js SDK is not compatible with the workers
+environment, so we need to reimplement the whole authentication process.
+But it’s a problem <a href="../../2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.html">we’ve already solved in the past</a>
+so it should be no big deal. 😎</p>
+<p>First let’s start with the base of the worker, including decompressing
+the body:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-keyword">async</span> fetch (request) {
+    <span class="hljs-keyword">if</span> (request.<span class="hljs-property">method</span> !== <span class="hljs-string">&#x27;POST&#x27;</span>) {
+      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-string">&#x27;&#x27;</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">405</span> })
+    }
+
+    <span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DecompressionStream</span>(<span class="hljs-string">&#x27;gzip&#x27;</span>)
+    <span class="hljs-keyword">const</span> stream = request.<span class="hljs-property">body</span>.<span class="hljs-title function_">pipeThrough</span>(ds)
+    <span class="hljs-keyword">const</span> body = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(stream).<span class="hljs-title function_">text</span>()
+    <span class="hljs-keyword">const</span> logs = body.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;\n&#x27;</span>)
+
+    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> json <span class="hljs-keyword">of</span> logs) {
+      <span class="hljs-keyword">if</span> (json.<span class="hljs-title function_">trim</span>() === <span class="hljs-string">&#x27;&#x27;</span>) {
+        <span class="hljs-keyword">continue</span>
+      }
+
+      <span class="hljs-keyword">const</span> log = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(json)
+
+      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(log)
+    }
+
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>()
+  }
+}
+</code></pre>
+<p>To do that, we use the native
+<a href="https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream"><code>DecompressionStream</code></a>,
+that we can then <a href="https://stackoverflow.com/a/72718732/4324668">convert to text</a>
+with <code>await new Response(stream).text()</code>.</p>
+<h2 id="calling-the-google-cloud-logging-api" tabindex="-1"><a class="header-anchor" href="#calling-the-google-cloud-logging-api"><span>Calling the Google Cloud Logging API</span></a></h2>
+<p>Now let’s see how we can call the Google Cloud Logging API. Again, we
+can’t use the Google Cloud Node.js SDK, so we need to call the REST API
+manually. Everything about authentication is explained in
+<a href="../../2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.html">this post</a>
+so I won’t cover that again. Read that article to understand how to deal
+with Google Cloud API authentication from a Cloudflare worker!</p>
+<p>When it comes to Google Cloud Logging specifically, you’ll need an <code>aud</code>
+of <code>https://logging.googleapis.com/</code> in your JWT. The rest of this post
+will assume you generated a <code>token</code> variable thanks to the
+aforementioned article.</p>
+<p>In order to write logs, we need to call the <a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/entries/write"><code>entries:write</code></a>
+endpoint.</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(
+  <span class="hljs-string">`https://logging.googleapis.com/v2/entries:write`</span>,
+  {
+    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
+    },
+    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+      <span class="hljs-attr">entries</span>: [
+        {
+          <span class="hljs-attr">logName</span>: <span class="hljs-string">`projects/my-project-id/logs/my-log-id`</span>,
+          <span class="hljs-attr">resource</span>: {
+            <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;generic_node&#x27;</span>,
+            <span class="hljs-attr">labels</span>: {
+              <span class="hljs-comment">// project_id: &#x27;...&#x27;,</span>
+              <span class="hljs-comment">// location: &#x27;...&#x27;,</span>
+              <span class="hljs-comment">// namespace: &#x27;...&#x27;,</span>
+              <span class="hljs-comment">// node_id: &#x27;...&#x27;</span>
+            }
+          },
+          <span class="hljs-comment">// severity: &#x27;DEFAULT&#x27;,</span>
+          <span class="hljs-attr">timestamp</span>: <span class="hljs-string">&#x27;2024-05-05T17:38:47.512Z&#x27;</span>,
+          <span class="hljs-attr">jsonPayload</span>: {
+            <span class="hljs-attr">foo</span>: <span class="hljs-string">&#x27;bar
+          }
+        }
+      ]
+    })
+  }
+)
+</span></code></pre>
+<p>Replace <code>my-project-id</code> by your project ID. <code>my-log-id</code> can be anything.</p>
+<p>Here I chose to use a <code>generic_node</code> resource type, but there’s
+<a href="https://cloud.google.com/logging/docs/api/v2/resource-list#resource-types">quite a lot of other choices</a>
+so feel free to use what makes the most sense to you.</p>
+<p>The resource type that you chose will have a number of associated labels
+that you can feed. In this example I included the <code>generic_node</code> labels.
+<code>project_id</code> doesn’t really need to be set because it will be
+automatically populated from the project ID in your <code>logName</code>. The other
+ones are also optional. Put what makes the most sense for your data!</p>
+<p>There’s a number of other fields you can set on each <a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry">log entry</a>
+in the <code>entries</code> array, but I kept it simple for this example.</p>
+<p>You can for example tune the
+<a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity"><code>severity</code></a>,
+e.g. to distinguish <code>WARNING</code> and <code>ERROR</code> logs appropriately.</p>
+<h2 id="formatting-logpush-logs-to-google-cloud-logging-entries" tabindex="-1"><a class="header-anchor" href="#formatting-logpush-logs-to-google-cloud-logging-entries"><span>Formatting Logpush logs to Google Cloud Logging entries</span></a></h2>
+<p>Let’s look in a bit more details at a worker log received from Logpush:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;87ed87f80cf22d84&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;GET&quot;</span>
+    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">200</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1714878560011</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+    <span class="hljs-punctuation">{</span>
+      <span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+        <span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span>
+        <span class="hljs-string">&quot;foo&quot;</span>
+      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1714878560016</span>
+    <span class="hljs-punctuation">}</span>
+  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>And here’s the associated <a href="https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/">docs</a>.</p>
+<p>As we can see, we get one entry per “event” which in this case, is a
+whole HTTP request completing.</p>
+<p>Then for this particular HTTP request, we’ve got an array of <code>Logs</code> that
+the worker outputted during its runtime.</p>
+<div class="note">
+<p><strong>Note:</strong> interestingly, the above log <code>[&quot;bar&quot;, &quot;foo&quot;]</code> was generated
+by:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>)
+</code></pre>
+<p>So it looks like the <code>Message</code> array is the reverse of the arguments
+order that was passed to <code>console.log</code>.</p>
+<p>Weird, but OK.</p>
+</div>
+<p>From there, it’s up to you how you translate that to Google Cloud
+Logging entries. You could:</p>
+<ol>
+<li>Use the whole “event” as a single log entry and dig in the <code>Logs</code>
+property to see the actual logs. Then you could set the log severity
+based on the response status code, e.g. <code>ERROR</code> if the status is
+<code>&gt;=400</code>.</li>
+<li>Store the HTTP request “event” without logs in a separate entry, then
+map the <code>Logs</code> array to individual log entries. Then you could map
+the <code>Level</code> property to a log severity and have more granularity that
+way.</li>
+</ol>
+<p>For this post, I’ll take the lazy approach and just shove the whole
+thing in the <code>jsonPayload</code>. 😄</p>
+<p>Building off the <a href="#writing-the-worker">worker base from earlier</a>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> entries = []
+
+<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> json <span class="hljs-keyword">of</span> logs) {
+  <span class="hljs-keyword">if</span> (json.<span class="hljs-title function_">trim</span>() === <span class="hljs-string">&#x27;&#x27;</span>) {
+    <span class="hljs-keyword">continue</span>
+  }
+
+  <span class="hljs-keyword">const</span> log = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(json)
+
+  entries.<span class="hljs-title function_">push</span>({
+    <span class="hljs-attr">logName</span>: <span class="hljs-string">`projects/my-project-id/logs/my-log-id`</span>,
+    <span class="hljs-attr">resource</span>: {
+      <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;generic_node&#x27;</span>,
+      <span class="hljs-attr">labels</span>: {
+        <span class="hljs-attr">namespace</span>: log.<span class="hljs-property">ScriptName</span>
+      }
+    },
+    <span class="hljs-attr">severity</span>: log.<span class="hljs-property">Event</span>.<span class="hljs-property">Response</span>.<span class="hljs-property">Status</span> &gt;= <span class="hljs-number">400</span> ? <span class="hljs-string">&#x27;ERROR&#x27;</span> : <span class="hljs-string">&#x27;DEFAULT&#x27;</span>,
+    <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(log.<span class="hljs-property">EventTimestampMs</span>).<span class="hljs-title function_">toISOString</span>(),
+    <span class="hljs-attr">jsonPayload</span>: log
+  })
+}
+</code></pre>
+<p>Then as we saw before, we can push those entries to Google Cloud
+Logging:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(
+  <span class="hljs-string">`https://logging.googleapis.com/v2/entries:write`</span>,
+  {
+    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
+    <span class="hljs-attr">headers</span>: {
+      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
+      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
+    },
+    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
+      entries
+    })
+  }
+)
+</code></pre>
+<h2 id="make-your-workers-use-logpush" tabindex="-1"><a class="header-anchor" href="#make-your-workers-use-logpush"><span>Make your workers use Logpush!</span></a></h2>
+<p>The final step is to enable Logpush on your workers. By default, even if
+you have Logpush destinations enabled, they won’t be used unless
+explicitly enabled at the worker level as well.</p>
+<p>You can do that from the UI in your worker page, in <strong>Logs &gt; Event logs
+Workers Logpush</strong>. If you use the Wrangler CLI, make sure to also set
+<code>logpush = true</code> in your <code>wrangler.toml</code>!</p>
+<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="#final-thoughts"><span>Final thoughts</span></a></h2>
+<p>Getting your Cloudflare Workers logs onto Google Cloud Logging is not
+easy, and using a Cloudflare worker for the integration layer makes it
+even harder, but it’s also kinda cool if you ask me. 😏</p>
+<p>You should now have everything you need to implement that, from the
+details of using the Cloudflare API to create Logpush jobs and tune it
+in a way you can’t do from the UI, implementing a HTTP Logpush
+destination with gzip support, parsing the Logpush payload, all the way
+to translating it for Google Cloud Logging and push it using the raw
+HTTP API in an environment where the official SDK is not supported.</p>
+<p>I hope you learnt a thing or two thanks to this post, and that your logs
+are being happily ingested now! 🫶</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/cloudflare-workers-logs-gcp-logging-logpush.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

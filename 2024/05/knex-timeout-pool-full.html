@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Knex: timeout acquiring a connection, the pool is probably full</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Knex: timeout acquiring a connection, the pool is probably full">
+  <meta property="og:description" content="Yes, you’re probably missing a .transacting(trx) call, but what’s going on exactly?">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Knex: timeout acquiring a connection, the pool is probably full</h1>
+<p class="date">May 5, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<pre><code class="hljs">Error: Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?
+</code></pre>
+<p>Yes, you’re probably missing a <code>.transacting(trx)</code> call, but what’s
+going on exactly?</p>
+<p>Knex maintains a connection pool to your database, which you configure
+with the <a href="https://knexjs.org/guide/#pool"><code>pool</code> <code>min</code> and <code>max</code> options</a>.
+If <code>max</code> is 5, then Knex will keep up to 5 connections to your database
+in the pool.</p>
+<p>If you’re attempting to make a query and the pool is full, then it’ll
+wait that one of the connection frees up in order to use it.</p>
+<p>Sometimes however, it will timeout doing so. One common case is a
+deadlock when mixing queries inside and outside a transaction.</p>
+<p>Let’s say that you start 5 transactions, but within those transactions,
+you’re performing some queries <em>outside</em> of the transaction:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">transaction</span>(<span class="hljs-function"><span class="hljs-params">trx</span> =&gt;</span> {
+  <span class="hljs-keyword">await</span> trx.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
+  <span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
+})
+</code></pre>
+<p>Here, the <code>knex.raw</code> statement will execute outside of the transaction
+(despite being in the function, because it doesn’t use <code>trx</code>). This
+means that it will use its own connection from the pool, on top of the
+one <code>knex.transaction</code> already uses.</p>
+<p>If you have enough of those running in parallel, you can hit a case
+where there’s no available connection to execute the <code>knex.raw</code> bit. So
+it’s waiting that a connection frees up. <strong>But no connection get freed up
+because all the transactions are waiting for the <code>knex.raw</code> bit to
+complete in order to commit!</strong></p>
+<p>See the deadlock here?</p>
+<p>So the solution is to make sure that all the queries you perform inside
+the transaction actually use that transaction. In the above example,
+it’s very obvious, but it can get trickier when you call a function that
+calls another function that calls a method that makes a query but didn’t
+accept a <code>trx</code> parameter and so ends up needing its own connection. 😬</p>
+<p>Now you know what to look for. 👀</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/knex-timeout-pool-full.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

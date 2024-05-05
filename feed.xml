@@ -5,10 +5,59 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-05T21:18:56.952Z</updated>
+  <updated>2024-05-05T21:40:48.166Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Knex: timeout acquiring a connection, the pool is probably full</title>
+    <link href="https://www.codejam.info/2024/05/knex-timeout-pool-full.html" />
+    <id>https://www.codejam.info/2024/05/knex-timeout-pool-full.html</id>
+    <updated>2024-05-05T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<pre><code class="hljs">Error: Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?
+</code></pre>
+<p>Yes, you’re probably missing a <code>.transacting(trx)</code> call, but what’s
+going on exactly?</p>
+<p>Knex maintains a connection pool to your database, which you configure
+with the <a href="https://knexjs.org/guide/#pool"><code>pool</code> <code>min</code> and <code>max</code> options</a>.
+If <code>max</code> is 5, then Knex will keep up to 5 connections to your database
+in the pool.</p>
+<p>If you’re attempting to make a query and the pool is full, then it’ll
+wait that one of the connection frees up in order to use it.</p>
+<p>Sometimes however, it will timeout doing so. One common case is a
+deadlock when mixing queries inside and outside a transaction.</p>
+<p>Let’s say that you start 5 transactions, but within those transactions,
+you’re performing some queries <em>outside</em> of the transaction:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">transaction</span>(<span class="hljs-function"><span class="hljs-params">trx</span> =&gt;</span> {
+  <span class="hljs-keyword">await</span> trx.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
+  <span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
+})
+</code></pre>
+<p>Here, the <code>knex.raw</code> statement will execute outside of the transaction
+(despite being in the function, because it doesn’t use <code>trx</code>). This
+means that it will use its own connection from the pool, on top of the
+one <code>knex.transaction</code> already uses.</p>
+<p>If you have enough of those running in parallel, you can hit a case
+where there’s no available connection to execute the <code>knex.raw</code> bit. So
+it’s waiting that a connection frees up. <strong>But no connection get freed up
+because all the transactions are waiting for the <code>knex.raw</code> bit to
+complete in order to commit!</strong></p>
+<p>See the deadlock here?</p>
+<p>So the solution is to make sure that all the queries you perform inside
+the transaction actually use that transaction. In the above example,
+it’s very obvious, but it can get trickier when you call a function that
+calls another function that calls a method that makes a query but didn’t
+accept a <code>trx</code> parameter and so ends up needing its own connection. 😬</p>
+<p>Now you know what to look for. 👀</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Prevent macOS to switch to bluetooth headphones microphone 🎧</title>
     <link href="https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html" />
@@ -2588,90 +2637,6 @@ simple script above to do so. Enjoy!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1684688732694130688">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Swift: support cut/copy/paste shortcuts in a NSOpenPanel and NSSavePanel</title>
-    <link href="https://www.codejam.info/2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.html" />
-    <id>https://www.codejam.info/2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.html</id>
-    <updated>2023-07-27T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Let’s consider this basic Swift app that simply shows an <code>NSSavePanel</code>:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-    app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)
-
-    <span class="hljs-keyword">let</span> savePanel <span class="hljs-operator">=</span> <span class="hljs-type">NSSavePanel</span>()
-    savePanel.runModal()
-  }
-}
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
-
-app.setActivationPolicy(.regular)
-app.delegate <span class="hljs-operator">=</span> delegate
-app.run()
-</code></pre>
-<p>This shows a generic open panel as expected:</p>
-<figure class="center">
-  <img alt="Open panel" srcset="../../img/2023/07/open-panel.png 2x">
-</figure>
-<p>However we have a problem: we can’t cut, copy or paste in of the text
-fields (<strong>Save As</strong>, <strong>Tags</strong>, <strong>Search</strong>). We can’t <kbd>Command</kbd>
-+ <kbd>X</kbd>, <kbd>C</kbd> or <kbd>V</kbd>. All those shortcuts do is
-playing an annoying <em>beep</em> noise telling us we can’t do that.</p>
-<p><strong>This is because on macOS, those shortcuts are actually tied to menu
-items.</strong> You can’t have <kbd>Command</kbd> + <kbd>C</kbd> work unless
-you have a matching menu item, typically <strong>Edit &gt; Copy</strong>.</p>
-<h2 id="adding-an-edit-menu" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/swift-nsopenpanel-nssavepanel-edit-shortcuts.html#adding-an-edit-menu"><span>Adding an edit menu</span></a></h2>
-<p>To solve this, we’re gonna add an edit menu tour app with the proper
-shortcuts.</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> mainMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
-app.mainMenu <span class="hljs-operator">=</span> mainMenu
-
-<span class="hljs-keyword">let</span> appMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
-mainMenu.addItem(appMenu)
-
-<span class="hljs-keyword">let</span> editMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
-mainMenu.addItem(editMenu)
-
-<span class="hljs-keyword">let</span> editSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>(title: <span class="hljs-string">&quot;Edit&quot;</span>)
-editMenu.submenu <span class="hljs-operator">=</span> editSubmenu
-
-editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Cut&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.cut(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;x&quot;</span>)
-editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Copy&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.copy(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;c&quot;</span>)
-editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Paste&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.paste(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;v&quot;</span>)
-
-editSubmenu.addItem(
-  withTitle: <span class="hljs-string">&quot;Select All&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSText</span>.selectAll(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;a&quot;</span>)
-</code></pre>
-<p>We now have a nice edit menu:</p>
-<figure class="center">
-  <img alt="Edit menu" srcset="../../img/2023/07/edit-menu.png 2x">
-</figure>
-<p>Here, we leverage <em>automatic menu enabling</em> in the <code>action</code> in order to map
-menu items and shortcuts to the first object in the responder chain that
-implements the given action, as explained in <a href="https://stackoverflow.com/a/47577869">this Stack Overflow post</a>.</p>
-<p>This is pretty neat, and thanks to this feature, we now have working
-cut/copy/paste in our dialog!</p>
-<p>As a bonus, it would be a good practice to also add a way to quit our
-app using the same method:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> appSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
-appMenusubmenu <span class="hljs-operator">=</span> appSubmenu
-
-appSubmenu.addItem(
-  withTitle: <span class="hljs-string">&quot;Quit&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSApplication</span>.terminate(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;q&quot;</span>)
-</code></pre>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1787213611267674227
+---
+
 # Send Cloudflare Workers logs to Google Cloud Logging using Logpush
 May 5, 2024
 

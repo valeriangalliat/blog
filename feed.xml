@@ -5,10 +5,107 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-05T20:12:06.048Z</updated>
+  <updated>2024-05-05T20:33:51.314Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Firebase Auth Admin SDK denied when using application default credentials</title>
+    <link href="https://www.codejam.info/2024/05/firebase-auth-admin-denied-application-default.html" />
+    <id>https://www.codejam.info/2024/05/firebase-auth-admin-denied-application-default.html</id>
+    <updated>2024-05-05T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>If you’re using the Firebase Admin SDK from your development machine
+e.g. to run ad hoc scripts, you may have tried to do something like
+this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> admin <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin&#x27;</span>
+<span class="hljs-keyword">import</span> { applicationDefault } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin/app&#x27;</span>
+
+admin.<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-attr">projectId</span>: <span class="hljs-string">&#x27;my-project&#x27;</span>,
+  <span class="hljs-attr">credential</span>: <span class="hljs-title function_">applicationDefault</span>()
+})
+
+<span class="hljs-keyword">const</span> auth = admin.<span class="hljs-title function_">auth</span>()
+
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> auth.<span class="hljs-title function_">getUserByEmail</span>(<span class="hljs-string">&#x27;foo@bar.com&#x27;</span>)
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user)
+</code></pre>
+<p>After all, it works just fine with other Firebase APIs like Firestore.</p>
+<p>But in the above case, you’d be getting the following error (spread onto
+lines for readability):</p>
+<pre><code class="hljs">FirebaseAuthError: //cloud.google.com/docs/authentication/.
+
+If you are getting this error with curl or similar tools, you may need
+to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing
+purposes.
+
+For more information regarding &#x27;X-Goog-User-Project&#x27; header, please
+check https://cloud.google.com/apis/docs/system-parameters.
+
+Raw server response:
+
+{
+  &quot;error&quot;: {
+    &quot;code&quot;: 403,
+    &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
+    &quot;errors&quot;: [
+      {
+        &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
+        &quot;domain&quot;: &quot;usageLimits&quot;,
+        &quot;reason&quot;: &quot;accessNotConfigured&quot;,
+        &quot;extendedHelp&quot;: &quot;https://console.developers.google.com&quot;
+      }
+    ],
+    &quot;status&quot;: &quot;PERMISSION_DENIED&quot;,
+    &quot;details&quot;: [
+      {
+        &quot;@type&quot;: &quot;type.googleapis.com/google.rpc.ErrorInfo&quot;,
+        &quot;reason&quot;: &quot;SERVICE_DISABLED&quot;,
+        &quot;domain&quot;: &quot;googleapis.com&quot;,
+        &quot;metadata&quot;: {
+          &quot;service&quot;: &quot;identitytoolkit.googleapis.com&quot;,
+          &quot;consumer&quot;: &quot;projects/123456&quot;
+        }
+      }
+    ]
+  }
+}
+}
+</code></pre>
+<p>So what’s going on? Well <code>applicationDefault()</code> works with the
+application default credentials as created by
+<a href="https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login"><code>gcloud auth application-default login</code></a>,
+which live in <code>~/.config/gcloud/application_default_credentials.json</code>.</p>
+<p>In my case, those credentials didn’t have access to Firebase Auth for a
+reason I did not try to understand.</p>
+<p>However, what <em>did</em> have access to Firebase Auth is the application
+default credentials as created by <a href="https://firebase.google.com/docs/cli#sign-in-test-cli"><code>firebase login</code></a>,
+which live in <code>~/.config/firebase/*_application_default_credentials.json</code>.</p>
+<p>Firebase’s <code>applicationDefault()</code>, despite being a method of the
+Firebase SDK, <a href="https://github.com/firebase/firebase-admin-node/blob/ddcf965511e2f03853bad7658b5c61b85c306580/src/app/credential-internal.ts#L485">does <em>not</em> know</a>
+about the Firebase application default credentials, and instead only
+uses the Google Cloud credentials. 😅</p>
+<p>However it supports reading the credentials file from the
+<code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable, so we can run the
+script like this:</p>
+<pre><code class="hljs language-sh">GOOGLE_APPLICATION_CREDENTIALS=~/.config/firebase/*_application_default_credentials.json node script.js
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I left a wildcard <code>*</code> in the path above because Firebase
+application default credentials contain your user and organization name.
+It’ll work out of the box if you are only connected to a single Firebase
+identity, but you’ll have to be more specific otherwise.</p>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Send Cloudflare Workers logs to Google Cloud Logging using Logpush</title>
     <link href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html" />
@@ -2612,337 +2709,6 @@ mainMenu.addItem(appMenu)
 treated as the app menu. If we didn’t do that, our edit menu would
 actually become the app menu, so that <strong>Test</strong> would appear under
 <strong>swift-frontend</strong>, and <strong>Edit</strong> would be nowhere to be seen.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using zx with TypeScript, ESM and top-level await</title>
-    <link href="https://www.codejam.info/2023/04/zx-typescript-esm.html" />
-    <id>https://www.codejam.info/2023/04/zx-typescript-esm.html</id>
-    <updated>2023-04-21T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p><a href="https://github.com/google/zx"><code>zx</code></a> is a cool library by Google to
-write shell-like scripts in Node.js.</p>
-<p>As shown in their main example, you could have a file <code>myscript.mjs</code>:</p>
-<pre><code class="hljs language-js">#!<span class="hljs-regexp">/usr/</span>bin/env zx
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`cat package.json | grep name`</span>
-</code></pre>
-<p>And run it as <code>./myscript.mjs</code>, or even put it in your <code>PATH</code> and run it
-as <code>myscript.mjs</code>.</p>
-<p>This works if you installed <code>zx</code> globally. If you want to keep it local,
-<code>#!/usr/bin/env npx zx</code> should work with most <code>env</code> implementations.</p>
-<p>They say that you <em>have</em> to use a <code>.mjs</code> extension, and if you prefer
-<code>.js</code> or no extension at all, you won’t have access to top-level
-<code>await</code>, and you need to wrap your code in an
-<abbr title="Immediately invoked function expression">IIFE</abbr>:</p>
-<pre><code class="hljs language-js">#!<span class="hljs-regexp">/usr/</span>bin/env zx
-
-<span class="hljs-keyword">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">await</span> $<span class="hljs-string">`cat package.json | grep name`</span>
-}()
-</code></pre>
-<p><strong>This actually doesn’t appear to be necessary!</strong> It looks like when
-invoking the script via <code>zx</code>, it <em>forces</em> it to be interpreted as an
-ECMAScript module, even without extension, so the original example will
-work regardless of how the script is named. Sweet.</p>
-<p>What if you want TypeScript though? They just document that you need to
-explicitly import <code>zx</code> and use an IIFE again:</p>
-<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-<span class="hljs-comment">// Or</span>
-<span class="hljs-keyword">import</span> <span class="hljs-string">&#x27;zx/globals&#x27;</span>
-
-<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">await</span> $<span class="hljs-string">`ls -la`</span>
-}()
-</code></pre>
-<p>But they also tell you that you need to set <code>&quot;type&quot;: &quot;module&quot;</code> in your
-<code>package.json</code> and <code>&quot;module&quot;: &quot;esnext&quot;</code> in <code>tsconfig.json</code>. There’s no
-mention what shebang to use, nor what file extension.</p>
-<p>It turns out you don’t necessarily need to do all this. Let’s dig in the
-details.</p>
-<h2 id="shebang-for-a-typescript-script" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#shebang-for-a-typescript-script"><span>Shebang for a TypeScript script</span></a></h2>
-<p>It’s clear that <code>zx</code> doesn’t support TypeScript out of the box, so we
-can ditch the <code>#!/usr/bin/env -S npx zx</code> shebang. We need something that
-will parse TypeScript, and because we can’t rely on the <code>zx</code> wrapper,
-we’ll need to import <code>zx</code> explicitly. No problem.</p>
-<p>Let’s go with <a href="https://www.npmjs.com/package/ts-node"><code>ts-node</code></a> first,
-because it’s one of the most common options to do this.</p>
-<p>TypeScript defaults to transpiling to CommonJS modules, so we won’t be
-able to use top-level <code>await</code> out of the box. We also won’t be able to
-use an <code>import</code> statement (that TypeScript translates to <code>require</code>) to
-import <code>zx</code>, because <code>zx</code> is an ESM-only package. But we can use dynamic
-<code>import</code> for that:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node</span>
-
-<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
-  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-}()
-</code></pre>
-<p>You’ll also need to set <code>&quot;moduleResolution&quot;: &quot;nodenext&quot;</code> in the
-<code>compilerOptions</code> of your <code>tsconfig.json</code> for it to support dynamic
-imports like this, but you have to be careful, because this will change
-the settings for your whole app!</p>
-<p>Alternatively, you could put your script in a subdirectory, and have a
-dedicated <code>tsconfig.json</code> there, then you could set those settings
-locally to this subdirectory without affecting the rest of your app.</p>
-<p>The advantage of this method is that <strong>the extension doesn’t matter</strong>!
-You can have this script in <code>myscript.ts</code> but you can as well have it
-just <code>myscript</code> for being more command-looking. This a pretty good
-advantage of this solution as we’ll see later.</p>
-<div class="note">
-<p><strong>Note:</strong> keep in mind because this will run in whatever directory the
-script was run from, <code>npx</code> will try to install <code>ts-node</code> globally if
-you’re not running this from a directory where <code>ts-node</code> is part of the
-local modules.</p>
-<p>Most of the time this is fine, but if you want a script that can be
-called from anywhere, you would be better off using a wrapper shell
-script, like we’ll see below.</p>
-</div>
-<h2 id="configuring-typescript-in-the-shebang" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#configuring-typescript-in-the-shebang"><span>Configuring TypeScript in the shebang</span></a></h2>
-<p>Alternatively, we can pass <code>--compilerOptions</code> to <code>ts-node</code> directly in
-the shebang to avoid depending on a <code>tsconfig.json</code>. The problem is
-that there’s no cross-platform way to this (this is made harder by the
-fact we have to pass a JSON string).</p>
-<p>On macOS:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env npx ts-node --compilerOptions {&quot;moduleResolution&quot;:&quot;nodenext&quot;}</span>
-</code></pre>
-<p>On Linux:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;}&#x27;</span>
-</code></pre>
-<p>Notice how on macOS, the quotes of the JSON object were <em>not</em> escaped!
-Its implementation of  <code>env</code> doesn’t try to parse quotes in the first
-place, so we can (and need) to give them as is. This also means we can’t
-include spaces as the JSON would be split into multiple arguments.</p>
-<p>For Linux, we have to pass <code>-S</code> (makes <code>env</code> split arguments), but then
-it <em>does</em> support quoting and various escape sequences, so we <em>have</em> to
-add the quotes. macOS “supports” the <code>-S</code> option but currently it just
-ignores it and treats the rest of the string as it normally does.</p>
-<p>Sadly I’m not aware of a way to do this in a cross-platform way, without
-having to resort to a wrapper shell script. If you have a better option,
-let me know!</p>
-<p>Such a script would look like:</p>
-<pre><code class="hljs language-sh"><span class="hljs-meta">#!/bin/sh</span>
-
-<span class="hljs-built_in">cd</span> <span class="hljs-string">&quot;<span class="hljs-subst">$(dirname <span class="hljs-string">&quot;<span class="hljs-variable">$0</span>&quot;</span>)</span>&quot;</span>
-npx ts-node --compilerOptions <span class="hljs-string">&#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;}&#x27;</span> myscript.ts
-</code></pre>
-<p>It would be in a <code>myscript</code> file next to <code>myscript.ts</code>, and you invoke
-it with <code>./myscript</code>.</p>
-<div class="note">
-<p>This will not preserve the <abbr title="Current working directory">CWD</abbr>
-information, because it <code>cd</code> into the script directory first. The
-advantage is that now <code>npx</code> will find your local version of <code>ts-node</code>
-regardless where you run the script from.</p>
-</div>
-<p>At that point you could even bypass <code>npx</code>, e.g. if your script is in a
-<code>bin</code> directory at the root of your project, you could run
-<code>../node_modules/.bin/ts-node</code> instead of <code>npx ts-node</code> and remove the
-extra latency from <code>npx</code>.</p>
-<p><strong>For the rest of this post I’ll user the Linux version of the shebang
-for simplicity. Adapt accordingly to your needs, either for macOS or
-using a script wrapper for portability.</strong></p>
-<h2 id="adding-esm-support" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#adding-esm-support"><span>Adding ESM support</span></a></h2>
-<p><strong>If you want to import other parts of your codebase, you should
-probably stick with the previous approach.</strong> I’ll continue by exploring
-options to make <em>this particular script</em> ESM, but keep in mind that if
-you import non-ESM parts of your application, this will confuse
-TypeScript (especially with default exports) and you’ll likely run into
-issues.</p>
-<p>If you don’t though, we have a few ways to force it to be ESM, so we can
-directly import <code>zx</code> and also use top-level <code>await</code>!</p>
-<p><code>ts-node</code> has a <code>--esm</code> option to parse the input as ECMAScript module,
-and even ships a <a href="https://github.com/TypeStrong/ts-node#esm"><code>ts-node-esm</code></a>
-executable to do the same thing.</p>
-<p>On top of that, we need to configure the TypeScript compiler to support
-ESM, which we do by adding the following to our <code>tsconfig.json</code>:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;compilerOptions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;moduleResolution&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;nodenext&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;module&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;esnext&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;target&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;esnext&quot;</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>As we saw earlier, we can pass that to <code>ts-node</code> in a
-<code>--compilerOptions</code> flag. This gives us:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<p>We can now import <code>zx</code> directly and happily use to-level <code>await</code>, and
-get rid of that IIFE!</p>
-<p>One thing we notice right away though is that the <code>ts-node</code> ESM loader
-doesn’t let us use any extension (or in particular, no extension). <strong>It
-<em>needs</em> to be in a <code>.mts</code> file.</strong> This means no more command-looking
-script. It seems to be related to <a href="https://github.com/nodejs/node/issues/34049">this issue</a>
-on the Node.js side.</p>
-<h2 id="making-it-faster" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#making-it-faster"><span>Making it faster</span></a></h2>
-<p><code>ts-node</code> doesn’t have a reputation to be fast, actually quite the
-opposite. Its excuse is that it not only transpiles TypeScript to
-JavaScript, but also performs type checking.</p>
-<h2 id="using-ts-node-transpile-only" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-ts-node-transpile-only"><span>Using <code>ts-node --transpile-only</code></span></a></h2>
-<p>We can pass <code>--transpile-only</code> to skip the type checking part, which
-does improve the performance quite a bit:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --esm --transpile-only --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<p>This small example takes 500 ms to run on my machine, as opposed to 1
-second when it was doing type checking!</p>
-<pre><code class="hljs language-console">time ./myscript.mts
-1.61s user 0.13s system 152% cpu 1.137 total
-
-time ./myscript-transpile-only.mts
-0.48s user 0.09s system 96% cpu 0.587 total
-</code></pre>
-<p>It’s still relatively slow though, considering <a href="https://esbuild.github.io/">esbuild</a>
-takes 15 ms to transpile that file:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time node_modules/.bin/esbuild myscript.mts --target=node16</span>
-0.01s user 0.01s system 79% cpu 0.014 total
-</code></pre>
-<p>But for a fair comparison, we have to consider that <code>npx</code> adds a 200 ms
-overhead:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time npx esbuild myscript.mts --target=node16</span>
-0.21s user 0.04s system 111% cpu 0.227 total
-</code></pre>
-<h3 id="using-tsx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-tsx"><span>Using <code>tsx</code></span></a></h3>
-<p>Interestingly, there’s a cool project called <a href="https://github.com/esbuild-kit/tsx"><code>tsx</code></a>,
-which is TypeScript’s analogue to <code>npx</code>. And it uses esbuild in the
-background.</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx tsx</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<p>But we notice it’s not quite fast, it does barely better than <code>ts-node --transpile-only</code>:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
-0.42s user 0.08s system 120% cpu 0.413 total
-</code></pre>
-<p>There’s <a href="https://github.com/esbuild-kit/tsx/issues/167">an issue open for that</a>,
-and it seems that it’s because <code>tsx</code> target older Node.js versions in a
-way where it transpiles all the imported <code>node_modules</code> too! And it
-seems that there’s currently no way around this behavior.</p>
-<p>And again, this relies on a <code>.mts</code> extension being present for ESM
-support. And even if you go the CommonJS route, you’ll still need a
-<code>.ts</code> extension, unlike when using <code>ts-node</code>. It won’t work with
-extensionless scripts.</p>
-<h3 id="using-swc" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-swc"><span>Using SWC</span></a></h3>
-<p><a href="https://swc.rs/">SWC</a> is a “Rust-based platform for the web”, but
-really the part I care about is that it claims to transpile TypeScript
-to JavaScript <em>pretty damn fast</em>, just like esbuild.</p>
-<p>They provide <a href="https://github.com/swc-project/swc-node"><code>swc-node</code></a> to
-run TypeScript files with Node.js, which is exactly what we want. It’s
-not directly a command we can invoke unlike <code>ts-node</code>, instead we need
-to do:</p>
-<pre><code class="hljs language-sh">node --require @swc-node/register script.ts <span class="hljs-comment"># CJS</span>
-node --loader @swc-node/register/esm script.ts <span class="hljs-comment"># ESM</span>
-</code></pre>
-<p>So we can and that to our shebang!</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S node --loader @swc-node/register/esm</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<p>This is the fastest one so far!</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
-0.28s user 0.04s system 110% cpu 0.289 total
-</code></pre>
-<p>However, we have to consider that it uses <code>node --loader</code>
-instead of <code>npx</code> like the previous examples, and as we saw <code>npx</code> costs
-200 ms by itself.</p>
-<p>Also, even with today’s latest Node.js, custom ESM loaders are
-experimental, so running the script like this will show the following
-warning:</p>
-<pre><code class="hljs">(node:13239) ExperimentalWarning: Custom ESM Loaders is an experimental feature and might change at any time
-</code></pre>
-<p>Also you need to make sure your <code>tsconfig.json</code> contains <code>&quot;target&quot;: &quot;esnext&quot;</code>
-in <code>compilerOptions</code> otherwise SWC will not let you use top-level
-<code>await</code>. Unlike the previous options, we can’t customize this directly
-in the shebang.</p>
-<p>Lastly, we also need a <code>.mts</code> extension for this to work, like with all
-the ESM solutions so far.</p>
-<div class="note">
-<p><strong>Note:</strong> I couldn’t get <code>swc-node</code> to work with a CJS file, with the
-IIFE and dynamic <code>import</code>. Even with a <code>.swcrc</code>, which requires running
-your code as <code>SWCRC=true ./myscript.ts</code>, it keeps transpiling the
-dynamic <code>import</code> into a <code>require</code> statement, which is not supported by
-<code>zx</code>.</p>
-</div>
-<h3 id="using-swc-with-ts-node" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#using-swc-with-ts-node"><span>Using SWC with <code>ts-node</code></span></a></h3>
-<p>A cool surprised I found while writing this post is that <code>ts-node</code>
-actually have <a href="https://typestrong.org/ts-node/docs/swc/">first-class support for SWC</a>!</p>
-<p>All you need is install <code>@swc/core</code> or <code>@swc/wasm</code>, and then simply use
-<code>ts-node --swc</code>, or set the following in your <code>tsconfig.json</code>:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;ts-node&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;swc&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-literal"><span class="hljs-keyword">true</span></span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>In our initial example, this gives us:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
-  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-}()
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> we had to add <code>&quot;module&quot;: &quot;esnext&quot;</code> too, probably because
-<code>ts-node</code> and SWC have different defaults when it comes to this setting.</p>
-</div>
-<p>And for the ESM version:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/zx-typescript-esm.html#conclusion"><span>Conclusion</span></a></h2>
-<p>All things considered, my favorite option is the <code>ts-node</code> approach we
-started from but with a few tweaks that we learnt about along the way:
-plain <code>ts-node</code> in the default CommonJS environment, using an IIFE and
-dynamic <code>import</code>, but with the addition of <code>--compilerOptions</code> and
-<code>--swc</code> (or alternatively, <code>--transpile-only</code>) in the shebang:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-built_in">void</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> (<span class="hljs-params"></span>) {
-  <span class="hljs-keyword">const</span> { $ } = <span class="hljs-keyword">await</span> <span class="hljs-keyword">import</span>(<span class="hljs-string">&#x27;zx&#x27;</span>)
-  <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-}()
-</code></pre>
-<ul>
-<li>We can configure TypeScript directly in the shebang, no need to
-maintain a separate <code>tsconfig.json</code> for our executable scripts.</li>
-<li>We can import any of our project TypeScript files with no CJS/ESM
-interoperability issues.</li>
-<li>It’s reasonably fast.</li>
-</ul>
-<p>The downside is that it’s not cross-platform, but we saw we can use a
-wrapper script to work around that if needed.</p>
-<p>And if I don’t need need to import anything local to my CommonJS
-project (or if I’m in a ESM project), I add <code>--esm</code> and <code>&quot;target&quot;: &quot;esnext&quot;</code>
-to benefit from top-level <code>await</code>:</p>
-<pre><code class="hljs language-ts"><span class="hljs-meta">#!/usr/bin/env -S npx ts-node --swc --esm --compilerOptions &#x27;{&quot;moduleResolution&quot;:&quot;nodenext&quot;,&quot;module&quot;:&quot;esnext&quot;,&quot;target&quot;:&quot;esnext&quot;}&#x27;</span>
-
-<span class="hljs-keyword">import</span> { $ } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;zx&#x27;</span>
-
-<span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
-</code></pre>
-<p>Sweet!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

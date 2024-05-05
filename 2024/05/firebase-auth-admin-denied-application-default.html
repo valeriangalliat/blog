@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Firebase Auth Admin SDK denied when using application default credentials</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Firebase Auth Admin SDK denied when using application default credentials">
+  <meta property="og:description" content="If you’re using the Firebase Admin SDK from your development machine e.g. to run ad hoc scripts, you may have tried to do something like this:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Firebase Auth Admin SDK denied when using application default credentials</h1>
+<p class="date">May 5, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>If you’re using the Firebase Admin SDK from your development machine
+e.g. to run ad hoc scripts, you may have tried to do something like
+this:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> admin <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin&#x27;</span>
+<span class="hljs-keyword">import</span> { applicationDefault } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin/app&#x27;</span>
+
+admin.<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-attr">projectId</span>: <span class="hljs-string">&#x27;my-project&#x27;</span>,
+  <span class="hljs-attr">credential</span>: <span class="hljs-title function_">applicationDefault</span>()
+})
+
+<span class="hljs-keyword">const</span> auth = admin.<span class="hljs-title function_">auth</span>()
+
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> auth.<span class="hljs-title function_">getUserByEmail</span>(<span class="hljs-string">&#x27;foo@bar.com&#x27;</span>)
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user)
+</code></pre>
+<p>After all, it works just fine with other Firebase APIs like Firestore.</p>
+<p>But in the above case, you’d be getting the following error (spread onto
+lines for readability):</p>
+<pre><code class="hljs">FirebaseAuthError: //cloud.google.com/docs/authentication/.
+
+If you are getting this error with curl or similar tools, you may need
+to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing
+purposes.
+
+For more information regarding &#x27;X-Goog-User-Project&#x27; header, please
+check https://cloud.google.com/apis/docs/system-parameters.
+
+Raw server response:
+
+{
+  &quot;error&quot;: {
+    &quot;code&quot;: 403,
+    &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
+    &quot;errors&quot;: [
+      {
+        &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
+        &quot;domain&quot;: &quot;usageLimits&quot;,
+        &quot;reason&quot;: &quot;accessNotConfigured&quot;,
+        &quot;extendedHelp&quot;: &quot;https://console.developers.google.com&quot;
+      }
+    ],
+    &quot;status&quot;: &quot;PERMISSION_DENIED&quot;,
+    &quot;details&quot;: [
+      {
+        &quot;@type&quot;: &quot;type.googleapis.com/google.rpc.ErrorInfo&quot;,
+        &quot;reason&quot;: &quot;SERVICE_DISABLED&quot;,
+        &quot;domain&quot;: &quot;googleapis.com&quot;,
+        &quot;metadata&quot;: {
+          &quot;service&quot;: &quot;identitytoolkit.googleapis.com&quot;,
+          &quot;consumer&quot;: &quot;projects/123456&quot;
+        }
+      }
+    ]
+  }
+}
+}
+</code></pre>
+<p>So what’s going on? Well <code>applicationDefault()</code> works with the
+application default credentials as created by
+<a href="https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login"><code>gcloud auth application-default login</code></a>,
+which live in <code>~/.config/gcloud/application_default_credentials.json</code>.</p>
+<p>In my case, those credentials didn’t have access to Firebase Auth for a
+reason I did not try to understand.</p>
+<p>However, what <em>did</em> have access to Firebase Auth is the application
+default credentials as created by <a href="https://firebase.google.com/docs/cli#sign-in-test-cli"><code>firebase login</code></a>,
+which live in <code>~/.config/firebase/*_application_default_credentials.json</code>.</p>
+<p>Firebase’s <code>applicationDefault()</code>, despite being a method of the
+Firebase SDK, <a href="https://github.com/firebase/firebase-admin-node/blob/ddcf965511e2f03853bad7658b5c61b85c306580/src/app/credential-internal.ts#L485">does <em>not</em> know</a>
+about the Firebase application default credentials, and instead only
+uses the Google Cloud credentials. 😅</p>
+<p>However it supports reading the credentials file from the
+<code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable, so we can run the
+script like this:</p>
+<pre><code class="hljs language-sh">GOOGLE_APPLICATION_CREDENTIALS=~/.config/firebase/*_application_default_credentials.json node script.js
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I left a wildcard <code>*</code> in the path above because Firebase
+application default credentials contain your user and organization name.
+It’ll work out of the box if you are only connected to a single Firebase
+identity, but you’ll have to be more specific otherwise.</p>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/firebase-auth-admin-denied-application-default.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

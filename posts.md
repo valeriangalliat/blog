@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Next.js: make Firebase Auth `signInWithRedirect` work with Safari](2024/05/nextjs-firebase-auth-safari.md) <small>May 4, 2024</small>
 * [PostgreSQL: swap tables with dependent views](2024/05/postgresql-swap-tables-dependent-views.md) <small>May 4, 2024</small>
 * [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
 * [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>

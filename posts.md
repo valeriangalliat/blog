@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [PostgreSQL: swap tables with dependent views](2024/05/postgresql-swap-tables-dependent-views.md) <small>May 4, 2024</small>
 * [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
 * [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>
 * [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 4, 2024</small>

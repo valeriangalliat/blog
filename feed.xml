@@ -5,10 +5,90 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-05T00:40:12.319Z</updated>
+  <updated>2024-05-05T01:19:06.914Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>PostgreSQL: swap tables with dependent views</title>
+    <link href="https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html" />
+    <id>https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html</id>
+    <updated>2024-05-04T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Sometimes, you need to do some maintenance on a table, and doing a
+<em>table swap</em> is a good tool to avoid downtime (e.g. if the maintenance
+would lock aggressively and run for a long time). The idea is as
+follows:</p>
+<ol>
+<li>Clone the source table.</li>
+<li>Perform the maintenance.</li>
+<li>Make sure they’re in sync if needs be.</li>
+<li>When the maintenance is over, in a transaction, drop the source
+table, and rename the clone to the original name.</li>
+</ol>
+<p>It can get a bit more complicated than that if you have foreign keys,
+but I won’t cover that in this article.</p>
+<p>However, another way it gets more complicated is when you have <em>views</em>
+that depend on the table you want to swap:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
+<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+</code></pre>
+<pre><code class="hljs">ERROR: cannot drop table example because other objects depend on it
+DETAIL: view example_view depends on table example
+</code></pre>
+<p>In this case, we need to update <code>example_view</code> (and all other views that
+depend on <code>example</code>) to reference the <code>example_swap</code> table before we
+perform the actual swap.</p>
+<p>If this is a one-off swap, fine, but if you’re doing the swap as part of
+some automated maintenance task, that won’t do it.</p>
+<h2 id="automatically-swapping-dependent-views" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html#automatically-swapping-dependent-views"><span>Automatically swapping dependent views</span></a></h2>
+<p>In my case, the dependent views don’t change very often (if at all), so
+I went with a static list of the views that depend on the table I need
+to swap.</p>
+<p>Then I use the following script to swap the views:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">OR</span> REPLACE <span class="hljs-keyword">FUNCTION</span> pg_temp.replace_view_table(view_schema text, view_name text, old_table text, new_table text) <span class="hljs-keyword">RETURNS</span> void <span class="hljs-keyword">AS</span> $$
+<span class="hljs-keyword">DECLARE</span>
+    view_definition text;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> definition <span class="hljs-keyword">INTO</span> view_definition
+    <span class="hljs-keyword">FROM</span> pg_views
+    <span class="hljs-keyword">WHERE</span> schemaname <span class="hljs-operator">=</span> view_schema
+    <span class="hljs-keyword">AND</span> viewname <span class="hljs-operator">=</span> view_name;
+
+    view_definition :<span class="hljs-operator">=</span> REPLACE(view_definition, old_table, new_table);
+
+    <span class="hljs-keyword">EXECUTE</span> <span class="hljs-string">&#x27;CREATE OR REPLACE VIEW &#x27;</span> <span class="hljs-operator">||</span> view_schema <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;.&#x27;</span> <span class="hljs-operator">||</span> view_name <span class="hljs-operator">||</span> <span class="hljs-string">&#x27; AS &#x27;</span> <span class="hljs-operator">||</span> view_definition;
+<span class="hljs-keyword">END</span>;
+$$ <span class="hljs-keyword">LANGUAGE</span> plpgsql;
+</code></pre>
+<p>This function will redefine the view to point to the new swap table. It
+does a basic search and replace in the SQL definition of the view, so
+you need to make sure the table name doesn’t conflict with anything else
+in there.</p>
+<div class="note">
+<p><strong>Note:</strong> I’m using <code>pg_temp</code> so that the function is local to the
+current database connection. I don’t want to leave it around permanently
+in that case.</p>
+</div>
+<p>You can now perform the swap as follows:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
+<span class="hljs-keyword">SELECT</span> pg_temp.replace_view_table(<span class="hljs-string">&#x27;public&#x27;</span>, <span class="hljs-string">&#x27;example_view&#x27;</span>, <span class="hljs-string">&#x27;example&#x27;</span>, <span class="hljs-string">&#x27;example_swap&#x27;</span>);
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
+<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+<span class="hljs-keyword">COMMIT</span>;
+</code></pre>
+<p>The renaming of the table will automatically propagate to the dependent
+views, they won’t keep referencing the now gone <code>example_swap</code> table,
+they’ll properly point to <code>example</code>! 🥳</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Vercel monorepo: properly cache Yarn installs</title>
     <link href="https://www.codejam.info/2024/05/vercel-monorepo-cache-yarn-installs.html" />
@@ -2739,97 +2819,6 @@ right away, even if it happens half a second after clicking that button.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1649122170780491776">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>macOS screenshot: capture selected window but for dialogs</title>
-    <link href="https://www.codejam.info/2023/04/macos-screenshot-dialog.html" />
-    <id>https://www.codejam.info/2023/04/macos-screenshot-dialog.html</id>
-    <updated>2023-04-13T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>On macOS, you can take a screenshot of a specific window, by pressing
-<kbd>Command</kbd> + <kbd>Shfit</kbd> + <kbd>5</kbd> and selecting
-<strong>Capture Selected Window</strong> as explained <a href="https://support.apple.com/en-ca/guide/mac-help/mh26782/mac">here</a>.</p>
-<p>Alternatively, you can use <kbd>Command</kbd> + <kbd>Shfit</kbd> +
-<kbd>4</kbd> to bring the free selection tool, and press
-<kbd>Space</kbd> to go in window selection mode.</p>
-<p>This is neat, because it captures the window with a nice shadow over a
-transparent background, so when embedded, it looks like this:</p>
-<figure class="center">
-  <img alt="A blank terminal window" srcset="../../img/2023/04/dialog/window.png 2x">
-</figure>
-<p>This is great, but sometimes you want to select just a <em>dialog</em> inside a
-window. For example, if I was to try to close this terminal:</p>
-<figure class="center">
-  <img alt="A dialog to confirm whether to close all tabs" srcset="../../img/2023/04/dialog/window-dialog.png 2x">
-</figure>
-<p>Here, the screenshot tool only lets me capture the whole window, but I
-can’t have it capture <em>just</em> the dialog in the middle, and do so with
-the nice shadow.</p>
-<p>In this case it’s not too bad because the parent window was small, but
-what if you’re capturing a small dialog inside a very large window?</p>
-<p>You can always do a free selection or crop it yourself, but then you
-still won’t have the nice shadow with transparency:</p>
-<figure class="center">
-  <img alt="Cropped dialog" srcset="../../img/2023/04/dialog/dialog-crop.png 2x">
-</figure>
-<p>Wouldn’t it be great if we could have the following instead?</p>
-<figure class="center">
-  <img alt="Nice dialog with shadow" srcset="../../img/2023/04/dialog/dialog-shadow.png 2x">
-</figure>
-<h2 id="introducing-windowify" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-screenshot-dialog.html#introducing-windowify"><span>Introducing Windowify</span></a></h2>
-<p><a href="https://github.com/valeriangalliat/windowify">Windowify</a> is a small
-tool that I made to solve this issue. I’ll start with how to use it for
-that use case, then I’ll jump in the <a href="https://www.codejam.info/2023/04/macos-screenshot-dialog.html#technical-details">technical details</a>.</p>
-<p>Once installed, you can give it an image of your choice, and all it does
-is display it in a native macOS window, exposing to you the various
-styling options that macOS offers.</p>
-<p>By default, if we gave it the earlier crop, it would display the following:</p>
-<figure class="center">
-  <img alt="Dialog with a title bar" srcset="../../img/2023/04/dialog/dialog-title.png 2x">
-</figure>
-<p>In our case, we need to use <code>windowify --minimal</code>, which is really a
-shortcut for <code>windowify -closable -miniaturizable -resizable +fullSizeContentView +titlebarAppearsTransparent +titleHidden</code>. It will
-show our image in a window with rounded corners but without any UI
-element otherwise (like the title bar and close button).</p>
-<p>We can now take a screenshot of this new window, this time using the
-native window selection, so we get the shadow and transparency!</p>
-<figure class="center">
-  <img alt="Nice dialog with shadow" srcset="../../img/2023/04/dialog/dialog-shadow.png 2x">
-</figure>
-<h2 id="technical-details" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/04/macos-screenshot-dialog.html#technical-details"><span>Technical details</span></a></h2>
-<p>To whoever may be interested, I’ll give some technical details on how
-this works.</p>
-<p>Windowify is a Swift program, and uses it as a dynamic interpreter,
-simply by using <code>#!/usr/bin/env swift</code> as a shebang, which I had no clue
-was possible prior to this.</p>
-<p>While most Swift windowed apps are expected to be created as part of an
-Xcode project, it turns out the library <a href="https://stackoverflow.com/questions/30763229/display-window-on-osx-using-swift-without-xcode-or-nib">is flexible enough</a>
-to allow easily creating windows without a complex app boilerplate and
-an explicit compilation process!</p>
-<p>This is made particularly easy using
-<a href="https://developer.apple.com/documentation/appkit/nsapplication/1428360-shared"><code>NSApplication.shared</code></a>
-which automatically creates the application instance if it doesn’t
-exist.</p>
-<p>The script looks at <code>CommandLine.arguments</code> to parse the CLI arguments,
-and uses a <code>NSImage</code> and <code>NSImageView</code> to display the image in a
-<code>NSWindow</code>.</p>
-<p>The main logic is to translate the CLI arguments into the matching
-<code>styleMask</code> and other properties of <code>NSWindow</code>, to make the appearance
-customizable by the user.</p>
-<p>In the first place I had it working without even using a custom
-<code>NSApplicationDelegate</code>, but the main application loop was then blocking
-the thread and made the menu unresponsive (I use a menu to handle
-<kbD>Command</kbd> + <kbd>W</kbd> to close the window). Moving the logic
-inside an application delegate resolved that.</p>
-<p>Take a look at <a href="https://github.com/valeriangalliat/windowify/blob/main/windowify">the code</a>
-if you want to know in more details how this all works!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

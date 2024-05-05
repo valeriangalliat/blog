@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>PostgreSQL: swap tables with dependent views</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="PostgreSQL: swap tables with dependent views">
+  <meta property="og:description" content="Sometimes, you need to do some maintenance on a table, and doing a table swap is a good tool to avoid downtime (e.g. if the maintenance would lock aggressively and run for a long time). The idea is as follows:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>PostgreSQL: swap tables with dependent views</h1>
+<p class="date">May 4, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Sometimes, you need to do some maintenance on a table, and doing a
+<em>table swap</em> is a good tool to avoid downtime (e.g. if the maintenance
+would lock aggressively and run for a long time). The idea is as
+follows:</p>
+<ol>
+<li>Clone the source table.</li>
+<li>Perform the maintenance.</li>
+<li>Make sure they’re in sync if needs be.</li>
+<li>When the maintenance is over, in a transaction, drop the source
+table, and rename the clone to the original name.</li>
+</ol>
+<p>It can get a bit more complicated than that if you have foreign keys,
+but I won’t cover that in this article.</p>
+<p>However, another way it gets more complicated is when you have <em>views</em>
+that depend on the table you want to swap:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
+<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+</code></pre>
+<pre><code class="hljs">ERROR: cannot drop table example because other objects depend on it
+DETAIL: view example_view depends on table example
+</code></pre>
+<p>In this case, we need to update <code>example_view</code> (and all other views that
+depend on <code>example</code>) to reference the <code>example_swap</code> table before we
+perform the actual swap.</p>
+<p>If this is a one-off swap, fine, but if you’re doing the swap as part of
+some automated maintenance task, that won’t do it.</p>
+<h2 id="automatically-swapping-dependent-views" tabindex="-1"><a class="header-anchor" href="#automatically-swapping-dependent-views"><span>Automatically swapping dependent views</span></a></h2>
+<p>In my case, the dependent views don’t change very often (if at all), so
+I went with a static list of the views that depend on the table I need
+to swap.</p>
+<p>Then I use the following script to swap the views:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">OR</span> REPLACE <span class="hljs-keyword">FUNCTION</span> pg_temp.replace_view_table(view_schema text, view_name text, old_table text, new_table text) <span class="hljs-keyword">RETURNS</span> void <span class="hljs-keyword">AS</span> $$
+<span class="hljs-keyword">DECLARE</span>
+    view_definition text;
+<span class="hljs-keyword">BEGIN</span>
+    <span class="hljs-keyword">SELECT</span> definition <span class="hljs-keyword">INTO</span> view_definition
+    <span class="hljs-keyword">FROM</span> pg_views
+    <span class="hljs-keyword">WHERE</span> schemaname <span class="hljs-operator">=</span> view_schema
+    <span class="hljs-keyword">AND</span> viewname <span class="hljs-operator">=</span> view_name;
+
+    view_definition :<span class="hljs-operator">=</span> REPLACE(view_definition, old_table, new_table);
+
+    <span class="hljs-keyword">EXECUTE</span> <span class="hljs-string">&#x27;CREATE OR REPLACE VIEW &#x27;</span> <span class="hljs-operator">||</span> view_schema <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;.&#x27;</span> <span class="hljs-operator">||</span> view_name <span class="hljs-operator">||</span> <span class="hljs-string">&#x27; AS &#x27;</span> <span class="hljs-operator">||</span> view_definition;
+<span class="hljs-keyword">END</span>;
+$$ <span class="hljs-keyword">LANGUAGE</span> plpgsql;
+</code></pre>
+<p>This function will redefine the view to point to the new swap table. It
+does a basic search and replace in the SQL definition of the view, so
+you need to make sure the table name doesn’t conflict with anything else
+in there.</p>
+<div class="note">
+<p><strong>Note:</strong> I’m using <code>pg_temp</code> so that the function is local to the
+current database connection. I don’t want to leave it around permanently
+in that case.</p>
+</div>
+<p>You can now perform the swap as follows:</p>
+<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
+<span class="hljs-keyword">SELECT</span> pg_temp.replace_view_table(<span class="hljs-string">&#x27;public&#x27;</span>, <span class="hljs-string">&#x27;example_view&#x27;</span>, <span class="hljs-string">&#x27;example&#x27;</span>, <span class="hljs-string">&#x27;example_swap&#x27;</span>);
+<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
+<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+<span class="hljs-keyword">COMMIT</span>;
+</code></pre>
+<p>The renaming of the table will automatically propagate to the dependent
+views, they won’t keep referencing the now gone <code>example_swap</code> table,
+they’ll properly point to <code>example</code>! 🥳</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/postgresql-swap-tables-dependent-views.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

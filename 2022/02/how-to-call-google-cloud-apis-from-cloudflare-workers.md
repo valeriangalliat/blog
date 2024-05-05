@@ -249,14 +249,14 @@ const pem = serviceAccount.private_key.replace(/\n/g, '')
 Then we strip the PEM header and footer markers:
 
 ```js
-const pemHeader = '-----BEGIN PRIVATE KEY-----';
-const pemFooter = '-----END PRIVATE KEY-----';
+const pemHeader = '-----BEGIN PRIVATE KEY-----'
+const pemFooter = '-----END PRIVATE KEY-----'
 
 if (!pem.startsWith(pemHeader) || !pem.endsWith(pemFooter)) {
-  throw new Error('Invalid service account private key');
+  throw new Error('Invalid service account private key')
 }
 
-const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length);
+const pemContents = pem.substring(pemHeader.length, pem.length - pemFooter.length)
 ```
 
 This leaves us with a Base64-encoded string that we can decode to a
@@ -359,7 +359,7 @@ As we saw earlier, we're going to use a RSA signature with SHA-256
 Off to the payload. We need 5 fields:
 
 * `iss` and `sub`, both set to the service account email
-* `aud`, the API endpoint we want to use, in our case, Pub/Sub (not the
+* `aud`, the API endpoint we want to use, in our case, Pub/Sub (note the
   trailing slash is important)
 * `iat`, the Unix time at the moment the token was issued (now)
 * `exp`, the Unix time when the JWT will expire, which can be maximum an

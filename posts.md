@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Send Cloudflare Workers logs to Google Cloud Logging using Logpush](2024/05/cloudflare-workers-logs-gcp-logging-logpush.md) <small>May 5, 2024</small>
 * [Next.js: make Firebase Auth `signInWithRedirect` work with Safari](2024/05/nextjs-firebase-auth-safari.md) <small>May 4, 2024</small>
 * [PostgreSQL: swap tables with dependent views](2024/05/postgresql-swap-tables-dependent-views.md) <small>May 4, 2024</small>
 * [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
@@ -51,7 +52,7 @@ excerpt: All the posts I've written so far.
 
 ## 2022
 
-* [GitHub: disable squash & merge on specific branches](https://hookdeck.com/blog/post/building-chrome-extension-disable-squash-and-merge-github-branches) <small>August 15, 2022</small>
+* [GitHub: disable squash & merge on specific branches](2022/08/github-disable-squash-and-merge-on-specific-branches.md) <small>August 15, 2022</small>
 * [Adobe Bridge mass update filetype associations](2022/07/adobe-bridge-mass-update-filetype-associations.md) <small>July 19, 2022</small>
 * [Empty body vs. no body in HTTP/2](2022/06/empty-body-no-body-http2.md) <small>June 1, 2022</small>
 * [Best GoPro mount position for skiing](2022/05/best-gopro-position-skiing.md) <small>May 25, 2022</small>
@@ -77,7 +78,7 @@ excerpt: All the posts I've written so far.
 * [Clearing cookies: the spec vs. the browser implementations](2022/03/clearing-cookies-spec-vs-browsers.md) <small>March 25, 2022</small>
 * [Delete ghost volume from Time Machine snapshot](2022/03/delete-ghost-volume-from-time-machine-snapshot.md) <small>March 8, 2022</small>
 * [3 months of poison ivy, a story 🌿](2022/02/3-months-of-poison-ivy-a-story.md) <small>February 25, 2022</small>
-* [How to Call Google Cloud APIs from Cloudflare Workers](https://hookdeck.com/blog/post/how-to-call-google-cloud-apis-from-cloudflare-workers) <small>February 16, 2022</small>
+* [How to Call Google Cloud APIs from Cloudflare Workers](2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.md) <small>February 16, 2022</small>
 * [A second `.gitignore` that ignores itself 🤯](2022/01/a-second-gitignore-that-ignores-itself.md) <small>January 26, 2022</small>
 
 ## 2021

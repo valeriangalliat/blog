@@ -5,10 +5,48 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-05T20:33:51.314Z</updated>
+  <updated>2024-05-05T21:18:56.952Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Prevent macOS to switch to bluetooth headphones microphone 🎧</title>
+    <link href="https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html" />
+    <id>https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html</id>
+    <updated>2024-05-05T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>Maybe like me, you have bluetooth headphones such as the Sony WH-1000XM4
+that you like because they have great audio, but the built-in microphone
+otherwise suck. But you don’t care because you use your MacBook’s
+microphone.</p>
+<p>Then, maybe also like me, you didn’t even <em>know</em> that it had a built-in
+microphone in the first place, and even less that macOS was
+automatically switching to that microphone when you connect your
+headphones!</p>
+<p>Luckily, I didn’t sound like shit on calls for too long, because my
+friends quickly told me “bro, ur mic sounds like shit”. 💩</p>
+<h2 id="forcing-the-internal-microphone" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html#forcing-the-internal-microphone"><span>Forcing the internal microphone</span></a></h2>
+<p>Now we know what’s wrong, let’s fix it. The idea is that when I connect
+my bluetooth headphones, I want the audio output to go to them, but I
+don’t want to switch my default microphone.</p>
+<p>We can achieve that with the <strong>Audio MIDI Setup</strong> app.</p>
+<p>Create an <strong>Aggregate Device</strong> (from the <code>+</code> icon at the bottom-left
+corner) that has only one input: your MacBook microphone. Then set this
+aggregate device as “default for sound input” from the right click menu.</p>
+<figure class="center">
+  <img alt="Audio MIDI Setup" srcset="../../img/2024/05/macos-microphone/audio-midi-setup.png 2x">
+</figure>
+<p>Tada! Now connecting your headphones will leave the aggregate device
+alone, meaning you’ll keep using the good microphone that comes with
+your laptop, without thinking about it. 👌</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Firebase Auth Admin SDK denied when using application default credentials</title>
     <link href="https://www.codejam.info/2024/05/firebase-auth-admin-denied-application-default.html" />
@@ -2630,85 +2668,6 @@ appMenusubmenu <span class="hljs-operator">=</span> appSubmenu
 appSubmenu.addItem(
   withTitle: <span class="hljs-string">&quot;Quit&quot;</span>, action: <span class="hljs-keyword">#selector</span>(<span class="hljs-type">NSApplication</span>.terminate(<span class="hljs-keyword">_</span>:)), keyEquivalent: <span class="hljs-string">&quot;q&quot;</span>)
 </code></pre>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Swift: NSMenuItem title not showing</title>
-    <link href="https://www.codejam.info/2023/07/swift-nsmenuitem-title-blank.html" />
-    <id>https://www.codejam.info/2023/07/swift-nsmenuitem-title-blank.html</id>
-    <updated>2023-07-27T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If for some reason you’re making a Swift app and want to
-programmatically define your menu items, as opposed to using Xcode’s
-storyboards to create them visually, you may run into an issue where
-your menu title is not showing.</p>
-<p>Let’s consider the following example (e.g. put it in <code>test.swift</code> and
-run it with <code>swift test.swift</code>):</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-    app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)
-
-    <span class="hljs-keyword">let</span> mainMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
-    app.mainMenu <span class="hljs-operator">=</span> mainMenu
-
-    <span class="hljs-keyword">let</span> appMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
-    mainMenu.addItem(appMenu)
-
-    <span class="hljs-keyword">let</span> editMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>(title: <span class="hljs-string">&quot;Edit&quot;</span>, action: <span class="hljs-literal">nil</span>, keyEquivalent: <span class="hljs-string">&quot;&quot;</span>)
-    mainMenu.addItem(editMenu)
-
-    <span class="hljs-keyword">let</span> editSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()
-
-    editSubmenu.addItem(withTitle: <span class="hljs-string">&quot;Test&quot;</span>, action: <span class="hljs-literal">nil</span>, keyEquivalent: <span class="hljs-string">&quot;&quot;</span>)
-    editMenu.submenu <span class="hljs-operator">=</span> editSubmenu
-  }
-}
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
-
-app.setActivationPolicy(.regular)
-app.delegate <span class="hljs-operator">=</span> delegate
-app.run()
-</code></pre>
-<p>When we run it, the edit menu doesn’t show. Or actually, it’s there but
-its text is blank!</p>
-<figure class="center">
-  <img alt="Blank edit menu" srcset="../../img/2023/07/swift-edit-blank.png 2x">
-</figure>
-<p><strong>This is because the <code>NSMenuItem</code> title actually doesn’t matter here.</strong>
-It’s the title of the <code>NSMenu</code> that we use as a submenu that matters.</p>
-<p>Let’s fix it up:</p>
-<pre><code class="hljs language-diff:swift"><span class="hljs-deletion">-<span class="hljs-keyword">let</span> editMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>(title: <span class="hljs-string">&quot;Edit&quot;</span>, action: <span class="hljs-literal">nil</span>, keyEquivalent: <span class="hljs-string">&quot;&quot;</span>)</span>
-<span class="hljs-addition">+<span class="hljs-keyword">let</span> editMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>(title: <span class="hljs-string">&quot;Doesn&#x27;t matter&quot;</span>, action: <span class="hljs-literal">nil</span>, keyEquivalent: <span class="hljs-string">&quot;&quot;</span>)</span>
- mainMenu.addItem(editMenu)
-
-<span class="hljs-deletion">-<span class="hljs-keyword">let</span> editSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>()</span>
-<span class="hljs-addition">+<span class="hljs-keyword">let</span> editSubmenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenu</span>(title: <span class="hljs-string">&quot;Edit&quot;</span>)</span>
-</code></pre>
-<p>And now our title shows up properly!</p>
-<figure class="center">
-  <img alt="Good edit menu" srcset="../../img/2023/07/swift-edit-good.png 2x">
-</figure>
-<h2 id="a-note-about-the-app-menu" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/swift-nsmenuitem-title-blank.html#a-note-about-the-app-menu"><span>A note about the app menu</span></a></h2>
-<p>In the example above, note that it was also important to explicitly add
-an app menu before our edit menu:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> appMenu <span class="hljs-operator">=</span> <span class="hljs-type">NSMenuItem</span>()
-mainMenu.addItem(appMenu)
-</code></pre>
-<p>This is important, because the first item of the main menu is gonna be
-treated as the app menu. If we didn’t do that, our edit menu would
-actually become the app menu, so that <strong>Test</strong> would appear under
-<strong>swift-frontend</strong>, and <strong>Edit</strong> would be nowhere to be seen.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

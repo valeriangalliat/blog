@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Prevent macOS to switch to bluetooth headphones microphone 🎧</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Prevent macOS to switch to bluetooth headphones microphone 🎧">
+  <meta property="og:description" content="Maybe like me, you have bluetooth headphones such as the Sony WH-1000XM4 that you like because they have great audio, but the built-in microphone otherwise suck. But you don’t care because you use your MacBook’s microphone.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Prevent macOS to switch to bluetooth headphones microphone 🎧</h1>
+<p class="date">May 5, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Maybe like me, you have bluetooth headphones such as the Sony WH-1000XM4
+that you like because they have great audio, but the built-in microphone
+otherwise suck. But you don’t care because you use your MacBook’s
+microphone.</p>
+<p>Then, maybe also like me, you didn’t even <em>know</em> that it had a built-in
+microphone in the first place, and even less that macOS was
+automatically switching to that microphone when you connect your
+headphones!</p>
+<p>Luckily, I didn’t sound like shit on calls for too long, because my
+friends quickly told me “bro, ur mic sounds like shit”. 💩</p>
+<h2 id="forcing-the-internal-microphone" tabindex="-1"><a class="header-anchor" href="#forcing-the-internal-microphone"><span>Forcing the internal microphone</span></a></h2>
+<p>Now we know what’s wrong, let’s fix it. The idea is that when I connect
+my bluetooth headphones, I want the audio output to go to them, but I
+don’t want to switch my default microphone.</p>
+<p>We can achieve that with the <strong>Audio MIDI Setup</strong> app.</p>
+<p>Create an <strong>Aggregate Device</strong> (from the <code>+</code> icon at the bottom-left
+corner) that has only one input: your MacBook microphone. Then set this
+aggregate device as “default for sound input” from the right click menu.</p>
+<figure class="center">
+  <img alt="Audio MIDI Setup" srcset="../../img/2024/05/macos-microphone/audio-midi-setup.png 2x">
+</figure>
+<p>Tada! Now connecting your headphones will leave the aggregate device
+alone, meaning you’ll keep using the good microphone that comes with
+your laptop, without thinking about it. 👌</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/macos-prevent-bluetooth-headphones-microphone.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

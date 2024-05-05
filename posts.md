@@ -8,6 +8,8 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
+* [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>
 * [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 4, 2024</small>
 * [Use Gmail to send emails with a custom domain for free (secret trick) 😏](2024/05/gmail-send-custom-domain-free.md) <small>May 3, 2024</small>
 * [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>

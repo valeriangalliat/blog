@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Prevent macOS to switch to bluetooth headphones microphone 🎧](2024/05/macos-prevent-bluetooth-headphones-microphone.md) <small>May 5, 2024</small>
 * [Firebase Auth Admin SDK denied when using application default credentials](2024/05/firebase-auth-admin-denied-application-default.md) <small>May 5, 2024</small>
 * [Send Cloudflare Workers logs to Google Cloud Logging using Logpush](2024/05/cloudflare-workers-logs-gcp-logging-logpush.md) <small>May 5, 2024</small>
 * [Next.js: make Firebase Auth `signInWithRedirect` work with Safari](2024/05/nextjs-firebase-auth-safari.md) <small>May 4, 2024</small>

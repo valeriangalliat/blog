@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Prevent macOS to switch to bluetooth headphones microphone 🎧](2024/05/macos-prevent-bluetooth-headphones-microphone.md) <small>May 5, 2024</small>
 * [Firebase Auth Admin SDK denied when using application default credentials](2024/05/firebase-auth-admin-denied-application-default.md) <small>May 5, 2024</small>
 * [Send Cloudflare Workers logs to Google Cloud Logging using Logpush](2024/05/cloudflare-workers-logs-gcp-logging-logpush.md) <small>May 5, 2024</small>
 * [Next.js: make Firebase Auth `signInWithRedirect` work with Safari](2024/05/nextjs-firebase-auth-safari.md) <small>May 4, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 * [Identify the current system cursor in Swift](2024/02/current-system-cursor-swift.md) <small>February 4, 2024</small>
 * [Swift: convert a delegate to async](2024/02/swift-delegate-to-async.md) <small>February 4, 2024</small>
-* [Life update: Squamish, climbing, skiing...](2024/01/now.md) <small>January 21, 2024</small>
 
 [All the posts](posts.md)
 

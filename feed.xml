@@ -5,10 +5,128 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-05T21:40:48.166Z</updated>
+  <updated>2024-05-06T00:12:25.926Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Using Google Chrome instead of Chromium in Google Cloud Functions</title>
+    <link href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html" />
+    <id>https://www.codejam.info/2024/05/google-chrome-cloud-functions.html</id>
+    <updated>2024-05-05T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>When using Puppeteer, Playwright and similar, you need to have Chrome
+installed. When you’re running on AWS Lambda or Google Cloud Functions,
+it can get tricky.</p>
+<p>Google Cloud Functions <em>used to</em> bundle Chromium in their base images,
+but it’s been a few years it’s no longer the case. That’s where packages
+like <a href="https://github.com/alixaxel/chrome-aws-lambda"><code>chrome-aws-lambda</code></a>
+come in handy, by bundling Chromium directly inside a npm package, and
+exposing a function that extracts the Chromium binary and returns the
+path:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> chromium = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;chrome-aws-lambda&#x27;</span>)
+
+<span class="hljs-keyword">const</span> path = <span class="hljs-keyword">await</span> chromium.<span class="hljs-property">executablePath</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> unnecessary pedantic detail: the above code doesn’t look like a function,
+but <a href="https://github.com/alixaxel/chrome-aws-lambda/blob/f9d5a9ff0282ef8e172a29d6d077efc468ca3c76/source/index.ts#L147">it is, in fact</a>,
+a getter function that returns a promise. 😄</p>
+</div>
+<p>However that’s Chromium, and you may have reasons to want Google Chrome
+instead (mainly, proprietary codecs).</p>
+<h2 id="a-totally-unrelated-note-about-aws-lambda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#a-totally-unrelated-note-about-aws-lambda"><span>A totally unrelated note about AWS Lambda</span></a></h2>
+<p>This article is about Google Cloud Functions, but if you’re on AWS
+Lambda, the above option is your best bet. Because of the Lambda total
+size limit of 250 MB (all layers combined), it’s really hard to get a
+binary of Chrome that fits in there.</p>
+<p>That’s why <code>chrome-aws-lambda</code> uses <a href="https://github.com/alixaxel/lambdafs">LambdaFS</a>
+under the hood, to aggressively compress the Chrome installation with
+Brotli and make it fit in that limited space.</p>
+<p>But again with that build, you won’t have proprietary codecs. I tried to
+trim down a Chrome Linux build and compress it with the same technique
+but never managed to make it fit on AWS Lambda. Recent Chrome versions
+are just too big.</p>
+<p>There’s another option, which is to compile Chromium yourself with
+proprietary codecs. I never found any prebuilt binaries of Chromium that
+include proprietary codecs (maybe because of license issues
+redistributing them 🙃) so you’re on your own here.</p>
+<p><a href="https://www.remotion.dev/">Remotion</a> successfully does that for
+<a href="https://www.remotion.dev/docs/lambda">Remotion Lambda</a>.
+Here’s <a href="https://github.com/remotion-dev/chrome-build-instructions">their instructions</a>
+to compile Chromium with proprietary codecs for Lambda.</p>
+<p>Fair warning: it gets hairy, fast.</p>
+<h2 id="back-to-google-cloud-functions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#back-to-google-cloud-functions"><span>Back to Google Cloud Functions</span></a></h2>
+<p>Google Cloud Functions is more generous as for bundle size, so we don’t
+need to resort to those tricks, and we can include a complete,
+uncompressed, Google Chrome installation.</p>
+<p>Google publishes <a href="https://googlechromelabs.github.io/chrome-for-testing/">Chrome for Testing</a>,
+builds <a href="https://developer.chrome.com/blog/chrome-for-testing">specifically made</a>
+for headless usage.</p>
+<p>We can just download the latest build from there as part of the
+<code>gcp-build</code> script in our <code>package.json</code>.</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;gcp-build&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;curl -s -O &#x27;https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chrome-linux64.zip&#x27; &amp;&amp; unzip chrome-linux64.zip &amp;&amp; rm chrome-linux64.zip&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> the <code>gcp-build</code> script allows you to <a href="https://cloud.google.com/appengine/docs/standard/nodejs/running-custom-build-step">run a custom build step</a>
+in Google Cloud Build, which is what Cloud Functions (both 1st and 2nd
+gen, as well as Cloud Run and App Engine) use to build your function
+image.</p>
+<p>It would work just fine with a <code>postinstall</code> script as well, but
+<code>gcp-build</code> makes sure you run it only on Google Cloud Build, which is
+probably desirable in this particular case.</p>
+</div>
+<p>You will then have the Chrome binary in <code>chrome-linux64/chrome</code>, that
+you can pass to the tool of your choice.</p>
+<h2 id="with-puppeteer" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#with-puppeteer"><span>With Puppeteer</span></a></h2>
+<p>Courtesy of <a href="https://medium.com/@jackklpan/run-puppeteer-in-google-cloud-functions-v2-b18a353e609b">this post</a>,
+with Puppeteer, you don’t need to download Chrome manually, since it
+provides a nifty script to do just that.</p>
+<p>Actually, Puppeteer’s <a href="https://github.com/puppeteer/puppeteer/blob/f23646b3526aa87145c17b22e9967ec8f77d82d2/packages/puppeteer/package.json#L41"><code>postinstall</code> script</a>
+automatically downloads the latest version of Chrome for Testing for
+your platform.</p>
+<p>The caveat is that this script by default installs it to
+<code>~/.cache/puppeteer</code>, which in the case of Google Cloud Build, is not
+gonna be preserved in the final image. So we need to instruct Puppeteer
+to install Chrome in a directory that Cloud Build will keep.</p>
+<p>This can be done with the following <code>.puppeteerrc.js</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">cacheDirectory</span>: <span class="hljs-string">`<span class="hljs-subst">${__dirname}</span>/.cache/puppeteer`</span>
+}
+</code></pre>
+<p>But even then, there’s another caveat. Puppeteer’s <code>postinstall</code> script
+will only run after it gets installed. However, because of build
+caching, you will get in a state where <code>node_modules</code> is restored, with
+Puppeteer already installed (so <code>postinstall</code> will <em>not</em> run), but the
+<code>.cache/puppeteer</code> directory will also <em>not</em> be restored.</p>
+<p>To mitigate that, we need to make sure to install Chrome systematically.
+Again we can leverage the <code>gcp-build</code> for that:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;gcp-build&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;npx puppeteer browsers install chrome&quot;</span>
+  <span class="hljs-punctuation">}</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> you could call Puppeteer’s <code>postinstall</code> script directly by
+doing <code>node node_modules/puppeteer/install.mjs</code> instead, but I found the
+above command cleaner.</p>
+</div>
+<p>The good thing is that this script knows to not re-download Chrome if
+it’s already found in the cache directory, so when the <code>postinstall</code>
+script <em>does</em> run, the extra <code>gcp-build</code> command will be a no-op.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Knex: timeout acquiring a connection, the pool is probably full</title>
     <link href="https://www.codejam.info/2024/05/knex-timeout-pool-full.html" />
@@ -2454,189 +2572,6 @@ North America. Cheers!</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>macOS harvest cursor from any app 😏</title>
-    <link href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html" />
-    <id>https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html</id>
-    <updated>2023-07-27T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>As a pet project I was building a <a href="https://github.com/valeriangalliat/retina-screenshot">screenshot app</a>,
-and I wanted its cursors to match the ones of macOS screenshot utility:
-<img class="fit-line-height" alt="Crosshair" srcset="../../img/2023/07/macos-cursors/crosshair.png 2x">
-and <img class="fit-line-height" alt="Camera" srcset="../../img/2023/07/macos-cursors/camera.png 2x">.</p>
-<p>This was harder than expected. I’ll tell you the whole story because I
-find it fun and interesting, but feel free to jump straight to <a href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html#harvesting-the-cursor-programmatically">the solution</a>.</p>
-<h2 id="default-system-cursors-in-nscursor" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html#default-system-cursors-in-nscursor"><span>Default system cursors in <code>NSCursor</code></span></a></h2>
-<p>In a Mac app, the <code>NSCursor</code> class <a href="https://developer.apple.com/documentation/appkit/nscursor">exposes a number of default cursors</a>,
-like the arrow <img class="fit-line-height" alt="Arrow" srcset="../../img/2023/07/macos-cursors/nscursor/arrow.png 2x">,
-I-beam <img class="fit-line-height" alt="I-beam" srcset="../../img/2023/07/macos-cursors/nscursor/i-beam.png 2x">,
-pointing hand <img class="fit-line-height" alt="Pointing hand" srcset="../../img/2023/07/macos-cursors/nscursor/pointing-hand.png 2x">,
-various resize cursors, and even a cute “disappearing item” cursor <img class="fit-line-height" alt="Disappearing item" srcset="../../img/2023/07/macos-cursors/nscursor/disappearing-item.png 2x">
-(that I kinda want to name “poof” for some reason).</p>
-<p>There is also a crosshair cursor <img class="fit-line-height" alt="Crosshair" srcset="../../img/2023/07/macos-cursors/nscursor/crosshair.png 2x">,
-however it’s not the same that the system screenshot utility uses. And
-the camera cursor is nowhere to be found.</p>
-<p>So our last resort is to set a custom cursor from an image, e.g. for a
-cursor that’s 32x32 pixels where we want the “hot spot” to be in the
-middle:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> <span class="hljs-type">NSImage</span>(named: <span class="hljs-string">&quot;cursor.png&quot;</span>)
-<span class="hljs-keyword">let</span> hotSpot <span class="hljs-operator">=</span> <span class="hljs-type">NSPoint</span>(x: <span class="hljs-number">16</span>, y: <span class="hljs-number">16</span>)
-<span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> <span class="hljs-type">NSCursor</span>(image: image, hotSpot: hotSpot)
-</code></pre>
-<p>But what image do we use here?</p>
-<h2 id="macos-default-cursors-source-location" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html#macos-default-cursors-source-location"><span>macOS default cursors source location?</span></a></h2>
-<p>By doing a bit of digging in the <code>/System</code> directory, we find the
-following path:</p>
-<pre><code class="hljs">/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors
-</code></pre>
-<p>This seems to contain all the system cursors, one directory for each,
-containing a <code>cursor.pdf</code> and <code>info.plist</code>!</p>
-<p>Here, we effectively have <code>screenshotselection</code> that matches the
-screen capture utility’s crosshair, and <code>screenshotwindow</code> that matches
-the camera cursor shown during window selection. Neat.</p>
-<p>Parsing the <code>info.plist</code>, we find the hot spot coordinates:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">plutil -p /System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors/screenshotselection/info.plist</span>
-{
-  &quot;hotx&quot; =&gt; 15
-  &quot;hotx-scaled&quot; =&gt; 15
-  &quot;hoty&quot; =&gt; 15
-  &quot;hoty-scaled&quot; =&gt; 15
-}
-</code></pre>
-<p>We can now load those programmatically:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">func</span> <span class="hljs-title function_">loadCursor</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">name</span>: <span class="hljs-type">String</span>) -&gt; <span class="hljs-type">NSCursor</span>? {
-  <span class="hljs-keyword">let</span> root <span class="hljs-operator">=</span>
-    <span class="hljs-string">&quot;/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors&quot;</span>
-
-  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> data <span class="hljs-operator">=</span> <span class="hljs-type">FileManager</span>.default.contents(atPath: <span class="hljs-string">&quot;<span class="hljs-subst">\(root)</span>/<span class="hljs-subst">\(name)</span>/info.plist&quot;</span>)
-  <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
-  }
-
-  <span class="hljs-keyword">guard</span>
-    <span class="hljs-keyword">let</span> plist <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-type">PropertyListSerialization</span>.propertyList(from: data, options: [], format: <span class="hljs-literal">nil</span>)
-      <span class="hljs-keyword">as?</span> [<span class="hljs-type">String</span>: <span class="hljs-keyword">Any</span>]
-  <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
-  }
-
-  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> pdfData <span class="hljs-operator">=</span> <span class="hljs-keyword">try?</span> <span class="hljs-type">Data</span>(contentsOf: <span class="hljs-type">URL</span>(fileURLWithPath: <span class="hljs-string">&quot;<span class="hljs-subst">\(root)</span>/<span class="hljs-subst">\(name)</span>/cursor.pdf&quot;</span>))
-  <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
-  }
-
-  <span class="hljs-keyword">guard</span> <span class="hljs-keyword">let</span> cursorImage <span class="hljs-operator">=</span> <span class="hljs-type">NSImage</span>(data: pdfData) <span class="hljs-keyword">else</span> {
-    <span class="hljs-keyword">return</span> <span class="hljs-literal">nil</span>
-  }
-
-  <span class="hljs-keyword">let</span> hotSpot <span class="hljs-operator">=</span> <span class="hljs-type">NSPoint</span>(
-    x: plist[<span class="hljs-string">&quot;hotx&quot;</span>] <span class="hljs-keyword">as!</span> <span class="hljs-type">Int</span>? <span class="hljs-operator">??</span> <span class="hljs-type">Int</span>(cursorImage.size.width) <span class="hljs-operator">/</span> <span class="hljs-number">2</span>,
-    y: plist[<span class="hljs-string">&quot;hoty&quot;</span>] <span class="hljs-keyword">as!</span> <span class="hljs-type">Int</span>? <span class="hljs-operator">??</span> <span class="hljs-type">Int</span>(cursorImage.size.height) <span class="hljs-operator">/</span> <span class="hljs-number">2</span>
-  )
-
-  <span class="hljs-keyword">return</span> <span class="hljs-type">NSCursor</span>(image: cursorImage, hotSpot: hotSpot)
-}
-</code></pre>
-<p>Let’s use this function in a basic example to demonstrate it:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-
-<span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> loadCursor(<span class="hljs-string">&quot;screenshotselection&quot;</span>) {
-  <span class="hljs-type">DispatchQueue</span>.main.asyncAfter(deadline: .now() <span class="hljs-operator">+</span> <span class="hljs-number">1</span>) {
-    cursor.set()
-  }
-}
-
-app.setActivationPolicy(.regular)
-app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)
-app.run()
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> here we call <code>cursor.set()</code> after a delay because it
-<a href="https://stackoverflow.com/a/39905020">doesn’t</a>
-<a href="https://stackoverflow.com/a/13848213">always</a> work when called right
-away for reasons that are not familiar to me.</p>
-<p>In a real app, you probably want to subclass <code>NSView</code>, override
-<code>resetCursorRects</code>, and call <code>addCursorRect</code> in it.</p>
-</div>
-<p>This actually looks good for the camera! But for the crosshair, it
-doesn’t seem to match the original one.</p>
-<p>The original crosshair size appears to be 50x50 pixels, while this one
-is 46x46. More importantly, the original one has some kind of light outline
-that makes it visible on darker backgrounds, that is completely missing
-from that cursor PDF we just found. You can see the difference easily:</p>
-<table>
-  <tr>
-    <th>Original</th>
-    <th>Custom</th>
-  </tr>
-  <tr>
-    <td><img alt="Original crosshair over grey background" srcset="../../img/2023/07/macos-cursors/hiservices/orig-grey.png 2x"></td>
-    <td><img alt="Custom crosshair over grey background" srcset="../../img/2023/07/macos-cursors/hiservices/custom-grey.png 2x"></td>
-  </tr>
-  <tr>
-    <td><img alt="Original crosshair over dark background" srcset="../../img/2023/07/macos-cursors/hiservices/orig-dark.png 2x"></td>
-    <td><img alt="Custom crosshair over dark background" srcset="../../img/2023/07/macos-cursors/hiservices/custom-dark.png 2x"></td>
-  </tr>
-</table>
-<p>So the screen capture utility doesn’t seem to be using this cursor from
-<code>HIServices.framework</code>.</p>
-<p>I tried exploring the contents of the screen capture app in
-<code>/System/Library/CoreServices/screencaptureui.app</code>, especially the
-<code>Contents/Resources/Assets.car</code> file, exploring it using
-<a href="https://github.com/insidegui/AssetCatalogTinkerer">Asset Catalog Tinkerer</a>,
-but it didn’t contain anything useful.</p>
-<h2 id="harvesting-the-cursor-programmatically" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html#harvesting-the-cursor-programmatically"><span>Harvesting the cursor programmatically</span></a></h2>
-<p>The next idea I tried was to see if I could somehow access the cursor
-data from <em>other</em> apps from my Swift app.</p>
-<p>It turns out <code>NSCursor</code> exposes a <a href="https://developer.apple.com/documentation/appkit/nscursor/1533611-currentsystem"><code>currentSystem</code></a>
-property, containing current system cursor (as opposed to
-<code>NSCursor.current</code> that contains your own application’s current cursor).</p>
-<p>This way we can easily access the image data of the <code>currentSystem</code>
-cursor, as well as its <code>hotSpot</code> to be used later in our own custom
-cursor.</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>
-
-<span class="hljs-built_in">print</span>(cursor.hotSpot)
-
-<span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> cursor.image.cgImage(forProposedRect: <span class="hljs-literal">nil</span>, context: <span class="hljs-literal">nil</span>, hints: <span class="hljs-literal">nil</span>)<span class="hljs-operator">!</span>
-<span class="hljs-keyword">let</span> bitmap <span class="hljs-operator">=</span> <span class="hljs-type">NSBitmapImageRep</span>(cgImage: image)
-<span class="hljs-keyword">let</span> data <span class="hljs-operator">=</span> bitmap.representation(using: .png, properties: [:])<span class="hljs-operator">!</span>
-<span class="hljs-keyword">try!</span> data.write(to: <span class="hljs-type">URL</span>(fileURLWithPath: <span class="hljs-string">&quot;cursor.png&quot;</span>))
-</code></pre>
-<p>We can put this code in a file <code>test.swift</code>, and run it with <code>sleep 5 &amp;&amp; swift test.swift</code>.
-This gives us 5 seconds to do whatever is needed to show the cursor we
-want to harvest, before our script actually runs and saves the current
-system cursor to a PNG file.</p>
-<p>In the case of the screen capture utility crosshair, I’ve got this
-(pictured over transparent, grey and dark background to show how well it
-reacts to those):</p>
-<table>
-  <tr>
-    <td><img alt="Harvested crosshair" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
-    <td style="background-color: #3f3f40"><img alt="Harvested crosshair over grey background" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
-    <td style="background-color: #111111"><img alt="Harvested crosshair over dark background" srcset="../../img/2023/07/macos-cursors/crosshair-raw.png 2x"></td>
-  </tr>
-</table>
-<p>Perfect. 👌</p>
-<p>I didn’t want to get into adding support for showing the dynamic
-coordinates as part of the cursor, so as far as I’m concerned, I got rid
-of those and used just the crosshair in my app.</p>
-<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/macos-harvest-cursor-from-any-app.html#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>I hope you found this post useful! Now if you want to get the cursor
-data from any app, in its original transparent quality, you can use the
-simple script above to do so. Enjoy!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1684688732694130688">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

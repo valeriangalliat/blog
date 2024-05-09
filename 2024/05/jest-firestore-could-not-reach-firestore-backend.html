@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Jest and Firestore: could not reach Cloud Firestore backend</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Jest and Firestore: could not reach Cloud Firestore backend">
+  <meta property="og:description" content="So you’re using Jest to do some unit tests that involve testing Firebase-related stuff like Firestore, maybe Firestore rules with @firebase/rules-unit-testing?">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Jest and Firestore: could not reach Cloud Firestore backend</h1>
+<p class="date">May 8, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So you’re using Jest to do some unit tests that involve testing
+Firebase-related stuff like Firestore, maybe Firestore rules with
+<a href="https://firebase.google.com/docs/rules/unit-tests"><code>@firebase/rules-unit-testing</code></a>?</p>
+<p>But your test just times out:</p>
+<pre><code class="hljs">thrown: &quot;Exceeded timeout of 5000 ms for a test.
+Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
+</code></pre>
+<p>So you go on and add a longer timeout value to the test, but then you
+hit another level of timeout:</p>
+<pre><code class="hljs">@firebase/firestore: Firestore: Could not reach Cloud Firestore backend. Backend didn&#x27;t respond within 10 seconds.
+This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
+</code></pre>
+<p>By any chance, are you using <a href="https://jestjs.io/docs/next/tutorial-jquery"><code>jest-environment-jsdom</code></a>?
+Something like this in your <code>jest.config.js</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
+  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">&#x27;jsdom&#x27;</span>
+  <span class="hljs-comment">// testEnvironment: &#x27;jest-environment-jsdom&#x27;</span>
+}
+</code></pre>
+<p>If so, look no further. Firestore doesn’t like what
+<code>jest-environment-jsdom</code> does to the global object and makes it hang
+forever.</p>
+<p>It took me long enough to figure <em>that</em> out, so I didn’t manage to
+figure out <em>why</em> exactly it’s the case. So far my understanding is that
+it’s related to the <code>fetch</code> API <em>somehow</em>, because if you set the
+undocumented <code>useFetchStreams</code> option to <code>false</code> in the Firebase client,
+then it falls back to <code>XMLHttpRequest</code> (which jsdom implements) and
+things work again.</p>
+<pre><code class="hljs language-js">user.<span class="hljs-title function_">firestore</span>({ <span class="hljs-attr">useFetchStreams</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">merge</span>: <span class="hljs-literal">true</span> })
+</code></pre>
+<p>My advice would be to run the Firestore tests in the default Node.js
+environment instead of the jsdom environment. This may be by using a
+dedicated <code>jest.config.js</code>, or simply running your Firestore tests
+separately from the rest of your frontend test suite and passing <code>--env node</code> to override the value from <code>jest.config.js</code>:</p>
+<pre><code class="hljs language-sh">npx jest --<span class="hljs-built_in">env</span> node firestore.test.js
+</code></pre>
+<p>Last resort, the <code>useFetchStreams</code> hack above should do it. 😄</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/jest-firestore-could-not-reach-firestore-backend.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

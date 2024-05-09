@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 * [Using Google Chrome instead of Chromium in Google Cloud Functions](2024/05/google-chrome-cloud-functions.md) <small>May 5, 2024</small>
 * [Knex: timeout acquiring a connection, the pool is probably full](2024/05/knex-timeout-pool-full.md) <small>May 5, 2024</small>
 * [Prevent macOS to switch to bluetooth headphones microphone 🎧](2024/05/macos-prevent-bluetooth-headphones-microphone.md) <small>May 5, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [gocryptfs on macOS (with and without macFUSE)](2024/04/gocryptfs-macos-macfuse.md) <small>April 26, 2024</small>
 * [Encrypted offsite backup system: syncing 📲](2024/04/offsite-backup-sync.md) <small>April 26, 2024</small>
 * [Encrypted offsite backup system: storage 💾](2024/04/offsite-backup-storage.md) <small>April 26, 2024</small>
-* [Duplicated ESM and CJS package in bundle](2024/02/esm-cjs-dupe.md) <small>February 18, 2024</small>
 
 [All the posts](posts.md)
 

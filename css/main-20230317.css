@@ -475,9 +475,13 @@ footer a:hover {
     color: var(--color-fg-default);
     text-decoration: none;
 }
+header .content {
+    margin-bottom: 1em;
+}
+
 @media (min-width: 42em) {
     header .content {
-        margin-top: 2rem;
+        margin-top: 2em;
     }
 }
 
@@ -491,7 +495,7 @@ footer a:hover {
     position: relative;
     background-size: cover;
     background-position: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2em;
 }
 
 .hero .header-inner {

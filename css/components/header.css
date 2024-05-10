@@ -1,6 +1,10 @@
+header .content {
+    margin-bottom: 1em;
+}
+
 @media (min-width: 42em) {
     header .content {
-        margin-top: 2rem;
+        margin-top: 2em;
     }
 }
 
@@ -14,7 +18,7 @@
     position: relative;
     background-size: cover;
     background-position: center;
-    margin-bottom: 2rem;
+    margin-bottom: 2em;
 }
 
 .hero .header-inner {

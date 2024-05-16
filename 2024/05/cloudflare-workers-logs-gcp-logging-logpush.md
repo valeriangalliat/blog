@@ -80,8 +80,8 @@ Here's how you would list existing Logpush jobs:
 
 ```sh
 curl \
-  -H "Authorization: Bearer $TOKEN" \
-  'https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs'
+    -H "Authorization: Bearer $TOKEN" \
+    'https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs'
 ```
 
 Where `my-account-id` is your account ID, that you can find for example
@@ -91,10 +91,10 @@ To create a job:
 
 ```sh
 curl \
-  -H "Authorization: Bearer $TOKEN" \
-  -H 'Content-Type: application/json' \
-  'https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs' \
-  --data '{
+    -H "Authorization: Bearer $TOKEN" \
+    -H 'Content-Type: application/json' \
+    'https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs' \
+    --data '{
   "name": "test",
   "output_options": {
     "field_names": ["DispatchNamespace", "Entrypoint", "Event", "EventTimestampMs", "EventType", "Exceptions", "Logs", "Outcome", "ScriptName", "ScriptTags", "ScriptVersion"],

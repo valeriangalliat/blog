@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2024
 
+* [Invoking a Firebase callable function from the Firebase Admin SDK](2024/05/firebase-callable-admin-sdk.md) <small>May 15, 2024</small>
 * [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 * [Using Google Chrome instead of Chromium in Google Cloud Functions](2024/05/google-chrome-cloud-functions.md) <small>May 5, 2024</small>
 * [Knex: timeout acquiring a connection, the pool is probably full](2024/05/knex-timeout-pool-full.md) <small>May 5, 2024</small>

@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Invoking a Firebase callable function from the Firebase Admin SDK</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Invoking a Firebase callable function from the Firebase Admin SDK">
+  <meta property="og:description" content="LOL you can’t.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Invoking a Firebase callable function from the Firebase Admin SDK</h1>
+<p class="date">May 15, 2024</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p><a href="https://stackoverflow.com/a/65061421/4324668">LOL you can’t</a>.</p>
+<p>What you <a href="https://stackoverflow.com/a/65062301/4324668"><em>can</em></a> do
+however is using the Firebase Admin SDK to create a custom token for the
+client SDK, and use the client SDK to make the call. 🙃</p>
+<p>What does this looks like?</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> admin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-admin&#x27;</span>)
+<span class="hljs-keyword">const</span> { initializeApp } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/app&#x27;</span>)
+<span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+<span class="hljs-keyword">const</span> { getFunctions, httpsCallable } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+
+admin.<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-comment">// Your admin config</span>
+})
+
+<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-comment">// Your client config</span>
+})
+
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> admin.<span class="hljs-title function_">auth</span>().<span class="hljs-title function_">createCustomToken</span>(<span class="hljs-string">&#x27;admin&#x27;</span>)
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">httpsCallable</span>(<span class="hljs-title function_">getFunctions</span>(), <span class="hljs-string">&#x27;myCallableFunction&#x27;</span>).<span class="hljs-title function_">call</span>({})
+</code></pre>
+<p>Here we created a custom token for a virtual user with UID <code>admin</code> (it
+doesn’t need to exist in Firebase Auth). We can verify that in the
+function:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> functions = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-functions&#x27;</span>)
+
+<span class="hljs-built_in">exports</span>.<span class="hljs-property">myCallableFunction</span> = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onCall</span>(<span class="hljs-keyword">async</span> (data, context) =&gt; {
+  <span class="hljs-keyword">if</span> (!context.<span class="hljs-property">auth</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
+      <span class="hljs-string">&#x27;unauthenticated&#x27;</span>,
+      <span class="hljs-string">&#x27;User is not authenticated&#x27;</span>
+    )
+  }
+
+  <span class="hljs-keyword">if</span> (context.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> !== <span class="hljs-string">&#x27;admin&#x27;</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
+      <span class="hljs-string">&#x27;permission-denied&#x27;</span>,
+      <span class="hljs-string">&#x27;User is not authorized&#x27;</span>
+    )
+  }
+})
+</code></pre>
+<h2 id="why-callable-instead-of-http-function" tabindex="-1"><a class="header-anchor" href="#why-callable-instead-of-http-function"><span>Why callable instead of HTTP function?</span></a></h2>
+<p>With a <a href="https://firebase.google.com/docs/functions/http-events">HTTP function</a>,
+we could have made a simple <code>fetch</code> request to the endpoint.</p>
+<p>Why use a <a href="https://firebase.google.com/docs/functions/callable">callable function</a>
+then?</p>
+<p>In my case, it was because callable functions have auth built-in,
+whereas you’re responsible to implement your own auth for HTTP
+functions. I found that using a <code>https.onCall</code> function with a custom
+Firebase token was more elegant than configuring some kind of internal
+“API key”.</p>
+<h2 id="invoking-the-callable-function-manually" tabindex="-1"><a class="header-anchor" href="#invoking-the-callable-function-manually"><span>Invoking the callable function manually</span></a></h2>
+<p>It turns out it’s also quite easy to invoke a callable function without
+the Firebase SDK, via a <a href="https://firebase.google.com/docs/functions/callable-reference">plain HTTP call</a>.</p>
+<p>With cURL, calling a function that doesn’t have token authentication is
+as simple as:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
+</code></pre>
+<p>For the authentication, we need an <code>Authorization: Bearer</code> header, but
+we can’t directly use the custom token we generated above. We need to
+<a href="https://stackoverflow.com/a/51346783/4324668">exchange</a> it for an ID
+token first (this happened transparently in the previous example).</p>
+<p>We could use the client SDK to do that for us but at that point we might
+as well use the client SDK to call the function as well. 😅</p>
+<p>Just for educational purpose, and building off the earlier example, it
+would look like:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken, getIdToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">getIdToken</span>(<span class="hljs-title function_">getAuth</span>().<span class="hljs-property">currentUser</span>))
+</code></pre>
+<p>We could then use that token in the cURL request:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$token</span>&quot;</span> \
+    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
+</code></pre>
+<p>But if we’re calling the function via <code>fetch</code>, it’s probably that we
+don’t want to use the client SDK. Then, exchanging the token would
+look like <a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">this</a>:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&quot;https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=<span class="hljs-variable">$firebaseApiKey</span>&quot;</span> \
+    --data <span class="hljs-string">&quot;{\&quot;token\&quot;: \&quot;<span class="hljs-variable">$customToken</span>\&quot;, \&quot;returnSecureToken\&quot;: true}&quot;</span>
+</code></pre>
+<p>This returns an <code>idToken</code> that we can use as <code>Authorization: Bearer</code> in
+the invocation of the callable function as seen above.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re wondering about <code>returnSecureToken</code>, it’s
+<a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">documented</a>
+as “should always be true”.</p>
+<p>Without it, the endpoint returns only an <code>idToken</code> with no <code>expiresIn</code>
+nor <code>refreshToken</code>, so my guess is that it’s a token that… doesn’t
+expire? Which is considered insecure.</p>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2024/05/firebase-callable-admin-sdk.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

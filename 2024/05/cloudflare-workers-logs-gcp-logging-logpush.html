@@ -86,17 +86,17 @@ In our case, we want to create a custom token with permissions of
 <code>Zone.Logs.Edit</code>. That token can then be used in a <code>Authorization: Bearer</code> header.</p>
 <p>Here’s how you would list existing Logpush jobs:</p>
 <pre><code class="hljs language-sh">curl \
-  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
 </code></pre>
 <p>Where <code>my-account-id</code> is your account ID, that you can find for example
 in the <strong>Workers &amp; Pages &gt; Overview</strong> page on the right.</p>
 <p>To create a job:</p>
 <pre><code class="hljs language-sh">curl \
-  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-  -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
-  --data <span class="hljs-string">&#x27;{
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{
   &quot;name&quot;: &quot;test&quot;,
   &quot;output_options&quot;: {
     &quot;field_names&quot;: [&quot;DispatchNamespace&quot;, &quot;Entrypoint&quot;, &quot;Event&quot;, &quot;EventTimestampMs&quot;, &quot;EventType&quot;, &quot;Exceptions&quot;, &quot;Logs&quot;, &quot;Outcome&quot;, &quot;ScriptName&quot;, &quot;ScriptTags&quot;, &quot;ScriptVersion&quot;],

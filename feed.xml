@@ -5,10 +5,131 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-09T03:53:34.845Z</updated>
+  <updated>2024-05-16T00:13:21.996Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Invoking a Firebase callable function from the Firebase Admin SDK</title>
+    <link href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html" />
+    <id>https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html</id>
+    <updated>2024-05-15T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p><a href="https://stackoverflow.com/a/65061421/4324668">LOL you can’t</a>.</p>
+<p>What you <a href="https://stackoverflow.com/a/65062301/4324668"><em>can</em></a> do
+however is using the Firebase Admin SDK to create a custom token for the
+client SDK, and use the client SDK to make the call. 🙃</p>
+<p>What does this looks like?</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> admin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-admin&#x27;</span>)
+<span class="hljs-keyword">const</span> { initializeApp } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/app&#x27;</span>)
+<span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+<span class="hljs-keyword">const</span> { getFunctions, httpsCallable } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+
+admin.<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-comment">// Your admin config</span>
+})
+
+<span class="hljs-title function_">initializeApp</span>({
+  <span class="hljs-comment">// Your client config</span>
+})
+
+<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> admin.<span class="hljs-title function_">auth</span>().<span class="hljs-title function_">createCustomToken</span>(<span class="hljs-string">&#x27;admin&#x27;</span>)
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
+
+<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">httpsCallable</span>(<span class="hljs-title function_">getFunctions</span>(), <span class="hljs-string">&#x27;myCallableFunction&#x27;</span>).<span class="hljs-title function_">call</span>({})
+</code></pre>
+<p>Here we created a custom token for a virtual user with UID <code>admin</code> (it
+doesn’t need to exist in Firebase Auth). We can verify that in the
+function:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> functions = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-functions&#x27;</span>)
+
+<span class="hljs-built_in">exports</span>.<span class="hljs-property">myCallableFunction</span> = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onCall</span>(<span class="hljs-keyword">async</span> (data, context) =&gt; {
+  <span class="hljs-keyword">if</span> (!context.<span class="hljs-property">auth</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
+      <span class="hljs-string">&#x27;unauthenticated&#x27;</span>,
+      <span class="hljs-string">&#x27;User is not authenticated&#x27;</span>
+    )
+  }
+
+  <span class="hljs-keyword">if</span> (context.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> !== <span class="hljs-string">&#x27;admin&#x27;</span>) {
+    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
+      <span class="hljs-string">&#x27;permission-denied&#x27;</span>,
+      <span class="hljs-string">&#x27;User is not authorized&#x27;</span>
+    )
+  }
+})
+</code></pre>
+<h2 id="why-callable-instead-of-http-function" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html#why-callable-instead-of-http-function"><span>Why callable instead of HTTP function?</span></a></h2>
+<p>With a <a href="https://firebase.google.com/docs/functions/http-events">HTTP function</a>,
+we could have made a simple <code>fetch</code> request to the endpoint.</p>
+<p>Why use a <a href="https://firebase.google.com/docs/functions/callable">callable function</a>
+then?</p>
+<p>In my case, it was because callable functions have auth built-in,
+whereas you’re responsible to implement your own auth for HTTP
+functions. I found that using a <code>https.onCall</code> function with a custom
+Firebase token was more elegant than configuring some kind of internal
+“API key”.</p>
+<h2 id="invoking-the-callable-function-manually" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html#invoking-the-callable-function-manually"><span>Invoking the callable function manually</span></a></h2>
+<p>It turns out it’s also quite easy to invoke a callable function without
+the Firebase SDK, via a <a href="https://firebase.google.com/docs/functions/callable-reference">plain HTTP call</a>.</p>
+<p>With cURL, calling a function that doesn’t have token authentication is
+as simple as:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
+</code></pre>
+<p>For the authentication, we need an <code>Authorization: Bearer</code> header, but
+we can’t directly use the custom token we generated above. We need to
+<a href="https://stackoverflow.com/a/51346783/4324668">exchange</a> it for an ID
+token first (this happened transparently in the previous example).</p>
+<p>We could use the client SDK to do that for us but at that point we might
+as well use the client SDK to call the function as well. 😅</p>
+<p>Just for educational purpose, and building off the earlier example, it
+would look like:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken, getIdToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
+
+<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">getIdToken</span>(<span class="hljs-title function_">getAuth</span>().<span class="hljs-property">currentUser</span>))
+</code></pre>
+<p>We could then use that token in the cURL request:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$token</span>&quot;</span> \
+    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
+</code></pre>
+<p>But if we’re calling the function via <code>fetch</code>, it’s probably that we
+don’t want to use the client SDK. Then, exchanging the token would
+look like <a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">this</a>:</p>
+<pre><code class="hljs language-sh">curl \
+    -X POST \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&quot;https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=<span class="hljs-variable">$firebaseApiKey</span>&quot;</span> \
+    --data <span class="hljs-string">&quot;{\&quot;token\&quot;: \&quot;<span class="hljs-variable">$customToken</span>\&quot;, \&quot;returnSecureToken\&quot;: true}&quot;</span>
+</code></pre>
+<p>This returns an <code>idToken</code> that we can use as <code>Authorization: Bearer</code> in
+the invocation of the callable function as seen above.</p>
+<div class="note">
+<p><strong>Note:</strong> if you’re wondering about <code>returnSecureToken</code>, it’s
+<a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">documented</a>
+as “should always be true”.</p>
+<p>Without it, the endpoint returns only an <code>idToken</code> with no <code>expiresIn</code>
+nor <code>refreshToken</code>, so my guess is that it’s a token that… doesn’t
+expire? Which is considered insecure.</p>
+</div>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Jest and Firestore: could not reach Cloud Firestore backend</title>
     <link href="https://www.codejam.info/2024/05/jest-firestore-could-not-reach-firestore-backend.html" />
@@ -418,17 +539,17 @@ In our case, we want to create a custom token with permissions of
 <code>Zone.Logs.Edit</code>. That token can then be used in a <code>Authorization: Bearer</code> header.</p>
 <p>Here’s how you would list existing Logpush jobs:</p>
 <pre><code class="hljs language-sh">curl \
-  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
 </code></pre>
 <p>Where <code>my-account-id</code> is your account ID, that you can find for example
 in the <strong>Workers &amp; Pages &gt; Overview</strong> page on the right.</p>
 <p>To create a job:</p>
 <pre><code class="hljs language-sh">curl \
-  -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-  -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-  <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
-  --data <span class="hljs-string">&#x27;{
+    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
+    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
+    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
+    --data <span class="hljs-string">&#x27;{
   &quot;name&quot;: &quot;test&quot;,
   &quot;output_options&quot;: {
     &quot;field_names&quot;: [&quot;DispatchNamespace&quot;, &quot;Entrypoint&quot;, &quot;Event&quot;, &quot;EventTimestampMs&quot;, &quot;EventType&quot;, &quot;Exceptions&quot;, &quot;Logs&quot;, &quot;Outcome&quot;, &quot;ScriptName&quot;, &quot;ScriptTags&quot;, &quot;ScriptVersion&quot;],
@@ -2469,66 +2590,6 @@ an avalanche training soon so I can go back to the backcountry safely.</p>
 publish skiing videos! I didn’t want to flood the main channel with
 skiing stuff since it’s mostly focused on music in the first place. Go
 subscribe!</p>
-]]></content>
-  </entry>
-  <entry>
-    <title>Branch Verve office chair: make it taller!</title>
-    <link href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html" />
-    <id>https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html</id>
-    <updated>2023-07-28T04:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I recently bought the <a href="https://www.branchfurniture.ca/products/verve-chair">Verve chair</a>
-by Branch as an upgrade for my office. It was quite pricey, but not
-Herman Miller pricey, and it’s really comfortable.</p>
-<p>Before that, I was sitting on the <a href="https://www.ikea.com/ca/en/p/jaervfjaellet-office-chair-with-armrests-grann-white-70521855/">JÄRVFJÄLLET chair from Ikea</a>,
-and to be fair, for half the price of the Verve chair, it was easily 80%
-of the comfort. I had no trouble sitting on it all day long, and that’s
-even without putting the armrests because I like to play guitar!</p>
-<p><strong>Anyways, I’ve had only one complaint about the Verve chair: it’s too
-short!</strong> Its highest setting is still pretty low, and that just doesn’t
-cut it for 1. me being a tall guy and 2. my workstation being a tad
-higher than your typical office desk.</p>
-<p>Quite a number of reviews did mention that issue, but you know how it
-is, I only searched the reviews for that particular problem once I
-encountered it. 😬</p>
-<h2 id="how-to-make-the-chair-taller" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html#how-to-make-the-chair-taller"><span>How to make the chair taller</span></a></h2>
-<p>As far as I know, this is gonna be applicable to pretty much any office
-chair. <strong>The best thing you can do is replace the gas cylinder for a
-taller one.</strong></p>
-<p>Luckily, this seems to be standard, and the Verve chair was no
-exception. I’ve got <a href="https://amzn.to/455kzjv">one off Amazon</a>. Pretty
-much any replacement ones I browsed through were taller than the one
-that came with the chair, and tall enough for me. Double check the size
-for your particular situation though!</p>
-<p>In order to replace the cylinder, I also had to buy a
-<a href="https://amzn.to/44BRIDD">mallet</a> in order to pop the old one out
-without damaging it. (Really, get a mallet if you don’t have one, I
-struggled pretty hard with a hammer and couldn’t get it out, then a
-single tap with the mallet once I got it got the job done.)</p>
-<p>I’ve also got some <a href="https://amzn.to/3Y9d3lr">replacement casters with brakes</a>
-because <a href="https://www.codejam.info/2021/01/ikea-office-chair-lock-wheels-uneven-floor.html">my floor is still slanted</a>.
-If even with a new cylinder your chair is not tall enough, you can
-consider getting some those <a href="https://amzn.to/3OxpnbT">rollerblade-style casters</a>
-that are gonna be taller than standard wheels, and apparently have a
-bunch of advantages like not damaging floors, working better on carpets,
-and being smoother in general, and obviously a sick look. Although I
-didn’t get to try them yet.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2023/07/branch-verve-office-chair-taller.html#conclusion"><span>Conclusion</span></a></h2>
-<figure class="center">
-  <img alt="Verve chair in my office" src="https://www.codejam.info/img/2023/07/verve/chair.jpg">
-</figure>
-<p>In the beginning I was so disappointed to find that I couldn’t use my
-brand new chair because it was too short, but at the end of the day it
-was actually pretty easy to fix. A $30 replacement gas cylinder and a
-cheap mallet got the job done in no time.</p>
-<p>That being said, given the price of the chair,  I wish I didn’t have to
-go through that extra trouble.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
 ]]></content>
   </entry>
 </feed>

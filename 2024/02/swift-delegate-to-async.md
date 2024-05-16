@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1790906284444913979
+---
+
 # Swift: convert a delegate to async
 February 4, 2024
 

@@ -1,3 +1,7 @@
+---
+tweet: https://twitter.com/valeriangalliat/status/1790906279852204042
+---
+
 # How to sign and notarize an Electron app for macOS
 May 15, 2024
 

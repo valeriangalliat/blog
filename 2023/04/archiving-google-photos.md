@@ -178,7 +178,7 @@ first place.
 
 ```sh
 mkdir -p /Volumes/Archive/Phone
-cp -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} /Volumes/Archive/Phone
+cp -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} /Volumes/Archive/Phone
 ```
 
 If the target directory already exists, this will append new files to it
@@ -283,7 +283,7 @@ It should match the number of files deleted from Google Photos earlier.
 We can also one last check:
 
 ```sh
-find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \) | wc -l
+find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \) | wc -l
 ```
 
 This should match the number of photos _currently_ on Google Photos (if

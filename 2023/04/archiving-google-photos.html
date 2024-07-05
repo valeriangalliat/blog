@@ -160,7 +160,7 @@ directory (but copying from Finder also works). Here I’m only copying
 the directories I configured to be backed up to Google Photos in the
 first place.</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> -p /Volumes/Archive/Phone
-<span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} /Volumes/Archive/Phone
+<span class="hljs-built_in">cp</span> -a /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} /Volumes/Archive/Phone
 </code></pre>
 <p>If the target directory already exists, this will append new files to it
 (and overwrite them if a file already exists there)!</p>
@@ -231,7 +231,7 @@ Photos (and from the phone).</p>
 </code></pre>
 <p>It should match the number of files deleted from Google Photos earlier.</p>
 <p>We can also one last check:</p>
-<pre><code class="hljs language-sh">find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Downloads} \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) | <span class="hljs-built_in">wc</span> -l
+<pre><code class="hljs language-sh">find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) | <span class="hljs-built_in">wc</span> -l
 </code></pre>
 <p>This should match the number of photos <em>currently</em> on Google Photos (if
 you kept any).</p>

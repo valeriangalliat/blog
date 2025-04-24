@@ -35,14 +35,14 @@ out that there's a **API Monitoring** section on Algolia where we can
 
 In my case the errors were:
 
-```
+```json
 {
   "message": "Record at the position ... objectID=... is too big size=.../10000 bytes. Please have a look at https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/#record-size-limits",
   "status": 400
 }
 ```
 
-```
+```json
 {
   "message": "You have exceeded your Record quota. You’ll need to change your plan for more capacity, or delete records. See more details at https://www.algolia.com/account/billing/details?applicationId=...",
   "status": 403

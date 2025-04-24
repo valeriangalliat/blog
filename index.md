@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-bugger-logs-github-actions.md) <small>April 23, 2025</small>
 * [Firestore Algolia full index operation error 400 or 403](2025/04/firestore-algolia-full-index-error.md) <small>April 23, 2025</small>
 * [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
 * [How to use Electron auto updater ⚛️](2024/05/how-to-use-electron-auto-updater.md) <small>May 15, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [PostgreSQL: swap tables with dependent views](2024/05/postgresql-swap-tables-dependent-views.md) <small>May 4, 2024</small>
 * [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
 * [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>
-* [Swift: detect space (virtual desktop) changes](2024/05/swift-detect-space-virtual-desktop-changes.md) <small>May 4, 2024</small>
 
 [All the posts](posts.md)
 

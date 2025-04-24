@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Turborepo: don’t buffer logs on GitHub Actions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Turborepo: don’t buffer logs on GitHub Actions">
+  <meta property="og:description" content="When using turbo run inside a GitHub workflow, Turborepo buffers the logs by package so it’s all neatly sorted in the output.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Turborepo: don’t buffer logs on GitHub Actions</h1>
+<p class="date">April 23, 2025</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>When using <code>turbo run</code> inside a GitHub workflow, Turborepo buffers the
+logs by package so it’s all neatly sorted in the output.</p>
+<p>This is a nice feature when you’re looking at the logs after a run is
+completed.</p>
+<p>However when you’re trying to debug a timing-based issue <em>live</em>, this
+makes it really annoying because the logs are buffered the entire time
+the process runs and only spit out at the end! And then we can’t see
+which package logged what first because the logs got grouped by package
+instead of being in a merged stream.</p>
+<p>I ended up dissecting the source of Turborepo to figure out what causes
+this behavior inside GitHub Actions. <a href="https://github.com/vercel/turborepo/blob/90369bd86cd11ae59d5f94f60bcdbe49313d065f/crates/turborepo-ci/src/vendors.rs#L262-L285">I found it</a>.</p>
+<p>It’s triggered by the <code>GITHUB_ACTIONS</code> environment variable being
+present.</p>
+<p>So running <code>unset GITHUB_ACTIONS</code> before running <code>turbo run</code> turns off
+this behavior!</p>
+<p>In theory that should suffice but I had the following in my notes so
+I’ll also leave it here in case it helps:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">unset</span> $(<span class="hljs-built_in">env</span> | grep RUNNER | <span class="hljs-built_in">cut</span> -d= -f1)
+<span class="hljs-built_in">unset</span> $(<span class="hljs-built_in">env</span> | grep GITHUB | <span class="hljs-built_in">cut</span> -d= -f1)
+</code></pre>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2025/04/turborepo-bugger-logs-github-actions.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

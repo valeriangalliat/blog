@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Firestore Algolia full index operation error 400 or 403</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20230317.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Firestore Algolia full index operation error 400 or 403">
+  <meta property="og:description" content="I was testing a change to the Algolia setup in a staging environment and needed to perform a full index.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="https://photography.codejam.info/">Photography</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Firestore Algolia full index operation error 400 or 403</h1>
+<p class="date">April 23, 2025</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I was testing a change to the Algolia setup in a staging environment and
+needed to perform a full index.</p>
+<h2 id="triggering-a-full-index" tabindex="-1"><a class="header-anchor" href="#triggering-a-full-index"><span>Triggering a full index</span></a></h2>
+<p>BTW to trigger a full index, either change the Algolia extension config
+from the Firebase console, and make sure that the <strong>Full Index existing
+documents</strong> field is set to true.</p>
+<p>If it’s already on true (so that won’t trigger an actual config change)
+and you don’t want to change anything else in the config, you can set it
+to false, wait 5 minutes for it to deploy, then set it to true again
+(lol). Or, better, go in Google Cloud Console, in Cloud Task, and for
+the <code>ext-firestore-algolia-search-executeFullIndexOperation</code> task queue,
+select <strong>Actions &gt; Force a task run</strong>.</p>
+<h2 id="errors-during-full-index" tabindex="-1"><a class="header-anchor" href="#errors-during-full-index"><span>Errors during full index</span></a></h2>
+<p>I was looking at the
+<code>ext-firestore-algolia-search-executeFullIndexOperation</code> Cloud Function
+logs to monitor the index operation, and after a few minutes it choked
+with a 400 error (but I’ve also seen 403).</p>
+<p>The logs are really unhelpful because the request body gets logged
+entirely first, but in my case it’s too big truncates the log line, and
+so if this function logs the response body (which I’m not even sure),
+it’s not accessible because the line got truncated in the request part.</p>
+<p>It took me longer than I’m willing to admit to figure that, but I found
+out that there’s a <strong>API Monitoring</strong> section on Algolia where we can
+<strong>Search API Logs</strong> and I could see the 400 and 403 errors there!</p>
+<p>In my case the errors were:</p>
+<pre><code class="hljs">{
+  &quot;message&quot;: &quot;Record at the position ... objectID=... is too big size=.../10000 bytes. Please have a look at https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/#record-size-limits&quot;,
+  &quot;status&quot;: 400
+}
+</code></pre>
+<pre><code class="hljs">{
+  &quot;message&quot;: &quot;You have exceeded your Record quota. You’ll need to change your plan for more capacity, or delete records. See more details at https://www.algolia.com/account/billing/details?applicationId=...&quot;,
+  &quot;status&quot;: 403
+}
+</code></pre>
+<p>That’s much more useful.</p>
+<p>Turns out my staging env had too many records already for its plan (free
+plan) so I couldn’t sync more during the full index, and in another case
+the record I was trying to write was too big for the free plan max
+record size.</p>
+<p>I wasn’t having the error in prod because we use a paid plan there.</p>
+<p>So the solution was simple. Upgrade staging to a paid plan so I can do
+my testing!</p>
+<p>After that I triggered a full index again and it worked just fine. 🙏</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2025/04/firestore-algolia-full-index-error.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

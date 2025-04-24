@@ -5,10 +5,68 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2024-05-16T00:46:50.327Z</updated>
+  <updated>2025-04-24T02:01:07.070Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Firestore Algolia full index operation error 400 or 403</title>
+    <link href="https://www.codejam.info/2025/04/firestore-algolia-full-index-error.html" />
+    <id>https://www.codejam.info/2025/04/firestore-algolia-full-index-error.html</id>
+    <updated>2025-04-23T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I was testing a change to the Algolia setup in a staging environment and
+needed to perform a full index.</p>
+<h2 id="triggering-a-full-index" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2025/04/firestore-algolia-full-index-error.html#triggering-a-full-index"><span>Triggering a full index</span></a></h2>
+<p>BTW to trigger a full index, either change the Algolia extension config
+from the Firebase console, and make sure that the <strong>Full Index existing
+documents</strong> field is set to true.</p>
+<p>If it’s already on true (so that won’t trigger an actual config change)
+and you don’t want to change anything else in the config, you can set it
+to false, wait 5 minutes for it to deploy, then set it to true again
+(lol). Or, better, go in Google Cloud Console, in Cloud Task, and for
+the <code>ext-firestore-algolia-search-executeFullIndexOperation</code> task queue,
+select <strong>Actions &gt; Force a task run</strong>.</p>
+<h2 id="errors-during-full-index" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2025/04/firestore-algolia-full-index-error.html#errors-during-full-index"><span>Errors during full index</span></a></h2>
+<p>I was looking at the
+<code>ext-firestore-algolia-search-executeFullIndexOperation</code> Cloud Function
+logs to monitor the index operation, and after a few minutes it choked
+with a 400 error (but I’ve also seen 403).</p>
+<p>The logs are really unhelpful because the request body gets logged
+entirely first, but in my case it’s too big truncates the log line, and
+so if this function logs the response body (which I’m not even sure),
+it’s not accessible because the line got truncated in the request part.</p>
+<p>It took me longer than I’m willing to admit to figure that, but I found
+out that there’s a <strong>API Monitoring</strong> section on Algolia where we can
+<strong>Search API Logs</strong> and I could see the 400 and 403 errors there!</p>
+<p>In my case the errors were:</p>
+<pre><code class="hljs">{
+  &quot;message&quot;: &quot;Record at the position ... objectID=... is too big size=.../10000 bytes. Please have a look at https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/#record-size-limits&quot;,
+  &quot;status&quot;: 400
+}
+</code></pre>
+<pre><code class="hljs">{
+  &quot;message&quot;: &quot;You have exceeded your Record quota. You’ll need to change your plan for more capacity, or delete records. See more details at https://www.algolia.com/account/billing/details?applicationId=...&quot;,
+  &quot;status&quot;: 403
+}
+</code></pre>
+<p>That’s much more useful.</p>
+<p>Turns out my staging env had too many records already for its plan (free
+plan) so I couldn’t sync more during the full index, and in another case
+the record I was trying to write was too big for the free plan max
+record size.</p>
+<p>I wasn’t having the error in prod because we use a paid plan there.</p>
+<p>So the solution was simple. Upgrade staging to a paid plan so I can do
+my testing!</p>
+<p>After that I triggered a full index again and it worked just fine. 🙏</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>How to sign and notarize an Electron app for macOS</title>
     <link href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html" />
@@ -2518,264 +2576,6 @@ some <code>@babel/runtime</code> imports), so I couldn’t go with that.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1759280799852179929">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Identify the current system cursor in Swift</title>
-    <link href="https://www.codejam.info/2024/02/current-system-cursor-swift.html" />
-    <id>https://www.codejam.info/2024/02/current-system-cursor-swift.html</id>
-    <updated>2024-02-04T08:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Let’s say for some reason you have a Swift app, and you want to know
-what’s the currently displayed macOS cursor (even when the cursor is
-outside of your app).</p>
-<p>Well, it’s tricker than you would expect.</p>
-<h2 id="exploring-nscursor-currentsystem" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/02/current-system-cursor-swift.html#exploring-nscursor-currentsystem"><span>Exploring <code>NSCursor.currentSystem</code></span></a></h2>
-<p>AppKit do expose <a href="https://developer.apple.com/documentation/appkit/nscursor/1533611-currentsystem"><code>NSCursor.currentSystem</code></a>
-that returns a <code>NSCursor</code> instance for the current system:</p>
-<blockquote>
-<p>This method returns the current system cursor regardless of which
-application set the cursor, and whether Cocoa or Carbon APIs were used
-to set it.</p>
-</blockquote>
-<p>However, there’s no property on <code>NScursor</code> that lets it identify itself,
-e.g. a <code>NSCursor</code> instance doesn’t <em>claim</em> to be a <code>NSCursor.arrow</code> or
-<code>NSCursor.iBeam</code> or whatnot. You only get a hot spot point and the
-cursor pixel data.</p>
-<p>One would think we can test <code>NSCursor.currentSystem</code> against all the
-known cursors to know which one is used, e.g.: <code>NSCursor.currentSystem == NSCursor.arrow</code>.</p>
-<p>But this doesn’t work, because of a key detail. The return value of
-<code>NSCursor.currentSystem</code> is:</p>
-<blockquote>
-<p>A cursor whose image and hot spot match those of the
-currently-displayed cursor on the system.</p>
-</blockquote>
-<p>This is important, because while the hot spot and image data will indeed
-match that of the current cursor, the implicit part is that the
-<em>reference</em> of that <code>NSCursor</code> object will differ.</p>
-<p>Actually, every time I access <code>NSCursor.currentSystem</code> I get a different
-<code>NSCursor</code> reference:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;currentSystem&quot;</span>, <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;currentSystem&quot;</span>, <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;currentSystem&quot;</span>, <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;arrow&quot;</span>, <span class="hljs-type">NSCursor</span>.arrow)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;arrow&quot;</span>, <span class="hljs-type">NSCursor</span>.arrow)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;arrow&quot;</span>, <span class="hljs-type">NSCursor</span>.arrow)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;iBeam&quot;</span>, <span class="hljs-type">NSCursor</span>.iBeam)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;iBeam&quot;</span>, <span class="hljs-type">NSCursor</span>.iBeam)
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;iBeam&quot;</span>, <span class="hljs-type">NSCursor</span>.iBeam)
-  }
-}
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
-
-app.delegate <span class="hljs-operator">=</span> delegate
-app.run()
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> to run this, put it in a file e.g. <code>test.swift</code> and run with
-<code>swift test.swift</code>.</p>
-<p>Or <a href="https://github.com/apple/swift/issues/68785#issuecomment-1904624571">at the time of writing</a>:</p>
-<pre><code class="hljs language-sh">DYLD_FRAMEWORK_PATH=/System/Library/Frameworks /Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swift test.swift
-</code></pre>
-<p>Otherwise it currently fails with:</p>
-<pre><code class="hljs">JIT session error: Symbols not found: [ _OBJC_CLASS_$_NSCursor, _OBJC_CLASS_$_NSApplication ]
-</code></pre>
-</div>
-<pre><code class="hljs">currentSystem &lt;NSCursor: 0x600003f001b0&gt;
-currentSystem &lt;NSCursor: 0x600003f04a20&gt;
-currentSystem &lt;NSCursor: 0x600003f7f1e0&gt;
-arrow &lt;NSCursor: 0x600003f7cab0&gt;
-arrow &lt;NSCursor: 0x600003f7cab0&gt;
-arrow &lt;NSCursor: 0x600003f7cab0&gt;
-iBeam &lt;NSCursor: 0x600003f7cb40&gt;
-iBeam &lt;NSCursor: 0x600003f7cb40&gt;
-iBeam &lt;NSCursor: 0x600003f7cb40&gt;
-</code></pre>
-<p>We can see the <code>currentSystem</code> cursor is a different object reference
-every time it’s accessed, while <code>arrow</code> and <code>iBeam</code> are constant.</p>
-<p>So we can’t identify the system cursor by comparing references. Bummer.</p>
-<h2 id="going-creative" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/02/current-system-cursor-swift.html#going-creative"><span>Going creative</span></a></h2>
-<p>Well if we can’t compare references, then we need to do with whatever it
-is that we have: a hot spot point and pixel data.</p>
-<p>Actually, we can probably get away with just the pixel data: since
-conveniently the
-<a href="https://developer.apple.com/documentation/foundation/data"><code>Data</code></a> type
-is already
-<a href="https://developer.apple.com/documentation/swift/hashable"><code>Hashable</code></a>,
-we can simply stuff all the known cursors image data in a dictionary,
-and try and identify the <code>currentSystem</code> cursor that way:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-keyword">let</span> cursors: [<span class="hljs-type">String</span>: <span class="hljs-type">NSCursor</span>] <span class="hljs-operator">=</span> [
-      <span class="hljs-string">&quot;arrow&quot;</span>: .arrow,
-      <span class="hljs-string">&quot;iBeam&quot;</span>: .iBeam,
-      <span class="hljs-string">&quot;crosshair&quot;</span>: .crosshair,
-      <span class="hljs-string">&quot;closedHand&quot;</span>: .closedHand,
-      <span class="hljs-string">&quot;openHand&quot;</span>: .openHand,
-      <span class="hljs-string">&quot;pointingHand&quot;</span>: .pointingHand,
-      <span class="hljs-string">&quot;resizeLeft&quot;</span>: .resizeLeft,
-      <span class="hljs-string">&quot;resizeRight&quot;</span>: .resizeRight,
-      <span class="hljs-string">&quot;resizeLeftRight&quot;</span>: .resizeLeftRight,
-      <span class="hljs-string">&quot;resizeUp&quot;</span>: .resizeUp,
-      <span class="hljs-string">&quot;resizeDown&quot;</span>: .resizeDown,
-      <span class="hljs-string">&quot;resizeUpDown&quot;</span>: .resizeUpDown,
-      <span class="hljs-string">&quot;disappearingItem&quot;</span>: .disappearingItem,
-      <span class="hljs-string">&quot;iBeamCursorForVerticalLayout&quot;</span>: .iBeamCursorForVerticalLayout,
-      <span class="hljs-string">&quot;operationNotAllowed&quot;</span>: .operationNotAllowed,
-      <span class="hljs-string">&quot;dragLink&quot;</span>: .dragLink,
-      <span class="hljs-string">&quot;dragCopy&quot;</span>: .dragCopy,
-      <span class="hljs-string">&quot;contextualMenu&quot;</span>: .contextualMenu,
-    ]
-
-    <span class="hljs-keyword">var</span> index: [<span class="hljs-type">Data</span>: <span class="hljs-type">String</span>] <span class="hljs-operator">=</span> [:]
-
-    <span class="hljs-keyword">for</span> (name, cursor) <span class="hljs-keyword">in</span> cursors {
-      <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> cursor.image.tiffRepresentation {
-        index[image] <span class="hljs-operator">=</span> name
-      }
-    }
-
-    <span class="hljs-type">Timer</span>.scheduledTimer(
-      withTimeInterval: <span class="hljs-number">1</span>, repeats: <span class="hljs-literal">true</span>,
-      block: { <span class="hljs-keyword">_</span> <span class="hljs-keyword">in</span>
-        <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> index[<span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">?</span>.image.tiffRepresentation <span class="hljs-operator">??</span> <span class="hljs-type">Data</span>()] {
-          <span class="hljs-built_in">print</span>(cursor)
-        } <span class="hljs-keyword">else</span> {
-          <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Not found&quot;</span>)
-        }
-      })
-  }
-}
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
-
-app.delegate <span class="hljs-operator">=</span> delegate
-app.run()
-</code></pre>
-<p>In my experience, this does great at identifying <code>arrow</code>, <code>pointingHand</code>
-and <code>iBeam</code>. I don’t see the other default cursors used that much at
-all.</p>
-<p>And then other macOS UI elements use cursors that are not exposed
-through <code>NSCursor</code>. The crosshair from the native screen capture tool is
-not the same as <code>NSCursor.crosshair</code>, and the camera from the window
-selection of that same tool is not exposed either. As for window
-resizing cursors, they’re different from the ones exposed in
-<code>NSCursor.resize*</code>.</p>
-<p>Either way, this get the job done the vast majority of the time!</p>
-<p>We can go a step further by hooking this up to a
-<a href="https://developer.apple.com/documentation/appkit/nsresponder/1525114-mousemoved"><code>mouseMoved</code></a>
-event:</p>
-<pre><code class="hljs language-swift"><span class="hljs-type">NSEvent</span>.addGlobalMonitorForEvents(matching: [.mouseMoved]) { <span class="hljs-keyword">_</span> <span class="hljs-keyword">in</span>
-  <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> index[<span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">?</span>.image.tiffRepresentation <span class="hljs-operator">??</span> <span class="hljs-type">Data</span>()] {
-    <span class="hljs-built_in">print</span>(cursor)
-  } <span class="hljs-keyword">else</span> {
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Not found&quot;</span>)
-  }
-}
-</code></pre>
-<p>This works quite well, but hashing the <code>currentSystem</code> cursor image data
-on every mouse moved event (they can happen at quite a high rate) sounds
-a bit aggressive.</p>
-<p>If I was gonna use that code, I would probably debounce the events to
-every 200 ms or so prior to resolving the cursor to avoid spending that
-much CPU cycles computing hashes of the same image that just happens to
-have a different <code>NSCursor</code> object reference. This will introduce a bit
-of inaccuracy around cursor transitions but depending on your
-application, this may or may not be a problem.</p>
-<h2 id="aggressive-optimizing" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/02/current-system-cursor-swift.html#aggressive-optimizing"><span>Aggressive optimizing</span></a></h2>
-<p>The above to work quite well, but even though I didn’t bother
-benchmarking it, the mechanism of it makes me slightly uneasy about the
-performance (although the debounce would help a lot).</p>
-<p>However, if we take a step back, we can use a different approach that is
-much easier from a computing perspective.</p>
-<p>We noticed that in most cases, the only 3 cursors we’ll run into are
-arrow, pointing hand and I-beam. Luckily, they all have a different TIFF
-image size!</p>
-<pre><code class="hljs language-swift"><span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;arrow&quot;</span>, <span class="hljs-type">NSCursor</span>.arrow.image.tiffRepresentation<span class="hljs-operator">!</span>.count)
-<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;pointingHand&quot;</span>, <span class="hljs-type">NSCursor</span>.pointingHand.image.tiffRepresentation<span class="hljs-operator">!</span>.count)
-<span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;iBeam&quot;</span>, <span class="hljs-type">NSCursor</span>.iBeam.image.tiffRepresentation<span class="hljs-operator">!</span>.count)
-</code></pre>
-<pre><code class="hljs">arrow 204152
-pointingHand 20892
-iBeam 85056
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> I say luckily, because many of the standard cursors actually
-have the same image byte size, as seen here:</p>
-<pre><code class="hljs">11932 crosshair
-11932 resizeDown
-11932 resizeLeft
-11932 resizeLeftRight
-11932 resizeRight
-11932 resizeUp
-11932 resizeUpDown
-204152 arrow
-20892 closedHand
-20892 openHand
-20892 pointingHand
-22812 contextualMenu
-22812 disappearingItem
-22812 dragCopy
-22812 operationNotAllowed
-6172 iBeamCursorForVerticalLayout
-7132 dragLink
-85056 iBeam
-</code></pre>
-<p>In fact, <code>arrow</code> and <code>iBeam</code> are unique in that aspect! So all we have
-to be fine with is <code>closedHand</code> and <code>openHand</code> being mistaken for
-<code>pointingHand</code>, which is probably fine, especially <code>openHand</code> and
-<code>closeHand</code> are seldom if ever used.</p>
-</div>
-<p>We can then simplify the earlier example to:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
-
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-keyword">let</span> cursors: [<span class="hljs-type">String</span>: <span class="hljs-type">NSCursor</span>] <span class="hljs-operator">=</span> [
-      <span class="hljs-string">&quot;arrow&quot;</span>: .arrow,
-      <span class="hljs-string">&quot;iBeam&quot;</span>: .iBeam,
-      <span class="hljs-string">&quot;pointingHand&quot;</span>: .pointingHand,
-    ]
-
-    <span class="hljs-keyword">var</span> index: [<span class="hljs-type">Int</span>: <span class="hljs-type">String</span>] <span class="hljs-operator">=</span> [:]
-
-    <span class="hljs-keyword">for</span> (name, cursor) <span class="hljs-keyword">in</span> cursors {
-      <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> image <span class="hljs-operator">=</span> cursor.image.tiffRepresentation {
-        index[image.count] <span class="hljs-operator">=</span> name
-      }
-    }
-
-    <span class="hljs-type">NSEvent</span>.addGlobalMonitorForEvents(matching: [.mouseMoved]) { <span class="hljs-keyword">_</span> <span class="hljs-keyword">in</span>
-      <span class="hljs-keyword">if</span> <span class="hljs-keyword">let</span> cursor <span class="hljs-operator">=</span> index[<span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">?</span>.image.tiffRepresentation<span class="hljs-operator">?</span>.count <span class="hljs-operator">??</span> <span class="hljs-number">0</span>] {
-        <span class="hljs-built_in">print</span>(cursor)
-      } <span class="hljs-keyword">else</span> {
-        <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Not found&quot;</span>)
-      }
-    }
-  }
-}
-
-<span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
-<span class="hljs-keyword">let</span> delegate <span class="hljs-operator">=</span> <span class="hljs-type">AppDelegate</span>()
-
-app.delegate <span class="hljs-operator">=</span> delegate
-app.run()
-</code></pre>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1790906282737840267">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

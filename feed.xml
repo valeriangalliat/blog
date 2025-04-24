@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2025-04-24T02:01:07.070Z</updated>
+  <updated>2025-04-24T02:06:17.512Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -39,15 +39,15 @@ it’s not accessible because the line got truncated in the request part.</p>
 out that there’s a <strong>API Monitoring</strong> section on Algolia where we can
 <strong>Search API Logs</strong> and I could see the 400 and 403 errors there!</p>
 <p>In my case the errors were:</p>
-<pre><code class="hljs">{
-  &quot;message&quot;: &quot;Record at the position ... objectID=... is too big size=.../10000 bytes. Please have a look at https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/#record-size-limits&quot;,
-  &quot;status&quot;: 400
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;Record at the position ... objectID=... is too big size=.../10000 bytes. Please have a look at https://www.algolia.com/doc/guides/sending-and-managing-data/prepare-your-data/in-depth/index-and-records-size-and-usage-limitations/#record-size-limits&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">400</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
-<pre><code class="hljs">{
-  &quot;message&quot;: &quot;You have exceeded your Record quota. You’ll need to change your plan for more capacity, or delete records. See more details at https://www.algolia.com/account/billing/details?applicationId=...&quot;,
-  &quot;status&quot;: 403
-}
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;You have exceeded your Record quota. You’ll need to change your plan for more capacity, or delete records. See more details at https://www.algolia.com/account/billing/details?applicationId=...&quot;</span><span class="hljs-punctuation">,</span>
+  <span class="hljs-attr">&quot;status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">403</span>
+<span class="hljs-punctuation">}</span>
 </code></pre>
 <p>That’s much more useful.</p>
 <p>Turns out my staging env had too many records already for its plan (free

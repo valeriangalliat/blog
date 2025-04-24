@@ -6,6 +6,10 @@ excerpt: All the posts I've written so far.
 
 <div class="links posts">
 
+## 2025
+
+* [Firestore Algolia full index operation error 400 or 403](2025/04/firestore-algolia-full-index-error.md) <small>April 23, 2025</small>
+
 ## 2024
 
 * [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>

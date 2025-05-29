@@ -162,7 +162,7 @@ so it should be no big deal. 😎</p>
 <p>First let’s start with the base of the worker, including decompressing
 the body:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
-  <span class="hljs-keyword">async</span> fetch (request) {
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">fetch</span> (request) {
     <span class="hljs-keyword">if</span> (request.<span class="hljs-property">method</span> !== <span class="hljs-string">&#x27;POST&#x27;</span>) {
       <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-string">&#x27;&#x27;</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">405</span> })
     }

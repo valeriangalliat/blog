@@ -170,18 +170,18 @@ vim /mnt/etc/nixos/configuration.nix
 {
   <span class="hljs-comment"># ...</span>
 
-  <span class="hljs-attr">networking</span> = {
-    <span class="hljs-attr">hostName</span> = <span class="hljs-string">&quot;{{ HOSTNAME }}&quot;</span>;
+  <span class="hljs-attr">networking</span> <span class="hljs-operator">=</span> {
+    <span class="hljs-attr">hostName</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;{{ HOSTNAME }}&quot;</span>;
 
-    interfaces.{{ NETIF }} = {
-      <span class="hljs-attr">ip4</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">&quot;{{ IPV4_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV4_NETMASK }}; } ];
-      <span class="hljs-attr">ip6</span> = [ { <span class="hljs-attr">address</span> = <span class="hljs-string">&quot;{{ IPV6_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> = {{ IPV6_NETMASK }}; } ];
+    interfaces.{{ NETIF }} <span class="hljs-operator">=</span> {
+      <span class="hljs-attr">ip4</span> <span class="hljs-operator">=</span> [ { <span class="hljs-attr">address</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;{{ IPV4_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> <span class="hljs-operator">=</span> {{ IPV4_NETMASK }}; } ];
+      <span class="hljs-attr">ip6</span> <span class="hljs-operator">=</span> [ { <span class="hljs-attr">address</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;{{ IPV6_ADDR }}&quot;</span>; <span class="hljs-attr">prefixLength</span> <span class="hljs-operator">=</span> {{ IPV6_NETMASK }}; } ];
     };
 
-    <span class="hljs-attr">defaultGateway</span> = <span class="hljs-string">&quot;{{ IPV4_GW }}&quot;</span>;
-    <span class="hljs-attr">defaultGateway6</span> = <span class="hljs-string">&quot;{{ IPV6_GW }}&quot;</span>;
+    <span class="hljs-attr">defaultGateway</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;{{ IPV4_GW }}&quot;</span>;
+    <span class="hljs-attr">defaultGateway6</span> <span class="hljs-operator">=</span> <span class="hljs-string">&quot;{{ IPV6_GW }}&quot;</span>;
 
-    <span class="hljs-attr">nameservers</span> = [ <span class="hljs-string">&quot;{{ IPV4_DNS }}&quot;</span>, <span class="hljs-string">&quot;{{ IPV6_DNS }}&quot;</span> ];
+    <span class="hljs-attr">nameservers</span> <span class="hljs-operator">=</span> [ <span class="hljs-string">&quot;{{ IPV4_DNS }}&quot;</span>, <span class="hljs-string">&quot;{{ IPV6_DNS }}&quot;</span> ];
   };
 
   <span class="hljs-comment"># ...</span>

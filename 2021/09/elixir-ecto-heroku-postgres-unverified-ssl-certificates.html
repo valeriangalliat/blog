@@ -116,7 +116,7 @@ vulnerabilities.</p>
 <h2 id="muting-this-particular-warning" tabindex="-1"><a class="header-anchor" href="#muting-this-particular-warning"><span>Muting this particular warning</span></a></h2>
 <p><a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl.erl#L2833">As we saw earlier</a>,
 for that warning to show up, we need the SSL connection’s <code>verify</code> to
-be set to <code>verify_none</code>, and the <code>ssl_logger</code>'s level to be configured
+be set to <code>verify_none</code>, and the <code>ssl_logger</code>’s level to be configured
 to show warnings.</p>
 <p>The default value of <code>verify</code> in the <code>ssl</code> module <a href="https://github.com/erlang/otp/blob/896510977b6cf1f2f4ac817394f3d5c9061f92cf/lib/ssl/src/ssl_internal.hrl#L195">is indeed <code>verify_none</code></a>,
 and Ecto doesn’t seem to alter it by default. Also the default

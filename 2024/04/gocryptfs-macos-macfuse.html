@@ -111,7 +111,7 @@ directory (<code>~</code>):</p>
 
 limactl start
 
-lima sudo apt install gocryptfs
+lima <span class="hljs-built_in">sudo</span> apt install gocryptfs
 
 <span class="hljs-comment"># Init in a temp dir because Lima can&#x27;t write to the host filesystem</span>
 lima gocryptfs -init -reverse /tmp/lima
@@ -134,7 +134,7 @@ user. For example:</p>
 <p>We can as easily do the opposite: use SSHFS to mount the remote
 encrypted directory locally, then use gocryptfs to decrypt it and access
 the files transparently.</p>
-<pre><code class="hljs language-sh">lima sudo apt install sshfs
+<pre><code class="hljs language-sh">lima <span class="hljs-built_in">sudo</span> apt install sshfs
 
 lima <span class="hljs-built_in">mkdir</span> -p /tmp/encrypted /tmp/decrypted
 sshfs -o idmap=user <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> /tmp/encrypted

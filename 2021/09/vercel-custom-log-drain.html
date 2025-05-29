@@ -167,7 +167,7 @@ as well as the redirect URL that we defined during creation.</p>
 <span class="hljs-keyword">const</span> fetch = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;node-fetch&#x27;</span>)
 <span class="hljs-keyword">const</span> config = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;./config&#x27;</span>)
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getToken</span> (code) {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getToken</span> (<span class="hljs-params">code</span>) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v2/oauth/access_token&#x27;</span>
 
   <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
@@ -194,7 +194,7 @@ as well as the redirect URL that we defined during creation.</p>
 </code></pre>
 <p>With that token, we can call the log drains endpoint to create a new log
 drain.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createLogDrain</span> (token, body) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createLogDrain</span> (<span class="hljs-params">token, body</span>) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">&#x27;https://api.vercel.com/v1/integrations/log-drains&#x27;</span>
 
   <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(url, {
@@ -217,7 +217,7 @@ as well as redirecting to the <code>next</code> URL at the end.</p>
 
 app.<span class="hljs-title function_">register</span>(formBody)
 
-app.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-keyword">async</span> (req, res) =&gt; {
+app.<span class="hljs-title function_">post</span>(<span class="hljs-string">&#x27;/vercel/callback&#x27;</span>, <span class="hljs-title function_">async</span> (req, res) =&gt; {
   <span class="hljs-keyword">if</span> (!req.<span class="hljs-property">query</span>.<span class="hljs-property">code</span> || !req.<span class="hljs-property">query</span>.<span class="hljs-property">next</span> || !req.<span class="hljs-property">body</span>.<span class="hljs-property">type</span> || !req.<span class="hljs-property">body</span>.<span class="hljs-property">url</span>) {
     <span class="hljs-keyword">return</span> res.<span class="hljs-title function_">code</span>(<span class="hljs-number">400</span>)
   }

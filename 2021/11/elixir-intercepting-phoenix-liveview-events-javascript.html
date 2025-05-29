@@ -72,7 +72,7 @@ in <a href="https://hexdocs.pm/phoenix_live_view/js-interop.html">JavaScript int
   <span class="hljs-attr">params</span>: { <span class="hljs-attr">_csrf_token</span>: csrfToken },
   <span class="hljs-attr">hooks</span>: {
     <span class="hljs-title class_">ElementUpdated</span>: {
-      updated (e) {
+      <span class="hljs-title function_">updated</span> (e) {
         <span class="hljs-variable language_">this</span>.<span class="hljs-property">el</span>.<span class="hljs-title function_">dispatchEvent</span>(<span class="hljs-keyword">new</span> <span class="hljs-title class_">CustomEvent</span>(<span class="hljs-string">&#x27;phx:element-updated&#x27;</span>))
       }
     }
@@ -142,7 +142,7 @@ response from Phoenix, but can also tell from what event it originated!</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> channel = <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">values</span>(liveSocket.<span class="hljs-property">roots</span>)[<span class="hljs-number">0</span>].<span class="hljs-property">channel</span>
 <span class="hljs-keyword">const</span> pushImpl = channel.<span class="hljs-property">push</span>
 
-channel.<span class="hljs-property">push</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">wrappedPush</span> (event, payload, timeout) {
+channel.<span class="hljs-property">push</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">wrappedPush</span> (<span class="hljs-params">event, payload, timeout</span>) {
   <span class="hljs-keyword">const</span> push = pushImpl.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>, event, payload, timeout)
 
   push.<span class="hljs-title function_">receive</span>(<span class="hljs-string">&#x27;ok&#x27;</span>, <span class="hljs-function"><span class="hljs-params">resp</span> =&gt;</span> {

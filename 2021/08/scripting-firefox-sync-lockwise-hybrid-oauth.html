@@ -299,7 +299,7 @@ from there is not affected, so I won’t include it again here.</p>
 <span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
 <span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(authServerUrl)
 
   <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, {
@@ -341,11 +341,11 @@ from there is not affected, so I won’t include it again here.</p>
 <span class="hljs-keyword">const</span> email = <span class="hljs-string">&#x27;...&#x27;</span>
 <span class="hljs-keyword">const</span> pass = <span class="hljs-string">&#x27;...&#x27;</span>
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (data) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (<span class="hljs-params">data</span>) {
   <span class="hljs-keyword">return</span> <span class="hljs-title class_">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(data, <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)).<span class="hljs-title function_">toString</span>(<span class="hljs-number">10</span>)
 }
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(authServerUrl)
 
   <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, {

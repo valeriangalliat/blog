@@ -187,7 +187,7 @@ authentication, and we’ll leverage the <a href="https://www.npmjs.com/package/
 package to do the heavy lifting.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> <span class="hljs-title class_">Hawk</span> = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;hawk&#x27;</span>)
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">hawkFetch</span> (token, path, params = {}) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">hawkFetch</span> (<span class="hljs-params">token, path, params = {}</span>) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${token.api_endpoint}</span>/<span class="hljs-subst">${path}</span>`</span>
 
   <span class="hljs-keyword">const</span> hawkOptions = {
@@ -232,7 +232,7 @@ effectively making Firefox Sync <a href="https://medium.com/mozilla-tech/how-fir
 </code></pre>
 <div id="derive-sync-key"></div>
 <p>To decrypt them, we need to derive the user Sync key using <a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#sync-key-bundle">HKDF</a>.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">deriveKeys</span> (syncKey) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">deriveKeys</span> (<span class="hljs-params">syncKey</span>) {
   <span class="hljs-keyword">const</span> salt = <span class="hljs-string">&#x27;&#x27;</span>
   <span class="hljs-keyword">const</span> info = <span class="hljs-string">&#x27;identity.mozilla.com/picl/v1/oldsync&#x27;</span>
   <span class="hljs-keyword">const</span> bundle = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">hkdf</span>)(<span class="hljs-string">&#x27;sha256&#x27;</span>, syncKey, salt, info, <span class="hljs-number">64</span>))
@@ -250,7 +250,7 @@ effectively making Firefox Sync <a href="https://medium.com/mozilla-tech/how-fir
 records are <a href="https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#record-encryption">encrypted using AES-256-CBC and signed with HMAC using the respective keys</a>.</p>
 <p>We’ll write a <code>decryptBSO</code> helper, that takes a key bundle and a BSO to
 decrypt, performing HMAC verification at the same time.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">decryptBSO</span> (keyBundle, bso) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">decryptBSO</span> (<span class="hljs-params">keyBundle, bso</span>) {
   <span class="hljs-keyword">const</span> payload = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(bso.<span class="hljs-property">payload</span>)
 
   <span class="hljs-keyword">const</span> hmac = crypto.<span class="hljs-title function_">createHmac</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>, keyBundle.<span class="hljs-property">hmacKey</span>)
@@ -337,7 +337,7 @@ in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwi
 
 <span class="hljs-comment">// Derive the Sync key bundle as documented in &lt;https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#sync-key-bundle&gt;</span>
 <span class="hljs-comment">// in order to fetch the collection key bundles.</span>
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">deriveKeys</span> (syncKey) {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">deriveKeys</span> (<span class="hljs-params">syncKey</span>) {
   <span class="hljs-keyword">const</span> salt = <span class="hljs-string">&#x27;&#x27;</span>
   <span class="hljs-keyword">const</span> info = <span class="hljs-string">&#x27;identity.mozilla.com/picl/v1/oldsync&#x27;</span>
   <span class="hljs-keyword">const</span> bundle = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">promisify</span>(crypto.<span class="hljs-property">hkdf</span>)(<span class="hljs-string">&#x27;sha256&#x27;</span>, syncKey, salt, info, <span class="hljs-number">64</span>))
@@ -350,7 +350,7 @@ in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwi
 
 <span class="hljs-comment">// Decrypt a BSO (basic storage object) previously known as a WBO (Weave basic</span>
 <span class="hljs-comment">// object) according to &lt;https://mozilla-services.readthedocs.io/en/latest/sync/storageformat5.html#record-encryption&gt;.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">decryptBSO</span> (keyBundle, bso) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">decryptBSO</span> (<span class="hljs-params">keyBundle, bso</span>) {
   <span class="hljs-keyword">const</span> payload = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(bso.<span class="hljs-property">payload</span>)
 
   <span class="hljs-keyword">const</span> hmac = crypto.<span class="hljs-title function_">createHmac</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>, keyBundle.<span class="hljs-property">hmacKey</span>)
@@ -378,7 +378,7 @@ in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwi
 <span class="hljs-comment">//</span>
 <span class="hljs-comment">// The token is expected to come from a Sync TokenServer response</span>
 <span class="hljs-comment">// as documented in &lt;https://github.com/mozilla-services/tokenserver#response&gt;.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">hawkFetch</span> (token, path, params = {}) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">hawkFetch</span> (<span class="hljs-params">token, path, params = {}</span>) {
   <span class="hljs-keyword">const</span> url = <span class="hljs-string">`<span class="hljs-subst">${token.api_endpoint}</span>/<span class="hljs-subst">${path}</span>`</span>
 
   <span class="hljs-keyword">const</span> hawkOptions = {
@@ -402,7 +402,7 @@ in this post, then we’ll take a look at <a href="scripting-firefox-sync-lockwi
   }))
 }
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> client = <span class="hljs-keyword">new</span> <span class="hljs-title class_">AuthClient</span>(authServerUrl)
 
   <span class="hljs-keyword">const</span> creds = <span class="hljs-keyword">await</span> client.<span class="hljs-title function_">signIn</span>(email, pass, {

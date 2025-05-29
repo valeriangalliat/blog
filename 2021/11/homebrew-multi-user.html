@@ -150,12 +150,12 @@ Homebrew in its <strong>default location</strong> with a <strong>dedicated user<
 switch to in order to use it.</p>
 <p>Sounds annoying? Just use <code>sudo</code>! While Homebrew
 <a href="https://docs.brew.sh/FAQ#why-does-homebrew-say-sudo-is-bad">documents</a>
-that it &quot;refuses to work using <code>sudo</code>&quot;, this is not exactly true.
+that it “refuses to work using <code>sudo</code>”, this is not exactly true.
 Homebrew refuses to work as root, but you can still use <code>sudo</code> to use it
 as another, non-root user!</p>
 <p>Typically, if you installed Homebrew in its default location from the
 user <code>foo</code>, and now you’re user <code>bar</code> and want to run <code>brew update</code>:</p>
-<pre><code class="hljs language-sh">sudo -Hu foo brew update
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> -Hu foo brew update
 </code></pre>
 <ul>
 <li>The <code>-H</code> option will make sure that the <code>HOME</code> directory is set

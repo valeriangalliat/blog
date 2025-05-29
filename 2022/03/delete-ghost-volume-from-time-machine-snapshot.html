@@ -84,7 +84,7 @@ similar.</p>
 <p>Let’s pretend that your excluded disk is a USB stick, in <code>/Volumes/USB</code>,
 and I’m trying to get rid of the <code>Video</code> directory inside my future backup
 snapshots:</p>
-<pre><code class="hljs language-sh">sudo tmutil associatedisk /Volumes/USB <span class="hljs-string">&quot;/Volumes/{TimeMachineDrive}/Backups.backupdb/{MachineDirectory}/Latest/Video&quot;</span>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> tmutil associatedisk /Volumes/USB <span class="hljs-string">&quot;/Volumes/{TimeMachineDrive}/Backups.backupdb/{MachineDirectory}/Latest/Video&quot;</span>
 </code></pre>
 <p>Now Time Machine thinks that the <code>Video</code> directory is associated with
 <code>/Volumes/USB</code>, which is excluded, and so, it will exclude it from

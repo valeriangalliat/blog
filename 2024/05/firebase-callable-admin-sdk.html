@@ -64,7 +64,7 @@ doesn’t need to exist in Firebase Auth). We can verify that in the
 function:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> functions = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-functions&#x27;</span>)
 
-<span class="hljs-built_in">exports</span>.<span class="hljs-property">myCallableFunction</span> = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onCall</span>(<span class="hljs-keyword">async</span> (data, context) =&gt; {
+<span class="hljs-built_in">exports</span>.<span class="hljs-property">myCallableFunction</span> = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onCall</span>(<span class="hljs-title function_">async</span> (data, context) =&gt; {
   <span class="hljs-keyword">if</span> (!context.<span class="hljs-property">auth</span>) {
     <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
       <span class="hljs-string">&#x27;unauthenticated&#x27;</span>,

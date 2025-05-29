@@ -152,8 +152,8 @@ where we actually have write permission:</p>
 </code></pre>
 <p>Then we can copy <code>etc/vanta.conf</code> and <code>usr/local/vanta</code> to <code>/etc/</code> and
 <code>/usr/local</code> respectively.</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cp</span> etc/vanta.conf /etc
-sudo <span class="hljs-built_in">cp</span> -r usr/local/vanta /usr/local
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> etc/vanta.conf /etc
+<span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cp</span> -r usr/local/vanta /usr/local
 </code></pre>
 <div class="note">
 <p><strong>Note:</strong> OK I lied earlier, we do need <code>root</code> permission for this step.
@@ -166,8 +166,8 @@ software binaries so we can’t easily run it from another location.</p>
 <p>Vanta asserts that some binaries are owned by <code>root</code>, and refuses to run
 otherwise. Once owned by <code>root</code> though, the program runs just fine
 even from a user account.</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/launcher
-sudo <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/osqueryd
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/launcher
+<span class="hljs-built_in">sudo</span> <span class="hljs-built_in">chown</span> root:admin /usr/local/vanta/osqueryd
 </code></pre>
 <p>Then, edit the <code>/etc/vanta.conf</code> file to set your agent key and email.</p>
 <p>Finally we can start the service:</p>
@@ -269,7 +269,7 @@ OS level.</p>
 <p>The good news is that this pinned certificate is stored in
 <code>/usr/local/vanta/cert.pem</code>, and we can just replace it with the
 mitmproxy certificate!</p>
-<pre><code class="hljs language-sh">sudo <span class="hljs-built_in">cat</span> ~/.mitmproxy/mitmproxy-ca-cert.pem &gt; /usr/local/vanta/cert.pem
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">cat</span> ~/.mitmproxy/mitmproxy-ca-cert.pem &gt; /usr/local/vanta/cert.pem
 </code></pre>
 <p>After that, and restarting the service, we should be able to monitor the
 traffic:</p>

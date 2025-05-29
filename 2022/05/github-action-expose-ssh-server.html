@@ -139,7 +139,7 @@ bytes, to be accurate) and terminates the stream as soon as it has
 them.</li>
 </ul>
 <p>This gives us a password that we can set for the current user.</p>
-<pre><code class="hljs language-sh">(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>; <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>) | sudo passwd <span class="hljs-string">&quot;<span class="hljs-variable">$USER</span>&quot;</span>
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>; <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$password</span>&quot;</span>) | <span class="hljs-built_in">sudo</span> passwd <span class="hljs-string">&quot;<span class="hljs-variable">$USER</span>&quot;</span>
 </code></pre>
 <p>We can’t use the <code>passwd</code> command directly because it first prompts us
 for our own current password (which we don’t know), but we have <code>root</code>

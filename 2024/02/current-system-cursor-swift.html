@@ -66,7 +66,7 @@ match that of the current cursor, the implicit part is that the
 <code>NSCursor</code> reference:</p>
 <pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">NSApplicationDelegate</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
     <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;currentSystem&quot;</span>, <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>)
     <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;currentSystem&quot;</span>, <span class="hljs-type">NSCursor</span>.currentSystem<span class="hljs-operator">!</span>)
@@ -121,7 +121,7 @@ we can simply stuff all the known cursors image data in a dictionary,
 and try and identify the <code>currentSystem</code> cursor that way:</p>
 <pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">NSApplicationDelegate</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
     <span class="hljs-keyword">let</span> cursors: [<span class="hljs-type">String</span>: <span class="hljs-type">NSCursor</span>] <span class="hljs-operator">=</span> [
       <span class="hljs-string">&quot;arrow&quot;</span>: .arrow,
@@ -247,7 +247,7 @@ to be fine with is <code>closedHand</code> and <code>openHand</code> being mista
 <p>We can then simplify the earlier example to:</p>
 <pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">NSApplicationDelegate</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">Notification</span>) {
     <span class="hljs-keyword">let</span> cursors: [<span class="hljs-type">String</span>: <span class="hljs-type">NSCursor</span>] <span class="hljs-operator">=</span> [
       <span class="hljs-string">&quot;arrow&quot;</span>: .arrow,

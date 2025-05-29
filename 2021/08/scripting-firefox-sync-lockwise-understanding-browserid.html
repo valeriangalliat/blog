@@ -214,7 +214,7 @@ hexadecimal.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { promisify } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;util&#x27;</span>)
 <span class="hljs-keyword">const</span> crypto = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;crypto&#x27;</span>)
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (data) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">base64to10</span> (<span class="hljs-params">data</span>) {
   <span class="hljs-keyword">return</span> <span class="hljs-title class_">BigInt</span>(<span class="hljs-string">&#x27;0x&#x27;</span> + <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(data, <span class="hljs-string">&#x27;base64&#x27;</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;hex&#x27;</span>)).<span class="hljs-title function_">toString</span>(<span class="hljs-number">10</span>)
 }
 
@@ -460,7 +460,7 @@ the algorithm is unsupported).</p>
 <span class="hljs-keyword">const</span> jwt = njwt.<span class="hljs-title function_">create</span>({ <span class="hljs-attr">aud</span>: tokenServerUrl, <span class="hljs-attr">iss</span>: authServerUrl }, kp.<span class="hljs-property">privateKey</span>, <span class="hljs-string">&#x27;RS256&#x27;</span>)
   .<span class="hljs-title function_">setClaim</span>(<span class="hljs-string">&#x27;exp&#x27;</span>, <span class="hljs-title class_">Date</span>.<span class="hljs-title function_">now</span>() + duration)
 
-jwt.<span class="hljs-property">header</span>.<span class="hljs-property">compact</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">compact</span> () {
+jwt.<span class="hljs-property">header</span>.<span class="hljs-property">compact</span> = <span class="hljs-keyword">function</span> <span class="hljs-title function_">compact</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> alg = <span class="hljs-variable language_">this</span>.<span class="hljs-property">alg</span>
   <span class="hljs-variable language_">this</span>.<span class="hljs-property">alg</span> = <span class="hljs-string">&#x27;DS256&#x27;</span>
   <span class="hljs-keyword">const</span> header = njwt.<span class="hljs-property">JwtHeader</span>.<span class="hljs-property"><span class="hljs-keyword">prototype</span></span>.<span class="hljs-property">compact</span>.<span class="hljs-title function_">call</span>(<span class="hljs-variable language_">this</span>)

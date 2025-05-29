@@ -40,7 +40,7 @@
 to do a screen capture in Swift. We want to response to
 <code>didStartRecordingTo</code> and <code>didFinishRecordingTo</code> “events”, which is done
 through the use of a delegate such as:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">AVCaptureFileOutputRecordingDelegate</span> {
+<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">AVCaptureFileOutputRecordingDelegate</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">fileOutput</span>(<span class="hljs-keyword">_</span>: <span class="hljs-type">AVCaptureFileOutput</span>, <span class="hljs-params">didStartRecordingTo</span> <span class="hljs-keyword">_</span>: <span class="hljs-type">URL</span>, <span class="hljs-params">from</span> <span class="hljs-keyword">_</span>: [<span class="hljs-type">AVCaptureConnection</span>])
   {
     <span class="hljs-comment">// Stuff</span>
@@ -81,7 +81,7 @@ output.stopRecording()
 </code></pre>
 <p>In order to achieve that, we need a bit of plumbing code. Let’s add
 callbacks to our delegate:</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">AVCaptureFileOutputRecordingDelegate</span> {
+<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">RecordingDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">AVCaptureFileOutputRecordingDelegate</span> {
   <span class="hljs-keyword">var</span> didStartRecording: () -&gt; <span class="hljs-type">Void</span> <span class="hljs-operator">=</span> {}
   <span class="hljs-keyword">var</span> didFinishRecording: (<span class="hljs-keyword">_</span> error: <span class="hljs-type">Error</span>?) -&gt; <span class="hljs-type">Void</span> <span class="hljs-operator">=</span> { <span class="hljs-keyword">_</span> <span class="hljs-keyword">in</span> }
 

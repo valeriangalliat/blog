@@ -523,20 +523,20 @@ KDF that performs a single iteration and doesn’t bother trimming the
 output to the desired length.</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
 <span class="hljs-comment">// integer as a buffer.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (number) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (<span class="hljs-params">number</span>) {
   <span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">alloc</span>(<span class="hljs-number">4</span>)
   buffer.<span class="hljs-title function_">writeUInt32BE</span>(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (buffer) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (<span class="hljs-params">buffer</span>) {
   <span class="hljs-keyword">return</span> crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(buffer).<span class="hljs-title function_">digest</span>()
 }
 
 <span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
 <span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
 <span class="hljs-comment">// need matches the hash length.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, otherInfo) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) {
   <span class="hljs-keyword">return</span> <span class="hljs-title function_">sha256</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([<span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">1</span>), key, otherInfo]))
 }
 </code></pre>
@@ -545,7 +545,7 @@ function (I’m not a cryptography expert though so get that properly
 reviewed if you’re going to use it).</p>
 <details>
   <summary>See the implementation</summary>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, keyLengthBits, otherInfo) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (<span class="hljs-params">key, keyLengthBits, otherInfo</span>) {
   <span class="hljs-keyword">const</span> hashLengthBits = <span class="hljs-number">256</span>
   <span class="hljs-keyword">const</span> hashLengthBytes = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(hashLengthBits / <span class="hljs-number">8</span>)
   <span class="hljs-keyword">const</span> keyLengthBytes = <span class="hljs-title class_">Math</span>.<span class="hljs-title function_">ceil</span>(keyLengthBits / <span class="hljs-number">8</span>)
@@ -612,7 +612,7 @@ I ended up with:</p>
 <p><a href="https://github.com/mozilla/send/blob/7130c2e7b05e43cf1a6eb0ea534982f4dff780ea/app/fxa.js#L7">In JavaScript</a>:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> encoder = <span class="hljs-keyword">new</span> <span class="hljs-title class_">TextEncoder</span>()
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtherInfo</span> (enc) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtherInfo</span> (<span class="hljs-params">enc</span>) {
   <span class="hljs-keyword">const</span> name = encoder.<span class="hljs-title function_">encode</span>(enc)
   <span class="hljs-keyword">const</span> length = <span class="hljs-number">256</span>
   <span class="hljs-keyword">const</span> buffer = <span class="hljs-keyword">new</span> <span class="hljs-title class_">ArrayBuffer</span>(name.<span class="hljs-property">length</span> + <span class="hljs-number">16</span>)
@@ -733,24 +733,24 @@ them together, you would get something like this:</p>
 
 <span class="hljs-comment">// For readability, helper to return a big-endian unsigned 32 bits</span>
 <span class="hljs-comment">// integer as a buffer.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (number) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">uint32BE</span> (<span class="hljs-params">number</span>) {
   <span class="hljs-keyword">const</span> buffer = <span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">alloc</span>(<span class="hljs-number">4</span>)
   buffer.<span class="hljs-title function_">writeUInt32BE</span>(number)
   <span class="hljs-keyword">return</span> buffer
 }
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (buffer) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">sha256</span> (<span class="hljs-params">buffer</span>) {
   <span class="hljs-keyword">return</span> crypto.<span class="hljs-title function_">createHash</span>(<span class="hljs-string">&#x27;sha256&#x27;</span>).<span class="hljs-title function_">update</span>(buffer).<span class="hljs-title function_">digest</span>()
 }
 
 <span class="hljs-comment">// Partial implementation of Concat KDF that only does a single</span>
 <span class="hljs-comment">// iteration and no trimming, because the length of the derived key we</span>
 <span class="hljs-comment">// need matches the hash length.</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (key, otherInfo) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">concatKdf</span> (<span class="hljs-params">key, otherInfo</span>) {
   <span class="hljs-keyword">return</span> <span class="hljs-title function_">sha256</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">concat</span>([<span class="hljs-title function_">uint32BE</span>(<span class="hljs-number">1</span>), key, otherInfo]))
 }
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-comment">// To prevent CSRF attacks.</span>
   <span class="hljs-keyword">const</span> state = crypto.<span class="hljs-title function_">randomBytes</span>(<span class="hljs-number">16</span>).<span class="hljs-title function_">toString</span>(<span class="hljs-string">&#x27;base64url&#x27;</span>)
 

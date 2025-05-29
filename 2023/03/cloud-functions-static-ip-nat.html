@@ -195,8 +195,8 @@ functions.<span class="hljs-title function_">runWith</span>({
   <span class="hljs-attr">vpcConnectorEgressSettings</span>: <span class="hljs-string">&#x27;ALL_TRAFFIC&#x27;</span>
 })
   <span class="hljs-comment">// Your actual function, for example</span>
-  .<span class="hljs-property">https</span>.<span class="hljs-title function_">onRequest</span>(<span class="hljs-keyword">async</span> (req, res) =&gt; {
-    response.<span class="hljs-title function_">json</span>(<span class="hljs-keyword">await</span> (<span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;https://api.ipify.org?format=json&#x27;</span>)).<span class="hljs-title function_">json</span>())
+  .<span class="hljs-property">https</span>.<span class="hljs-title function_">onRequest</span>(<span class="hljs-title function_">async</span> (req, res) =&gt; {
+    response.<span class="hljs-title function_">json</span>(<span class="hljs-title function_">await</span> (<span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-string">&#x27;https://api.ipify.org?format=json&#x27;</span>)).<span class="hljs-title function_">json</span>())
   })
 </code></pre>
 <p>And ta-da, you get static IPs! 🎉</p>

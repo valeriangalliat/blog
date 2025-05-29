@@ -217,12 +217,12 @@ time ./myscript-transpile-only.mts
 </code></pre>
 <p>It’s still relatively slow though, considering <a href="https://esbuild.github.io/">esbuild</a>
 takes 15 ms to transpile that file:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time node_modules/.bin/esbuild myscript.mts --target=node16</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">time</span> node_modules/.bin/esbuild myscript.mts --target=node16</span>
 0.01s user 0.01s system 79% cpu 0.014 total
 </code></pre>
 <p>But for a fair comparison, we have to consider that <code>npx</code> adds a 200 ms
 overhead:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time npx esbuild myscript.mts --target=node16</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">time</span> npx esbuild myscript.mts --target=node16</span>
 0.21s user 0.04s system 111% cpu 0.227 total
 </code></pre>
 <h3 id="using-tsx" tabindex="-1"><a class="header-anchor" href="#using-tsx"><span>Using <code>tsx</code></span></a></h3>
@@ -236,7 +236,7 @@ background.</p>
 <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
 </code></pre>
 <p>But we notice it’s not quite fast, it does barely better than <code>ts-node --transpile-only</code>:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">time</span> ./myscript.mts</span>
 0.42s user 0.08s system 120% cpu 0.413 total
 </code></pre>
 <p>There’s <a href="https://github.com/esbuild-kit/tsx/issues/167">an issue open for that</a>,
@@ -266,7 +266,7 @@ node --loader @swc-node/register/esm script.ts <span class="hljs-comment"># ESM<
 <span class="hljs-keyword">await</span> $<span class="hljs-string">`echo ok`</span>
 </code></pre>
 <p>This is the fastest one so far!</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">time ./myscript.mts</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-keyword">time</span> ./myscript.mts</span>
 0.28s user 0.04s system 110% cpu 0.289 total
 </code></pre>
 <p>However, we have to consider that it uses <code>node --loader</code>

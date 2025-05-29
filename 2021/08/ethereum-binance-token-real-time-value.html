@@ -197,7 +197,7 @@ self-explanatory.</p>
 <span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
 <span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> web3 = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Web3</span>(rpcEndpoint)
 
   <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> web3.<span class="hljs-property">eth</span>.<span class="hljs-title class_">Contract</span>(checoinAbi, checoinAddress)
@@ -255,7 +255,7 @@ us on that aspect.</p>
 <span class="hljs-comment">// See &lt;https://docs.binance.org/smart-chain/developer/rpc.html&gt;.</span>
 <span class="hljs-keyword">const</span> rpcEndpoint = <span class="hljs-string">&#x27;https://bsc-dataseed1.defibit.io&#x27;</span>
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> () {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">main</span> (<span class="hljs-params"></span>) {
   <span class="hljs-keyword">const</span> provider = <span class="hljs-keyword">new</span> ethers.<span class="hljs-property">providers</span>.<span class="hljs-title class_">JsonRpcProvider</span>(rpcEndpoint)
 
   <span class="hljs-keyword">const</span> checoinContract = <span class="hljs-keyword">new</span> ethers.<span class="hljs-title class_">Contract</span>(checoinAddress, checoinAbi, provider)

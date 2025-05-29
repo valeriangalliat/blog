@@ -43,7 +43,7 @@ your menu title is not showing.</p>
 run it with <code>swift test.swift</code>):</p>
 <pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> Cocoa
 
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_">NSObject</span>, <span class="hljs-title class_">NSApplicationDelegate</span> {
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">AppDelegate</span>: <span class="hljs-title class_ inherited__">NSObject</span>, <span class="hljs-title class_ inherited__">NSApplicationDelegate</span> {
   <span class="hljs-keyword">func</span> <span class="hljs-title function_">applicationDidFinishLaunching</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
     <span class="hljs-keyword">let</span> app <span class="hljs-operator">=</span> <span class="hljs-type">NSApplication</span>.shared
     app.activate(ignoringOtherApps: <span class="hljs-literal">true</span>)

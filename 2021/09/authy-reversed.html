@@ -190,7 +190,7 @@ that allows me to define every method very concisely:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> base32 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;rfc-3548-b32&#x27;</span>)
 <span class="hljs-keyword">const</span> totpGenerator = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;totp-generator&#x27;</span>)
 
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtp</span> (secret) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtp</span> (<span class="hljs-params">secret</span>) {
   <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
   secret = base32.<span class="hljs-title function_">encode</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
   <span class="hljs-keyword">return</span> <span class="hljs-title function_">totpGenerator</span>(secret, { <span class="hljs-attr">digits</span>: <span class="hljs-number">7</span>, <span class="hljs-attr">period</span>: <span class="hljs-number">10</span> })
@@ -206,7 +206,7 @@ but there’s no way to avoid that by specifying a custom encoding, so be
 it.</p>
 <p>Then we also need an helper method to generate the 3 next codes in the
 time period sequence:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtps</span> (secret) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">getOtps</span> (<span class="hljs-params">secret</span>) {
   <span class="hljs-comment">// `totpGenerator` wants Base32, Authy uses hex.</span>
   secret = base32.<span class="hljs-title function_">encode</span>(<span class="hljs-title class_">Buffer</span>.<span class="hljs-title function_">from</span>(secret, <span class="hljs-string">&#x27;hex&#x27;</span>))
 
@@ -232,7 +232,7 @@ your Authy account.</p>
 <span class="hljs-keyword">const</span> uri = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;uri-tag&#x27;</span>).<span class="hljs-property">default</span>
 <span class="hljs-keyword">const</span> authy = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;authy-user-client&#x27;</span>)
 
-<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">prompt</span> (params) {
+<span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">prompt</span> (<span class="hljs-params">params</span>) {
   <span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">prompts</span>({ ...params, <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;value&#x27;</span> })
 
   <span class="hljs-keyword">if</span> (!res.<span class="hljs-property">value</span>) {

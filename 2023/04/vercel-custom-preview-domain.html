@@ -125,7 +125,7 @@ hooking directly in <code>getServerSideProps</code>, you can skip that step.</p>
 </code></pre>
 <p>Then, implement a <code>preview-redirect</code> page to associate your custom
 domain to the current preview environment, then redirect to it.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getServerSideProps</span> (context) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">getServerSideProps</span> (<span class="hljs-params">context</span>) {
   <span class="hljs-keyword">const</span> deployment = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDeployment</span>(context.<span class="hljs-property">req</span>.<span class="hljs-property">headers</span>.<span class="hljs-property">host</span>)
 
   <span class="hljs-keyword">const</span> domain = <span class="hljs-string">`pr-<span class="hljs-subst">${deployment.gitSource.prId}</span>.preview.codejam.info`</span>

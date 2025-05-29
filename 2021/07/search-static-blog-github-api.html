@@ -112,7 +112,7 @@ uses (don’t worry, there’s only two!).</p>
 <p>The first one is called <code>el</code> and just adds some sugar around
 <code>document.createElement</code>, setting attributes and adding child nodes to
 it. I find it extremely convenient when scripting sites using vanilla JS.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">el</span> (name, attrs = {}, children = []) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">el</span> (<span class="hljs-params">name, attrs = {}, children = []</span>) {
   <span class="hljs-keyword">const</span> element = <span class="hljs-variable language_">document</span>.<span class="hljs-title function_">createElement</span>(name)
 
   <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> [key, value] <span class="hljs-keyword">of</span> <span class="hljs-title class_">Object</span>.<span class="hljs-title function_">entries</span>(attrs)) {
@@ -130,13 +130,13 @@ it. I find it extremely convenient when scripting sites using vanilla JS.</p>
 message <code>div</code>s. This is useful because when show results, I also want to
 clear an eventual previous error message, and when showing an error, I
 want to clear an eventual previous results set.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">emptyFormData</span> (form) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">emptyFormData</span> (<span class="hljs-params">form</span>) {
   form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.posts&#x27;</span>).<span class="hljs-property">textContent</span> = <span class="hljs-string">&#x27;&#x27;</span>
   form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.message&#x27;</span>).<span class="hljs-property">textContent</span> = <span class="hljs-string">&#x27;&#x27;</span>
 }
 </code></pre>
 <p>This is followed by another quick helper to set the message.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">formMessage</span> (form, textContent) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">function</span> <span class="hljs-title function_">formMessage</span> (<span class="hljs-params">form, textContent</span>) {
   <span class="hljs-title function_">emptyFormData</span>(form)
   form.<span class="hljs-title function_">querySelector</span>(<span class="hljs-string">&#x27;.message&#x27;</span>).<span class="hljs-title function_">appendChild</span>(<span class="hljs-title function_">el</span>(<span class="hljs-string">&#x27;p&#x27;</span>, { textContent }))
 }
@@ -149,7 +149,7 @@ callable from the HTML.</p>
 guess it’s being called from the HTML), so I need to add the comment
 above to ignore this warning.</p>
 <pre><code class="hljs language-js"><span class="hljs-comment">// eslint-disable-next-line no-unused-vars</span>
-<span class="hljs-keyword">function</span> <span class="hljs-title function_">onSearchSubmit</span> (form) {
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">onSearchSubmit</span> (<span class="hljs-params">form</span>) {
   <span class="hljs-title function_">searchBlog</span>(form)
     .<span class="hljs-title function_">catch</span>(<span class="hljs-function"><span class="hljs-params">err</span> =&gt;</span> {
       <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">error</span>(err)
@@ -165,7 +165,7 @@ by logging it and showing a message using the <code>formMessage</code> helper.</
 submission, which is to submit the form data as query parameters on the
 current URL.</p>
 <p>The following is the breakdown of the <code>searchBlog</code> function, defined as:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">searchBlog</span> (form) {
+<pre><code class="hljs language-js"><span class="hljs-keyword">async</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">searchBlog</span> (<span class="hljs-params">form</span>) {
   <span class="hljs-comment">// Code goes here.</span>
 }
 </code></pre>

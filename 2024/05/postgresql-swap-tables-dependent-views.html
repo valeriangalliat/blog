@@ -52,7 +52,7 @@ but I won’t cover that in this article.</p>
 that depend on the table you want to swap:</p>
 <pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
 <span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
-<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+<span class="hljs-keyword">ALTER TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
 </code></pre>
 <pre><code class="hljs">ERROR: cannot drop table example because other objects depend on it
 DETAIL: view example_view depends on table example
@@ -95,7 +95,7 @@ in that case.</p>
 <pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
 <span class="hljs-keyword">SELECT</span> pg_temp.replace_view_table(<span class="hljs-string">&#x27;public&#x27;</span>, <span class="hljs-string">&#x27;example_view&#x27;</span>, <span class="hljs-string">&#x27;example&#x27;</span>, <span class="hljs-string">&#x27;example_swap&#x27;</span>);
 <span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
-<span class="hljs-keyword">ALTER</span> <span class="hljs-keyword">TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
+<span class="hljs-keyword">ALTER TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
 <span class="hljs-keyword">COMMIT</span>;
 </code></pre>
 <p>The renaming of the table will automatically propagate to the dependent

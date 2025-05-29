@@ -12,6 +12,7 @@ What's boring code? There's tons of articles explaining that already, so
 instead of writing another one, I'll list here the resources I gathered
 over time about this topic.
 
+* [Cognitive load is what matters](https://minds.md/zakirullin/cognitive#long)
 * [Make it boring](https://jeremy.codes/blog/make-it-boring/)
 * [Simple & boring](https://css-tricks.com/simple-boring/)
 * [A simpler web](http://web.archive.org/web/20190401074337/https://ctmiller.net/blog/2019/01/25/a_simpler_web.html) (originally on [ctmiller.net](https://ctmiller.net/blog/2019/01/25/a_simpler_web.html))

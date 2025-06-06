@@ -25,7 +25,7 @@ h1, h2, h3, h4, h5, h6 {
     font-family: "Helvetica Neue", sans-serif;
 }
 
-h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure, hr,
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure, hr, details,
 .content iframe,
 .content table {
     margin: 0 0 var(--vertical-margin, 2rem);
@@ -53,7 +53,7 @@ h1.has-subtitle small {
 }
 
 blockquote > *,
-details,
+details > *,
 dd > *,
 li > * {
     --vertical-margin: 1rem;

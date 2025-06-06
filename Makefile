@@ -74,6 +74,7 @@ dist/css/main-20230317.css: \
 	css/components/note.css \
 	css/components/oversized.css \
 	css/components/social.css \
+	css/components/details.css \
 	css/pages/index.css \
 	css/pages/post.css
 	cat $^ > $@

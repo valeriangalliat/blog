@@ -3,7 +3,7 @@ April 2, 2023
 
 <div class="note">
 
-**Note:** updated on April 26, 2024.
+**Note:** updated on June 6, 2025.
 
 </div>
 
@@ -60,6 +60,19 @@ If some photos are _only_ on Google Photos but not stored on the phone,
 the previous step didn't archive them. We need to make sure to download
 them from Google Photos in the first place.
 
+<div class="note">
+
+**Note:** as of March 31, 2025, my original of double checking doesn't
+work anymore due to Google [dropping the API](https://www.reddit.com/r/androiddev/comments/1isijab/coping_with_google_photos_api_changes_no_more/)
+to list photos from Google Photos programmatically.
+
+I still kept it below as an archive.
+
+</div>
+
+<details class="boxed">
+<summary>Old method (discontinued)</summary>
+
 Because there's no way from Google Photos to find all photos that are
 not locally saved to a specific device (other than going through them
 one by one), that's where I use the Google Photos API to make sure I'm
@@ -71,9 +84,94 @@ to skip to [the next step](#3-copy-synced-folder-to-archive).
 First, we need a Google OAuth token with access to Google Photos. We'll
 reuse [my script from this other article](../../2021/02/google-oauth-from-cli-application.md#update-local-server-redirect)
 for this, just replacing the scope with `https://www.googleapis.com/auth/photoslibrary.readonly`.
+
+Here's the actual version that I use that also supports refreshing the
+token if needed:
+
+```js
+import http from 'http'
+import fs from 'node:fs/promises'
+import { google } from 'googleapis'
+
+const clientId = 'your client ID'
+const clientSecret = 'your client secret'
+
+let resolve
+
+const codePromise = new Promise((resolve_) => {
+  resolve = resolve_
+})
+
+const server = http.createServer((req, res) => {
+  const url = new URL(req.url, 'http://localhost')
+
+  if (url.pathname !== '/') {
+    res.writeHead(404).end('Not Found')
+    return
+  }
+
+  const code = url.searchParams.get('code')
+
+  if (!code) {
+    res.writeHead(400).end('Bad Request')
+    return
+  }
+
+  res.end('OK')
+  server.close()
+  resolve(code)
+})
+
+server.listen()
+
+const port = server.address().port
+const redirect = `http://localhost:${port}`
+
+const oauth2Client = new google.auth.OAuth2(clientId, clientSecret, redirect)
+
+let existingToken
+let newToken
+
+try {
+  existingToken = JSON.parse(await fs.readFile('token.json', 'utf8'))
+} catch (e) {
+  if (e.code !== 'ENOENT') {
+    throw e
+  }
+}
+
+if (existingToken) {
+  oauth2Client.setCredentials(existingToken)
+
+  const { credentials } = await oauth2Client.refreshAccessToken()
+
+  newToken = credentials
+} else {
+  const authUrl = oauth2Client.generateAuthUrl({
+    access_type: 'offline',
+    scope: ['https://www.googleapis.com/auth/photoslibrary.readonly']
+  })
+
+  console.log('Authorize this app by visiting this URL: ', authUrl)
+
+  const code = await codePromise
+  const { tokens } = await oauth2Client.getToken(code)
+
+  newToken = tokens
+}
+
+await fs.writeFile('token.json', JSON.stringify(newToken, null, 2))
+
+console.log('Wrote to token.json')
+console.log(newToken)
+
+process.exit()
+```
+
 Put it in a `token.mjs` file and run it with `node token.mjs`, this will
 go through the OAuth process and after you complete the authentication,
-will log the access token that we'll use in the next script.
+will save the access token to a `token.json` file that we'll use in the
+next script.
 
 The following script can go in `photos.mjs` and be run with `node
 photos.mjs`, reusing the token from the previous step.
@@ -81,7 +179,7 @@ photos.mjs`, reusing the token from the previous step.
 ```js
 import fs from 'node:fs/promises'
 
-const accessToken = 'YOUR_ACCESS_TOKEN'
+const accessToken = JSON.parse(await fs.readFile('token.json', 'utf8')).access_token
 
 let pageToken = ''
 let pages = []
@@ -117,12 +215,44 @@ the filenames:
 cat pages.json | jq -r '.[].mediaItems[].filename' | sort > gphoto-files
 ```
 
+</details>
+
+I first get a copy of my Google Photos data from [Google Takeout](https://takeout.google.com/settings/takeout).
+
+This gives me an archive with a folder per year e.g. `Photos from 2025`,
+and in each, the photos together with `.supplemental-metadata.json`
+files.
+
+There's also a number of `Untitled(<number>)` folders and in each one,
+photos that are all already in the `Photos from <year>` directories
+(confirmed with the following command):
+
+```sh
+# If anything in `Untitled*` is not in `Photos from *`, log it
+find Untitled* -type f -exec basename {} + | grep -v '\.json$' | while read x; do find Photos\ from\ * -name "$x" | grep -q . || echo "$x"; done
+```
+
+Then I list all the photos known to Google Photos:
+
+```sh
+find Photos\ from\ * -type f -exec basename {} + | grep -v '\.json$' | grep -v '\.MP$' | sort > gphoto-files
+```
+
+<div class="note">
+
+**Note:** I exclude the `.MP` files because they're the video part of
+motion photos, but the video is already bundled in the adjacent
+`.MP.jpg` files. See [what about motion photos](#what-about-motion-photos)
+for parsing those.
+
+</div>
+
 Now, let's make a list of all the files local to the phone. I'll only
 scan the directories I configured to be backed up on Google Photos.
 Adjust this to your needs.
 
 ```sh
-find DCIM Pictures Movies Download \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \) > ~/phone-files
+(cd /Volumes/Syncthing/Phone && find DCIM Pictures Movies Download \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \)) > phone-files
 cat phone-files | xargs basename | sort > phone-basefiles
 ```
 
@@ -151,8 +281,8 @@ If I'm missing some files, I'll go on and download them from Google
 Photos to my phone and run the sync again, and repeat this process until
 everything is consistent.
 
-When a file is missing from the phone, look at `pages.json` to find the
-corresponding Google Photos link!
+When a file is missing from the phone, look at the corresponding `.json`
+file to find the corresponding Google Photos link!
 
 <div class="note">
 
@@ -160,7 +290,7 @@ corresponding Google Photos link!
 the files from Google Photos are missing in my backup:
 
 ```sh
-cat gphoto-files | while read file; do find . -name "$file" | grep -q . || echo "Missing $file"; done
+cat gphoto-files | while read file; do find /Volumes/Syncthing/Phone -name "$file" | grep -q . || echo "Missing $file"; done
 ```
 
 </div>
@@ -287,7 +417,8 @@ find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} \( -name '*.jpg' -
 ```
 
 This should match the number of photos _currently_ on Google Photos (if
-you kept any).
+you kept any, and except directories that are _not_ synced to Google
+Photos).
 
 ### 7. Profit!
 

@@ -11,7 +11,7 @@
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="Archiving Google Photos offline to free up space">
-  <meta property="og:description" content="Note: updated on April 26, 2024.">
+  <meta property="og:description" content="Note: updated on June 6, 2025.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -36,7 +36,7 @@
   </header>
   <div class="content">
 <div class="note">
-<p><strong>Note:</strong> updated on April 26, 2024.</p>
+<p><strong>Note:</strong> updated on June 6, 2025.</p>
 </div>
 <p>If you backup your phone photos to Google Photos automatically, and you
 don’t pay for some kind of Google One subscription, you’ll run sooner or
@@ -75,6 +75,14 @@ process.</strong></p>
 <p>If some photos are <em>only</em> on Google Photos but not stored on the phone,
 the previous step didn’t archive them. We need to make sure to download
 them from Google Photos in the first place.</p>
+<div class="note">
+<p><strong>Note:</strong> as of March 31, 2025, my original of double checking doesn’t
+work anymore due to Google <a href="https://www.reddit.com/r/androiddev/comments/1isijab/coping_with_google_photos_api_changes_no_more/">dropping the API</a>
+to list photos from Google Photos programmatically.</p>
+<p>I still kept it below as an archive.</p>
+</div>
+<details class="boxed">
+<summary>Old method (discontinued)</summary>
 <p>Because there’s no way from Google Photos to find all photos that are
 not locally saved to a specific device (other than going through them
 one by one), that’s where I use the Google Photos API to make sure I’m
@@ -83,14 +91,95 @@ not missing anything.</p>
 to skip to <a href="#3-copy-synced-folder-to-archive">the next step</a>.</p>
 <p>First, we need a Google OAuth token with access to Google Photos. We’ll
 reuse <a href="../../2021/02/google-oauth-from-cli-application.html#update-local-server-redirect">my script from this other article</a>
-for this, just replacing the scope with <code>https://www.googleapis.com/auth/photoslibrary.readonly</code>.
-Put it in a <code>token.mjs</code> file and run it with <code>node token.mjs</code>, this will
+for this, just replacing the scope with <code>https://www.googleapis.com/auth/photoslibrary.readonly</code>.</p>
+<p>Here’s the actual version that I use that also supports refreshing the
+token if needed:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> http <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;http&#x27;</span>
+<span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
+<span class="hljs-keyword">import</span> { google } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;googleapis&#x27;</span>
+
+<span class="hljs-keyword">const</span> clientId = <span class="hljs-string">&#x27;your client ID&#x27;</span>
+<span class="hljs-keyword">const</span> clientSecret = <span class="hljs-string">&#x27;your client secret&#x27;</span>
+
+<span class="hljs-keyword">let</span> resolve
+
+<span class="hljs-keyword">const</span> codePromise = <span class="hljs-keyword">new</span> <span class="hljs-title class_">Promise</span>(<span class="hljs-function">(<span class="hljs-params">resolve_</span>) =&gt;</span> {
+  resolve = resolve_
+})
+
+<span class="hljs-keyword">const</span> server = http.<span class="hljs-title function_">createServer</span>(<span class="hljs-function">(<span class="hljs-params">req, res</span>) =&gt;</span> {
+  <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(req.<span class="hljs-property">url</span>, <span class="hljs-string">&#x27;http://localhost&#x27;</span>)
+
+  <span class="hljs-keyword">if</span> (url.<span class="hljs-property">pathname</span> !== <span class="hljs-string">&#x27;/&#x27;</span>) {
+    res.<span class="hljs-title function_">writeHead</span>(<span class="hljs-number">404</span>).<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Not Found&#x27;</span>)
+    <span class="hljs-keyword">return</span>
+  }
+
+  <span class="hljs-keyword">const</span> code = url.<span class="hljs-property">searchParams</span>.<span class="hljs-title function_">get</span>(<span class="hljs-string">&#x27;code&#x27;</span>)
+
+  <span class="hljs-keyword">if</span> (!code) {
+    res.<span class="hljs-title function_">writeHead</span>(<span class="hljs-number">400</span>).<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;Bad Request&#x27;</span>)
+    <span class="hljs-keyword">return</span>
+  }
+
+  res.<span class="hljs-title function_">end</span>(<span class="hljs-string">&#x27;OK&#x27;</span>)
+  server.<span class="hljs-title function_">close</span>()
+  <span class="hljs-title function_">resolve</span>(code)
+})
+
+server.<span class="hljs-title function_">listen</span>()
+
+<span class="hljs-keyword">const</span> port = server.<span class="hljs-title function_">address</span>().<span class="hljs-property">port</span>
+<span class="hljs-keyword">const</span> redirect = <span class="hljs-string">`http://localhost:<span class="hljs-subst">${port}</span>`</span>
+
+<span class="hljs-keyword">const</span> oauth2Client = <span class="hljs-keyword">new</span> google.<span class="hljs-property">auth</span>.<span class="hljs-title class_">OAuth2</span>(clientId, clientSecret, redirect)
+
+<span class="hljs-keyword">let</span> existingToken
+<span class="hljs-keyword">let</span> newToken
+
+<span class="hljs-keyword">try</span> {
+  existingToken = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;token.json&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>))
+} <span class="hljs-keyword">catch</span> (e) {
+  <span class="hljs-keyword">if</span> (e.<span class="hljs-property">code</span> !== <span class="hljs-string">&#x27;ENOENT&#x27;</span>) {
+    <span class="hljs-keyword">throw</span> e
+  }
+}
+
+<span class="hljs-keyword">if</span> (existingToken) {
+  oauth2Client.<span class="hljs-title function_">setCredentials</span>(existingToken)
+
+  <span class="hljs-keyword">const</span> { credentials } = <span class="hljs-keyword">await</span> oauth2Client.<span class="hljs-title function_">refreshAccessToken</span>()
+
+  newToken = credentials
+} <span class="hljs-keyword">else</span> {
+  <span class="hljs-keyword">const</span> authUrl = oauth2Client.<span class="hljs-title function_">generateAuthUrl</span>({
+    <span class="hljs-attr">access_type</span>: <span class="hljs-string">&#x27;offline&#x27;</span>,
+    <span class="hljs-attr">scope</span>: [<span class="hljs-string">&#x27;https://www.googleapis.com/auth/photoslibrary.readonly&#x27;</span>]
+  })
+
+  <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Authorize this app by visiting this URL: &#x27;</span>, authUrl)
+
+  <span class="hljs-keyword">const</span> code = <span class="hljs-keyword">await</span> codePromise
+  <span class="hljs-keyword">const</span> { tokens } = <span class="hljs-keyword">await</span> oauth2Client.<span class="hljs-title function_">getToken</span>(code)
+
+  newToken = tokens
+}
+
+<span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">writeFile</span>(<span class="hljs-string">&#x27;token.json&#x27;</span>, <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>(newToken, <span class="hljs-literal">null</span>, <span class="hljs-number">2</span>))
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;Wrote to token.json&#x27;</span>)
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(newToken)
+
+process.<span class="hljs-title function_">exit</span>()
+</code></pre>
+<p>Put it in a <code>token.mjs</code> file and run it with <code>node token.mjs</code>, this will
 go through the OAuth process and after you complete the authentication,
-will log the access token that we’ll use in the next script.</p>
+will save the access token to a <code>token.json</code> file that we’ll use in the
+next script.</p>
 <p>The following script can go in <code>photos.mjs</code> and be run with <code>node photos.mjs</code>, reusing the token from the previous step.</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">import</span> fs <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;node:fs/promises&#x27;</span>
 
-<span class="hljs-keyword">const</span> accessToken = <span class="hljs-string">&#x27;YOUR_ACCESS_TOKEN&#x27;</span>
+<span class="hljs-keyword">const</span> accessToken = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(<span class="hljs-keyword">await</span> fs.<span class="hljs-title function_">readFile</span>(<span class="hljs-string">&#x27;token.json&#x27;</span>, <span class="hljs-string">&#x27;utf8&#x27;</span>)).<span class="hljs-property">access_token</span>
 
 <span class="hljs-keyword">let</span> pageToken = <span class="hljs-string">&#x27;&#x27;</span>
 <span class="hljs-keyword">let</span> pages = []
@@ -121,10 +210,30 @@ will log the access token that we’ll use in the next script.</p>
 the filenames:</p>
 <pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> pages.json | jq -r <span class="hljs-string">&#x27;.[].mediaItems[].filename&#x27;</span> | <span class="hljs-built_in">sort</span> &gt; gphoto-files
 </code></pre>
+</details>
+<p>I first get a copy of my Google Photos data from <a href="https://takeout.google.com/settings/takeout">Google Takeout</a>.</p>
+<p>This gives me an archive with a folder per year e.g. <code>Photos from 2025</code>,
+and in each, the photos together with <code>.supplemental-metadata.json</code>
+files.</p>
+<p>There’s also a number of <code>Untitled(&lt;number&gt;)</code> folders and in each one,
+photos that are all already in the <code>Photos from &lt;year&gt;</code> directories
+(confirmed with the following command):</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># If anything in `Untitled*` is not in `Photos from *`, log it</span>
+find Untitled* -<span class="hljs-built_in">type</span> f -<span class="hljs-built_in">exec</span> <span class="hljs-built_in">basename</span> {} + | grep -v <span class="hljs-string">&#x27;\.json$&#x27;</span> | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> x; <span class="hljs-keyword">do</span> find Photos\ from\ * -name <span class="hljs-string">&quot;<span class="hljs-variable">$x</span>&quot;</span> | grep -q . || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;<span class="hljs-variable">$x</span>&quot;</span>; <span class="hljs-keyword">done</span>
+</code></pre>
+<p>Then I list all the photos known to Google Photos:</p>
+<pre><code class="hljs language-sh">find Photos\ from\ * -<span class="hljs-built_in">type</span> f -<span class="hljs-built_in">exec</span> <span class="hljs-built_in">basename</span> {} + | grep -v <span class="hljs-string">&#x27;\.json$&#x27;</span> | grep -v <span class="hljs-string">&#x27;\.MP$&#x27;</span> | <span class="hljs-built_in">sort</span> &gt; gphoto-files
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> I exclude the <code>.MP</code> files because they’re the video part of
+motion photos, but the video is already bundled in the adjacent
+<code>.MP.jpg</code> files. See <a href="#what-about-motion-photos">what about motion photos</a>
+for parsing those.</p>
+</div>
 <p>Now, let’s make a list of all the files local to the phone. I’ll only
 scan the directories I configured to be backed up on Google Photos.
 Adjust this to your needs.</p>
-<pre><code class="hljs language-sh">find DCIM Pictures Movies Download \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) &gt; ~/phone-files
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find DCIM Pictures Movies Download \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \)) &gt; phone-files
 <span class="hljs-built_in">cat</span> phone-files | xargs <span class="hljs-built_in">basename</span> | <span class="hljs-built_in">sort</span> &gt; phone-basefiles
 </code></pre>
 <div class="note">
@@ -143,12 +252,12 @@ phone, we can use the <code>comm</code> command to find missing entries:</p>
 <p>If I’m missing some files, I’ll go on and download them from Google
 Photos to my phone and run the sync again, and repeat this process until
 everything is consistent.</p>
-<p>When a file is missing from the phone, look at <code>pages.json</code> to find the
-corresponding Google Photos link!</p>
+<p>When a file is missing from the phone, look at the corresponding <code>.json</code>
+file to find the corresponding Google Photos link!</p>
 <div class="note">
 <p><strong>Note:</strong> here’s an alternative script I’ve also been using to check if
 the files from Google Photos are missing in my backup:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> gphoto-files | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> file; <span class="hljs-keyword">do</span> find . -name <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q . || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Missing <span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">cat</span> gphoto-files | <span class="hljs-keyword">while</span> <span class="hljs-built_in">read</span> file; <span class="hljs-keyword">do</span> find /Volumes/Syncthing/Phone -name <span class="hljs-string">&quot;<span class="hljs-variable">$file</span>&quot;</span> | grep -q . || <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;Missing <span class="hljs-variable">$file</span>&quot;</span>; <span class="hljs-keyword">done</span>
 </code></pre>
 </div>
 <h3 id="3-copy-synced-folder-to-archive" tabindex="-1"><a class="header-anchor" href="#3-copy-synced-folder-to-archive"><span>3. Copy synced folder to archive</span></a></h3>
@@ -234,7 +343,8 @@ Photos (and from the phone).</p>
 <pre><code class="hljs language-sh">find /Volumes/Syncthing/Phone/{DCIM,Pictures,Movies,Download} \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \) | <span class="hljs-built_in">wc</span> -l
 </code></pre>
 <p>This should match the number of photos <em>currently</em> on Google Photos (if
-you kept any).</p>
+you kept any, and except directories that are <em>not</em> synced to Google
+Photos).</p>
 <h3 id="7-profit" tabindex="-1"><a class="header-anchor" href="#7-profit"><span>7. Profit!</span></a></h3>
 <p>You can now enjoy all the space you freed up by archiving your photos
 and videos away from Google Photos!</p>

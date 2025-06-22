@@ -9,6 +9,7 @@ A blog about tech, programming and other things.
 
 <div class="links posts">
 
+* [USB iPhone screen recording in Swift](2025/06/usb-iphone-screen-recording-swift.md) <small>June 22, 2025</small>
 * [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-bugger-logs-github-actions.md) <small>April 23, 2025</small>
 * [Firestore Algolia full index operation error 400 or 403](2025/04/firestore-algolia-full-index-error.md) <small>April 23, 2025</small>
 * [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
@@ -23,7 +24,6 @@ A blog about tech, programming and other things.
 * [Next.js: make Firebase Auth `signInWithRedirect` work with Safari](2024/05/nextjs-firebase-auth-safari.md) <small>May 4, 2024</small>
 * [PostgreSQL: swap tables with dependent views](2024/05/postgresql-swap-tables-dependent-views.md) <small>May 4, 2024</small>
 * [Vercel monorepo: properly cache Yarn installs](2024/05/vercel-monorepo-cache-yarn-installs.md) <small>May 4, 2024</small>
-* [Vercel monorepo: install only a single project dependencies with Yarn](2024/05/vercel-monorepo-single-project-dependencies-yarn.md) <small>May 4, 2024</small>
 
 [All the posts](posts.md)
 

@@ -21,11 +21,15 @@
         line-height: normal;
     }
 
-    .index h1.has-subtitle {
-        font-size: 1em;
+    .index h1 {
+        font-size: 4rem;
     }
 
-    .index h1 span {
+    .index h1.has-subtitle {
+        font-size: 1rem;
+    }
+
+    .index h1.has-subtitle span {
         font-size: 4rem;
     }
 

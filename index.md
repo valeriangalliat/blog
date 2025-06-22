@@ -2,7 +2,7 @@
 excerpt: A blog about tech, programming and other things.
 ---
 
-# CodeJam <small>by Val</small>
+# CodeJam
 A blog about tech, programming and other things.
 
 ## Posts

@@ -25,32 +25,31 @@ I'm from **Grenoble**, in the beautiful French Alps, and currently
 living in **Squamish, Canada**.
 
 I write on this blog about **computers and programming**, but also about
-**music**, **photography**, **video**, **brewing**, and anything else I
-find useful and worth sharing.
+**music**, **photography**, **video** and anything else I find useful
+and worth sharing.
 
 ---
 
-One of my favorite things in life is summiting mountains, whether it's
-hiking, rock climbing or skiing. I usually bring a [beer][brewing] at
-the top and I often [take a picture of it][beer]. I love [taking pictures][photography].
+My favorite thing in life is summiting mountains, whether it's trail
+running, rock climbing or [skiing].
 
-[brewing]: https://github.com/valeriangalliat/sans-pression
-[beer]: https://photography.codejam.info/beer.html
-[photography]: https://photography.codejam.info/
+[skiing]: https://www.youtube.com/@FonkyVal
 
-You’ll often see me riding bikes, whether it's [with][motorcycle] or
-[without][bike] an engine.
+You’ll often see me riding bikes, mostly [gravel] and MTB, but also
+[motorcycles] occasionally.
+
+[gravel]: https://www.instagram.com/p/DLLvM19S1RA/
+[motorcycles]: https://photography.codejam.info/photos/P2570771.html
 
 I'm addicted to music, and when I'm not listening to some, it's more
 likely because I'm [playing][channel].
 
-I also happen to be a software developer, specialized in
-backend and infrastructure. Currently working at [Arcade], and
+[channel]: https://www.youtube.com/FunkyVal
+
+I also happen to be a software developer, specialized in backend and
+infrastructure. Currently working at [Arcade], and
 previously at [Hookdeck].
 
-[bike]: https://www.codejam.info/img/2020/06/gopro.jpg
-[motorcycle]: https://photography.codejam.info/photos/P2570525.html
-[channel]: https://www.youtube.com/FunkyVal
 [Arcade]: https://www.arcade.software/
 [Hookdeck]: https://hookdeck.com/about
 

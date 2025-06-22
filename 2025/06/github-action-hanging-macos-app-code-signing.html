@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>GitHub Action hanging on Electron macOS app code signing</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20250622.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="GitHub Action hanging on Electron macOS app code signing">
+  <meta property="og:description" content="There’s quite a bunch of resources about how to set up macOS app code signing on GitHub Actions:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>GitHub Action hanging on Electron macOS app code signing</h1>
+<p class="date">June 22, 2025</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>There’s quite a bunch of resources about how to set up macOS app code
+signing on GitHub Actions:</p>
+<ul>
+<li><a href="https://dev.to/rwwagner90/signing-electron-apps-with-github-actions-4cof">Signing Electron apps with GitHub Actions</a></li>
+<li><a href="https://docs.github.com/en/actions/use-cases-and-examples/deploying/installing-an-apple-certificate-on-macos-runners-for-xcode-development">Installing an Apple certificate on macOS runners for Xcode development</a></li>
+<li><a href="https://brunoscheufler.com/blog/2023-11-12-setting-up-hosted-macos-github-actions-workflows-for-electron-builds">Setting up hosted macOS GitHub Actions workflows for Electron
+builds</a></li>
+</ul>
+<p>But what to do if your GitHub workflow just hangs forever at the
+Electron signing step?</p>
+<p>This appears to be a symptom of not properly configuring the macOS
+Keychain in the CI environment. Sadly there could be a bunch of reasons
+for that and the hanging doesn’t really tell us which one specifically
+is a problem.</p>
+<p>There’s <a href="https://github.com/electron/forge/issues/3315">two</a>
+<a href="https://github.com/electron/packager/issues/701">issues</a> I found with
+that hanging problem, and the solutions there may or may not solve the
+problem for you.</p>
+<p>What I’m gonna suggest though is really double checking the code you’re
+using to import the signing keys based on all the links I shared above,
+and see if you’re missing something.</p>
+<p>If it can help, here’s the code that ended up working for me:</p>
+<pre><code class="hljs language-yaml"><span class="hljs-attr">name:</span> <span class="hljs-string">Release</span>
+
+<span class="hljs-attr">on:</span>
+  <span class="hljs-attr">push:</span>
+    <span class="hljs-attr">branches:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-string">main</span>
+
+<span class="hljs-attr">jobs:</span>
+  <span class="hljs-attr">release:</span>
+    <span class="hljs-attr">runs-on:</span> <span class="hljs-string">macos-latest</span>
+
+    <span class="hljs-attr">steps:</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/checkout@v4</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">actions/setup-node@v4</span>
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">uses:</span> <span class="hljs-string">swift-actions/setup-swift@v2</span>
+
+      <span class="hljs-bullet">-</span> <span class="hljs-attr">name:</span> <span class="hljs-string">Import</span> <span class="hljs-string">certificate</span>
+        <span class="hljs-attr">env:</span>
+          <span class="hljs-attr">PRIVATE_KEY:</span> <span class="hljs-string">${{</span> <span class="hljs-string">secrets.PRIVATE_KEY</span> <span class="hljs-string">}}</span>
+          <span class="hljs-attr">PRIVATE_KEY_PASSWORD:</span> <span class="hljs-string">${{</span> <span class="hljs-string">secrets.PRIVATE_KEY_PASSWORD</span> <span class="hljs-string">}}</span>
+          <span class="hljs-attr">CERTIFICATE:</span> <span class="hljs-string">${{</span> <span class="hljs-string">secrets.CERTIFICATE</span> <span class="hljs-string">}}</span>
+        <span class="hljs-attr">run:</span> <span class="hljs-string">|
+          # Create a temporary keychain
+          security create-keychain -p &quot;&quot; build.keychain
+</span>
+          <span class="hljs-comment"># Set it as default for the user session</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">default-keychain</span> <span class="hljs-string">-s</span> <span class="hljs-string">build.keychain</span>
+
+          <span class="hljs-string">security</span> <span class="hljs-string">unlock-keychain</span> <span class="hljs-string">-p</span> <span class="hljs-string">&quot;&quot;</span> <span class="hljs-string">build.keychain</span>
+
+          <span class="hljs-comment"># Set it to lock in 1 hour (should be long enough, and probs longer than the macOS default that could be too short)</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">set-keychain-settings</span> <span class="hljs-string">-t</span> <span class="hljs-number">3600</span> <span class="hljs-string">-l</span> <span class="hljs-string">~/Library/Keychains/build.keychain</span>
+
+          <span class="hljs-string">mkdir</span> <span class="hljs-string">-p</span> <span class="hljs-string">~/certificates</span>
+          <span class="hljs-string">cd</span> <span class="hljs-string">~/certificates</span>
+
+          <span class="hljs-string">echo</span> <span class="hljs-string">&quot;$PRIVATE_KEY&quot;</span> <span class="hljs-string">|</span> <span class="hljs-string">base64</span> <span class="hljs-string">--decode</span> <span class="hljs-string">&gt;</span> <span class="hljs-string">&quot;My App.p12&quot;</span>
+          <span class="hljs-string">echo</span> <span class="hljs-string">&quot;CERTIFICATE&quot;</span> <span class="hljs-string">|</span> <span class="hljs-string">base64</span> <span class="hljs-string">--decode</span> <span class="hljs-string">&gt;</span> <span class="hljs-string">&quot;My App.cer&quot;</span>
+
+          <span class="hljs-string">security</span> <span class="hljs-string">import</span> <span class="hljs-string">&quot;My App.p12&quot;</span> <span class="hljs-string">-k</span> <span class="hljs-string">build.keychain</span> <span class="hljs-string">-P</span> <span class="hljs-string">&quot;$PRIVATE_KEY_PASSWORD&quot;</span> <span class="hljs-string">-T</span> <span class="hljs-string">/usr/bin/codesign</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">import</span> <span class="hljs-string">&quot;My App.cer&quot;</span> <span class="hljs-string">-k</span> <span class="hljs-string">build.keychain</span> <span class="hljs-string">-T</span> <span class="hljs-string">/usr/bin/codesign</span>
+
+          <span class="hljs-comment"># Check certificates</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">find-identity</span> <span class="hljs-string">-v</span> <span class="hljs-string">-p</span> <span class="hljs-string">codesigning</span> <span class="hljs-string">build.keychain</span>
+
+          <span class="hljs-comment"># Add keychain to search list</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">list-keychains</span> <span class="hljs-string">-d</span> <span class="hljs-string">user</span> <span class="hljs-string">-s</span> <span class="hljs-string">build.keychain</span>
+          <span class="hljs-string">security</span> <span class="hljs-string">set-key-partition-list</span> <span class="hljs-string">-S</span> <span class="hljs-string">apple-tool:,apple:,codesign:</span> <span class="hljs-string">-s</span> <span class="hljs-string">-k</span> <span class="hljs-string">&quot;&quot;</span> <span class="hljs-string">build.keychain</span>
+
+      <span class="hljs-comment"># ...</span>
+</code></pre>
+<p>Here, <code>PRIVATE_KEY</code> is a Base64-encoded version of the <code>.p12</code> private
+key, password protected by <code>PRIVATE_KEY_PASSWORD</code>.</p>
+<p><code>CERTIFICATE</code> is a Base64-encoded version of the <code>.cer</code> file that Apple
+provided for your application.</p>
+<p>Hope that helps!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2025/06/github-action-hanging-macos-app-code-signing.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

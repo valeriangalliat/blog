@@ -43,10 +43,18 @@ watch:
 	npm run watch
 
 serve:
+	cd dist && python3 -m http.server 8000
+
+# Useful to test the redirects from `dist/vercel.json`,
+# but requires logging in to Vercel CLI
+serve-vercel:
 	cd dist && npx vercel dev -l 8000
 
 dev:
-	make watch & make serve
+	npx concurrently 'make watch' 'make serve'
+
+dev-vercel:
+	npx concurrently 'make watch' 'make serve-vercel'
 
 dist/index.html: index.md head.html foot.html
 	mkdir -p $$(dirname $@)

@@ -23,6 +23,7 @@
   },
   "devDependencies": {
     "chokidar-cli": "^3.0.0",
+    "concurrently": "^9.2.0",
     "standard": "^17.1.0",
     "vercel": "^42.2.0"
   }

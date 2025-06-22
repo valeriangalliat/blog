@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>USB iPhone screen recording in Swift</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20250606.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="USB iPhone screen recording in Swift">
+  <meta property="og:description" content="When you plug in an iPhone to a Mac via USB, QuickTime allows you to select the iPhone screen as a video recording source.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>USB iPhone screen recording in Swift</h1>
+<p class="date">June 22, 2025</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>When you plug in an iPhone to a Mac via USB, QuickTime allows you to
+select the iPhone screen as a video recording source.</p>
+<p>This is neat, but what if you want to do do the same thing from your own
+app?</p>
+<p>I’ve had to do this recently, so this blog post will compile everything
+I learnt about and especially the undocumented quirks I encountered and
+worked around.</p>
+<h2 id="kcmiohardwarepropertyallowscreencapturedevices" tabindex="-1"><a class="header-anchor" href="#kcmiohardwarepropertyallowscreencapturedevices"><span><code>kCMIOHardwarePropertyAllowScreenCaptureDevices</code></span></a></h2>
+<p>The very first thing you need is to enable
+<a href="https://developer.apple.com/documentation/coremediaio/kcmiohardwarepropertyallowscreencapturedevices"><code>kCMIOHardwarePropertyAllowScreenCaptureDevices</code></a>.</p>
+<p>This is a “hardware property” (whatever that means) that, when set,
+allows the current process to access USB-connected mobile devices for
+screen recording.</p>
+<p>You can find
+<a href="https://gist.github.com/samjoch/d06f7fb39b2cbbca087ddcb1af59b28e">many</a>
+<a href="https://nadavrub.wordpress.com/2015/07/06/macos-media-capture-using-coremediaio/">flavors</a>
+of how to do this online, and here’s mine anyway:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">import</span> CoreMediaIO
+
+<span class="hljs-comment">// Sets the &quot;hardware&quot; prop that allows to discover USB mobile devices for screen recording.</span>
+<span class="hljs-keyword">func</span> <span class="hljs-title function_">allowScreenCaptureDevices</span>() {
+  <span class="hljs-keyword">let</span> element: <span class="hljs-type">CMIOObjectPropertyElement</span>
+  <span class="hljs-keyword">if</span> <span class="hljs-keyword">#available</span>(<span class="hljs-keyword">macOS</span> <span class="hljs-number">12.0</span>, <span class="hljs-operator">*</span>) {
+    element <span class="hljs-operator">=</span> <span class="hljs-type">CMIOObjectPropertyElement</span>(kCMIOObjectPropertyElementMain)
+  } <span class="hljs-keyword">else</span> {
+    element <span class="hljs-operator">=</span> <span class="hljs-type">CMIOObjectPropertyElement</span>(kCMIOObjectPropertyElementMaster)
+  }
+
+  <span class="hljs-keyword">var</span> prop <span class="hljs-operator">=</span> <span class="hljs-type">CMIOObjectPropertyAddress</span>(
+    mSelector: <span class="hljs-type">CMIOObjectPropertySelector</span>(kCMIOHardwarePropertyAllowScreenCaptureDevices),
+    mScope: <span class="hljs-type">CMIOObjectPropertyScope</span>(kCMIOObjectPropertyScopeGlobal),
+    mElement: element)
+
+  <span class="hljs-keyword">var</span> allow: <span class="hljs-type">UInt32</span> <span class="hljs-operator">=</span> <span class="hljs-number">1</span>
+  <span class="hljs-keyword">let</span> dataSize: <span class="hljs-type">UInt32</span> <span class="hljs-operator">=</span> <span class="hljs-number">4</span>
+  <span class="hljs-keyword">let</span> zero: <span class="hljs-type">UInt32</span> <span class="hljs-operator">=</span> <span class="hljs-number">0</span>
+
+  <span class="hljs-type">CMIOObjectSetPropertyData</span>(
+    <span class="hljs-type">CMIOObjectID</span>(kCMIOObjectSystemObject), <span class="hljs-operator">&amp;</span>prop, zero, <span class="hljs-literal">nil</span>, dataSize, <span class="hljs-operator">&amp;</span>allow)
+}
+</code></pre>
+<p>This will allow you to discover USB mobile devices as part of your usual
+<code>AVCaptureDevice.DiscoverySession</code>.</p>
+<p>Now while this code uses a relatively verbose low-level old C interface
+(because it’s the only way to do this right now), it’s fairly
+straightforward. It’s spiritually equivalent to doing
+<code>kCMIOHardwarePropertyAllowScreenCaptureDevices = 1</code> (no shit).</p>
+<p>But this hardware property is not as innocent as it looks, and I’m about
+to infodump on you everything I found out about it. Brace yourselves (or
+skip to the next section until you encounter weird issues and need to
+come back here 😂).</p>
+<h2 id="it-s-not-instant" tabindex="-1"><a class="header-anchor" href="#it-s-not-instant"><span>It’s not instant</span></a></h2>
+<p>When you set <code>kCMIOHardwarePropertyAllowScreenCaptureDevices</code>, the
+effect is not instant, meaning if you do a
+<code>AVCaptureDevice.DiscoverySession</code> right after, you’re basically
+guaranteed to <em>not</em> see the connected USB mobile devices.</p>
+<p>This is not necessarily a problem. For example if your Swift process is
+long-running, you set that prop first thing on boot, but you actually
+list the devices later on upon user interaction, everything will be
+fine.</p>
+<p>However if you’re working with a CLI (i.e. <code>my-cli list-devices</code>
+/ <code>my-cli record-device &lt;device&gt;</code>), or simply need access to the
+mobile devices immediately upon starting the app, this is not gonna cut
+it.</p>
+<p>After setting the prop, the devices are gonna take up to a few seconds
+to “show up”, and you can listen to the <code>AVCaptureDeviceWasConnected</code>
+notification from the <code>NotificationCenter</code> to know about it. There’s a
+good example for that in <a href="https://gist.github.com/samjoch/d06f7fb39b2cbbca087ddcb1af59b28e">this Gist</a>.</p>
+<pre><code class="hljs language-swift"><span class="hljs-comment">// See &quot;The get devices warmup side-effect&quot; below for why this is necessary...</span>
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">_</span> <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureDevice</span>.devices()
+
+<span class="hljs-type">NotificationCenter</span>.default
+  .addObserver(
+    forName: <span class="hljs-type">NSNotification</span>.<span class="hljs-type">Name</span>.<span class="hljs-type">AVCaptureDeviceWasConnected</span>, object: <span class="hljs-literal">nil</span>, queue: <span class="hljs-literal">nil</span>
+  ) { (notif) -&gt; <span class="hljs-type">Void</span> <span class="hljs-keyword">in</span>
+    <span class="hljs-keyword">let</span> device <span class="hljs-operator">=</span> notif.object<span class="hljs-operator">!</span> <span class="hljs-keyword">as!</span> <span class="hljs-type">AVCaptureDevice</span>
+    <span class="hljs-comment">// ...</span>
+  }
+</code></pre>
+<p>This works, but it also means there’s no way to tell immediately that
+<em>no</em> device is currently connected. This is a problem if you want
+to implement <code>my-cli list-devices</code>. Your best option is to time out
+after a few seconds, but it’s not ideal because of the added delay when
+no device is connected…</p>
+<h2 id="the-get-devices-warmup-side-effect" tabindex="-1"><a class="header-anchor" href="#the-get-devices-warmup-side-effect"><span>The get devices warmup side-effect</span></a></h2>
+<p>This one is super sneaky and I wasted a lot of time on it. It turns out
+that if you don’t call an API to list the devices, i.e. the deprecated
+<code>AVCaptureDevice.devices</code>, or now a proper
+<code>AVCaptureDevice.DiscoverySession</code>, the <code>AVCaptureDeviceWasConnected</code>
+notification will never arrive.</p>
+<p>So you need to start a <code>DiscoverySession</code> first, expecting to get 0
+devices back (because you just set the hardware prop and its effect is
+not instant), just to “warm up” the system, so that it will actually
+send the notification.</p>
+<p>In the <a href="https://gist.github.com/samjoch/d06f7fb39b2cbbca087ddcb1af59b28e#file-avcapturedevice-playground-swift-L38">Gist</a>
+I linked earlier, the <code>print(&quot;\(AVCaptureDevice.devices().count)&quot;)</code> line
+is actually <em>significant</em> and the code will <em>not</em> work without it:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">func</span> <span class="hljs-title function_">start</span>() {
+  <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;<span class="hljs-subst">\(AVCaptureDevice.devices().count)</span>&quot;</span>)
+
+  <span class="hljs-type">NotificationCenter</span>.default
+    .addObserver(
+      forName: <span class="hljs-type">NSNotification</span>.<span class="hljs-type">Name</span>.<span class="hljs-type">AVCaptureDeviceWasConnected</span>, object: <span class="hljs-literal">nil</span>, queue: <span class="hljs-literal">nil</span>
+    ) { (notif) -&gt; <span class="hljs-type">Void</span> <span class="hljs-keyword">in</span>
+      <span class="hljs-keyword">self</span>.iosDeviceAttached(device: notif.object<span class="hljs-operator">!</span> <span class="hljs-keyword">as!</span> <span class="hljs-type">AVCaptureDevice</span>)
+    }
+}
+</code></pre>
+<p>It’s not just the innocent debug print that it seems. The fact it calls
+<code>AVCaptureDevice.devices</code> is what allows to warm up the system and for
+the notification to actually be sent later on. Without it, the
+notification will <em>never</em> arrive.</p>
+<p>I like to make it a bit more explicit with:</p>
+<pre><code class="hljs language-swift"><span class="hljs-comment">// We don&#x27;t need the data but this appears to be required to &quot;warm up&quot;</span>
+<span class="hljs-comment">// the system. If we don&#x27;t make the system call to get devices first,</span>
+<span class="hljs-comment">// we can&#x27;t discover new devices with `AVCaptureDeviceWasConnected`. 🤷</span>
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">_</span> <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureDevice</span>.devices()
+</code></pre>
+<h2 id="it-s-rate-limited" tabindex="-1"><a class="header-anchor" href="#it-s-rate-limited"><span>It’s rate limited?</span></a></h2>
+<p>This one also made me pull my hair out for a while. So I start my app
+that sets the above hardware prop, listen to device connected
+notifications, and can see the iPhone available for screen recording.</p>
+<p>Then I iterate on my code, maybe add some logging or write come code to
+actually start capturing the video feed, and then restart the app.</p>
+<p>And then, not only setting
+<code>kCMIOHardwarePropertyAllowScreenCaptureDevices</code> takes <em>a few long
+blocking seconds</em> to complete, but on top of that I don’t ever get any
+device connected notification despite the iPhone being plugged in!</p>
+<p>It appears to me that setting this prop is somehow rate limited. I would
+need to wait around a minute before launching my CLI again in order for
+it to behave “normally” (where setting the prop is near-instant, and I
+do get a notification for the plugged-in devices).</p>
+<p>However, and that’s where it gets interesting, I noticed that if any
+other process on the computer also sets that same hardware property
+(i.e. QuickTime), and that process stays running in the background, then
+my CLI would reliably work every single time, even if I launch it many
+times in a short time span. So it’s like that “rate limit” is really an
+issue if my CLI is the <em>only</em> process on the system to set that prop.</p>
+<p>So what did I do? I made a <code>my-cli background</code> command that literally
+only sets the <code>kCMIOHardwarePropertyAllowScreenCaptureDevices</code> prop,
+then sleeps indefinitely. Ran that in the background, then could do
+<code>my-cli list-devices</code> and so on as much as I wanted.</p>
+<p>Wasn’t gonna cut it for me for production, but at least that was useful
+during development to allow me to iterate quickly.</p>
+<h2 id="actual-device-recording" tabindex="-1"><a class="header-anchor" href="#actual-device-recording"><span>Actual device recording</span></a></h2>
+<p>I won’t go in much details here because there’s actually no quirks on
+that side of things. It’s just your typical <code>AVFoundation</code> recording
+which is very well covered online already.</p>
+<p>First we get the external devices via a <code>DiscoverySession</code>:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> devices <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureDevice</span>.<span class="hljs-type">DiscoverySession</span>(
+  deviceTypes: [.external],
+  <span class="hljs-comment">// Muxed type seems to be a decent way to distinguish USB connected</span>
+  <span class="hljs-comment">// mobile devices from other external devices like e.g. &quot;OBS Virtual Camera&quot;.</span>
+  mediaType: .muxed,
+  position: .unspecified
+).devices
+</code></pre>
+<p>This returns a list of <code>AVCaptureDevice</code>. Alternatively if we have the
+ID of a mobile device already:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> device <span class="hljs-operator">=</span> <span class="hljs-type">AVCaptureDevice</span>(uniqueID: <span class="hljs-string">&quot;...&quot;</span>)
+</code></pre>
+<p>Then we make an input from that device:</p>
+<pre><code class="hljs language-swift"><span class="hljs-keyword">let</span> deviceInput <span class="hljs-operator">=</span> <span class="hljs-keyword">try</span> <span class="hljs-type">AVCaptureDeviceInput</span>(device: device)
+</code></pre>
+<p>And the rest is the usual <a href="https://developer.apple.com/documentation/avfoundation/setting-up-a-capture-session"><code>AVCaptureSession</code> protocol</a>.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>If you encountered any if the quirks above, I hope that it helped you
+work around them and hopefully you didn’t waste as much time on this as
+I did. Happy device recording!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2025/06/usb-iphone-screen-recording-swift.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

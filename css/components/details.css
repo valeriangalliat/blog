@@ -1,0 +1,6 @@
+details.boxed {
+    background: var(--color-accent-subtle);
+    border-left: .25rem solid var(--color-accent-muted);
+    border-radius: .25rem;
+    padding: 1em;
+}

@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>macOS app showing scrollbars to some users only</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20250622.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="macOS app showing scrollbars to some users only">
+  <meta property="og:description" content="macOS has a setting where it shows fixed scrollbars to people using a mouse, while people using a trackpad have tiny “floating” scrollbars that are entirely hidden when not actively scrolling.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>macOS app showing scrollbars to some users only</h1>
+<p class="date">June 25, 2025</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<p>macOS has a setting where it shows fixed scrollbars to people using a
+mouse, while people using a trackpad have tiny “floating” scrollbars
+that are entirely hidden when not actively scrolling.</p>
+<p>You can find it in <strong>Appearance &gt; Show scroll bars</strong> and either force it
+to always on or always off (or keep it auto).</p>
+<h2 id="story-time" tabindex="-1"><a class="header-anchor" href="#story-time"><span>Story time</span></a></h2>
+<p>While developing a macOS app (in my case with Electron, although this
+problem is not specific to Electron), I encountered a wild bug.</p>
+<p>Some users reported having scrollbars visible in different parts of the
+app, and looking quite “off” visually:</p>
+<figure class="center">
+  <img alt="Scrollbars" srcset="../../img/2025/06/macos-scrollbars/scrollbars.png 2x">
+</figure>
+<p>However on my side it looked just fine:</p>
+<figure class="center">
+  <img alt="No scrollbars" srcset="../../img/2025/06/macos-scrollbars/no-scrollbars.png 2x">
+</figure>
+<p>I could not understand what was causing this. After all, it was
+happening across the same version of Electron, Chromium, of the app
+itself, and of macOS!</p>
+<p>It’s only when another developer reported having the bug that I jumped
+on a call with him to debug the issue.</p>
+<p>While messing with the dev tools, one thing jumped out to me: inside his
+dev tools, scrollbars were visible at all times:</p>
+<figure class="center">
+  <img alt="Dev tools scrollbars" srcset="../../img/2025/06/macos-scrollbars/devtools-scrollbars.png 2x">
+</figure>
+<p>While on my side I only had floating scrollbars while I was scrolling,
+and they would disappear entirely otherwise:</p>
+<figure class="center">
+  <img alt="Dev tools floating scrollbars" srcset="../../img/2025/06/macos-scrollbars/devtools-floating.png 2x">
+</figure>
+<p>Same version of macOS as well!</p>
+<p>What was going on?</p>
+<p><strong>It turns out the culprit was that my colleague was using a mouse,
+while I was using the trackpad of my laptop.</strong></p>
+<p>What the mouse vs. trackpad have to do with this? Meet this setting:</p>
+<figure class="center">
+  <img alt="macOS scrollbars settings" srcset="../../img/2025/06/macos-scrollbars/macos-settings.png 2x">
+</figure>
+<p>By default, macOS shows scrollbars at all times when using a mouse, but
+uses floating scrollbars when using a trackpad!</p>
+<p>Now I could force this setting to “Always” to reproduce the issue
+locally, and update the app to look OK even for people who use a mouse. 🙃</p>
+<p>In many places, we had unnecessary <code>overflow: scroll</code> in places where
+<code>overflow: auto</code> would do, and a few places where we had to hide
+scrollbars entirely with <code>overflow: hidden</code>.</p>
+<p>It was easy to make those silly mistakes when all the devs working on
+the app were using a trackpad. 😂</p>
+<h2 id="bonus-dark-mode-scrollbars" tabindex="-1"><a class="header-anchor" href="#bonus-dark-mode-scrollbars"><span>Bonus: dark mode scrollbars</span></a></h2>
+<p>For the places where we did want scrollbars, there was a remaining
+issue: we force our app in dark mode, but the scrollbars were showing in
+light mode nevertheless!</p>
+<p>The way we force our Electron app in dark mode is by doing:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { nativeTheme } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;electron&#x27;</span>
+
+nativeTheme.<span class="hljs-property">themeSource</span> = <span class="hljs-string">&#x27;dark&#x27;</span>
+</code></pre>
+<p>However in order for native scrollbars to show in dark mode, we also had
+to add the following to our HTML file:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;color-scheme: dark&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</code></pre>
+<p>(This is not the place where we actually needed scrollbars, but for lack
+of a better screenshot, here’s what it would look like with both
+directions scrollbars:)</p>
+<figure class="center">
+  <img alt="Scrollbars dark mode" srcset="../../img/2025/06/macos-scrollbars/scrollbars-dark.png 2x">
+</figure>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2025/06/macos-app-scrollbars-some-users-only.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://twitter.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Twitter</title>
+                <use href="/img/icons/407-twitter.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>GitHub</title>
+                <use href="/img/icons/433-github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Instagram</title>
+                <use href="/img/icons/403-instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>YouTube</title>
+                <use href="/img/icons/414-youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/219-heart.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 16 16">
+                <title>RSS</title>
+                <use href="/img/icons/412-rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

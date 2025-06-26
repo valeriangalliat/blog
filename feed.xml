@@ -5,10 +5,93 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2025-06-22T22:25:47.321Z</updated>
+  <updated>2025-06-26T01:24:01.863Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>macOS app showing scrollbars to some users only</title>
+    <link href="https://www.codejam.info/2025/06/macos-app-scrollbars-some-users-only.html" />
+    <id>https://www.codejam.info/2025/06/macos-app-scrollbars-some-users-only.html</id>
+    <updated>2025-06-25T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2025/06/macos-app-scrollbars-some-users-only.html#tldr"><span>TLDR</span></a></h2>
+<p>macOS has a setting where it shows fixed scrollbars to people using a
+mouse, while people using a trackpad have tiny “floating” scrollbars
+that are entirely hidden when not actively scrolling.</p>
+<p>You can find it in <strong>Appearance &gt; Show scroll bars</strong> and either force it
+to always on or always off (or keep it auto).</p>
+<h2 id="story-time" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2025/06/macos-app-scrollbars-some-users-only.html#story-time"><span>Story time</span></a></h2>
+<p>While developing a macOS app (in my case with Electron, although this
+problem is not specific to Electron), I encountered a wild bug.</p>
+<p>Some users reported having scrollbars visible in different parts of the
+app, and looking quite “off” visually:</p>
+<figure class="center">
+  <img alt="Scrollbars" srcset="../../img/2025/06/macos-scrollbars/scrollbars.png 2x">
+</figure>
+<p>However on my side it looked just fine:</p>
+<figure class="center">
+  <img alt="No scrollbars" srcset="../../img/2025/06/macos-scrollbars/no-scrollbars.png 2x">
+</figure>
+<p>I could not understand what was causing this. After all, it was
+happening across the same version of Electron, Chromium, of the app
+itself, and of macOS!</p>
+<p>It’s only when another developer reported having the bug that I jumped
+on a call with him to debug the issue.</p>
+<p>While messing with the dev tools, one thing jumped out to me: inside his
+dev tools, scrollbars were visible at all times:</p>
+<figure class="center">
+  <img alt="Dev tools scrollbars" srcset="../../img/2025/06/macos-scrollbars/devtools-scrollbars.png 2x">
+</figure>
+<p>While on my side I only had floating scrollbars while I was scrolling,
+and they would disappear entirely otherwise:</p>
+<figure class="center">
+  <img alt="Dev tools floating scrollbars" srcset="../../img/2025/06/macos-scrollbars/devtools-floating.png 2x">
+</figure>
+<p>Same version of macOS as well!</p>
+<p>What was going on?</p>
+<p><strong>It turns out the culprit was that my colleague was using a mouse,
+while I was using the trackpad of my laptop.</strong></p>
+<p>What the mouse vs. trackpad have to do with this? Meet this setting:</p>
+<figure class="center">
+  <img alt="macOS scrollbars settings" srcset="../../img/2025/06/macos-scrollbars/macos-settings.png 2x">
+</figure>
+<p>By default, macOS shows scrollbars at all times when using a mouse, but
+uses floating scrollbars when using a trackpad!</p>
+<p>Now I could force this setting to “Always” to reproduce the issue
+locally, and update the app to look OK even for people who use a mouse. 🙃</p>
+<p>In many places, we had unnecessary <code>overflow: scroll</code> in places where
+<code>overflow: auto</code> would do, and a few places where we had to hide
+scrollbars entirely with <code>overflow: hidden</code>.</p>
+<p>It was easy to make those silly mistakes when all the devs working on
+the app were using a trackpad. 😂</p>
+<h2 id="bonus-dark-mode-scrollbars" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2025/06/macos-app-scrollbars-some-users-only.html#bonus-dark-mode-scrollbars"><span>Bonus: dark mode scrollbars</span></a></h2>
+<p>For the places where we did want scrollbars, there was a remaining
+issue: we force our app in dark mode, but the scrollbars were showing in
+light mode nevertheless!</p>
+<p>The way we force our Electron app in dark mode is by doing:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { nativeTheme } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;electron&#x27;</span>
+
+nativeTheme.<span class="hljs-property">themeSource</span> = <span class="hljs-string">&#x27;dark&#x27;</span>
+</code></pre>
+<p>However in order for native scrollbars to show in dark mode, we also had
+to add the following to our HTML file:</p>
+<pre><code class="hljs language-html"><span class="hljs-tag">&lt;<span class="hljs-name">body</span> <span class="hljs-attr">style</span>=<span class="hljs-string">&quot;color-scheme: dark&quot;</span>&gt;</span><span class="hljs-tag">&lt;/<span class="hljs-name">body</span>&gt;</span>
+</code></pre>
+<p>(This is not the place where we actually needed scrollbars, but for lack
+of a better screenshot, here’s what it would look like with both
+directions scrollbars:)</p>
+<figure class="center">
+  <img alt="Scrollbars dark mode" srcset="../../img/2025/06/macos-scrollbars/scrollbars-dark.png 2x">
+</figure>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>GitHub Action hanging on Electron macOS app code signing</title>
     <link href="https://www.codejam.info/2025/06/github-action-hanging-macos-app-code-signing.html" />
@@ -2037,163 +2120,6 @@ domain. Enjoy! 🤙</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1786553405659545823">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>gocryptfs on macOS (with and without macFUSE)</title>
-    <link href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html" />
-    <id>https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html</id>
-    <updated>2024-04-26T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>In this post I’m taking gocryptfs as an example because that’s what I
-use to encrypt my <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">offsite backups</a>, but this
-can probably be applied to doing anything FUSE-related on a Mac.</p>
-<h2 id="gocryptfs-on-macos" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#gocryptfs-on-macos"><span>gocryptfs on macOS</span></a></h2>
-<p>Using gocryptfs on macOS requires <a href="https://osxfuse.github.io/">macFUSE</a>.
-macFUSE (previously known as <a href="https://web.archive.org/web/20130710220229/https://osxfuse.github.io/">OSXFUSE</a>
-(previously known as <a href="https://web.archive.org/web/20130704045540/http://code.google.com/p/macfuse/">MacFUSE</a>
-lol TIL)) is an awesome project that allows to mount
-<a href="https://www.kernel.org/doc/html/next/filesystems/fuse.html">FUSE</a>
-filesystems on macOS.</p>
-<p>All it takes is:</p>
-<pre><code class="hljs language-sh">brew --cask install macfuse
-
-<span class="hljs-comment"># Do the reboot dance to allow the kernel extension (see &quot;concerns&quot; below)</span>
-
-brew install gromgit/fuse/gocryptfs-mac
-
-<span class="hljs-comment"># Not needed but might as well have SSHFS around too</span>
-brew install gromgit/fuse/sshfs-mac
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> gocryptfs and SSHFS can’t be installed from Homebrew’s main
-registry anymore <a href="https://github.com/Homebrew/homebrew-core/pull/74812#issuecomment-826895526">because</a>
-they depend on macFUSE, which is not open-source.</p>
-<p>This is why the above command installs from <a href="https://github.com/gromgit/homebrew-fuse">this repository</a>,
-which hosts the Homebrew formulas that depend on FUSE that were dropped
-from Homebrew.</p>
-</div>
-<h2 id="concerns-about-macfuse" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#concerns-about-macfuse"><span>Concerns about macFUSE</span></a></h2>
-<p>Sadly, macFUSE is not open-source. But at least it’s been updated
-regularly for over 10 years, and keeps supporting the latest macOS
-versions, so as long as this stays the case, I don’t mind using it.</p>
-<p>That said, depending on macFUSE for a process as critical as my <a href="https://www.codejam.info/2024/04/offsite-backup-sync.html">offsite backups</a>
-means that I will need to wait for it to support a new macOS version
-before I deem to upgrade. Because it’s a kernel extension, it’s
-not necessarily as easy to upgrade as other userland programs.</p>
-<p>The other problem is that Apple <a href="https://developer.apple.com/support/kernel-extensions/">deprecated kernel extensions</a>
-in 2020 with macOS Catalina (although they still work up to this date on
-later versions). This is tracked in <a href="https://github.com/osxfuse/osxfuse/issues/987">this macFUSE issue</a>
-but at the time of writing, Apple doesn’t provide APIs that allow to
-implement macFUSE outside of a (now deprecated) kernel extension.</p>
-<p>On top of that, going with the deprecation, Apple made it
-<a href="https://github.com/osxfuse/osxfuse/issues/814">annoying</a>
-to install kernel extensions on ARM Macs, by having to reboot in
-recovery and enabling “reduced security” mode (which is now <a href="https://support.apple.com/en-ca/guide/security/sec7d92dc49f/web">required</a>
-for kernel extensions).</p>
-<p>While macFUSE works now, and have been working for many years after the
-original deprecation of kernel extensions by Apple, its future is still
-somewhat unclear.</p>
-<p>In future versions, will macOS drop some the APIs that macFUSE depend
-on, without providing viable alternatives? Or will they entirely block
-kernel extensions? And in the event they do provide viable alternative
-APIs, how long will it take for macFUSE to support that new version?</p>
-<p>Otherwise, is any of the alternatives like
-<a href="https://www.fuse-t.org/">FUSE-T</a> gonna be solid enough by then? And
-more importantly, is gocryptfs gonna work with those alternatives?
-Actually, it won’t, because right now
-<a href="https://github.com/hanwen/go-fuse">go-fuse</a> depends explicitly on
-macFUSE.</p>
-<p>So, I wasn’t ready to commit to that setup without having a somewhat
-viable fallback.</p>
-<h2 id="gocryptfs-on-macos-without-macfuse" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#gocryptfs-on-macos-without-macfuse"><span>gocryptfs on macOS without macFUSE</span></a></h2>
-<p>While FUSE, as we saw, is a bit of a challenge on macOS, it’s perfectly
-fine on Linux. gocryptfs and FUSE on Linux are not going anywhere.</p>
-<p>Now, <a href="https://github.com/lima-vm/lima">Lima</a> is a pretty sweet way to
-run a Linux VM on macOS. Similarly to <a href="https://learn.microsoft.com/en-us/windows/wsl/install">WSL</a>
-on Windows, Lima can drop you in a Linux shell on your Mac, with
-transparent access to your files.</p>
-<p>This means you can easily install gocryptfs in that Lima environment,
-and use it there. Assuming I want to get an encrypted mount of my home
-directory (<code>~</code>):</p>
-<pre><code class="hljs language-sh">brew install lima
-
-limactl start
-
-lima <span class="hljs-built_in">sudo</span> apt install gocryptfs
-
-<span class="hljs-comment"># Init in a temp dir because Lima can&#x27;t write to the host filesystem</span>
-lima gocryptfs -init -reverse /tmp/lima
-
-<span class="hljs-comment"># From the host move the config file in the right place</span>
-<span class="hljs-built_in">mv</span> /tmp/lima/.gocryptfs.reverse.conf ~
-
-lima <span class="hljs-built_in">mkdir</span> -p /tmp/encrypted
-lima gocryptfs -reverse ~ /tmp/encrypted
-lima rsync --archive /tmp/encrypted <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span>
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> Depending on how you connect to <code>$DESTINATION</code>, you may want to
-copy/link your SSH config and keys inside the Linux home of the VM
-user. For example:</p>
-<pre><code class="hljs language-sh">lima <span class="hljs-built_in">ln</span> -s ~/.ssh/{config,id_ed25519*} <span class="hljs-string">&quot;<span class="hljs-subst">$(lima sh -c &#x27;echo $HOME&#x27;)</span>/.ssh&quot;</span>
-</code></pre>
-</div>
-<h2 id="decrypting-remote-files" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#decrypting-remote-files"><span>Decrypting remote files</span></a></h2>
-<p>We can as easily do the opposite: use SSHFS to mount the remote
-encrypted directory locally, then use gocryptfs to decrypt it and access
-the files transparently.</p>
-<pre><code class="hljs language-sh">lima <span class="hljs-built_in">sudo</span> apt install sshfs
-
-lima <span class="hljs-built_in">mkdir</span> -p /tmp/encrypted /tmp/decrypted
-sshfs -o idmap=user <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> /tmp/encrypted
-gocryptfs /tmp/encrypted /tmp/decrypted
-</code></pre>
-<p>At that point we can browse the decrypted tree from the Lima shell,
-however we can’t access it from the host.</p>
-<h2 id="accessing-decrypted-files-from-the-host" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/04/gocryptfs-macos-macfuse.html#accessing-decrypted-files-from-the-host"><span>Accessing decrypted files from the host</span></a></h2>
-<p>If Lima can access files from the host, why can’t the host access files
-from Lima?</p>
-<p>Well, it comes down again to the ability to us FUSE. In order to access
-host files, Lima starts a SSHFS server on the macOS host, and then
-mounts it via SSHFS (FUSE) inside the Linux VM. That’s fine, because
-Linux have absolutely no issue with FUSE stuff.</p>
-<p>The other way around however, we would need FUSE on the macOS side in
-order to mount a SSHFS server running inside the VM. No bueno, because
-we’re doing all this jazz to avoid dealing with FUSE on macOS in the
-first place. 😬</p>
-<p>So if we’re not gonna use FUSE, we need to fallback to another protocol
-that’s better supported on Mac, like WebDAV.</p>
-<p>The best way I’ve found to do that is actually to use a simple, plain Go
-WebDAV server such as <a href="https://taoofmac.com/space/til/2022/11/25/2200">this one</a>.</p>
-<p>Just point the server to serve the decrypted mount point from earlier.</p>
-<p>We also need to edit the Lima VM config in
-<code>~/.lima/default/lima.yaml</code> to forward the port the WebDAV server is
-listening on, so we can access it from the host system, such as:</p>
-<pre><code class="hljs language-yaml"><span class="hljs-attr">portForwards:</span>
-  <span class="hljs-bullet">-</span> <span class="hljs-attr">guestPort:</span> <span class="hljs-number">1234</span>
-</code></pre>
-<p>Then on the macOS side we can do:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> -p mountpoint
-mount_webdav http://localhost:1234 mountpoint
-</code></pre>
-<p>Before going with the custom Go solution, I’ve tried
-<a href="https://wiki.gnome.org/phodav">phởdav</a>, because unlike most WebDAV
-servers, it doesn’t require any kind of hairy configuration, and can be
-spawned in a ad hoc way that just works. But the performance wasn’t as
-good as the Go version. I’ve also tried NFS, but that was much even
-slower.</p>
-<p>That said, don’t get your hopes too high. Even with the Go version, the
-performance wasn’t super fast, but I believe it’s mainly because of
-being run over SSHFS, so your mileage may vary depending on the network
-bandwidth you have with your offsite server. But as a fallback, I’ll
-call it good enough anyway.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1784030029187588316">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

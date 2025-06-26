@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2025
 
+* [macOS app showing scrollbars to some users only](2025/06/macos-app-scrollbars-some-users-only.md) <small>June 25, 2025</small>
 * [GitHub Action hanging on Electron macOS app code signing](2025/06/github-action-hanging-macos-app-code-signing.md) <small>June 22, 2025</small>
 * [USB iPhone screen recording in Swift](2025/06/usb-iphone-screen-recording-swift.md) <small>June 22, 2025</small>
 * [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-bugger-logs-github-actions.md) <small>April 23, 2025</small>

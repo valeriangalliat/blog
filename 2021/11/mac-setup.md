@@ -158,6 +158,7 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 * In **Appearance > Windows**, tick **Hide scrollbars**.
 * In **Appearance > Tabs**, tick **Preserve window size when tab bar
   shows or hides**.
+* In **Appearance > Panes**, untick **Show per-pane title bars**.
 * In **Profiles > General**, select **Reuse previous session's
   directory** as working directory.
 * In **Profiles > Terminal**, tick **Silence bell**.

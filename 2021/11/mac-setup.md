@@ -119,7 +119,7 @@ installed system.
   desktop with screenshots like it's the case by default.
 
 Now I'm ready to configure the [system preferences](#system-preferences),
-[iTerm2 settings](#iterm2-settings) and my [terminal-environment](#terminal-environment).
+[iTerm2 preferences](#iterm2-preferences) and my [terminal-environment](#terminal-environment).
 
 ## System preferences
 
@@ -156,10 +156,12 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 ## iTerm2 preferences
 
 * In **Appearance > Windows**, tick **Hide scrollbars**.
+* In **Appearance > Tabs**, tick **Preserve window size when tab bar
+  shows or hides**.
 * In **Profiles > General**, select **Reuse previous session's
   directory** as working directory.
 * In **Profiles > Terminal**, tick **Silence bell**.
-* In **Profiles > Keys > Key Mappings**, load the **Natural Text
+* In **Profiles > Keys > Key Bindings**, load the **Natural Text
   Editing** preset (allow it to remove whatever is already there), and
   remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
   <kbd>Right</kbd> which otherwise shadow the shortcuts to navigate

@@ -80,26 +80,53 @@ Developer account, in <strong>Certificates, IDs &amp; Profiles</strong>. Choose 
 <strong>Developer ID Application</strong> certificate type.</p>
 <p>This will give you a certificate <code>developerID_application.cer</code> that you
 need to import in Keychain Access (by simply opening it).</p>
-<h2 id="get-the-intermediate-certificates" tabindex="-1"><a class="header-anchor" href="#get-the-intermediate-certificates"><span>Get the intermediate certificates</span></a></h2>
-<p>I don’t fully understand this part, but the above is not enough to sign
-your app. You also need some extra root and/or intermediate certificates
-to be present in your Keychain Access, but it’s not exactly clear which
-ones or where to get them.</p>
-<p>What I know is that by using Xcode and messing with their certificate
-management settings, it downloads the extra stuff that is needed for
-code signing to work.</p>
-<p>So:</p>
-<ol>
-<li>Install Xcode.</li>
-<li>In <strong>Xcode &gt; Settings… &gt; Accounts</strong>, add your Apple account.</li>
-<li>Click <strong>Download Manual Profiles</strong>.</li>
-<li>Click <strong>Manage Certificates</strong> and request a new <strong>Apple Development</strong>
-certificate that you can delete right after.</li>
-</ol>
-<p>Executing part or all of those steps may download the extra certificates
-you need in Keychain Access. It’s not 100% clear to me what did it for
-me. 😅 Don’t hesitate to <a href="/val.html#contact">let me know</a> if you have more
-details on this!</p>
+<div class="note">
+<p><strong>Note:</strong> if it refuses to open with “The System Roots keychain cannot
+be modified”, it’s because Keychain Access opens by default in the
+System Roots keychain and you can only update it as superuser (so mainly
+from the CLI with <code>sudo security ...</code>).</p>
+<p>We only need this certificate in the login keychain, so make sure it’s
+the selected one in Keychain Access and then open the certificate again.</p>
+</div>
+<h2 id="get-the-intermediate-certificate" tabindex="-1"><a class="header-anchor" href="#get-the-intermediate-certificate"><span>Get the intermediate certificate</span></a></h2>
+<p>In Apple’s <abbr title="Public key infrastructure"><a href="https://www.apple.com/certificateauthority/">PKI</a></abbr>,
+your developer certificate is signed by an intermediate certificate,
+that’s itself signed by one of Apple’s root certificates.</p>
+<p>The Apple root certificates should already be present out of the box in
+your System Roots keychain, but the intermediate ones are not, and need
+to be downloaded for the certificate chain to be complete and for
+<code>codesign</code> to work.</p>
+<p>When you created your Developer ID certificate, you were likely prompted
+between “G2 Sub-CA” and “Previous Sub-CA”. At the time of writing, on the
+<a href="https://www.apple.com/certificateauthority/">Apple PKI page</a>,
+those are respectively <a href="https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer">Developer ID - G2 (Expiring 09/17/2031 00:00:00 UTC)</a>
+and <a href="https://www.apple.com/certificateauthority/DeveloperIDCA.cer">Developer ID - G1 (Expiring 02/01/2027 22:12:15 UTC)</a>.
+So go ahead and download the appropriate one and install it to your
+login keychain just like your developer certificate.</p>
+<div class="note">
+<p><strong>Note:</strong> if you don’t know what intermediate certificate you need, you
+can see what <abbr title="Certificate authorith">CA</abbr> signed your
+certificate like so:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">openssl x509 -<span class="hljs-keyword">in</span> <span class="hljs-string">&quot;developerID_application.cer&quot;</span> -noout -issuer</span>
+issuer=CN=Developer ID Certification Authority, OU=G2, O=Apple Inc., C=US
+</code></pre>
+<p>In this case, you can see my certificate was issued using the G2
+intermediate certificate.</p>
+</div>
+<div class="note warn">
+<p><strong>Warning:</strong> <a href="https://developer.apple.com/forums/thread/86161?answerId=422698022#422698022">leave the certificate trust settings</a>
+to “Use System Defaults” and do not mark it as “Always Trust”, both for
+your developer certificate and the intermediate certificate.</p>
+<p>If like me you were getting issues signing things and assumed marking as
+“Always Trust” could help, beware, it does the opposite and prevents
+<code>codesign</code> from working altogether for some reason, even after you fix
+the actual cause of your signing issues. 😅</p>
+<p>Whether you’re missing a certificate, or if you have the right
+certificates but they’re marked as “Always Trust”, you’ll get that same
+error:</p>
+<pre><code class="hljs">Warning: unable to build chain to self-signed root for signer
+</code></pre>
+</div>
 <h2 id="manually-sign-your-app" tabindex="-1"><a class="header-anchor" href="#manually-sign-your-app"><span>Manually sign your app</span></a></h2>
 <p>You’re now in a place where you can manually sign your app:</p>
 <pre><code class="hljs language-sh">codesign --sign <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span> MyApp.app

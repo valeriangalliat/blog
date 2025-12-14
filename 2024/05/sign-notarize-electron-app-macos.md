@@ -67,29 +67,74 @@ Developer account, in **Certificates, IDs & Profiles**. Choose the
 This will give you a certificate `developerID_application.cer` that you
 need to import in Keychain Access (by simply opening it).
 
-## Get the intermediate certificates
+<div class="note">
 
-I don't fully understand this part, but the above is not enough to sign
-your app. You also need some extra root and/or intermediate certificates
-to be present in your Keychain Access, but it's not exactly clear which
-ones or where to get them.
+**Note:** if it refuses to open with "The System Roots keychain cannot
+be modified", it's because Keychain Access opens by default in the
+System Roots keychain and you can only update it as superuser (so mainly
+from the CLI with `sudo security ...`).
 
-What I know is that by using Xcode and messing with their certificate
-management settings, it downloads the extra stuff that is needed for
-code signing to work.
+We only need this certificate in the login keychain, so make sure it's
+the selected one in Keychain Access and then open the certificate again.
 
-So:
+</div>
 
-1. Install Xcode.
-1. In **Xcode > Settings... > Accounts**, add your Apple account.
-1. Click **Download Manual Profiles**.
-1. Click **Manage Certificates** and request a new **Apple Development**
-   certificate that you can delete right after.
+## Get the intermediate certificate
 
-Executing part or all of those steps may download the extra certificates
-you need in Keychain Access. It's not 100% clear to me what did it for
-me. 😅 Don't hesitate to [let me know](/val.md#contact) if you have more
-details on this!
+In Apple's <abbr title="Public key infrastructure">[PKI](https://www.apple.com/certificateauthority/)</abbr>,
+your developer certificate is signed by an intermediate certificate,
+that's itself signed by one of Apple's root certificates.
+
+The Apple root certificates should already be present out of the box in
+your System Roots keychain, but the intermediate ones are not, and need
+to be downloaded for the certificate chain to be complete and for
+`codesign` to work.
+
+When you created your Developer ID certificate, you were likely prompted
+between "G2 Sub-CA" and "Previous Sub-CA". At the time of writing, on the
+[Apple PKI page](https://www.apple.com/certificateauthority/),
+those are respectively [Developer ID - G2 (Expiring 09/17/2031 00:00:00 UTC)](https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer)
+and [Developer ID - G1 (Expiring 02/01/2027 22:12:15 UTC)](https://www.apple.com/certificateauthority/DeveloperIDCA.cer).
+So go ahead and download the appropriate one and install it to your
+login keychain just like your developer certificate.
+
+<div class="note">
+
+**Note:** if you don't know what intermediate certificate you need, you
+can see what <abbr title="Certificate authorith">CA</abbr> signed your
+certificate like so:
+
+```console
+$ openssl x509 -in "developerID_application.cer" -noout -issuer
+issuer=CN=Developer ID Certification Authority, OU=G2, O=Apple Inc., C=US
+```
+
+In this case, you can see my certificate was issued using the G2
+intermediate certificate.
+
+</div>
+
+<div class="note warn">
+
+**Warning:** [leave the certificate trust settings](https://developer.apple.com/forums/thread/86161?answerId=422698022#422698022)
+to "Use System Defaults" and do not mark it as "Always Trust", both for
+your developer certificate and the intermediate certificate.
+
+If like me you were getting issues signing things and assumed marking as
+"Always Trust" could help, beware, it does the opposite and prevents
+`codesign` from working altogether for some reason, even after you fix
+the actual cause of your signing issues. 😅
+
+Whether you're missing a certificate, or if you have the right
+certificates but they're marked as "Always Trust", you'll get that same
+error:
+
+```
+Warning: unable to build chain to self-signed root for signer
+```
+
+</div>
+
 
 ## Manually sign your app
 

@@ -11,7 +11,12 @@ function parse (content) {
     line = line.trim()
 
     if (line.startsWith('--color-')) {
-      const [name, color] = line.slice(0, -1).split(': ')
+      let [name, color] = line.slice(0, -1).split(': ')
+
+      if (color.startsWith('#')) {
+        color = color.toLowerCase()
+      }
+
       colors[name] = color
     }
   }

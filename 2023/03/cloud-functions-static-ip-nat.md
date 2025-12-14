@@ -49,7 +49,7 @@ If you run on Kubernetes, you only need the Cloud NAT.
 
 The VPC connector, also known as [Serverless VPC Access connector](https://cloud.google.com/vpc/docs/configure-serverless-vpc-access),
 is a piece of Google Cloud infrastructure that lets you route the
-traffic of Cloud Functions and Cloud Run containers to your <abbr title="Virtual Private Cloud">VPC</abbr>.
+traffic of Cloud Functions and Cloud Run containers to your <abbr title="Virtual private cloud">VPC</abbr>.
 
 This is useful if you want them to access private resources, or in our
 case, if you want them to access the internet through static IPs.

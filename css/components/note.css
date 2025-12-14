@@ -17,3 +17,8 @@
 .note > * {
     --vertical-margin: 1rem;
 }
+
+.note.warn {
+    background: var(--color-attention-subtle);
+    border-top-color: var(--color-attention-muted);
+}

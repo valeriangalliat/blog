@@ -151,7 +151,8 @@ Now I'm ready to configure the [system preferences](#system-preferences),
   make sure **Install macOS updates** is off (I don't want macOS to
   reboot without my permission and lose any unsaved state).
 * If I installed Visual Studio Code, I run `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
-  for... sanity.
+  for... sanity. For Cursor it's `defaults write com.todesktop.230313mzl4w4u92 ApplePressAndHoldEnabled -bool false`,
+  and for Antigravity it's `defaults write com.google.antigravity ApplePressAndHoldEnabled -bool false`.
 
 ## iTerm2 preferences
 

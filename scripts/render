@@ -207,9 +207,9 @@ if (layout === 'post') {
   process.stdout.write('  <p>\n')
 
   if (meta.tweet) {
-    process.stdout.write(`    Join the discussion on <a href="${escape(meta.tweet)}">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n`)
+    process.stdout.write(`    Join the discussion on <a href="${escape(meta.tweet)}">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n`)
   } else {
-    process.stdout.write('    Start a conversation on <a href="https://twitter.com/valeriangalliat">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n')
+    process.stdout.write('    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>\n')
   }
 
   process.stdout.write('    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻\n')

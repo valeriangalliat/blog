@@ -1,6 +1,6 @@
 MD = $(shell find . -name '*.md' ! -path '*/node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
-ICONS = dist/img/icons/403-instagram.svg dist/img/icons/407-twitter.svg dist/img/icons/414-youtube.svg dist/img/icons/433-github.svg dist/img/icons/452-soundcloud.svg dist/img/icons/219-heart.svg dist/img/icons/412-rss.svg
+ICONS = dist/img/icons/instagram.svg dist/img/icons/x.svg dist/img/icons/youtube.svg dist/img/icons/github.svg dist/img/icons/kofi.svg dist/img/icons/rss.svg
 ASSETS = dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20251214.css dist/js/emojicon.js dist/js/main-20230317.js dist/api/search.js $(ICONS)
 FEED = dist/feed.xml
 
@@ -102,23 +102,8 @@ dist/img/val.jpg:
 dist/img/freelance.jpg:
 	magick IMG_7587.jpeg -resize 1280x -crop '1280x512+0+%[fx:50/100*(h-512)]' $@
 
-dist/img/icons/%.svg: node_modules/icomoon-free-npm/SVG/%.svg
-	cat $< | sed 's/<svg /<svg id="icon" /;s/ fill="#000000"//' > $@
-
-dist/img/icons/instagram.png:
-	curl 'https://www.instagram.com/static/images/ico/favicon-192.png/68d99ba29cc8.png' | convert - -resize 16x $@
-
-dist/img/icons/twitter.png:
-	curl 'https://abs.twimg.com/responsive-web/client-web/icon-ios.b1fc7275.png' | convert - -resize 16x $@
-
-dist/img/icons/gmail.png:
-	curl 'https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico' | convert 'ico:-[3]' -resize 16x $@
-
-dist/img/icons/linkedin.png:
-	curl 'https://static-exp1.licdn.com/sc/h/eahiplrwoq61f4uan012ia17i' | convert - -resize 16x $@
-
-dist/img/icons/ko-fi.png:
-	curl 'https://ko-fi.com/favicon.png' | convert - -resize 16x $@
+dist/img/icons/%.svg: node_modules/simple-icons/icons/%.svg
+	cat $< | sed 's/<svg /<svg id="icon" /' > $@
 
 css/colors.css:
 	./scripts/colors > $@

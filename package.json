@@ -10,7 +10,7 @@
     "escape-html": "^1.0.3",
     "highlight.js": "^11.5.1",
     "highlightjs-code-diff": "^1.0.0",
-    "icomoon-free-npm": "0.0.0",
+    "simple-icons": "^16.6.0",
     "markdown-it": "^14.1.0",
     "markdown-it-anchor": "^8.6.2",
     "markdown-it-attr-typographer": "^1.1.0",

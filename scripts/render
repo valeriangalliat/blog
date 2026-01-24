@@ -48,6 +48,30 @@ md.use(require('markdown-it-highlightjs'), { hljs, auto: false })
 md.use(require('markdown-it-title'), { excerpt: 3 })
 md.use(require('markdown-it-attr-typographer'), { html: true })
 
+// Strip HTML comments from output.
+md.core.ruler.push('stripComments', state => {
+  state.tokens = state.tokens.filter(token =>
+    !(token.type === 'html_block' && token.content.trim().startsWith('<!--'))
+  )
+
+  for (const blockToken of state.tokens) {
+    if (blockToken.type === 'inline' && blockToken.children) {
+      blockToken.children = blockToken.children.filter((token, i, arr) => {
+        if (token.type === 'html_inline' && token.content.startsWith('<!--')) {
+          const prev = arr[i - 1]
+          if (prev && prev.type === 'text') {
+            prev.content = prev.content.replace(/\s+$/, '')
+          }
+
+          return false
+        }
+
+        return true
+      })
+    }
+  }
+})
+
 // Rewrite local Markdown links to HTML.
 md.core.ruler.push('markdownLinkRewrite', state => {
   for (const blockToken of state.tokens) {

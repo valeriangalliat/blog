@@ -1,9 +1,9 @@
 ---
-excerpt: A blog about tech, programming and other things.
+excerpt: A blog about tech, software and other things.
 ---
 
 # CodeJam
-A blog about tech, programming and other things.
+A blog about tech, software and other things.
 
 ## Posts
 

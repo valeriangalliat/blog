@@ -7,7 +7,7 @@
   <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
   <link rel="stylesheet" href="/css/normalize.css">
   <link rel="stylesheet" href="/css/github-20220617.css">
-  <link rel="stylesheet" href="/css/main-20251214.css">
+  <link rel="stylesheet" href="/css/main-20260124.css">
   <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
   <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
   <meta property="og:title" content="You’re (probably) doing anchor links wrong">
@@ -43,9 +43,9 @@ automatically add an <code>id</code> attribute to headings, and optionally add
 anchor links (permalinks).</p>
 <p>There’s been <a href="https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/">some</a>
 <a href="https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/">activity</a>
-<a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">lately</a> <a href="https://twitter.com/nhoizey/status/1365064686094471173">about</a>
-<a href="https://twitter.com/nhoizey/status/1366479047065239562">proper</a>
-<a href="https://twitter.com/KittyGiraudel/status/1376789257176690688">accessibility</a>
+<a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">lately</a> <a href="https://x.com/nhoizey/status/1365064686094471173">about</a>
+<a href="https://x.com/nhoizey/status/1366479047065239562">proper</a>
+<a href="https://x.com/KittyGiraudel/status/1376789257176690688">accessibility</a>
 of heading permalinks, and this was <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">brought to my attention</a>
 to improve markdown-it-anchor’s way of rendering permalinks out of the box.</p>
 <p>If you want to get directly to the heart of the subject, you can jump
@@ -116,7 +116,7 @@ topic, and that it was going to be hard, if not impossible, to satisfy
 everybody.</em></p>
 <p>The question of accessible permalinks stayed in my mind, until…</p>
 <h2 id="the-very-simple-solution" tabindex="-1"><a class="header-anchor" href="#the-very-simple-solution"><span>The <em>very</em> simple solution</span></a></h2>
-<p>About at the same time, my friend <a href="https://twitter.com/KittyGiraudel/">Kitty</a>,
+<p>About at the same time, my friend <a href="https://x.com/KittyGiraudel/">Kitty</a>,
 is <a href="https://kittygiraudel.com/2020/11/30/from-jekyll-to-11ty/">switching from Jekyll to Eleventy</a>,
 and finds my plugin while looking for a way to add <code>id</code>s to headings. 😎</p>
 <p>Since one of Kitty’s area of expertise is accessibility, I was secretly
@@ -132,12 +132,12 @@ the <code>id</code>s and use them as anchors.</p>
 <p>Sometimes, the smartest way to implement a nonstandard feature, might be
 to… not?</p>
 <h2 id="another-take-on-accessible-permalinks" tabindex="-1"><a class="header-anchor" href="#another-take-on-accessible-permalinks"><span>Another take on accessible permalinks</span></a></h2>
-<p>Just two weeks later, <a href="https://twitter.com/ambrwlsn90">Amber</a> publishes
+<p>Just two weeks later, <a href="https://x.com/ambrwlsn90">Amber</a> publishes
 a post about <a href="https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/">designing truly accessible anchor links</a>.</p>
 <p>This is an awesome article that I highly recommend reading. Amber
 explains the 5 iterations she went through to make accessible anchor
 links on her own blog, including the details of her research.</p>
-<p>But it’s 3 months later that I hear about it, when <a href="https://twitter.com/nhoizey">Nicolas</a>
+<p>But it’s 3 months later that I hear about it, when <a href="https://x.com/nhoizey">Nicolas</a>
 opens an issue on the markdown-it-anchor repo, after also writing
 <a href="https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/">a blog post on the subject</a>.</p>
 <p>That was a lot of new information for me to unpack, but I was really
@@ -150,11 +150,11 @@ best solutions from an accessibility point of view, the implementation
 affects other aspects of the permalink and headings, including browsers
 “reader mode”, RSS readers, <abbr title="Search engine result pages">SERP</abbr>,
 and adds extra challenges about <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-787204964">internationalization</a>.</p>
-<p>Nicolas <a href="https://twitter.com/nhoizey/status/1366476887992729601">tweeted about this</a>
+<p>Nicolas <a href="https://x.com/nhoizey/status/1366476887992729601">tweeted about this</a>
 to gather more insights on the subject, which brought quite some
 activity on the tweet as well as the GitHub issue, with high quality
-suggestions from Kitty, Amber, as well as <a href="https://twitter.com/tunetheweb">Barry</a>
-and <a href="https://twitter.com/7h1322yk0813n72">Thierry</a> who both dug in depth
+suggestions from Kitty, Amber, as well as <a href="https://x.com/tunetheweb">Barry</a>
+and <a href="https://x.com/7h1322yk0813n72">Thierry</a> who both dug in depth
 on the alternative solution of turning headers themselves into links
 (the style used by <a href="https://developer.mozilla.org/en-US/docs/Web">MDN</a> and <a href="https://almanac.httparchive.org/en/2020/table-of-contents">Web Almanac</a>). They also found creative
 ways of making the markup of header links behave like the original
@@ -311,11 +311,11 @@ those are usable on your website!</p>
 learn from many knowledgeable peers who documented that aspect of anchor
 links, and contributed to the discussion in <a href="https://github.com/valeriangalliat/markdown-it-anchor/issues/82">markdown-it-anchor’s
 related issue</a> and on Twitter.</p>
-<p>Shoutout to <a href="https://twitter.com/ambrwlsn90">Amber</a>,
-<a href="https://twitter.com/nhoizey">Nicolas</a>,
-<a href="https://twitter.com/KittyGiraudel/">Kitty</a>,
-<a href="https://twitter.com/tunetheweb">Barry</a> and
-<a href="https://twitter.com/7h1322yk0813n72">Thierry</a> for taking the time to
+<p>Shoutout to <a href="https://x.com/ambrwlsn90">Amber</a>,
+<a href="https://x.com/nhoizey">Nicolas</a>,
+<a href="https://x.com/KittyGiraudel/">Kitty</a>,
+<a href="https://x.com/tunetheweb">Barry</a> and
+<a href="https://x.com/7h1322yk0813n72">Thierry</a> for taking the time to
 research this issue and sharing their findings!</p>
 <p>Finally, if I said anything wrong or inaccurate in this post, please
 <a href="/val.html#contact">let me know</a>, I’ll be more than happy to fix mistakes
@@ -323,7 +323,7 @@ and integrate improvements!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Join the discussion on <a href="https://twitter.com/valeriangalliat/status/1410245285008269317">Twitter</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://x.com/valeriangalliat/status/1410245285008269317">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>
@@ -342,50 +342,50 @@ and integrate improvements!</p>
         </p>
         <ul class="social">
           <li>
-            <a href="https://twitter.com/valeriangalliat">
-              <svg width="16" height="16" viewBox="0 0 16 16">
-                <title>Twitter</title>
-                <use href="/img/icons/407-twitter.svg#icon"></use>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
               </svg>
             </a>
           </li>
           <li>
             <a href="https://github.com/valeriangalliat">
-              <svg width="16" height="16" viewBox="0 0 16 16">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <title>GitHub</title>
-                <use href="/img/icons/433-github.svg#icon"></use>
+                <use href="/img/icons/github.svg#icon"></use>
               </svg>
             </a>
           </li>
           <li>
             <a href="https://www.instagram.com/funkyval_/">
-              <svg width="16" height="16" viewBox="0 0 16 16">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <title>Instagram</title>
-                <use href="/img/icons/403-instagram.svg#icon"></use>
+                <use href="/img/icons/instagram.svg#icon"></use>
               </svg>
             </a>
           </li>
           <li>
             <a href="https://www.youtube.com/@FunkyVal">
-              <svg width="16" height="16" viewBox="0 0 16 16">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <title>YouTube</title>
-                <use href="/img/icons/414-youtube.svg#icon"></use>
+                <use href="/img/icons/youtube.svg#icon"></use>
               </svg>
             </a>
           </li>
           <li>
             <a href="https://ko-fi.com/funkyval">
-              <svg width="16" height="16" viewBox="0 0 16 16">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <title>Buy me a coffee!</title>
-                <use href="/img/icons/219-heart.svg#icon"></use>
+                <use href="/img/icons/kofi.svg#icon"></use>
               </svg>
             </a>
           </li>
           <li>
             <a href="/feed.xml">
-              <svg width="16" height="16" viewBox="0 0 16 16">
+              <svg width="16" height="16" viewBox="0 0 24 24">
                 <title>RSS</title>
-                <use href="/img/icons/412-rss.svg#icon"></use>
+                <use href="/img/icons/rss.svg#icon"></use>
               </svg>
             </a>
           </li>

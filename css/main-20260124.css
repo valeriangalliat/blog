@@ -1,0 +1,784 @@
+:root, .light, .hero {
+  --color-accent-emphasis: #0969da;
+  --color-accent-fg: #0969da;
+  --color-accent-muted: rgba(84,174,255,0.4);
+  --color-accent-subtle: #ddf4ff;
+  --color-attention-muted: rgba(212,167,44,0.4);
+  --color-attention-subtle: #fff8c5;
+  --color-border-default: #d0d7de;
+  --color-canvas-default: #ffffff;
+  --color-canvas-subtle: #f6f8fa;
+  --color-done-fg: #8250df;
+  --color-fg-default: #1f2328;
+  --color-fg-muted: #656d76;
+  --color-fg-on-emphasis: #ffffff;
+  --color-fg-subtle: #6e7781;
+  --color-scale-blue-6: #0550ae;
+  --color-scale-gray-2: #d0d7de;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-accent-emphasis: #0969da;
+    --color-accent-fg: #0969da;
+    --color-accent-muted: rgba(84,174,255,0.4);
+    --color-accent-subtle: #ddf4ff;
+    --color-attention-muted: rgba(212,167,44,0.4);
+    --color-attention-subtle: #fff8c5;
+    --color-border-default: #d0d7de;
+    --color-canvas-default: #ffffff;
+    --color-canvas-subtle: #f6f8fa;
+    --color-done-fg: #8250df;
+    --color-fg-default: #1f2328;
+    --color-fg-muted: #656d76;
+    --color-fg-on-emphasis: #ffffff;
+    --color-fg-subtle: #6e7781;
+    --color-scale-blue-6: #0550ae;
+    --color-scale-gray-2: #d0d7de;
+  }
+}
+
+.dark {
+  --color-accent-emphasis: #1f6feb;
+  --color-accent-fg: #2f81f7;
+  --color-accent-muted: rgba(56,139,253,0.4);
+  --color-accent-subtle: rgba(56,139,253,0.1);
+  --color-attention-muted: rgba(187,128,9,0.4);
+  --color-attention-subtle: rgba(187,128,9,0.15);
+  --color-border-default: #30363d;
+  --color-canvas-default: #0d1117;
+  --color-canvas-subtle: #161b22;
+  --color-done-fg: #a371f7;
+  --color-fg-default: #e6edf3;
+  --color-fg-muted: #848d97;
+  --color-fg-on-emphasis: #ffffff;
+  --color-fg-subtle: #6e7681;
+  --color-scale-blue-6: #1158c7;
+  --color-scale-gray-2: #b1bac4;
+}
+/* Find color names from <https://primer.style/primitives/colors> */
+
+html {
+    /* font: 1.25em/1.5 "Georgia", serif; */
+    font: 1.25em/1.5 "Helvetica Neue", sans-serif;
+    background: var(--color-canvas-default);
+    color: var(--color-fg-default);
+    transition: background-color 100ms;
+}
+
+.content {
+    margin-left: auto;
+    margin-right: auto;
+    max-width: 45rem;
+    padding-left: .5em;
+    padding-right: .5em;
+}
+
+h2 {
+    border-bottom: 1px solid var(--color-border-default);
+    padding-bottom: .5rem;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6, p, ul, ol, dl, blockquote, pre, figure, hr, details,
+.content iframe,
+.content table {
+    margin: 0 0 var(--vertical-margin, 2rem);
+}
+
+h1.has-subtitle {
+    /* Set base size to the small font size, and then use the span inside
+     * to make the text bigger.
+     *
+     * Having the block `font-size` the same as the smallest possible text
+     * inside allows for more pleasing spacing between lines when wrapping. */
+    font-size: .8em;
+}
+
+h1.has-subtitle span {
+    font-size: 2rem;
+}
+
+h1.has-subtitle small {
+    font-size: inherit;
+
+    /* Force subtitle on its own line if it doesn't fit on the same line
+     * as the main title. */
+    display: inline-block;
+}
+
+blockquote > *,
+details > *,
+dd > *,
+li > * {
+    --vertical-margin: 1rem;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+
+    /* Scroll only the table and not the whole page if it's larger than
+     * the container. */
+    display: block;
+    overflow: auto;
+
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+}
+
+th, td {
+    padding: .5em 1em;
+    border: 1px solid var(--color-border-default);
+    text-align: left;
+}
+
+tr:nth-child(even) {
+    background: var(--color-canvas-subtle);
+}
+
+blockquote {
+    color: var(--color-fg-muted);
+    margin-left: 0;
+    padding: 0 1em;
+    border-left: .25rem solid var(--color-accent-emphasis);
+}
+
+dt {
+    font-weight: bold;
+}
+
+code, kbd, samp {
+    font-family: "Courier New", monospace;
+    font-size: .8em;
+    background: var(--color-canvas-subtle);
+    padding: .25em .5em;
+    border-radius: .25rem;
+}
+
+/* Need to increase specificity to override highlight.js default background in dark mode */
+.hljs, .dark .hljs {
+    background: var(--color-canvas-subtle);
+}
+
+kbd {
+    font-size: .7em;
+    border: 1px solid var(--color-border-default);
+    border-bottom: 2px solid var(--color-border-default);
+    border-radius: .5rem;
+}
+
+hr {
+    border-top: 1px solid var(--color-border-default);
+    border-bottom: 0;
+}
+
+a {
+    color: var(--color-accent-fg);
+    text-decoration: none;
+}
+
+a:active, a:hover {
+    outline-width: 0;
+}
+
+a:hover {
+    text-decoration: underline;
+}
+
+a:visited {
+    color: var(--color-done-fg);
+}
+
+a[title] {
+    text-decoration: underline dotted;
+}
+
+ul {
+    /* Seems to match bullet width. */
+    padding-left: 1em;
+}
+
+ul ul {
+    margin-bottom: 0;
+}
+
+ol {
+    /* Try to match roughly a single digit and a dot. */
+    padding-left: 2ch;
+}
+
+img, video {
+    max-width: 100%;
+}
+
+button, input, optgroup, select, textarea {
+    background: transparent;
+    color: var(--color-fg-default);
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+    line-height: normal;
+    padding: .5em 1em;
+    border: 1px solid var(--color-border-default);
+    border-radius: .25em;
+    outline: 2px solid transparent;
+    transition: outline 100ms;
+}
+
+/* Visible focus for everything, need to explicitly override `normalize.css`
+ * behavior for `:focus-visible`. */
+button:focus,
+button:focus-visible,
+[type="button"]:focus-visible,
+[type="reset"]:focus-visible,
+[type="submit"]:focus-visible,
+input:focus,
+optgroup:focus,
+select:focus,
+textarea:focus {
+    outline: 2px solid var(--color-accent-muted);
+}
+
+button {
+    background: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
+    border: 1px solid var(--color-accent-emphasis);
+    transition: background-color 100ms, border-color 100ms;
+}
+
+button:hover {
+    background: var(--color-scale-blue-6);
+    border: 1px solid var(--color-scale-blue-6);
+    cursor: pointer;
+}
+
+iframe {
+    border: 1px solid var(--color-border-default);
+}
+
+.float-wrapper::after {
+    display: table;
+    clear: both;
+    content: "";
+}
+
+.float-inner {
+    overflow: hidden;
+}
+
+/* In `console` code that contains both the prompt, command and output,
+ * prevent selection on the prompt to make copy/paste easier. */
+.hljs-meta.prompt_ {
+    user-select: none;
+}
+
+img.fit-line-height {
+    /* Line height is set to 1.5 above. */
+    max-height: 1.5em;
+    vertical-align: middle;
+}
+.header-anchor {
+    color: var(--color-fg-default);
+    margin-left: -1.5ch;
+    padding-left: 1.5ch;
+}
+
+.header-anchor:visited {
+    color: var(--color-fg-default);
+}
+
+.header-anchor:hover {
+    text-decoration: none;
+}
+
+.header-anchor:hover::before,
+.header-anchor:focus::before {
+    content: '#';
+    color: var(--color-accent-fg);
+    position: relative;
+    float: left;
+    left: -1.5ch;
+    width: 0;
+    height: 0;
+}
+@media not (min-width: 42em) {
+    .contact-table tr {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .contact-table th:not(:first-child),
+    .contact-table td:not(:first-child) {
+        border-top: 0;
+    }
+}
+figure {
+    /* Ensures eventual `figcaption`'s width is at most the image width. */
+    display: grid;
+    justify-content: start;
+
+    /* Close to what a space would otherwise be. */
+    gap: .25rem;
+}
+
+figcaption {
+    width: 100%;
+    box-sizing: border-box;
+    text-align: center;
+    margin-top: .25rem;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+    padding: .25em .75em;
+    background-color: var(--color-accent-emphasis);
+    color: var(--color-fg-on-emphasis);
+}
+
+figure img {
+    /* Remove the extra spacing below the picture when it's inline and
+     * aligned to the baseline. */
+    vertical-align: top;
+}
+
+figure.full {
+    /* Useful if using a video wrapper inside a figure that also have a
+     * caption (so when the figure itself cannot be the video wrapper),
+     * as the left justification otherwise doesn't play well with it. */
+    justify-content: normal;
+}
+
+figure.center, figure.grid {
+    justify-content: center;
+    justify-items: center;
+    align-items: center;
+}
+
+.video {
+    position: relative;
+
+    /* Force 16:9 ratio. */
+    padding-bottom: 56.25%;
+}
+
+.video iframe, .video video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+@media (min-width: 42em) {
+    figure.left {
+        float: left;
+        margin-right: 1em;
+    }
+
+    figure.right {
+        float: right;
+        margin-left: 1em;
+    }
+
+    figure.grid {
+        display: flex;
+        flex-wrap: wrap;
+    }
+
+    figure.grid figcaption {
+        /* Already handled by the gap. */
+        margin-top: 0;
+    }
+
+    figure.grid-grow > :not(figcaption) {
+        flex-grow: 1;
+    }
+
+    figure.grid-2 > :not(figcaption) {
+        width: calc((100% - .25rem) / 2);
+    }
+
+    figure.grid-3 > :not(figcaption) {
+        width: calc((100% - .5rem) / 3);
+    }
+}
+
+@media (min-width: 42em) and (max-width: 77em) {
+    figure.grid-3 > :not(figcaption) {
+        width: calc((100% - .25rem) / 2);
+    }
+}
+.footnotes p {
+    margin: 0;
+}
+
+footer {
+    /* Match content container width. */
+    max-width: 45rem;
+    margin: 5em auto;
+    padding: 0 .5em;
+}
+
+.footer-inner {
+    padding-top: 2em;
+    border-top: 1px solid var(--color-border-default);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+footer figure {
+    border-radius: 100%;
+    overflow: hidden;
+    width: 8em;
+}
+
+@media (min-width: 42em) {
+    .footer-inner {
+        flex-direction: row;
+    }
+
+    footer figure {
+        margin-right: 2em;
+        margin-bottom: 0;
+    }
+}
+
+.footer-content {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .75em;
+    color: var(--color-fg-subtle);
+    text-align: center;
+    --vertical-margin: 1rem;
+}
+
+footer ul {
+    list-style-type: none;
+    padding-left: 0;
+    display: flex;
+    justify-content: center;
+}
+
+footer li {
+    padding: 0 1em;
+}
+
+footer a, footer a:visited {
+    color: var(--color-fg-muted);
+}
+
+footer a:hover {
+    color: var(--color-fg-default);
+    text-decoration: none;
+}
+header .content {
+    margin-bottom: 1em;
+}
+
+@media (min-width: 42em) {
+    header .content {
+        margin-top: 2em;
+    }
+}
+
+@media (min-width: 69em) {
+    header .content {
+        margin-top: 5em;
+    }
+}
+
+.hero {
+    position: relative;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 2em;
+}
+
+.hero .header-inner {
+    background-color: rgba(0, 0, 0, .1);
+    padding: 4em 0 1em;
+}
+
+.hero .content {
+    margin-top: 14vw;
+    margin-bottom: 8vw;
+}
+
+.hero h1 {
+    text-shadow: 1px 2px rgba(0, 0, 0, .1);
+    color: var(--color-fg-on-emphasis);
+}
+
+.post .hero .tagline,
+.page-updated .hero .date {
+    color: var(--color-fg-on-emphasis);
+}
+
+.post .hero .date,
+.page-updated .hero .tagline {
+    color: var(--color-scale-gray-2);
+}
+
+.hero code {
+    background: none;
+}
+
+.hero:hover .hero-credit {
+    opacity: 1;
+}
+
+.hero-credit {
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .8em;
+    position: absolute;
+    right: 1em;
+    bottom: .5em;
+    opacity: 0;
+    transition: opacity 100ms;
+}
+
+.hero-credit,
+.hero-credit:visited {
+    color: var(--color-scale-gray-2);
+}
+
+.hero-credit:hover {
+    color: var(--color-fg-on-emphasis);
+    text-decoration: none;
+}
+nav {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+
+    /* Dirty fix to prevent horizontal scroll in some cased because of negative
+     * margin below. */
+    overflow: hidden;
+
+    padding: 1em .5em;
+    margin-left: auto;
+    margin-right: auto;
+
+    /* Match content container width. */
+    max-width: 45rem;
+}
+
+nav ul {
+    width: 100%;
+    font-family: "Helvetica Neue", sans-serif;
+    font-size: .75em;
+    list-style-type: none;
+    padding-left: 0;
+    display: flex;
+    justify-content: center;
+
+    /* Negative horizontal margin to make up for the fact each `<li>`
+     * has horizontal padding. */
+    margin: 1em -1em;
+}
+
+@media (min-width: 69em) {
+    nav {
+        padding: 1em 2em;
+        max-width: none;
+    }
+}
+
+@media (min-width: 42em) {
+    nav {
+        flex-direction: row;
+        justify-content: space-between;
+    }
+}
+
+nav li {
+    padding: 0 1em;
+}
+
+nav li.pull {
+    margin-left: auto;
+}
+
+nav a, nav a:visited {
+    color: var(--color-fg-muted);
+}
+
+nav a:hover {
+    color: var(--color-fg-default);
+    text-decoration: none;
+}
+
+.change-color-theme, .change-color-theme:hover {
+    /* Reset button styles */
+    background: none;
+    font-size: initial;
+    border-radius: 0;
+    padding: 0;
+    border: 0;
+}
+.note {
+    margin: 0 0 var(--vertical-margin, 2rem);
+    background: var(--color-accent-subtle);
+    border-top: .25rem solid var(--color-accent-muted);
+    border-radius: .25rem;
+    padding: 1em;
+}
+
+.note > :first-child {
+    margin-top: 0;
+}
+
+.note > :last-child {
+    margin-bottom: 0;
+}
+
+.note > * {
+    --vertical-margin: 1rem;
+}
+
+.note.warn {
+    background: var(--color-attention-subtle);
+    border-top-color: var(--color-attention-muted);
+}
+/* I'm aiming for 60em but this doesn't account for the 1.25em root font size,
+ * so it should be 75em here, but I added 2em to break before the width of the
+ * vertical scrollbar causes an horizontal scroll, and to keep some padding. */
+@media (min-width: 77em) {
+    .oversized {
+        /* I thought that I wanted a full sized container with a centered inner
+         * container that's 60rem wide, but 100vw doesn't account for the
+         * vertical scrollbar so it ends up causing an horizontal scrollbar.
+         *
+         * Instead a relative negative padding to expand to 60rem works. */
+        margin-left: -7.5rem;
+        margin-right: -7.5rem;
+    }
+}
+.social svg {
+    vertical-align: middle;
+    transition: fill 100ms;
+    fill: var(--color-fg-muted);
+}
+
+.social a:hover svg {
+    fill: var(--color-fg-default);
+}
+details.boxed {
+    background: var(--color-accent-subtle);
+    border-left: .25rem solid var(--color-accent-muted);
+    border-radius: .25rem;
+    padding: 1em;
+}
+.index .header-inner {
+    display: flex;
+    text-align: center;
+}
+
+.index h1 {
+    margin: 0;
+}
+
+.index .tagline {
+    margin: 0;
+    font-size: .8em;
+}
+
+@media (min-width: 42em) {
+    .index .header-inner {
+        text-align: left;
+
+        /* Seems to be what consistently looks better across a variety of
+         * system fonts. */
+        line-height: normal;
+    }
+
+    .index h1 {
+        font-size: 4rem;
+    }
+
+    .index h1.has-subtitle {
+        font-size: 1rem;
+    }
+
+    .index h1.has-subtitle span {
+        font-size: 4rem;
+    }
+
+    .index .tagline {
+        /* Make up alignment for the fact title is much bigger. */
+        padding-left: .5em;
+    }
+}
+
+.links ul {
+    list-style-type: none;
+    padding-left: 0;
+}
+
+.links {
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+.posts li {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: .5em;
+    flex-direction: column-reverse;
+}
+
+.posts li:not(:last-child) {
+    border-bottom: 1px solid var(--color-canvas-subtle);
+}
+
+/* Make sure we don't target the `<small>` tags in the `<a>` but only
+ * the one used for the date. */
+.posts li > small {
+    color: var(--color-fg-subtle);
+    white-space: nowrap;
+}
+
+@media (min-width: 42em) {
+    .posts li {
+        margin-bottom: 0;
+        flex-direction: row;
+    }
+
+    .posts li > small {
+        text-align: right;
+    }
+}
+
+.search {
+    --vertical-margin: 1rem;
+}
+.post h1,
+.page-updated h1 {
+    margin-bottom: .5rem;
+}
+
+.post .tagline,
+.post .date,
+.page-updated .tagline,
+.page-updated .date {
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+.post .tagline,
+.page-updated .tagline {
+    margin-bottom: 0;
+}
+
+.post .date,
+.page-updated .tagline {
+    color: var(--color-fg-subtle);
+}
+
+.post-footer {
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border-default);
+}

@@ -1,11 +1,11 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1461136995544096773
+tweet: https://x.com/valeriangalliat/status/1461136995544096773
 ---
 
 # Using Homebrew on a multi-user system (don't)
 November 17, 2021
 
-I've recently [started working at a new company](https://twitter.com/valeriangalliat/status/1460337357094326275),
+I've recently [started working at a new company](https://x.com/valeriangalliat/status/1460337357094326275),
 where I've got the freedom to use my own rig, which is especially nice
 if I want to work while travelling without having to bring two laptops
 with me.
@@ -169,7 +169,7 @@ sudo -Hu foo brew update
 
 <div class="note">
 
-**Note:** I've [had](https://twitter.com/sachithm2/status/1657010919107600384)
+**Note:** I've [had](https://x.com/sachithm2/status/1657010919107600384)
 [reports](https://stackoverflow.com/questions/41840479/how-to-use-homebrew-on-a-multi-user-macos-sierra-setup/70012833#comment126730172_70012833)
 that some people also needed the `-i` option (makes `sudo` start a login
 shell). Depending on where you set your shell environment variables, you

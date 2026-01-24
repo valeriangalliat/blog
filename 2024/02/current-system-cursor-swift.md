@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1790906282737840267
+tweet: https://x.com/valeriangalliat/status/1790906282737840267
 ---
 
 # Identify the current system cursor in Swift

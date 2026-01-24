@@ -15,9 +15,9 @@ for those two problems.
 <div class="note">
 
 **Note:** initially I shared those on Twitter,
-[here](https://twitter.com/valeriangalliat/status/1519696597940158464)
+[here](https://x.com/valeriangalliat/status/1519696597940158464)
 for the Dock and
-[here](https://twitter.com/valeriangalliat/status/1519698499927158787)
+[here](https://x.com/valeriangalliat/status/1519698499927158787)
 for switching between desktops.
 
 </div>

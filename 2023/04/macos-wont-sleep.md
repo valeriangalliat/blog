@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1649122170780491776
+tweet: https://x.com/valeriangalliat/status/1649122170780491776
 ---
 
 # macOS won't sleep from the Apple menu

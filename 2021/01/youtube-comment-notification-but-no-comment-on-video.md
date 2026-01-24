@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1467194973418409989
+tweet: https://x.com/valeriangalliat/status/1467194973418409989
 ---
 
 # YouTube comment notification but no comment on video
@@ -142,23 +142,23 @@ this comment from Robert:
 
 Now nearly a year after originally writing this post, one of my favorite
 French YouTubers, [Benjamin Code](https://www.youtube.com/BenjaminCode),
-[shared on Twitter](https://twitter.com/benjamincode/status/1467193704482021381)
+[shared on Twitter](https://x.com/benjamincode/status/1467193704482021381)
 that he was having the same problem:
 
-> Hey [@YTCreateurs](https://twitter.com/YTCreateurs), deux ans
+> Hey [@YTCreateurs](https://x.com/YTCreateurs), deux ans
 > maintenant que je vous remonte ce bug en permanence... Deux ans qu'une
 > bonne partie des commentaires qu'on me laisse sont automatiquement
 > supprimés par YouTube... Je crois que c'est l'un des trucs les plus
 > frustrant de la platform. Ça en est où le fix?
 >
-> --- [@benjamincode](https://twitter.com/benjamincode), [December 4, 2021](https://twitter.com/benjamincode/status/1467193704482021381)
+> --- [@benjamincode](https://x.com/benjamincode), [December 4, 2021](https://x.com/benjamincode/status/1467193704482021381)
 
 Or in English, he's been having this issue for over two years where a
 significant proportion of the comments he's been getting just seem to
 disappear, and is looking for a fix.
 
-I [shared him this fix](https://twitter.com/valeriangalliat/status/1467194973418409989)
-and it seem to have [helped there too](https://twitter.com/benjamincode/status/1467201980309417993)!
+I [shared him this fix](https://x.com/valeriangalliat/status/1467194973418409989)
+and it seem to have [helped there too](https://x.com/benjamincode/status/1467201980309417993)!
 
 > Ah en fait on dirait que si! J'en ai retrouvé quelques uns! À
 > confirmer avec le temps! Merci beaucoup pour cette astuce perchée!

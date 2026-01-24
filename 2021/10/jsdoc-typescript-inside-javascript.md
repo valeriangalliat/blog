@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1449783928970256394
+tweet: https://x.com/valeriangalliat/status/1449783928970256394
 ---
 
 # JSDoc: TypeScript inside JavaScript and not the other way around 🤯

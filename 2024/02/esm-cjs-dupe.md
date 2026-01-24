@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1759280799852179929
+tweet: https://x.com/valeriangalliat/status/1759280799852179929
 ---
 
 # Duplicated ESM and CJS package in bundle

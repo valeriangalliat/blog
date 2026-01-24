@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1784030026759110978
+tweet: https://x.com/valeriangalliat/status/1784030026759110978
 ---
 
 # Encrypted offsite backup system: storage 💾

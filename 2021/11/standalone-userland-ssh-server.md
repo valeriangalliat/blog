@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1458282446659653634
+tweet: https://x.com/valeriangalliat/status/1458282446659653634
 ---
 
 # Standalone userland SSH server

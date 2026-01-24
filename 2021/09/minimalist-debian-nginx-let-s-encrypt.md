@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1440704576059961362
+tweet: https://x.com/valeriangalliat/status/1440704576059961362
 ---
 
 # How I set up a minimalist Debian host with nginx and Let's Encrypt

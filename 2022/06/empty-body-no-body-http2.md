@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1532007358225862657
+tweet: https://x.com/valeriangalliat/status/1532007358225862657
 ---
 
 # Empty body vs. no body in HTTP/2

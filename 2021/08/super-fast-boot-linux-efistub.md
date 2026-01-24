@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1419304289751678980
+tweet: https://x.com/valeriangalliat/status/1419304289751678980
 ---
 
 # Super fast boot on Linux with EFISTUB 🚀
@@ -69,4 +69,4 @@ in a tweet!
 > efibootmgr -d /dev/sda -p 1 -c -l /vmlinuz-linux -u 'cryptdevice=/dev/sda2:luks:allow-discards root=/dev/vg0/root resume=/dev/vg0/swap rw initrd=\initramfs-linux.img'
 > ```
 >
-> --- [@valeriangalliat](https://twitter.com/valeriangalliat), [July 25, 2021](https://twitter.com/valeriangalliat/status/1419304289751678980)
+> --- [@valeriangalliat](https://x.com/valeriangalliat), [July 25, 2021](https://x.com/valeriangalliat/status/1419304289751678980)

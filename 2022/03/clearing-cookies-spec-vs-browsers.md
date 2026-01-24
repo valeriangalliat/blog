@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1507444723631407113
+tweet: https://x.com/valeriangalliat/status/1507444723631407113
 ---
 
 # Clearing cookies: the spec vs. the browser implementations

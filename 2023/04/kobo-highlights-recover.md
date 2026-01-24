@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1643793553032617986
+tweet: https://x.com/valeriangalliat/status/1643793553032617986
 ---
 
 # Recovering Kobo eReader highlights after an accidental factory reset!

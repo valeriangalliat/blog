@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1441563191557849090
+tweet: https://x.com/valeriangalliat/status/1441563191557849090
 ---
 
 # Elixir, Ecto and Heroku Postgres: unverified SSL certificates

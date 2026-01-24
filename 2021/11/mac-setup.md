@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1461136814400577537
+tweet: https://x.com/valeriangalliat/status/1461136814400577537
 ---
 
 # How I set up a new Mac

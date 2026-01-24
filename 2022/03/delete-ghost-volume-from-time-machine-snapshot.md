@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1501544474081640456
+tweet: https://x.com/valeriangalliat/status/1501544474081640456
 ---
 
 # Delete ghost volume from Time Machine snapshot
@@ -11,7 +11,7 @@ This is the blog post version of
 ## Why I needed to remove a volume backup
 
 Recently, the external hard drive where I kept some of my video footage
-[died](https://twitter.com/valeriangalliat/status/1491106467310489604).
+[died](https://x.com/valeriangalliat/status/1491106467310489604).
 
 But as I'm a good citizen and I have a backup (and restore) strategy,
 all the data was also mirrored on my Time Machine drive! Yay!

@@ -2,7 +2,7 @@
 hero: https://photography.codejam.info/photos/hd/P2650095.jpg
 heroCredit: Val
 heroCreditUrl: https://photography.codejam.info/photos/P2650095.html
-tweet: https://twitter.com/valeriangalliat/status/1424462810998886416
+tweet: https://x.com/valeriangalliat/status/1424462810998886416
 ---
 
 # A journey to scripting Firefox Sync / Lockwise: existing clients

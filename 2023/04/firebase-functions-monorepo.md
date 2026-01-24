@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1644495294803898369
+tweet: https://x.com/valeriangalliat/status/1644495294803898369
 ---
 
 # Firebase functions in a monorepo? A challenging pile of hacks

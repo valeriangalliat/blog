@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1461856790602264579
+tweet: https://x.com/valeriangalliat/status/1461856790602264579
 ---
 
 # Emoji displayed as monochrome symbol? 🤔 The Unicode variation selector
@@ -152,7 +152,7 @@ though the text one is supported.
 This might be due to differences in rendering betweem Chrome and
 Firefox, so know that the browser can also affect this kind of things.
 
-[Let me know](https://twitter.com/valeriangalliat/status/1461856790602264579)
+[Let me know](https://x.com/valeriangalliat/status/1461856790602264579)
 if you observe something even different, I'm curious! 😁
 
 </div>

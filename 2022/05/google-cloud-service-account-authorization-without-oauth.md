@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1523114655698554880
+tweet: https://x.com/valeriangalliat/status/1523114655698554880
 ---
 
 # Google Cloud service account authorization without OAuth

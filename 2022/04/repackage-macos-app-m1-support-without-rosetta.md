@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1520527092219355138
+tweet: https://x.com/valeriangalliat/status/1520527092219355138
 ---
 
 # How to repackage a macOS `.pkg` installer for M1 support without Rosetta

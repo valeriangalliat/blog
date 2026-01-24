@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1417551014987767812
+tweet: https://x.com/valeriangalliat/status/1417551014987767812
 ---
 
 # Adding search capability to a static blog using the GitHub API
@@ -370,12 +370,12 @@ This tweet popped in my timeline yesterday, and couldn't relate more. I
 think it illustrates perfectly the search implementation on this blog.
 
 > <figure>
->   <a href="https://twitter.com/flaviocopes/status/1417007331930423298/photo/1">
+>   <a href="https://x.com/flaviocopes/status/1417007331930423298/photo/1">
 >     <img alt="Code complexity" srcset="../../img/2021/07/code-complexity.jpg 3x">
 >   </a>
 > </figure>
 >
-> --- [@flaviocopes](https://twitter.com/flaviocopes), [July 19, 2021](https://twitter.com/flaviocopes/status/1417007331930423298)
+> --- [@flaviocopes](https://x.com/flaviocopes), [July 19, 2021](https://x.com/flaviocopes/status/1417007331930423298)
 
 After more than 10 years building websites, I've had my fare share of
 frameworks, design patterns, bleeding edge libraries, compiling and

@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1456786062039261187
+tweet: https://x.com/valeriangalliat/status/1456786062039261187
 ---
 
 # Elixir: intercepting Phoenix LiveView events in JavaScript
@@ -187,7 +187,7 @@ articles I stumbled upon during my research on this subject.
   using hooks and events to make LiveView and Alpine play nice together
   (but sadly not nice enough for my edge case).
 * [Using channels with LiveView for better UX](https://elixirschool.com/blog/live-view-with-channels/)
-  by [Sophie DeBenedetto](https://twitter.com/sm_debenedetto), to extend
+  by [Sophie DeBenedetto](https://x.com/sm_debenedetto), to extend
   the LiveSocket with a custom channel that allow passing granular
   messages to the client. It's pretty complex and it kinda scared me at
   first to be honest, but if my [monkey patch](#monkey-patching-the-livesocket)

@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1448722067638177795
+tweet: https://x.com/valeriangalliat/status/1448722067638177795
 ---
 
 # Bypass SQLite exclusive lock 🔐

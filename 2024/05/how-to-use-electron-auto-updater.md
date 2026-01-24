@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1790906278086386079
+tweet: https://x.com/valeriangalliat/status/1790906278086386079
 ---
 
 # How to use Electron auto updater ⚛️

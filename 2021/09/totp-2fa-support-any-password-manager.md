@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1442937054854221828
+tweet: https://x.com/valeriangalliat/status/1442937054854221828
 ---
 
 # TOTP/2FA support with ANY password manager (you read that right)
@@ -283,6 +283,6 @@ period.addEventListener('change', updatePasswordFromDetails)
 And this is it! You know everything that's behind [totp.vercel.app](https://totp.vercel.app/).
 
 Did you find this useful? Did you like that I explained some of the code
-behind it in this blog post? Don't hesitate to let me know and [ping me on Twitter](https://twitter.com/valeriangalliat)!
+behind it in this blog post? Don't hesitate to let me know and [ping me on Twitter](https://x.com/valeriangalliat)!
 
 Until next time, keep hacking! 🐿️

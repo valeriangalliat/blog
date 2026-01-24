@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1784030029187588316
+tweet: https://x.com/valeriangalliat/status/1784030029187588316
 ---
 
 # gocryptfs on macOS (with and without macFUSE)

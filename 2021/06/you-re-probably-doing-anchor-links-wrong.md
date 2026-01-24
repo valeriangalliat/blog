@@ -3,7 +3,7 @@ hero: https://photography.codejam.info/photos/hd/P2600039.jpg
 heroCredit: Val
 heroCreditUrl: https://photography.codejam.info/photos/P2600039.html
 focus: 50% 80%
-tweet: https://twitter.com/valeriangalliat/status/1410245285008269317
+tweet: https://x.com/valeriangalliat/status/1410245285008269317
 ---
 
 # You're (probably) doing anchor links wrong
@@ -17,9 +17,9 @@ anchor links (permalinks).
 
 There's been [some](https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/)
 [activity](https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/)
-[lately][accessibility-issue] [about](https://twitter.com/nhoizey/status/1365064686094471173)
-[proper](https://twitter.com/nhoizey/status/1366479047065239562)
-[accessibility](https://twitter.com/KittyGiraudel/status/1376789257176690688)
+[lately][accessibility-issue] [about](https://x.com/nhoizey/status/1365064686094471173)
+[proper](https://x.com/nhoizey/status/1366479047065239562)
+[accessibility](https://x.com/KittyGiraudel/status/1376789257176690688)
 of heading permalinks, and this was [brought to my attention][accessibility-issue]
 to improve markdown-it-anchor's way of rendering permalinks out of the box.
 
@@ -116,7 +116,7 @@ The question of accessible permalinks stayed in my mind, until...
 
 ## The *very* simple solution
 
-About at the same time, my friend [Kitty](https://twitter.com/KittyGiraudel/),
+About at the same time, my friend [Kitty](https://x.com/KittyGiraudel/),
 is [switching from Jekyll to Eleventy](https://kittygiraudel.com/2020/11/30/from-jekyll-to-11ty/),
 and finds my plugin while looking for a way to add `id`s to headings. 😎
 
@@ -138,14 +138,14 @@ to... not?
 
 ## Another take on accessible permalinks
 
-Just two weeks later, [Amber](https://twitter.com/ambrwlsn90) publishes
+Just two weeks later, [Amber](https://x.com/ambrwlsn90) publishes
 a post about [designing truly accessible anchor links](https://amberwilson.co.uk/blog/are-your-anchor-links-accessible/).
 
 This is an awesome article that I highly recommend reading. Amber
 explains the 5 iterations she went through to make accessible anchor
 links on her own blog, including the details of her research.
 
-But it's 3 months later that I hear about it, when [Nicolas](https://twitter.com/nhoizey)
+But it's 3 months later that I hear about it, when [Nicolas](https://x.com/nhoizey)
 opens an issue on the markdown-it-anchor repo, after also writing
 [a blog post on the subject](https://nicolas-hoizey.com/articles/2021/02/25/accessible-anchor-links-with-markdown-it-and-eleventy/).
 
@@ -161,11 +161,11 @@ affects other aspects of the permalink and headings, including browsers
 "reader mode", RSS readers, <abbr title="Search engine result pages">SERP</abbr>,
 and adds extra challenges about [internationalization](https://github.com/valeriangalliat/markdown-it-anchor/issues/82#issuecomment-787204964).
 
-Nicolas [tweeted about this](https://twitter.com/nhoizey/status/1366476887992729601)
+Nicolas [tweeted about this](https://x.com/nhoizey/status/1366476887992729601)
 to gather more insights on the subject, which brought quite some
 activity on the tweet as well as the GitHub issue, with high quality
-suggestions from Kitty, Amber, as well as [Barry](https://twitter.com/tunetheweb)
-and [Thierry](https://twitter.com/7h1322yk0813n72) who both dug in depth
+suggestions from Kitty, Amber, as well as [Barry](https://x.com/tunetheweb)
+and [Thierry](https://x.com/7h1322yk0813n72) who both dug in depth
 on the alternative solution of turning headers themselves into links
 (the style used by [MDN] and [Web Almanac]). They also found creative
 ways of making the markup of header links behave like the original
@@ -370,11 +370,11 @@ learn from many knowledgeable peers who documented that aspect of anchor
 links, and contributed to the discussion in [markdown-it-anchor's
 related issue][accessibility-issue] and on Twitter.
 
-Shoutout to [Amber](https://twitter.com/ambrwlsn90),
-[Nicolas](https://twitter.com/nhoizey),
-[Kitty](https://twitter.com/KittyGiraudel/),
-[Barry](https://twitter.com/tunetheweb) and
-[Thierry](https://twitter.com/7h1322yk0813n72) for taking the time to
+Shoutout to [Amber](https://x.com/ambrwlsn90),
+[Nicolas](https://x.com/nhoizey),
+[Kitty](https://x.com/KittyGiraudel/),
+[Barry](https://x.com/tunetheweb) and
+[Thierry](https://x.com/7h1322yk0813n72) for taking the time to
 research this issue and sharing their findings!
 
 Finally, if I said anything wrong or inaccurate in this post, please

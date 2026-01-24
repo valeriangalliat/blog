@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1786553405659545823
+tweet: https://x.com/valeriangalliat/status/1786553405659545823
 ---
 
 # Use Gmail to send emails with a custom domain for free (secret trick) 😏

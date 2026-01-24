@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1642615952305954818
+tweet: https://x.com/valeriangalliat/status/1642615952305954818
 ---
 
 # Embedding high DPI screenshots at normal size in HTML

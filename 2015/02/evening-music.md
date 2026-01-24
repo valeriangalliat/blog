@@ -30,7 +30,7 @@ naturally selected, it will send two events (end and next), hence the
 about "next song" events). The `head` command will exit when the given
 number of lines are printed.
 
-Originally from [this tweet](https://twitter.com/valeriangalliat/status/569613240168292352).
+Originally from [this tweet](https://x.com/valeriangalliat/status/569613240168292352).
 
 ## 30 minutes of music and shut down
 
@@ -43,7 +43,7 @@ This one speaks for itself:
 > Sleep for 30 minutes, idle until the next `player` event, and shut
 > down.
 
-Originally from [this tweet](https://twitter.com/valeriangalliat/status/569613564278910977).
+Originally from [this tweet](https://x.com/valeriangalliat/status/569613564278910977).
 
 ## Bonus: progressively lower volume
 

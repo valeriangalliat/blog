@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1514368088531247108
+tweet: https://x.com/valeriangalliat/status/1514368088531247108
 ---
 
 # Run macOS inside Docker on Linux, with Wayland

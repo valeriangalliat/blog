@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1442826926545121284
+tweet: https://x.com/valeriangalliat/status/1442826926545121284
 ---
 
 # Authy: reversed 🔐

@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1636458334340390941
+tweet: https://x.com/valeriangalliat/status/1636458334340390941
 ---
 
 # Google Cloud Functions with a static IP: a guide to high throughput NAT

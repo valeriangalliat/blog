@@ -9,7 +9,7 @@ pipe unknown stuff from the network into `sh`.
 > I don't get that new `curl foodotcom/setup | sh` trend, do you want to
 > fuck up your OS? Because that's how you fuck up your OS.
 >
-> --- [@iMilnb](https://twitter.com/iMilnb), [March 15, 2015](https://twitter.com/iMilnb/status/577229798910611456)
+> --- [@iMilnb](https://x.com/iMilnb), [March 15, 2015](https://x.com/iMilnb/status/577229798910611456)
 
 [install]: http://www.rust-lang.org/install.html
 

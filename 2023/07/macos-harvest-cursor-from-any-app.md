@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1684688732694130688
+tweet: https://x.com/valeriangalliat/status/1684688732694130688
 ---
 
 # macOS harvest cursor from any app 😏

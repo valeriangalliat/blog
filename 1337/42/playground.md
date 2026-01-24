@@ -11,7 +11,7 @@ We're going to start this journey with a random quote, from myself.
 > can essentially [recreate macOS Time Machine](https://github.com/cytopia/linux-timemachine/blob/45a03e6aef24d895209c3a588575cac247334918/timemachine#L346)
 > with that. This is just beautiful.
 >
-> --- [@valeriangalliat](https://twitter.com/valeriangalliat), [May 13, 2021](https://twitter.com/valeriangalliat/status/1392846380348153860)
+> --- [@valeriangalliat](https://x.com/valeriangalliat), [May 13, 2021](https://x.com/valeriangalliat/status/1392846380348153860)
 
 We can do *italic* and **bold** text as well as ~~strikethrough~~.
 

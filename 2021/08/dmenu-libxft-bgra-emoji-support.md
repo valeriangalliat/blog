@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1429543626640592898
+tweet: https://x.com/valeriangalliat/status/1429543626640592898
 ---
 
 # dmenumoji: dmenu with built-in libxft-bgra and emoji support 💪

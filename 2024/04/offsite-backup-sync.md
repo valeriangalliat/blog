@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1784030027967062106
+tweet: https://x.com/valeriangalliat/status/1784030027967062106
 ---
 
 # Encrypted offsite backup system: syncing 📲

@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1513692138776801287
+tweet: https://x.com/valeriangalliat/status/1513692138776801287
 ---
 
 # Make floats and lists collaborate 🙈
@@ -99,7 +99,7 @@ It's quite common to use something like `margin-top: 0` and
 `margin-bottom: 1em` on all content elements (or the other way
 around) to avoid relying on (and dealing with) margin collapsing.
 
-[I ran a poll on Twitter](https://twitter.com/valeriangalliat/status/1512869222111756292)
+[I ran a poll on Twitter](https://x.com/valeriangalliat/status/1512869222111756292)
 that got 74 answers. A majority of y'all use this technique to avoid
 margin collapsing!
 

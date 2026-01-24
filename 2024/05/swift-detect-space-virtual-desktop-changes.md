@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1790906281487933916
+tweet: https://x.com/valeriangalliat/status/1790906281487933916
 ---
 
 # Swift: detect space (virtual desktop) changes

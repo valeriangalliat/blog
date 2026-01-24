@@ -1,7 +1,7 @@
 ---
 hero: ../../img/2021/09/h2n/cheers.jpg
 focus: 50% 25%
-tweet: https://twitter.com/valeriangalliat/status/1441462405700145154
+tweet: https://x.com/valeriangalliat/status/1441462405700145154
 ---
 
 # Zoom H2n: pro tips and tricks

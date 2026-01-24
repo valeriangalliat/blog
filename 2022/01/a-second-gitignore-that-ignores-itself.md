@@ -1,5 +1,5 @@
 ---
-tweet: https://twitter.com/valeriangalliat/status/1486539328373374977
+tweet: https://x.com/valeriangalliat/status/1486539328373374977
 ---
 
 # A second `.gitignore` that ignores itself 🤯

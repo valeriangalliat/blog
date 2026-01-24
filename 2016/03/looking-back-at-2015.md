@@ -28,9 +28,9 @@ being part of. I learnt so much by building SassDoc together, as much in
 programming as in open-source project handling and team building.
 
 [sassdoc]: http://sassdoc.com/
-[tw-kitty]: https://twitter.com/KittyGiraudel
-[tw-pascal]: https://twitter.com/pascalduez
-[tw-fabrice]: https://twitter.com/FWeinb
+[tw-kitty]: https://x.com/KittyGiraudel
+[tw-pascal]: https://x.com/pascalduez
+[tw-fabrice]: https://x.com/FWeinb
 
 ### January 16
 

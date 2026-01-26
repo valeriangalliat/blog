@@ -171,22 +171,38 @@ for… sanity. For Cursor it’s <code>defaults write com.todesktop.230313mzl4w4
 and for Antigravity it’s <code>defaults write com.google.antigravity ApplePressAndHoldEnabled -bool false</code>.</li>
 </ul>
 <h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
-<ul>
-<li>In <strong>Appearance &gt; Windows</strong>, tick <strong>Hide scrollbars</strong>.</li>
-<li>In <strong>Appearance &gt; Tabs</strong>, tick <strong>Preserve window size when tab bar
-shows or hides</strong>.</li>
-<li>In <strong>Appearance &gt; Panes</strong>, untick <strong>Show per-pane title bars</strong>.</li>
-<li>In <strong>Profiles &gt; General</strong>, select <strong>Reuse previous session’s
-directory</strong> as working directory.</li>
-<li>In <strong>Profiles &gt; Terminal</strong>, tick <strong>Silence bell</strong>.</li>
-<li>In <strong>Profiles &gt; Keys &gt; Key Bindings</strong>, load the <strong>Natural Text
-Editing</strong> preset (allow it to remove whatever is already there), and
-remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
-<kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
-between tabs.</li>
-<li>In <strong>Advanced &gt; Mouse</strong>, set <strong>Scroll wheel sends arrow keys when
-in alternate screen mode</strong> to <strong>Yes</strong>.</li>
-</ul>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Appearance &gt; General &gt; Theme: Minimal</span>
+defaults write com.googlecode.iterm2 TabStyleWithAutomaticOption -int 5
+
+<span class="hljs-comment"># Appearance &gt; Windows: Hide scrollbars</span>
+defaults write com.googlecode.iterm2 HideScrollbar -bool <span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># Appearance &gt; Tabs: Preserve window size when tab bar shows or hides</span>
+defaults write com.googlecode.iterm2 PreserveWindowSizeWhenTabBarVisibilityChanges -bool <span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># Appearance &gt; Panes &gt; Show per-pane title bars: off</span>
+defaults write com.googlecode.iterm2 ShowPaneTitles -bool <span class="hljs-literal">false</span>
+
+<span class="hljs-comment"># Appearance &gt; Dimming &gt; Dimming amount: 10</span>
+defaults write com.googlecode.iterm2 SplitPaneDimmingAmount -<span class="hljs-built_in">float</span> 0.1
+
+<span class="hljs-comment"># Advanced &gt; Mouse: Scroll wheel sends arrow keys when in alternate screen mode</span>
+defaults write com.googlecode.iterm2 AlternateMouseScroll -bool <span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># Profiles &gt; General &gt; Initial directory: Reuse previous session&#x27;s directory</span>
+/usr/libexec/PlistBuddy -c <span class="hljs-string">&quot;Set &#x27;:New Bookmarks:0:Custom Directory&#x27; Recycle&quot;</span> ~/Library/Preferences/com.googlecode.iterm2.plist
+
+<span class="hljs-comment"># Profiles &gt; Terminal &gt; Bell: Silence bell</span>
+/usr/libexec/PlistBuddy -c <span class="hljs-string">&quot;Set &#x27;:New Bookmarks:0:Silence Bell&#x27; true&quot;</span> ~/Library/Preferences/com.googlecode.iterm2.plist
+</code></pre>
+<div class="note">
+<p><strong>Note:</strong> run this when iTerm2 is <em>not</em> running.</p>
+</div>
+<p>Finally (I couldn’t script this), in <strong>Profiles &gt; Keys &gt; Key Bindings</strong>,
+load the <strong>Natural Text Editing</strong> preset (allow it to remove whatever is
+already there), and remove <kbd>Command</kbd> + <kbd>Left</kbd> and
+<kbd>Command</kbd> + <kbd>Right</kbd> which otherwise shadow the
+shortcuts to navigate between tabs.</p>
 <h2 id="terminal-environment" tabindex="-1"><a class="header-anchor" href="#terminal-environment"><span>Terminal environment</span></a></h2>
 <p>First, I make a SSH keypair or copy an existing one in <code>~/.ssh</code>. I
 usually run <code>ssh-keygen</code> either way just to let it create the directory

@@ -321,7 +321,8 @@ figure {
     justify-content: start;
 
     /* Close to what a space would otherwise be. */
-    gap: .25rem;
+    --gap: .25rem;
+    gap: var(--gap);
 }
 
 figcaption {
@@ -397,17 +398,46 @@ figure.center, figure.grid {
     }
 
     figure.grid-2 > :not(figcaption) {
-        width: calc((100% - .25rem) / 2);
+        /* Ratio used to custom configure landscape and portrait pairing. */
+        width: calc((100% - var(--gap)) * var(--ratio, 0.5));
     }
 
     figure.grid-3 > :not(figcaption) {
-        width: calc((100% - .5rem) / 3);
+        width: calc((100% - var(--gap) * 2) / 3);
     }
 }
 
 @media (min-width: 42em) and (max-width: 77em) {
     figure.grid-3 > :not(figcaption) {
-        width: calc((100% - .25rem) / 2);
+        width: calc((100% - var(--gap)) / 2);
+    }
+}
+
+figure.grid.grid-min-2 {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+figure.grid.grid-min-2 > figcaption {
+    margin-top: 0;
+}
+
+figure.grid.grid-min-2.grid-grow > :not(figcaption) {
+    flex-grow: 1;
+}
+
+figure.grid.grid-min-2 > :not(figcaption) {
+    width: calc((100% - var(--gap)) * var(--ratio, 0.5));
+}
+
+figure.grid.grid-fit > :not(figcaption) {
+    width: auto;
+    max-width: calc((100% - var(--gap)) * var(--ratio, 0.5));
+}
+
+@media (min-width: 42em) {
+    figure.grid.grid-3.grid-min-2 > :not(figcaption) {
+        width: calc((100% - var(--gap) * 2) / 3);
     }
 }
 .footnotes p {

@@ -13,15 +13,16 @@ flies, heh?
 
 ## Squamish
 
-I'm well settled in Squamish now. I still love it here, of course.
+I'm well settled in Squamish now. Two years already!
 
-People come, people go, but I now have good friend circles here. Had a
-bit of a slow start as an introvert, but
-[Facebook](https://www.facebook.com/groups/southcoasttouring/)
-[groups](https://www.facebook.com/groups/1322245267842175/) and the [Oak app](https://getoak.app/)
-are pretty sweet, and believe it or not, talking to strangers <abbr
-title="In real life">IRL</abbr> also works! Also turns out the more
-people you know, the more people you meet...
+As an introvert and working remote, it was a bit of a slow start
+rebuilding social circles from scratch. It really takes being
+intentional about it. [Facebook](https://www.facebook.com/groups/southcoasttouring/)
+[groups](https://www.facebook.com/groups/1322245267842175/) and the
+[Oak app](https://getoak.app/) are pretty sweet, and believe it or not,
+talking to strangers <abbr title="In real life">IRL</abbr> also works!
+The good thing is that the more people you know, the more people you
+meet, so it gets pretty effortless over time.
 
 <figure class="grid grid-3 grid-min-2">
   <img alt="Shovelnose" title="Shovelnose" srcset="../../img/2026/01/now/touring/01.webp 2x" loading="lazy">

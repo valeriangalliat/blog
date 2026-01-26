@@ -177,6 +177,33 @@ rsync "$@" /path/to/mount "$DESTINATION" 2>&1 \
     | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
 ```
 
+## Bonus: routine operations with rsync
+
+When working with remote directories on Hetzner, some operations that
+are slow over SSH can be much faster using rsync's native protocol.
+
+### Getting the total size of a directory
+
+```sh
+rsync -rh --dry-run --stats "$DESTINATION/some-dir" unexisting-dir
+```
+
+We need the `unexisting-dir` part as a dry run target for rsync because
+without a target, it outputs the size of each individual file, before
+the stats block. With an empty target we avoid that and it's even
+faster.
+
+On a 12 GiB directory, I'm getting under 1 second with rsync while
+ `du -sh` over SSH takes 22 seconds for some reason!
+
+### Deleting a remote directory
+
+```sh
+rsync -av --delete /var/empty/ "$DESTINATION/some-dir"
+```
+
+Much faster than `rm -rf` over SSH on Hetzner as well.
+
 ## Bonus: implementing incremental backups
 
 In my solution above, the backups are not incremental. I'm just syncing

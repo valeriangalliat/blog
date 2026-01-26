@@ -137,9 +137,11 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 * In **Control Center**, I leave only **Time Machine** and **Fast
   User Switching** in the menu bar if I'm on a multi-user system, and I
   set the **Clock** to 24 hours format.
-* In **Desktop & Dock**, tick **Automatically hide and show the Dock**,
-  untick **Show recent applications in Dock**, and under **Mission
-  Control**, untick **Automatically rearrange Spaces based on most recent use**.
+* In **Desktop & Dock**, under **Dock** tick **Automatically hide and
+  show the Dock** and untick **Show recent applications in Dock**. Under
+  **Windows**, set **Prefer tabs when opening documents** to **Always**.
+  Under **Mission Control**, untick **Automatically rearrange Spaces
+  based on most recent use**.
 * I enable **Time Machine** backups to my usual drive after configuring
   my exclude list (very specific to my data so not included here).
 * In **Displays** I turn on **Night Shift** form sunset to sunrise.

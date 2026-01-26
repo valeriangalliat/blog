@@ -165,6 +165,22 @@ can find the code I use to combine those 3 elements.</p>
 rsync <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span> /path/to/mount <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>&quot;</span> 2&gt;&amp;1 \
     | gocryptfs-rsync-pretty /path/to/ctlsock /path/to/mount
 </code></pre>
+<h2 id="bonus-routine-operations-with-rsync" tabindex="-1"><a class="header-anchor" href="#bonus-routine-operations-with-rsync"><span>Bonus: routine operations with rsync</span></a></h2>
+<p>When working with remote directories on Hetzner, some operations that
+are slow over SSH can be much faster using rsync’s native protocol.</p>
+<h3 id="getting-the-total-size-of-a-directory" tabindex="-1"><a class="header-anchor" href="#getting-the-total-size-of-a-directory"><span>Getting the total size of a directory</span></a></h3>
+<pre><code class="hljs language-sh">rsync -rh --dry-run --stats <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>/some-dir&quot;</span> unexisting-dir
+</code></pre>
+<p>We need the <code>unexisting-dir</code> part as a dry run target for rsync because
+without a target, it outputs the size of each individual file, before
+the stats block. With an empty target we avoid that and it’s even
+faster.</p>
+<p>On a 12 GiB directory, I’m getting under 1 second with rsync while
+<code>du -sh</code> over SSH takes 22 seconds for some reason!</p>
+<h3 id="deleting-a-remote-directory" tabindex="-1"><a class="header-anchor" href="#deleting-a-remote-directory"><span>Deleting a remote directory</span></a></h3>
+<pre><code class="hljs language-sh">rsync -av --delete /var/empty/ <span class="hljs-string">&quot;<span class="hljs-variable">$DESTINATION</span>/some-dir&quot;</span>
+</code></pre>
+<p>Much faster than <code>rm -rf</code> over SSH on Hetzner as well.</p>
 <h2 id="bonus-implementing-incremental-backups" tabindex="-1"><a class="header-anchor" href="#bonus-implementing-incremental-backups"><span>Bonus: implementing incremental backups</span></a></h2>
 <p>In my solution above, the backups are not incremental. I’m just syncing
 the <em>current</em> state to the remote host, but I keep no history of the

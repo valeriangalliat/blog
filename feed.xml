@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-01-26T18:18:07.241Z</updated>
+  <updated>2026-01-26T23:03:21.678Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -408,7 +408,7 @@ directions scrollbars:)</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://x.com/valeriangalliat/status/1938046832753750198">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>
@@ -691,8 +691,8 @@ I did. Happy device recording!</p>
   </entry>
   <entry>
     <title>Turborepo: don’t buffer logs on GitHub Actions</title>
-    <link href="https://www.codejam.info/2025/04/turborepo-bugger-logs-github-actions.html" />
-    <id>https://www.codejam.info/2025/04/turborepo-bugger-logs-github-actions.html</id>
+    <link href="https://www.codejam.info/2025/04/turborepo-buffer-logs-github-actions.html" />
+    <id>https://www.codejam.info/2025/04/turborepo-buffer-logs-github-actions.html</id>
     <updated>2025-04-23T07:00:00.000Z</updated>
     <content type="html"><![CDATA[<p>When using <code>turbo run</code> inside a GitHub workflow, Turborepo buffers the
 logs by package so it’s all neatly sorted in the output.</p>

@@ -20,6 +20,11 @@
       "permanent": true
     },
     {
+      "source": "/2025/04/turborepo-bugger-logs-github-actions.html",
+      "destination": "/2025/04/turborepo-buffer-logs-github-actions.html",
+      "permanent": true
+    },
+    {
       "source": "/now.html",
       "destination": "/2026/01/the-next-chapter.html",
       "permanent": false

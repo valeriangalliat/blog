@@ -6,6 +6,10 @@ excerpt: All the posts I've written so far.
 
 <div class="links posts">
 
+## 2026
+
+* [The next chapter](2026/01/the-next-chapter.md) <small>January 25, 2026</small>
+
 ## 2025
 
 * [macOS app showing scrollbars to some users only](2025/06/macos-app-scrollbars-some-users-only.md) <small>June 25, 2025</small>

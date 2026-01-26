@@ -252,6 +252,37 @@ space. It even works with a video!
   <figcaption>The beer during fermentation!</figcaption>
 </figure>
 
+### Minimum 2 columns grid
+
+Use `grid-min-2` to prevent the grid from collapsing to a single column
+on mobile. Works standalone for 2 columns, or with `grid-3` for allowing
+to collapse to 2.
+
+<figure class="grid grid-3 grid-min-2">
+  <img alt="Shovelnose" srcset="../../img/2026/01/now/touring/01.webp 2x" loading="lazy">
+  <img alt="Decker" srcset="../../img/2026/01/now/touring/02.webp 2x" loading="lazy">
+  <img alt="Snow pit" srcset="../../img/2026/01/now/touring/03.webp 2x" loading="lazy">
+</figure>
+
+Add `grid-fit` when images are smaller than 50% width and shouldn't stretch.
+
+<figure class="grid grid-min-2 grid-fit">
+  <img alt="Laptop with a view" srcset="../../img/2026/01/now/laptop/01.webp 2x" loading="lazy">
+  <img alt="Laptop with a view" srcset="../../img/2026/01/now/laptop/02.webp 2x" loading="lazy">
+</figure>
+
+### Custom ratio grid
+
+Use `--ratio` to pair landscape and portrait images in a 2-column grid.
+The ratio is the proportion of the row width each image takes.
+
+<figure class="grid grid-min-2">
+  <img style="--ratio: calc(720 / 2000)" alt="Black Tusk" srcset="../../img/2026/01/now/mountains-2024/02.webp 2x" loading="lazy">
+  <img style="--ratio: calc(1280 / 2000)" alt="Garibaldi Lake" srcset="../../img/2026/01/now/mountains-2024/01.webp 2x" loading="lazy">
+  <img style="--ratio: calc(1280 / 2000)" alt="Watersprite Lake" srcset="../../img/2026/01/now/mountains-2024/03.webp 2x" loading="lazy">
+  <img style="--ratio: calc(720 / 2000)" alt="Anderson Lake" srcset="../../img/2026/01/now/mountains-2024/04.webp 2x" loading="lazy">
+</figure>
+
 ### Very fat grid
 
 Some grids can even span on multiple lines, automagically.

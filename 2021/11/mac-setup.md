@@ -156,20 +156,43 @@ Now I'm ready to configure the [system preferences](#system-preferences),
 
 ## iTerm2 preferences
 
-* In **Appearance > Windows**, tick **Hide scrollbars**.
-* In **Appearance > Tabs**, tick **Preserve window size when tab bar
-  shows or hides**.
-* In **Appearance > Panes**, untick **Show per-pane title bars**.
-* In **Profiles > General**, select **Reuse previous session's
-  directory** as working directory.
-* In **Profiles > Terminal**, tick **Silence bell**.
-* In **Profiles > Keys > Key Bindings**, load the **Natural Text
-  Editing** preset (allow it to remove whatever is already there), and
-  remove <kbd>Command</kbd> + <kbd>Left</kbd> and <kbd>Command</kbd> +
-  <kbd>Right</kbd> which otherwise shadow the shortcuts to navigate
-  between tabs.
-* In **Advanced > Mouse**, set **Scroll wheel sends arrow keys when
-  in alternate screen mode** to **Yes**.
+```sh
+# Appearance > General > Theme: Minimal
+defaults write com.googlecode.iterm2 TabStyleWithAutomaticOption -int 5
+
+# Appearance > Windows: Hide scrollbars
+defaults write com.googlecode.iterm2 HideScrollbar -bool true
+
+# Appearance > Tabs: Preserve window size when tab bar shows or hides
+defaults write com.googlecode.iterm2 PreserveWindowSizeWhenTabBarVisibilityChanges -bool true
+
+# Appearance > Panes > Show per-pane title bars: off
+defaults write com.googlecode.iterm2 ShowPaneTitles -bool false
+
+# Appearance > Dimming > Dimming amount: 10
+defaults write com.googlecode.iterm2 SplitPaneDimmingAmount -float 0.1
+
+# Advanced > Mouse: Scroll wheel sends arrow keys when in alternate screen mode
+defaults write com.googlecode.iterm2 AlternateMouseScroll -bool true
+
+# Profiles > General > Initial directory: Reuse previous session's directory
+/usr/libexec/PlistBuddy -c "Set ':New Bookmarks:0:Custom Directory' Recycle" ~/Library/Preferences/com.googlecode.iterm2.plist
+
+# Profiles > Terminal > Bell: Silence bell
+/usr/libexec/PlistBuddy -c "Set ':New Bookmarks:0:Silence Bell' true" ~/Library/Preferences/com.googlecode.iterm2.plist
+```
+
+<div class="note">
+
+**Note:** run this when iTerm2 is _not_ running.
+
+</div>
+
+Finally (I couldn't script this), in **Profiles > Keys > Key Bindings**,
+load the **Natural Text Editing** preset (allow it to remove whatever is
+already there), and remove <kbd>Command</kbd> + <kbd>Left</kbd> and
+<kbd>Command</kbd> + <kbd>Right</kbd> which otherwise shadow the
+shortcuts to navigate between tabs.
 
 ## Terminal environment
 

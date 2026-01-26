@@ -13,7 +13,7 @@ A blog about tech, software and other things.
 * [macOS app showing scrollbars to some users only](2025/06/macos-app-scrollbars-some-users-only.md) <small>June 25, 2025</small>
 * [GitHub Action hanging on Electron macOS app code signing](2025/06/github-action-hanging-macos-app-code-signing.md) <small>June 22, 2025</small>
 * [USB iPhone screen recording in Swift](2025/06/usb-iphone-screen-recording-swift.md) <small>June 22, 2025</small>
-* [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-bugger-logs-github-actions.md) <small>April 23, 2025</small>
+* [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-buffer-logs-github-actions.md) <small>April 23, 2025</small>
 * [Firestore Algolia full index operation error 400 or 403](2025/04/firestore-algolia-full-index-error.md) <small>April 23, 2025</small>
 * [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
 * [How to use Electron auto updater ⚛️](2024/05/how-to-use-electron-auto-updater.md) <small>May 15, 2024</small>

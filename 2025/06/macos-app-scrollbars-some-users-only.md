@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/1938046832753750198
+---
+
 # macOS app showing scrollbars to some users only
 June 25, 2025
 

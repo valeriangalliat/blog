@@ -2,6 +2,7 @@
 layout: page-updated
 hero: ../../img/2026/01/now/hero.webp
 focus: 50% 35%
+tweet: https://x.com/valeriangalliat/status/2015917634940989649
 ---
 
 # The next chapter

@@ -152,9 +152,25 @@ Now I'm ready to configure the [system preferences](#system-preferences),
   **Check for updates** and **Download new updates when available**, but
   make sure **Install macOS updates** is off (I don't want macOS to
   reboot without my permission and lose any unsaved state).
-* If I installed Visual Studio Code, I run `defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false`
-  for... sanity. For Cursor it's `defaults write com.todesktop.230313mzl4w4u92 ApplePressAndHoldEnabled -bool false`,
-  and for Antigravity it's `defaults write com.google.antigravity ApplePressAndHoldEnabled -bool false`.
+
+For all Visual Studio Code based editors, I disable
+`ApplePressAndHoldEnabled` for... sanity. And I also force new windows
+to open as tabs (this can also be configured system-wide but I only want
+it for those apps).
+
+```sh
+# Visual Studio Code
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false
+defaults write com.microsoft.VSCode AppleWindowTabbingMode -string always
+
+# Cursor
+defaults write com.todesktop.230313mzl4w4u92 ApplePressAndHoldEnabled -bool false
+defaults write com.todesktop.230313mzl4w4u92 AppleWindowTabbingMode -string always
+
+# Antigravity
+defaults write com.google.antigravity ApplePressAndHoldEnabled -bool false
+defaults write com.google.antigravity AppleWindowTabbingMode -string always
+```
 
 ## iTerm2 preferences
 

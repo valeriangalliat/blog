@@ -154,9 +154,10 @@ Now I'm ready to configure the [system preferences](#system-preferences),
   reboot without my permission and lose any unsaved state).
 
 For all Visual Studio Code based editors, I disable
-`ApplePressAndHoldEnabled` for... sanity. And I also force new windows
-to open as tabs (this can also be configured system-wide but I only want
-it for those apps).
+`ApplePressAndHoldEnabled` for... sanity. And I also
+[force new windows to open as tabs](https://powerusers.codidact.com/posts/285975/285976#answer-285976)
+(this can also be configured [system-wide](https://support.apple.com/en-ca/guide/mac-help/mchlp1032/mac#apd6b032a9835244)
+but I only want it for those apps).
 
 ```sh
 # Visual Studio Code

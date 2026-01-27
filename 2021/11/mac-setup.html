@@ -168,10 +168,23 @@ show and hide the dock.</li>
 <strong>Check for updates</strong> and <strong>Download new updates when available</strong>, but
 make sure <strong>Install macOS updates</strong> is off (I don’t want macOS to
 reboot without my permission and lose any unsaved state).</li>
-<li>If I installed Visual Studio Code, I run <code>defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool false</code>
-for… sanity. For Cursor it’s <code>defaults write com.todesktop.230313mzl4w4u92 ApplePressAndHoldEnabled -bool false</code>,
-and for Antigravity it’s <code>defaults write com.google.antigravity ApplePressAndHoldEnabled -bool false</code>.</li>
 </ul>
+<p>For all Visual Studio Code based editors, I disable
+<code>ApplePressAndHoldEnabled</code> for… sanity. And I also force new windows
+to open as tabs (this can also be configured system-wide but I only want
+it for those apps).</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># Visual Studio Code</span>
+defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool <span class="hljs-literal">false</span>
+defaults write com.microsoft.VSCode AppleWindowTabbingMode -string always
+
+<span class="hljs-comment"># Cursor</span>
+defaults write com.todesktop.230313mzl4w4u92 ApplePressAndHoldEnabled -bool <span class="hljs-literal">false</span>
+defaults write com.todesktop.230313mzl4w4u92 AppleWindowTabbingMode -string always
+
+<span class="hljs-comment"># Antigravity</span>
+defaults write com.google.antigravity ApplePressAndHoldEnabled -bool <span class="hljs-literal">false</span>
+defaults write com.google.antigravity AppleWindowTabbingMode -string always
+</code></pre>
 <h2 id="iterm2-preferences" tabindex="-1"><a class="header-anchor" href="#iterm2-preferences"><span>iTerm2 preferences</span></a></h2>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># Appearance &gt; General &gt; Theme: Minimal</span>
 defaults write com.googlecode.iterm2 TabStyleWithAutomaticOption -int 5

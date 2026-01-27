@@ -170,9 +170,10 @@ make sure <strong>Install macOS updates</strong> is off (I don’t want macOS to
 reboot without my permission and lose any unsaved state).</li>
 </ul>
 <p>For all Visual Studio Code based editors, I disable
-<code>ApplePressAndHoldEnabled</code> for… sanity. And I also force new windows
-to open as tabs (this can also be configured system-wide but I only want
-it for those apps).</p>
+<code>ApplePressAndHoldEnabled</code> for… sanity. And I also
+<a href="https://powerusers.codidact.com/posts/285975/285976#answer-285976">force new windows to open as tabs</a>
+(this can also be configured <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp1032/mac#apd6b032a9835244">system-wide</a>
+but I only want it for those apps).</p>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># Visual Studio Code</span>
 defaults write com.microsoft.VSCode ApplePressAndHoldEnabled -bool <span class="hljs-literal">false</span>
 defaults write com.microsoft.VSCode AppleWindowTabbingMode -string always

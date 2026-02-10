@@ -5,10 +5,71 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-01-26T23:03:21.678Z</updated>
+  <updated>2026-02-10T18:35:53.351Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Cloudflare Workers choke on asdf .tool-versions</title>
+    <link href="https://www.codejam.info/2026/02/cloudflare-workers-choke-asdf-tool-versions.html" />
+    <id>https://www.codejam.info/2026/02/cloudflare-workers-choke-asdf-tool-versions.html</id>
+    <updated>2026-02-10T08:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So you have a project you want to deploy to Cloudflare Workers, and you
+happen to have a <code>.tool-versions</code> file to describe your dependencies,
+even just a simple one like:</p>
+<pre><code class="hljs">nodejs 24.13.1
+</code></pre>
+<p>Then your Cloudflare deploy fails with:</p>
+<pre><code class="hljs">Initializing build environment...
+Success: Finished initializing build environment
+Cloning repository...
+Found a .tool-versions file in repository root. Installing dependencies.
+Restoring from dependencies cache
+Restoring from build output cache
+Failed: error occurred while installing tools or dependencies
+</code></pre>
+<p>There’s a
+<a href="https://community.cloudflare.com/t/undocumented-tool-versions-support/855532">couple</a>
+<a href="https://community.cloudflare.com/t/cloudflare-workers-deploy-crashes-on-tool-versions/871072">threads</a>
+on
+<a href="https://community.cloudflare.com/t/how-to-disable-automatic-installs-of-tool-versions-and-package-json/570450">Cloudflare</a>
+<a href="https://community.cloudflare.com/t/support-pnpm-in-tool-versions/645235">Community</a>
+about this and similar <code>.tool-versions</code> issues. They get closed after 15
+days without any answer, with the oldest one from 2023 and still no
+solution to this day.</p>
+<p>The fact Cloudflare Workers (and Cloudflare Pages) look at
+<code>.tool-versions</code> is undocumented, it so happens that it chokes on even
+the most basic <code>.tool-versions</code> possible, so it essentially means the
+mere presence of this file in your project will break your build on
+Cloudflare, without any way to turn off this behavior (like forcing
+Cloudflare to ignore that file). As reported in <a href="https://community.cloudflare.com/t/how-to-disable-automatic-installs-of-tool-versions-and-package-json/570450">this issue</a>,
+the <code>SKIP_DEPENDENCY_INSTALL</code> environment variable does <em>not</em> help with
+this behavior.</p>
+<h2 id="the-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/02/cloudflare-workers-choke-asdf-tool-versions.html#the-solution"><span>The solution</span></a></h2>
+<p>So what’s left? Well, I had to remove <code>.tool-versions</code> from my
+repository.</p>
+<p>Instead, I moved it to <code>.tool-versions.template</code>, and when setting up
+the repo in any environment that <em>actually</em> supports <code>.tool-versions</code>, I
+just <code>cp .tool-versions.template .tool-versions</code> (with <code>.tool-versions</code>
+being in <code>.gitignore</code>).</p>
+<h2 id="setting-the-correct-node-js-version-on-cloudflare" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/02/cloudflare-workers-choke-asdf-tool-versions.html#setting-the-correct-node-js-version-on-cloudflare"><span>Setting the correct Node.js version on Cloudflare</span></a></h2>
+<p>As for Cloudflare, in order to set the proper versions, I’m using the
+<code>NODE_VERSION</code> and <code>PNPM_VERSION</code> build environment variables. (Also
+<code>NPM_VERSION</code> and <code>YARN_VERSION</code> depending on your package manager of
+choice).</p>
+<pre><code class="hljs">NODE_VERSION=24.13.1
+PNPM_VERSION=10.29.2
+</code></pre>
+<p>This is, of course, also undocumented, but it works!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>The next chapter</title>
     <link href="https://www.codejam.info/2026/01/the-next-chapter.html" />
@@ -2278,60 +2339,6 @@ Yarn needs its <code>.yarn/cache</code> and Vercel doesn’t cache it between bu
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Swift: detect space (virtual desktop) changes</title>
-    <link href="https://www.codejam.info/2024/05/swift-detect-space-virtual-desktop-changes.html" />
-    <id>https://www.codejam.info/2024/05/swift-detect-space-virtual-desktop-changes.html</id>
-    <updated>2024-05-04T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>In a macOS app, you can
-<a href="https://stackoverflow.com/a/56435288/4324668">get an event</a>
-when <a href="https://stackoverflow.com/a/73548661/4324668">the active space changes</a>.
-This happens e.g. if you have multiple virtual desktops, or full screen
-windows, and you swap between “spaces”, using the 3 fingers swipe on the
-trackpad, or the <kbd>Ctrl</kbd> + <kbd>Left</kbd> and <kbd>Right</kbd>
-shortcuts.</p>
-<pre><code class="hljs language-swift"><span class="hljs-keyword">class</span> <span class="hljs-title class_">MyObserver</span> {
-  <span class="hljs-keyword">init</span>() {
-    <span class="hljs-type">NSWorkspace</span>.shared.notificationCenter.addObserver(
-      forName: <span class="hljs-type">NSWorkspace</span>.activeSpaceDidChangeNotification,
-      object: <span class="hljs-literal">nil</span>,
-      queue: <span class="hljs-literal">nil</span>,
-      using: <span class="hljs-keyword">self</span>.spaceDidChange
-    )
-  }
-
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">spaceDidChange</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Desktop (space) changed&quot;</span>)
-  }
-}
-</code></pre>
-<p>Looks like there’s an alternative way to call it:</p>
-<pre><code class="hljs language-swift">
-<span class="hljs-keyword">class</span> <span class="hljs-title class_">MyObserver</span> {
-  <span class="hljs-keyword">init</span>() {
-    <span class="hljs-type">NSWorkspace</span>.shared.notificationCenter.addObserver(
-      <span class="hljs-keyword">self</span>,
-      selector: <span class="hljs-keyword">#selector</span>(<span class="hljs-keyword">self</span>.spaceDidChange),
-      name: <span class="hljs-type">NSWorkspace</span>.activeSpaceDidChangeNotification,
-      object: <span class="hljs-literal">nil</span>
-    )
-  }
-
-  <span class="hljs-keyword">func</span> <span class="hljs-title function_">spaceDidChange</span>(<span class="hljs-keyword">_</span> <span class="hljs-params">notification</span>: <span class="hljs-type">Notification</span>) {
-    <span class="hljs-built_in">print</span>(<span class="hljs-string">&quot;Desktop (space) changed&quot;</span>)
-  }
-}
-</code></pre>
-<p>Whatever works for you!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://x.com/valeriangalliat/status/1790906281487933916">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

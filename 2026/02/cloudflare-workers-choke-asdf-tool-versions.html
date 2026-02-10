@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cloudflare Workers choke on asdf .tool-versions</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260125.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Cloudflare Workers choke on asdf .tool-versions">
+  <meta property="og:description" content="So you have a project you want to deploy to Cloudflare Workers, and you happen to have a .tool-versions file to describe your dependencies, even just a simple one like:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Cloudflare Workers choke on asdf <code>.tool-versions</code></h1>
+<p class="date">February 10, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So you have a project you want to deploy to Cloudflare Workers, and you
+happen to have a <code>.tool-versions</code> file to describe your dependencies,
+even just a simple one like:</p>
+<pre><code class="hljs">nodejs 24.13.1
+</code></pre>
+<p>Then your Cloudflare deploy fails with:</p>
+<pre><code class="hljs">Initializing build environment...
+Success: Finished initializing build environment
+Cloning repository...
+Found a .tool-versions file in repository root. Installing dependencies.
+Restoring from dependencies cache
+Restoring from build output cache
+Failed: error occurred while installing tools or dependencies
+</code></pre>
+<p>There’s a
+<a href="https://community.cloudflare.com/t/undocumented-tool-versions-support/855532">couple</a>
+<a href="https://community.cloudflare.com/t/cloudflare-workers-deploy-crashes-on-tool-versions/871072">threads</a>
+on
+<a href="https://community.cloudflare.com/t/how-to-disable-automatic-installs-of-tool-versions-and-package-json/570450">Cloudflare</a>
+<a href="https://community.cloudflare.com/t/support-pnpm-in-tool-versions/645235">Community</a>
+about this and similar <code>.tool-versions</code> issues. They get closed after 15
+days without any answer, with the oldest one from 2023 and still no
+solution to this day.</p>
+<p>The fact Cloudflare Workers (and Cloudflare Pages) look at
+<code>.tool-versions</code> is undocumented, it so happens that it chokes on even
+the most basic <code>.tool-versions</code> possible, so it essentially means the
+mere presence of this file in your project will break your build on
+Cloudflare, without any way to turn off this behavior (like forcing
+Cloudflare to ignore that file). As reported in <a href="https://community.cloudflare.com/t/how-to-disable-automatic-installs-of-tool-versions-and-package-json/570450">this issue</a>,
+the <code>SKIP_DEPENDENCY_INSTALL</code> environment variable does <em>not</em> help with
+this behavior.</p>
+<h2 id="the-solution" tabindex="-1"><a class="header-anchor" href="#the-solution"><span>The solution</span></a></h2>
+<p>So what’s left? Well, I had to remove <code>.tool-versions</code> from my
+repository.</p>
+<p>Instead, I moved it to <code>.tool-versions.template</code>, and when setting up
+the repo in any environment that <em>actually</em> supports <code>.tool-versions</code>, I
+just <code>cp .tool-versions.template .tool-versions</code> (with <code>.tool-versions</code>
+being in <code>.gitignore</code>).</p>
+<h2 id="setting-the-correct-node-js-version-on-cloudflare" tabindex="-1"><a class="header-anchor" href="#setting-the-correct-node-js-version-on-cloudflare"><span>Setting the correct Node.js version on Cloudflare</span></a></h2>
+<p>As for Cloudflare, in order to set the proper versions, I’m using the
+<code>NODE_VERSION</code> and <code>PNPM_VERSION</code> build environment variables. (Also
+<code>NPM_VERSION</code> and <code>YARN_VERSION</code> depending on your package manager of
+choice).</p>
+<pre><code class="hljs">NODE_VERSION=24.13.1
+PNPM_VERSION=10.29.2
+</code></pre>
+<p>This is, of course, also undocumented, but it works!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/02/cloudflare-workers-choke-asdf-tool-versions.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

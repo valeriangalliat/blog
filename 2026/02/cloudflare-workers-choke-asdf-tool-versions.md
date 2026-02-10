@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2021294413893574883
+---
+
 # Cloudflare Workers choke on asdf `.tool-versions`
 February 10, 2026
 

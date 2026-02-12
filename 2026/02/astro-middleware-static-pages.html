@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Run Astro middleware in front of static pages (Cloudflare Workers)</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260125.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Run Astro middleware in front of static pages (Cloudflare Workers)">
+  <meta property="og:description" content="Astro allows to prerender pages as static assets, so everything is compiled at build time and can be served super quick.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Run Astro middleware in front of static pages (Cloudflare Workers)</h1>
+<p class="date">February 11, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Astro allows to prerender pages as static assets, so everything is
+compiled at build time and can be served super quick.</p>
+<p>But also, Astro has the concept of a middleware, that allows to run
+custom logic in front of every request, which can be handy for things
+like auth, redirects, proxying and more.</p>
+<p>The problem? <a href="https://github.com/withastro/roadmap/discussions/869">The middleware is not run for static pages</a>.</p>
+<h2 id="why-run-the-middleware-on-static-pages" tabindex="-1"><a class="header-anchor" href="#why-run-the-middleware-on-static-pages"><span>Why run the middleware on static pages?</span></a></h2>
+<p>In many cases this is not a problem, because you may not often need to
+run custom logic in front of static pages. After all if those pages
+needed custom logic per request, they’d probably be dynamic.</p>
+<p>Pages behind auth are most likely dynamic so the content can be
+contextual to the logged-in user. As for redirects and proxies, they
+usually make sense <em>when no actual page</em> matches the URL, and Astro runs
+the middleware in both those cases.</p>
+<p>However my use case is a bit different. I’d like to get a sense of what
+pages are visited on my site, and I don’t like the idea of client-side
+tracking, partly because of the privacy stigma, and partly because “you
+can’t trust the client”.</p>
+<h3 id="unnecessary-note-on-client-side-tracking" tabindex="-1"><a class="header-anchor" href="#unnecessary-note-on-client-side-tracking"><span>Unnecessary note on client-side tracking</span></a></h3>
+<p>At that point it seems that mostly everyone on the internet does
+client-side tracking, including every business I ever worked with. Yet I
+never encountered cases where the data got heavily manipulated.</p>
+<p>The only anomalies I ever noticed are the occasional pen test with all
+sorts of injection attempts, but those typically just get ignored at
+ingestion because the data is broken, or at worst, it breaks queries
+because corrupted data <em>was</em> ingested (read: data type mismatch,
+hopefully we know how to avoid SQL injections by now).</p>
+<p>However it seems that most people have something else to do than
+programmatically sending well formatted but fake tracking data on public
+endpoints for the mere pleasure of causing chaos for someone else.</p>
+<p>Despite that, I’m still allergic to client-side tracking because <em>on
+paper</em> this is all still possible.</p>
+<h4 id="unnecessary-note-on-http-logs" tabindex="-1"><a class="header-anchor" href="#unnecessary-note-on-http-logs"><span>Unnecessary note on HTTP logs</span></a></h4>
+<p>You could say I can achieve all this with HTTP logs without bothering
+with an edge worker, and you’d be 100% right. However,
+Cloudflare <a href="https://developers.cloudflare.com/logs/logpush/#availability">only gives access to HTTP logs to Enterprise customers</a>
+and this is not exactly an interesting option for me right now.</p>
+<p>If not for that it would definitely be my favorite solution.</p>
+<h2 id="running-backend-code-in-front-of-static-pages" tabindex="-1"><a class="header-anchor" href="#running-backend-code-in-front-of-static-pages"><span>Running backend code in front of static pages</span></a></h2>
+<p>Back to the topic. Sadly there’s no generic way I found to run the
+Astro middleware in front of static pages. This means the solution is
+gonna be dependent on your <em>adapter</em>. In my case, I’m using the
+<a href="https://docs.astro.build/en/guides/integrations-guide/cloudflare/">Cloudflare adapter</a>.</p>
+<p>We have two layers to deal with here. Out of the box the logic is as
+follows:</p>
+<ul>
+<li>Cloudflare Workers:
+<ul>
+<li>If there’s a static asset that matches the URL, serve that.</li>
+<li>Otherwise, run the Astro <code>worker.js</code>.</li>
+</ul>
+</li>
+<li>Astro <code>worker.js</code>:
+<ul>
+<li>If there’s a static asset that matches the URL, serve that.</li>
+<li>Otherwise, run the user-provided middleware.</li>
+</ul>
+</li>
+</ul>
+<h2 id="the-cloudflare-part" tabindex="-1"><a class="header-anchor" href="#the-cloudflare-part"><span>The Cloudflare part</span></a></h2>
+<p>In order to mitigate the <em>first</em> layer (Cloudflare), we need to
+configure the runtime to run the worker code in front to some or all
+static assets. This is done in <code>wrangler.jsonc</code> using the
+<code>run_worker_first</code> directive
+(<a href="https://developers.cloudflare.com/workers/static-assets/routing/worker-script/#run-your-worker-script-first">relevant</a>
+<a href="https://developers.cloudflare.com/workers/static-assets/binding/#run_worker_first">docs</a>):</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;assets&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
+    <span class="hljs-attr">&quot;binding&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ASSETS&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;directory&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./dist&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-attr">&quot;run_worker_first&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
+      <span class="hljs-string">&quot;/&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;/en&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;/en/*&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;/fr&quot;</span><span class="hljs-punctuation">,</span>
+      <span class="hljs-string">&quot;/fr/*&quot;</span><span class="hljs-punctuation">,</span>
+    <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>In this case I force the worker to run for the index, as well as <code>/en</code>,
+<code>/fr</code> and anything under.</p>
+<p>This means for other assets like JS/CSS/images, we still skip the
+worker, but for the static pages I have that match those paths,
+Cloudflare will run the edge worker.</p>
+<h2 id="the-astro-part" tabindex="-1"><a class="header-anchor" href="#the-astro-part"><span>The Astro part</span></a></h2>
+<p>Now we have Cloudflare run the Astro worker in front of static pages,
+but it’s still not enough, because the Astro Cloudflare adapter
+<a href="https://github.com/withastro/astro/blob/8780ff2926d59ed196c70032d2ae274b8415655c/packages/integrations/cloudflare/src/utils/handler.ts#L53-L56">skips our middleware</a>
+anyway when a static asset matches.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">if</span> (app.<span class="hljs-property">manifest</span>.<span class="hljs-property">assets</span>.<span class="hljs-title function_">has</span>(requestPathname)) {
+  <span class="hljs-keyword">return</span> env.<span class="hljs-property">ASSETS</span>.<span class="hljs-title function_">fetch</span>(request.<span class="hljs-property">url</span>.<span class="hljs-title function_">replace</span>(<span class="hljs-regexp">/\.html$/</span>, <span class="hljs-string">&#x27;&#x27;</span>))
+}
+</code></pre>
+<p>In order to solve that, we can’t use the Astro middleware anymore.
+Instead we need to configure a custom entry point for the worker. This
+means we now control the top-level worker code and run our logic there,
+regardless what the adapter decides to do.</p>
+<p>This is done with <a href="https://docs.astro.build/en/guides/integrations-guide/cloudflare/#workerentrypoint"><code>workerEntryPoint</code> option</a>
+in <code>astro.config.mjs</code>:</p>
+<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> { defineConfig } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro/config&#x27;</span>
+<span class="hljs-keyword">import</span> cloudflare <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@astrojs/cloudflare&#x27;</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title function_">defineConfig</span>({
+  <span class="hljs-comment">// ...</span>
+
+  <span class="hljs-attr">adapter</span>: <span class="hljs-title function_">cloudflare</span>({
+    <span class="hljs-attr">workerEntryPoint</span>: {
+      <span class="hljs-attr">path</span>: <span class="hljs-string">&#x27;src/worker.ts&#x27;</span>,
+    },
+  }),
+
+  <span class="hljs-comment">// ...</span>
+})
+</code></pre>
+<p>Where <code>src/worker.ts</code> is a custom Cloudflare Worker entry file
+<a href="https://docs.astro.build/en/guides/integrations-guide/cloudflare/#creating-a-custom-cloudflare-worker-entry-file">as documented here</a>:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">SSRManifest</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro&#x27;</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">App</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro/app&#x27;</span>
+
+<span class="hljs-keyword">import</span> { handle } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@astrojs/cloudflare/handler&#x27;</span>
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">Env</span> = {
+  [<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">unknown</span>
+  <span class="hljs-attr">ASSETS</span>: {
+    <span class="hljs-attr">fetch</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">req</span>: <span class="hljs-title class_">Request</span> | <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt;
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">createExports</span>(<span class="hljs-params"><span class="hljs-attr">manifest</span>: <span class="hljs-title class_">SSRManifest</span></span>) {
+  <span class="hljs-keyword">const</span> app = <span class="hljs-keyword">new</span> <span class="hljs-title class_">App</span>(manifest)
+
+  <span class="hljs-keyword">const</span> <span class="hljs-attr">fetch</span>: <span class="hljs-title class_">ExportedHandlerFetchHandler</span>&lt;<span class="hljs-title class_">Env</span>&gt; = <span class="hljs-title function_">async</span> (request, env, ctx) =&gt; {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(request.<span class="hljs-property">url</span>)
+    <span class="hljs-keyword">const</span> { pathname, search } = url
+
+    <span class="hljs-comment">// Do anything before Astro handles the request</span>
+
+    <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">handle</span>(manifest, app, request, env, ctx)
+
+    <span class="hljs-comment">// Do anything after</span>
+
+    <span class="hljs-keyword">return</span> response
+  }
+
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">default</span>: {
+      fetch,
+    } <span class="hljs-keyword">satisfies</span> <span class="hljs-title class_">ExportedHandler</span>&lt;<span class="hljs-title class_">Env</span>&gt;,
+  }
+}
+</code></pre>
+<h2 id="what-about-development" tabindex="-1"><a class="header-anchor" href="#what-about-development"><span>What about development?</span></a></h2>
+<p>The <code>workerEntryPoint</code> is great for production, but <code>astro dev</code> won’t
+pick up on that. So if you need any of this logic to <em>also</em> run in
+development, you need to abstract it and also include it in
+<code>middleware.ts</code>.</p>
+<p>This works fine even for static pages because Astro do run the
+middleware when generating static pages, it just outputs a warning if
+you try to access things like request headers.</p>
+<p>In my case, I chose to move all my production logic in <code>worker.ts</code>, so I
+don’t rely on the middleware whatsoever in production. I use a
+conditional export like follows in order to keep the middleware only in
+development, where it mimics what <code>worker.ts</code> otherwise does in
+production.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> <span class="hljs-keyword">type</span> { <span class="hljs-title class_">MiddlewareHandler</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro&#x27;</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">handler</span>: <span class="hljs-title class_">MiddlewareHandler</span> = <span class="hljs-title function_">async</span> (context, next) =&gt; {
+  <span class="hljs-comment">// ...</span>
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> onRequest = <span class="hljs-keyword">import</span>.<span class="hljs-property">meta</span>.<span class="hljs-property">env</span>.<span class="hljs-property">DEV</span> ? handler : <span class="hljs-literal">undefined</span>
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>In short: configure <code>run_worker_first</code> on Cloudflare so it runs the
+worker in front of static pages, then use a custom <code>workerEntryPoint</code>
+with the Astro Cloudflare adapter so you get full control over the
+worker, and can run code <em>outside of the middleware</em> (which does not
+run for static pages).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/02/astro-middleware-static-pages.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

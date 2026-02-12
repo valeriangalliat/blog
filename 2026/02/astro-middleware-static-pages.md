@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2021761871104430267
+---
+
 # Run Astro middleware in front of static pages (Cloudflare Workers)
 February 11, 2026
 

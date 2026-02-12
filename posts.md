@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [Run Astro middleware in front of static pages (Cloudflare Workers)](2026/02/astro-middleware-static-pages.md) <small>February 11, 2026</small>
 * [Cloudflare Workers choke on asdf `.tool-versions`](2026/02/cloudflare-workers-choke-asdf-tool-versions.md) <small>February 10, 2026</small>
 * [The next chapter](2026/01/the-next-chapter.md) <small>January 25, 2026</small>
 

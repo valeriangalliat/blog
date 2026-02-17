@@ -9,9 +9,11 @@ const hljsOrig = require('highlight.js')
 const hljsCodeDiff = require('highlightjs-code-diff')
 
 const baseUrl = 'https://www.codejam.info/'
+const siteName = 'CodeJam'
 const meta = {}
 
 const file = process.argv[2]
+const isIndex = file === 'index.md'
 const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
@@ -168,8 +170,12 @@ if (meta.canonical) {
   metaTags += `  <link rel="canonical" href="${escape(meta.canonical)}">\n`
 }
 
-metaTags += `  <meta property="og:title" content="${escape(env.title)}">\n`
-metaTags += `  <meta property="og:site_name" content="CodeJam">\n`
+const pageTitle = isIndex
+  ? (meta.excerpt ? `${env.title} - ${meta.excerpt.replace(/\.$/, '')}` : env.title)
+  : `${env.title} | ${siteName}`
+
+metaTags += `  <meta property="og:title" content="${escape(pageTitle)}">\n`
+metaTags += `  <meta property="og:site_name" content="${siteName}">\n`
 
 if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(md.typographer(meta.excerpt))}">\n`
@@ -215,7 +221,7 @@ if (meta.lang) {
 
 process.stdout.write(
   head
-    .replace('<title>', `<title>${escape(env.title)}`)
+    .replace('<title>', `<title>${escape(pageTitle)}`)
     .replace('</head>', `${metaTags}</head>`)
     .replace('<body>', `<body class="${layout}">`)
     .replace('<header>', hero)

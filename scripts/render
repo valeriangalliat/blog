@@ -169,6 +169,7 @@ if (meta.canonical) {
 }
 
 metaTags += `  <meta property="og:title" content="${escape(env.title)}">\n`
+metaTags += `  <meta property="og:site_name" content="CodeJam">\n`
 
 if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(md.typographer(meta.excerpt))}">\n`

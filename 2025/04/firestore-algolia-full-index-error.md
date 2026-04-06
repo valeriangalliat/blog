@@ -62,3 +62,18 @@ So the solution was simple. Upgrade staging to a paid plan so I can do
 my testing!
 
 After that I triggered a full index again and it worked just fine. 🙏
+
+## Also: queue name length
+
+Another reason the full index could fail, as reported by a reader (a
+friend who independently stumbled upon my blog, love when this happens
+lol), is if you give a name to the extension that's over 33 characters,
+because after that the queue name gets truncated and the extension can't
+find the queue.
+
+In my example above the full queue name is
+`ext-firestore-algolia-search-executeFullIndexOperation`, and we control
+the `firestore-algolia-search` part of the name. That's what can't be
+more than 33 characters. If it is, then you get something like
+`ext-firestore-algolia-search-workspaces-executeFullIndexOperati` which
+Algolia can't handle.

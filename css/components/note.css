@@ -22,3 +22,8 @@
     background: var(--color-attention-subtle);
     border-top-color: var(--color-attention-muted);
 }
+
+.note.sponsors {
+    background: var(--color-sponsors-subtle);
+    border-top-color: var(--color-sponsors-muted);
+}

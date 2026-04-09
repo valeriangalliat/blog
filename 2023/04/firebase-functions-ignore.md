@@ -162,3 +162,10 @@ to be deployed, I also [wrote a post](firebase-functions-entity-too-large.md)
 with tips to troubleshoot it.
 
 Peace. ✌️
+
+<div class="note sponsors">
+
+If you use the Firebase emulator, I made [Flame](https://flame.evetools.app/),
+a better UI for it. I'd love if you can check it out, feedback welcome! 🫶
+
+</div>

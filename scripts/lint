@@ -30,7 +30,7 @@ process() {
             continue
         fi
 
-        head=$(grep -A4 '^# ' "$path")
+        head=$(grep -m1 -A4 '^# ' "$path")
         title=$(echo "$head" | head -1 | sed 's/^# //')
         date=$((echo "$head" && echo) | grep -B1 '^$' | head -1)
 

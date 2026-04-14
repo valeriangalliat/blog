@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️) | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260409.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️) | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="Context: I’m building an app called Flame with Tauri, and I work from a M-series Mac.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)</h1>
+<p class="date">April 14, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Context: I’m building an app called <a href="https://flame.evetools.app/">Flame</a>
+with <a href="https://v2.tauri.app/">Tauri</a>, and I work from a M-series Mac.</p>
+<p>We initially released it only on Mac as a MVP. Some folks on Reddit
+showed interest but were on Windows and Linux. I’m pretty eager to get
+more hands on the product in those early stages, to gather feedback and
+learn from users where to take it from there, so making it cross
+platform early on sounded like a quick win.</p>
+<h2 id="quick-note-on-the-windows-build" tabindex="-1"><a class="header-anchor" href="#quick-note-on-the-windows-build"><span>Quick note on the Windows build</span></a></h2>
+<p>Not the topic of this post but I might as well throw that here in case
+it’s useful to anyone. Building for Windows from Mac turned out pretty
+easy following <a href="https://v2.tauri.app/distribute/windows-installer/#build-windows-apps-on-linux-and-macos">this guide</a>.
+In short:</p>
+<pre><code class="hljs language-sh">brew install nsis llvm
+<span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;/opt/homebrew/opt/llvm/bin:<span class="hljs-variable">$PATH</span>&quot;</span>
+rustup target add x86_64-pc-windows-msvc
+cargo install --locked cargo-xwin
+<span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>/.cargo/bin:<span class="hljs-variable">$PATH</span>&quot;</span>
+tauri build --runner cargo-xwin --target x86_64-pc-windows-msvc
+</code></pre>
+<p>This works like a charm, signed auto updates and all.</p>
+<p>Signing the app to avoid the SmartScreen warning is not handled out of
+the box by Tauri when cross-compiling (it only knows to use
+<code>signtool.exe</code> from a Windows host), but you can configure a custom
+signing command like <a href="https://github.com/mtrojnar/osslsigncode">osslsigncode</a>
+and do it from Mac or Linux as well (I haven’t tried it).</p>
+<h2 id="what-about-github-actions" tabindex="-1"><a class="header-anchor" href="#what-about-github-actions"><span>What about GitHub Actions</span></a></h2>
+<p>Yeah honestly, should have just done that. I got nerd sniped by wanting
+to compile for all platforms from my own machine without renting
+hardware in the cloud. And the idea of generating a working x86-64
+Windows and Linux build from my ARM Mac with near-native build
+performance (so without using QEMU) sounded kinda cool to me.</p>
+<p>But really, Tauri has <a href="https://v2.tauri.app/distribute/pipelines/github/">everything ready to use GitHub Actions</a>
+and output binaries for all platforms, it’s a no brainer.</p>
+<p>And the free tier for GitHub Actions is high enough that unless you’re
+releasing updates every other day, you probably won’t need to pay for
+it? The Mac runner is by far the most expensive so you could also go a
+long way building for Mac from your dev machine and delegating only
+Windows and Linux to GitHub Actions.</p>
+<h2 id="ok-but-i-m-here-for-cross-compiling-linux-remember" tabindex="-1"><a class="header-anchor" href="#ok-but-i-m-here-for-cross-compiling-linux-remember"><span>OK but I’m here for cross-compiling Linux, remember?</span></a></h2>
+<p>Oh yeah, sorry. I got distracted. 😂</p>
+<p>The strategy:</p>
+<ul>
+<li><strong>Use macOS Virtualization framework to run a ARM Linux
+VM at near-native performance.</strong></li>
+<li><strong>Inside that VM, configure Linux to cross-compile the app for
+x86-64.</strong></li>
+<li><strong>Use Rosetta from Linux (yeah this is a
+thing) to run any x86-64 binaries we need along the way at also
+near-native performance.</strong></li>
+</ul>
+<h2 id="creating-the-vm-with-lima" tabindex="-1"><a class="header-anchor" href="#creating-the-vm-with-lima"><span>Creating the VM with Lima</span></a></h2>
+<p>We use <a href="https://lima-vm.io/">Lima</a> to manage a headless Linux VM.</p>
+<pre><code class="hljs language-sh">brew install lima
+
+limactl create --name=linux-builder \
+    --vm-type=vz --rosetta \
+    --cpus=6 --memory=8 --disk=60 \
+    --containerd=none
+
+limactl start linux-builder
+</code></pre>
+<ul>
+<li>
+<p><a href="https://lima-vm.io/docs/config/vmtype/vz/"><code>--vm-type=vz</code></a> to make
+sure we use macOS Virtualization framework. It’s the default in Lima
+but we’re explicit about it.</p>
+<p>Virtualization framework only works for same-architecture VMs, so here
+we’re making an ARM Linux VM, even though we want to build for x86-64.</p>
+</li>
+<li>
+<p><a href="https://lima-vm.io/docs/config/multi-arch/#fast-mode-2"><code>--rosetta</code></a>
+to use Apple Rosetta to translate x86-64 instructions to ARM on the
+fly, for binaries we run inside the VM.</p>
+</li>
+<li>
+<p><code>--containerd=none</code> because we don’t need containerd (not running
+Docker here).</p>
+</li>
+</ul>
+<h2 id="provisioning-the-vm" tabindex="-1"><a class="header-anchor" href="#provisioning-the-vm"><span>Provisioning the VM</span></a></h2>
+<p>Now we’ll run a shell inside the VM to provision it with everything we
+need to cross-compile a Tauri app.</p>
+<pre><code class="hljs language-sh">limactl shell linux-builder
+</code></pre>
+<h3 id="add-amd64-architecture" tabindex="-1"><a class="header-anchor" href="#add-amd64-architecture"><span>Add AMD64 architecture</span></a></h3>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># No interactive prompts</span>
+<span class="hljs-built_in">export</span> DEBIAN_FRONTEND=noninteractive
+
+<span class="hljs-comment"># Enable AMD64 multi-arch</span>
+<span class="hljs-built_in">sudo</span> dpkg --add-architecture amd64
+
+<span class="hljs-comment"># VM defaults to `ports.ubuntu.com` which only has ARM64 sources.</span>
+<span class="hljs-comment"># We need to add `archive.ubuntu.com` for AMD64.</span>
+CODENAME=<span class="hljs-string">&quot;<span class="hljs-subst">$(. /etc/os-release &amp;&amp; echo <span class="hljs-string">&quot;<span class="hljs-variable">${VERSION_CODENAME}</span>&quot;</span>)</span>&quot;</span>
+
+<span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/apt/sources.list.d/ubuntu-amd64.list &gt; /dev/null &lt;&lt; <span class="hljs-string">EOF
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${CODENAME} main restricted universe multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${CODENAME}-updates main restricted universe multiverse
+deb [arch=amd64] http://archive.ubuntu.com/ubuntu ${CODENAME}-backports main restricted universe multiverse
+deb [arch=amd64] http://security.ubuntu.com/ubuntu ${CODENAME}-security main restricted universe multiverse
+EOF</span>
+
+<span class="hljs-comment"># Constrain the native sources to ARM64 so APT doesn&#x27;t try to fetch</span>
+<span class="hljs-comment"># AMD64 packages from it.</span>
+<span class="hljs-built_in">sudo</span> sed -i <span class="hljs-string">&#x27;/^Architectures:/d&#x27;</span> /etc/apt/sources.list.d/ubuntu.sources
+<span class="hljs-built_in">sudo</span> sed -i <span class="hljs-string">&#x27;s/^Types: deb/Types: deb\nArchitectures: arm64/&#x27;</span> /etc/apt/sources.list.d/ubuntu.sources
+
+<span class="hljs-built_in">sudo</span> apt update
+</code></pre>
+<h3 id="install-system-dependencies" tabindex="-1"><a class="header-anchor" href="#install-system-dependencies"><span>Install system dependencies</span></a></h3>
+<pre><code class="hljs language-sh">PKGS=<span class="hljs-string">&quot;git ca-certificates&quot;</span>
+
+<span class="hljs-comment"># Tauri prerequisites from &lt;https://v2.tauri.app/start/prerequisites/#linux&gt;.</span>
+<span class="hljs-comment"># Added AMD64 suffix for cross-compilation.</span>
+PKGS=<span class="hljs-string">&quot;<span class="hljs-variable">$PKGS</span>
+build-essential curl wget file
+libwebkit2gtk-4.1-dev:amd64 libxdo-dev:amd64 libssl-dev:amd64
+libayatana-appindicator3-dev:amd64 librsvg2-dev:amd64&quot;</span>
+
+<span class="hljs-comment"># Tauri needs the AMD64 version of `xdg-open` to bundle in the app</span>
+PKGS=<span class="hljs-string">&quot;<span class="hljs-variable">$PKGS</span> xdg-utils:amd64&quot;</span>
+
+<span class="hljs-comment"># Cross-compilation toolchain</span>
+PKGS=<span class="hljs-string">&quot;<span class="hljs-variable">$PKGS</span> gcc-x86-64-linux-gnu g++-x86-64-linux-gnu&quot;</span>
+
+<span class="hljs-built_in">sudo</span> apt install -y --no-install-recommends <span class="hljs-variable">$PKGS</span>
+</code></pre>
+<h3 id="install-rust" tabindex="-1"><a class="header-anchor" href="#install-rust"><span>Install Rust</span></a></h3>
+<p>Native ARM Rust with x86-64 cross-compilation target.</p>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># `sh -s` to force reading from stdin and allow passing arguments without a</span>
+<span class="hljs-comment"># filename. Configure the installer to be non-interactive (default yes) not</span>
+<span class="hljs-comment"># modify the # `PATH` (we do it ourselves) and install stable.</span>
+curl --proto <span class="hljs-string">&#x27;=https&#x27;</span> --tlsv1.2 -sSf https://sh.rustup.rs \
+    | sh -s -- -y --no-modify-path --default-toolchain stable
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;$HOME/.cargo/bin:$PATH&quot;&#x27;</span> &gt;&gt; ~/.profile
+<span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>/.cargo/bin:<span class="hljs-variable">${PATH}</span>&quot;</span>
+
+rustup target add x86_64-unknown-linux-gnu
+</code></pre>
+<h3 id="install-node-js" tabindex="-1"><a class="header-anchor" href="#install-node-js"><span>Install Node.js</span></a></h3>
+<p>I like to use <a href="https://asdf-vm.com/">asdf</a> for this.</p>
+<pre><code class="hljs language-sh">ASDF_URL=$(curl -fsS https://api.github.com/repos/asdf-vm/asdf/releases/latest \
+    | grep -o <span class="hljs-string">&#x27;&quot;browser_download_url&quot;: *&quot;[^&quot;]*linux-arm64\.tar\.gz&quot;&#x27;</span> \
+    | grep -o <span class="hljs-string">&#x27;https://[^&quot;]*&#x27;</span>)
+
+curl -fsSL <span class="hljs-string">&quot;<span class="hljs-variable">$ASDF_URL</span>&quot;</span> | <span class="hljs-built_in">sudo</span> tar -xz -C /usr/local/bin asdf
+
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export ASDF_DATA_DIR=&quot;$HOME/.asdf&quot;&#x27;</span> &gt;&gt; ~/.profile
+<span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;export PATH=&quot;$ASDF_DATA_DIR/shims:$PATH&quot;&#x27;</span> &gt;&gt; ~/.profile
+
+<span class="hljs-built_in">export</span> ASDF_DATA_DIR=<span class="hljs-string">&quot;<span class="hljs-variable">$HOME</span>/.asdf&quot;</span>
+<span class="hljs-built_in">export</span> PATH=<span class="hljs-string">&quot;<span class="hljs-variable">$ASDF_DATA_DIR</span>/shims:<span class="hljs-variable">$PATH</span>&quot;</span>
+
+asdf plugin add nodejs
+
+<span class="hljs-comment"># Optionally pnpm or whatever package manager you use</span>
+<span class="hljs-comment"># asdf plugin add pnpm</span>
+
+<span class="hljs-comment"># Assuming we already have a `.tool-versions`</span>
+asdf install
+</code></pre>
+<h3 id="rosetta-appimage-support" tabindex="-1"><a class="header-anchor" href="#rosetta-appimage-support"><span>Rosetta AppImage support</span></a></h3>
+<p>This was the biggest culprit of this whole setup.</p>
+<p>Tauri build uses <a href="https://github.com/linuxdeploy/linuxdeploy">linuxdeploy</a>
+to build AppImages, and linuxdeploy itself is distributed as an
+<a href="https://en.wikipedia.org/wiki/AppImage">AppImage</a>.</p>
+<p>Lima with <code>--rosetta</code> configures <code>binfmt_misc</code> to use Rosetta for a
+particular ELF signature. However their pattern is not compatible with
+AppImages.</p>
+<p>Normal ELF format normally uses <code>0x00 0x00</code> for bytes 8-9
+(<code>EI_ABIVERSION</code> and the start of <code>EI_PAD</code>), but the <a href="https://github.com/AppImage/AppImageSpec/blob/master/draft.md#image-format">AppImage format</a>
+repurposes them as a magic identification bytes “AI” (<code>0x41 0x49</code>).</p>
+<p>We need to patch <a href="https://github.com/lima-vm/lima/blob/10d0287227bfdd067dfd770cf4977a4fa9ac8c21/pkg/driver/vz/boot.Linux/05-rosetta-volume.sh#L20">Lima’s <code>binfmt_misc</code> pattern</a>
+to handle this so we can use Rosetta for x86-64 AppImages like the
+linuxdeploy one.</p>
+<p>Here’s the ELF <a href="https://refspecs.linuxfoundation.org/elf/gabi4+/ch4.eheader.html#elfid">identification bytes</a>:</p>
+<table>
+<thead>
+<tr>
+<th>Name</th>
+<th>Offset</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>EI_MAG0</code></td>
+<td>0</td>
+<td>File identification</td>
+</tr>
+<tr>
+<td><code>EI_MAG1</code></td>
+<td>1</td>
+<td>File identification</td>
+</tr>
+<tr>
+<td><code>EI_MAG2</code></td>
+<td>2</td>
+<td>File identification</td>
+</tr>
+<tr>
+<td><code>EI_MAG3</code></td>
+<td>3</td>
+<td>File identification</td>
+</tr>
+<tr>
+<td><code>EI_CLASS</code></td>
+<td>4</td>
+<td>File class</td>
+</tr>
+<tr>
+<td><code>EI_DATA</code></td>
+<td>5</td>
+<td>Data encoding</td>
+</tr>
+<tr>
+<td><code>EI_VERSION</code></td>
+<td>6</td>
+<td>File version</td>
+</tr>
+<tr>
+<td><code>EI_OSABI</code></td>
+<td>7</td>
+<td>Operating system/ABI identification</td>
+</tr>
+<tr>
+<td><code>EI_ABIVERSION</code></td>
+<td>8</td>
+<td>ABI version</td>
+</tr>
+<tr>
+<td><code>EI_PAD</code></td>
+<td>9</td>
+<td>Start of padding bytes</td>
+</tr>
+<tr>
+<td><code>EI_NIDENT</code></td>
+<td>16</td>
+<td>Size of <code>e_ident[]</code></td>
+</tr>
+</tbody>
+</table>
+<p>Lima’s mask is strict on <code>EI_ABIVERSION</code> and <code>EI_PAD</code>, and this causes
+it to exclude AppImage binaries. We can change the mask to ignore those
+bytes and match AppImages.</p>
+<details>
+<summary>Show the bytes table</summary>
+<table>
+<thead>
+<tr>
+<th>Offset</th>
+<th>Before</th>
+<th>After</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>1</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>fe</code></td>
+<td><code>fe</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>fe</code></td>
+<td><code>fe</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>00</code></td>
+<td><code>00</code></td>
+</tr>
+<tr>
+<td><strong>8</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>9</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>10</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>11</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>12</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>13</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>14</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td><strong>15</strong></td>
+<td><strong><code>ff</code></strong></td>
+<td><strong><code>00</code></strong></td>
+</tr>
+<tr>
+<td>16</td>
+<td><code>fe</code></td>
+<td><code>fe</code></td>
+</tr>
+<tr>
+<td>17</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>18</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+<tr>
+<td>19</td>
+<td><code>ff</code></td>
+<td><code>ff</code></td>
+</tr>
+</tbody>
+</table>
+</details>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">tee</span> /etc/binfmt.d/rosetta.conf &gt; /dev/null &lt;&lt; <span class="hljs-string">EOF
+# Ignore \`EI_ABIVERSION\` and \`EI_PAD\` for AppImage support
+:rosetta:M::\x7fELF\x02\x01\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x02\x00\x3e\x00:\xff\xff\xff\xff\xff\xfe\xfe\x00\x00\x00\x00\x00\x00\x00\x00\x00\xfe\xff\xff\xff:/mnt/lima-rosetta/rosetta:OCF
+EOF</span>
+
+<span class="hljs-comment"># Re-read all `binfmt.d` entries to activate the new rule immediately</span>
+<span class="hljs-built_in">sudo</span> systemctl restart systemd-binfmt
+</code></pre>
+<h2 id="building-the-appimage" tabindex="-1"><a class="header-anchor" href="#building-the-appimage"><span>Building the AppImage</span></a></h2>
+<p>The VM is now provisioned. The following we run for every build.</p>
+<p>First, we sync the code in a VM-private directory, because we don’t want
+the Linux <code>node_modules</code> installation to mess up our macOS host
+<code>node_modules</code>.</p>
+<pre><code class="hljs language-sh">VM_APP_DIR=<span class="hljs-string">&quot;/home/<span class="hljs-variable">$USER</span>.guest/my-app&quot;</span>
+
+limactl shell linux-builder -- rsync -a --delete \
+    --exclude=<span class="hljs-string">&#x27;node_modules&#x27;</span> \
+    --exclude=<span class="hljs-string">&#x27;src-tauri/target&#x27;</span> \
+    ./ <span class="hljs-string">&quot;<span class="hljs-variable">$VM_APP_DIR</span>/&quot;</span>
+</code></pre>
+<p>If we’re signing the build and <code>TAURI_SIGNING_PRIVATE_KEY</code> refers to a
+file on the host side, we need to convert it to a plain string so the VM
+has access.</p>
+<pre><code class="hljs language-sh"><span class="hljs-keyword">if</span> [ -f <span class="hljs-string">&quot;<span class="hljs-variable">${TAURI_SIGNING_PRIVATE_KEY}</span>&quot;</span> ]; <span class="hljs-keyword">then</span>
+    TAURI_SIGNING_PRIVATE_KEY=<span class="hljs-string">&quot;<span class="hljs-subst">$(cat <span class="hljs-string">&quot;<span class="hljs-variable">$TAURI_SIGNING_PRIVATE_KEY</span>&quot;</span>)</span>&quot;</span>
+<span class="hljs-keyword">fi</span>
+</code></pre>
+<p>Then we set cross-compilation environment variables, and configure Lima
+to forward them to the VM.</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">export</span> PKG_CONFIG_ALLOW_CROSS=1
+<span class="hljs-built_in">export</span> PKG_CONFIG_PATH=<span class="hljs-string">&quot;/usr/lib/x86_64-linux-gnu/pkgconfig:/usr/share/pkgconfig&quot;</span>
+<span class="hljs-built_in">export</span> CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER=x86_64-linux-gnu-gcc
+
+<span class="hljs-comment"># We force AppImages to extract to a temp dir instead of FUSE-mounting, because</span>
+<span class="hljs-comment"># the kernel&#x27;s `compat_ioctl` layer does not fully translate x86-64 FUSE ioctls</span>
+<span class="hljs-comment"># to ARM64. This allows to run x86-64 AppImages like linuxdeploy.</span>
+<span class="hljs-built_in">export</span> APPIMAGE_EXTRACT_AND_RUN=1
+
+<span class="hljs-built_in">export</span> LIMA_SHELLENV_ALLOW=<span class="hljs-string">&quot;PKG_CONFIG_ALLOW_CROSS,PKG_CONFIG_PATH,CARGO_TARGET_X86_64_UNKNOWN_LINUX_GNU_LINKER,TAURI_SIGNING_PRIVATE_KEY,TAURI_SIGNING_PRIVATE_KEY_PASSWORD,APPIMAGE_EXTRACT_AND_RUN&quot;</span>
+</code></pre>
+<p>Install dependencies (adapt to your package manager).</p>
+<pre><code class="hljs language-sh">limactl shell --workdir=<span class="hljs-string">&quot;<span class="hljs-variable">$VM_APP_DIR</span>&quot;</span> linux-builder -- pnpm install
+</code></pre>
+<p>Actually build.</p>
+<pre><code class="hljs language-sh">limactl shell --preserve-env --workdir=<span class="hljs-string">&quot;<span class="hljs-variable">$VM_APP_DIR</span>&quot;</span> linux-builder -- \
+    pnpm <span class="hljs-built_in">exec</span> tauri build <span class="hljs-string">&quot;<span class="hljs-variable">$@</span>&quot;</span>
+</code></pre>
+<p>Finally copy the artifacts back to host.</p>
+<pre><code class="hljs language-sh">BUNDLE_DIR=<span class="hljs-string">&quot;src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/appimage&quot;</span>
+
+<span class="hljs-built_in">mkdir</span> -p <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$BUNDLE_DIR</span>&quot;</span>
+
+limactl copy --recursive \
+    <span class="hljs-string">&quot;linux-builder:<span class="hljs-variable">$VM_APP_DIR</span>/<span class="hljs-variable">$BUNDLE_DIR</span>/&quot;</span> \
+    <span class="hljs-string">&quot;<span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$BUNDLE_DIR</span>/&quot;</span>
+
+version=$(jq -r <span class="hljs-string">&#x27;.version&#x27;</span> app/package.json)
+
+<span class="hljs-keyword">for</span> f <span class="hljs-keyword">in</span> <span class="hljs-string">&quot;<span class="hljs-variable">$BUNDLE_DIR</span>/&quot;</span>*<span class="hljs-string">&quot;_<span class="hljs-variable">${version}</span>_amd64.AppImage&quot;</span>*; <span class="hljs-keyword">do</span>
+    <span class="hljs-built_in">echo</span> <span class="hljs-string">&quot;  <span class="hljs-variable">$PWD</span>/<span class="hljs-variable">$f</span>&quot;</span>
+<span class="hljs-keyword">done</span>
+</code></pre>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>Mainly because of the Lima default Rosetta <code>binfmt_misc</code> mask that
+rejects AppImages magic bytes, this was harder than I expected.</p>
+<p>Again, should have really just used GitHub Actions for that. 😅</p>
+<p>But hey, this was kinda fun, and I find it “aesthetic” to be able to
+make a x86-64 Linux build from an ARM Mac without emulation.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/04/cross-compiling-tauri-linux-arm-mac.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2044190593543483532
+---
+
 # Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)
 April 14, 2026
 

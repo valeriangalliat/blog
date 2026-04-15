@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2044253775809130821
+---
+
 # Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7
 April 14, 2026
 

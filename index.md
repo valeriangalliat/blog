@@ -9,6 +9,7 @@ A blog about tech, software and other things.
 
 <div class="links posts">
 
+* [Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7](2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.md) <small>April 14, 2026</small>
 * [Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)](2026/04/cross-compiling-tauri-linux-arm-mac.md) <small>April 14, 2026</small>
 * [Run Astro middleware in front of static pages (Cloudflare Workers)](2026/02/astro-middleware-static-pages.md) <small>February 11, 2026</small>
 * [Cloudflare Workers choke on asdf `.tool-versions`](2026/02/cloudflare-workers-choke-asdf-tool-versions.md) <small>February 10, 2026</small>
@@ -23,7 +24,6 @@ A blog about tech, software and other things.
 * [Invoking a Firebase callable function from the Firebase Admin SDK](2024/05/firebase-callable-admin-sdk.md) <small>May 15, 2024</small>
 * [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 * [Using Google Chrome instead of Chromium in Google Cloud Functions](2024/05/google-chrome-cloud-functions.md) <small>May 5, 2024</small>
-* [Knex: timeout acquiring a connection, the pool is probably full](2024/05/knex-timeout-pool-full.md) <small>May 5, 2024</small>
 
 [All the posts](posts.md)
 

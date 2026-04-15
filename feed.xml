@@ -5,10 +5,366 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-04-14T23:07:34.127Z</updated>
+  <updated>2026-04-15T03:12:50.098Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7</title>
+    <link href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html" />
+    <id>https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html</id>
+    <updated>2026-04-14T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>So listen, I was just trying to eject a drive and I ended up spending
+the day benchmarking LLMs.</p>
+<p>In a hurry? Jump to the <a href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#getting-the-models-to-review-each-other">results</a>
+or the <a href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#a-surprising-finding-on-lack-of-biases">conclusion</a>. Otherwise make some tea, relax and
+read on.</p>
+<p>It started with this error:</p>
+<figure class="center">
+  <img alt="Disk wasn’t ejected because one or more programs may be using it" srcset="../../img/2026/04/disk-not-ejected.png 2x">
+</figure>
+<p>Usually I just <code>lsof /Volumes/Data</code> and kill whatever is causing the
+issue (99% Spotlight or QuickLook).</p>
+<p>But you know what, I’m at the point where I need to renew my AI coding
+subscription and after a while on Claude in Cursor and a bit of GPT 5.4
+in Codex, I wanted to see what’s out there, and especially compare the
+big two to the open weights models available through OpenCode Go.</p>
+<p>After all, Cursor based their Composer 2 model on Kimi K2.5 so it’s
+probably decent, and I’ve heard good things about GLM-5.1.</p>
+<p>So I decided to compare those models to build a native macOS app to make
+the above experience a bit nicer.</p>
+<ul>
+<li>Show external drives and allow to unmount them.</li>
+<li>When unmounting from the app, show a popup with what’s blocking
+and allow to kill the process.</li>
+<li>If unmounting from the normal macOS context menu, the app should also
+detect a disk that failed to unmount, and show our popup.</li>
+</ul>
+<p>Simple as that.</p>
+<p>When it comes the planning and building experience, I’ll document
+<em>vibes</em> only, because nothing really stood out here. And this is all
+that matters these days anyway doesn’t it?</p>
+<p>As for code analysis and final ranking, it’s a bit more thorough, don’t
+worry.</p>
+<h2 id="planning" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#planning"><span>Planning</span></a></h2>
+<p>I ran all models through OpenCode. Started in planning mode, and
+answered all questions they asked if any.</p>
+<p>They all had a pretty similar plan. Slight variations in irrelevant
+details, but everything was reasonable when it comes to the underlying
+commands and APIs to built upon.</p>
+<p>The only one that stood out was MiMo, kernel API instead of shelling out
+to <code>lsof</code>. Do what you want with that but I don’t really care.</p>
+<p>It’s a tie for me on this aspect.</p>
+<h2 id="building" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#building"><span>Building</span></a></h2>
+<p>OpenCode lets the model run shell commands so they were all able to
+compile the app and iterate on build failures on their own.</p>
+<p>This means when the models were done, the code was compiling. It’s a tie
+again.</p>
+<h2 id="runtime" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#runtime"><span>Runtime</span></a></h2>
+<p>Despite compiling successfully, a few of them crashed as soon as I
+launched the app.</p>
+<p>When you make a web app, most harnesses allow browser use for the LLM to
+test its own output <em>live</em>. This gives us the same success loop we had
+with compile-time errors.</p>
+<p>But there’s no such thing for native apps yet.</p>
+<p>Nothing to blame the actual models on though.</p>
+<p>After fixing those, all apps had one of two outcomes:</p>
+<ul>
+<li>Can’t find any disk.</li>
+<li>Finds disks but crashes when trying to eject.</li>
+</ul>
+<p>For all of them I could just have keep the vibe coding loop until it
+works. <small>(I did not, I have some real work to do and as you can notice,
+I’m spending way too much time on this already.)</small></p>
+<p>But as far as I’m concerned it’s more or less a tie. Maybe they didn’t
+work for different reasons, but it would take a comparable amount of
+effort to fix.</p>
+<div class="note">
+<p><strong>Note:</strong> nothing new here. If you can give the LLM a tool to test its
+work end to end, you spend less time writing “doesn’t work, pls fix”.
+Too bad it’s not a readily available option here.</p>
+</div>
+<h2 id="the-code" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#the-code"><span>The code</span></a></h2>
+<p>Let’s take the hypothesis for a minute that code quality, as subjective
+as it is, is still relevant.</p>
+<p><strong>Then, I have a slight preference for the output of GLM-5.1 and
+GPT-5.4.</strong></p>
+<p>Both are more lean and easier to reason about than the other ones.</p>
+<p>This is usually synonymous with the software being less buggy <em>now</em>, as
+well as less buggy <em>in the future</em> when we add/change stuff around. And
+in my experience this seems to apply to both LLMs and humans.</p>
+<p>But I’m sure you can steer all of them to output a clean and
+maintainable app by prompting a bit more, that is, if you know how to
+code and care about the code at all.</p>
+<h2 id="getting-the-models-to-review-each-other" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#getting-the-models-to-review-each-other"><span>Getting the models to review each other</span></a></h2>
+<p>That was a fun experiment. I asked the LLMs to review each other’s work,
+rank it, and score the cleanliness and technical approach.</p>
+<p><strong>I was worried this was gonna be a slop spiral but the results were not
+as over the place as I expected. 👀</strong></p>
+<p><strong>GPT-5.4</strong> and <strong>Opus 4.6</strong>, the two frontier proprietary models,
+nearly always came up in the top 3, with an edge for GPT.</p>
+<p><strong>MiMo V2 Pro</strong> also had a tendency to rank quite high, close to the two
+leaders, even if the consensus wasn’t as striking.</p>
+<p>The caveat is that it scored on the low side for cleanliness, despite
+standing out for technical approach.</p>
+<p><strong>GLM-5.1</strong> had a pretty consistent 4th place, but it ranked really high
+on cleanliness specifically.</p>
+<p>This means it’s a decent choice is you want relatively clean code out of
+the box and don’t mind giving it guidance when it comes to technical
+approach.</p>
+<p>This is actually something that works best for me. I’d rather steer the
+technical approach if it means I don’t have to refine output quality as
+much.</p>
+<p><strong>Kimi K2.5</strong> and <strong>MiniMax M2.7</strong> were consistently at the bottom, and
+in that order. Which is pretty consistent with their cost.</p>
+<p>Here’s the raw data. Row is candidate, column is judge. Cleanliness and
+technical approach are rated out of 10.</p>
+<h3 id="absolute-rank" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#absolute-rank"><span>Absolute rank</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Overall</th>
+<th>GPT-5.4</th>
+<th>Opus 4.6</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>🥇</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>🥈</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>🥉</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cleanliness" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#cleanliness"><span>Cleanliness</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Average</th>
+<th>GPT-5.4</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>8.4</td>
+<td>8.5</td>
+<td>8</td>
+<td>9</td>
+<td>8.5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>7.8</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>7.7</td>
+<td>6.5</td>
+<td>6</td>
+<td>9</td>
+<td>8</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>6.5</td>
+<td>6</td>
+<td>5</td>
+<td>7</td>
+<td>7.5</td>
+<td>7</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>6.3</td>
+<td>6.5</td>
+<td>7</td>
+<td>7</td>
+<td>7</td>
+<td>4</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>5.2</td>
+<td>4</td>
+<td>4</td>
+<td>6</td>
+<td>7</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="technical-approach" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#technical-approach"><span>Technical approach</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Average</th>
+<th>GPT-5.4</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>8.2</td>
+<td>9</td>
+<td>8</td>
+<td>9</td>
+<td>7</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>7.9</td>
+<td>8</td>
+<td>7</td>
+<td>9</td>
+<td>7.5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>7.4</td>
+<td>8.5</td>
+<td>9</td>
+<td>8</td>
+<td>7.5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>6.4</td>
+<td>6</td>
+<td>5</td>
+<td>7</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>5.6</td>
+<td>4</td>
+<td>6</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>5.2</td>
+<td>3</td>
+<td>5</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-surprising-finding-on-lack-of-biases" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#a-surprising-finding-on-lack-of-biases"><span>A surprising finding on (lack of) biases</span></a></h2>
+<p>The most impressing thing for me was that models didn’t seem to be
+biased by their own performance??</p>
+<p>All models gave their own output a score that was either very close to,
+or lower than their average score. Even when the average score was low.</p>
+<p>GPT-5.4 is the only one that ranked itself first, but guess what, the
+consensus also agreed on that. 😎</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#conclusion"><span>Conclusion</span></a></h2>
+<p>I’m gonna keep using GLM-5.1 via OpenCode Go for the rest of the month
+or until I run out of usage. Then switch to GPT-5.4 via Codex Plus
+to see if it’s worth the extra $$$, both in terms of quality and
+quantity.</p>
+<p>Though by then I’ll probably have 5 other models to test. 😂🙃</p>
+<h2 id="meta-conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html#meta-conclusion"><span>Meta conclusion</span></a></h2>
+<p>Comparing models is peak procrastination. Any of the top models will do
+just fine.</p>
+<p>And I guess GLM and MiMo are now playing in that league at a fraction of
+the cost.</p>
+<p>If you have a clear idea what you want, you’ll need to steer all
+of them in one way or another. Just pick one and get back to work.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)</title>
     <link href="https://www.codejam.info/2026/04/cross-compiling-tauri-linux-arm-mac.html" />
@@ -2802,86 +3158,6 @@ use <code>signInWithPupup</code>, so the proxy looks like a solid option.</p>
 <p>If you use the Firebase emulator, I made <a href="https://flame.evetools.app/">Flame</a>,
 a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
 </div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>PostgreSQL: swap tables with dependent views</title>
-    <link href="https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html" />
-    <id>https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html</id>
-    <updated>2024-05-04T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Sometimes, you need to do some maintenance on a table, and doing a
-<em>table swap</em> is a good tool to avoid downtime (e.g. if the maintenance
-would lock aggressively and run for a long time). The idea is as
-follows:</p>
-<ol>
-<li>Clone the source table.</li>
-<li>Perform the maintenance.</li>
-<li>Make sure they’re in sync if needs be.</li>
-<li>When the maintenance is over, in a transaction, drop the source
-table, and rename the clone to the original name.</li>
-</ol>
-<p>It can get a bit more complicated than that if you have foreign keys,
-but I won’t cover that in this article.</p>
-<p>However, another way it gets more complicated is when you have <em>views</em>
-that depend on the table you want to swap:</p>
-<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
-<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
-<span class="hljs-keyword">ALTER TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
-</code></pre>
-<pre><code class="hljs">ERROR: cannot drop table example because other objects depend on it
-DETAIL: view example_view depends on table example
-</code></pre>
-<p>In this case, we need to update <code>example_view</code> (and all other views that
-depend on <code>example</code>) to reference the <code>example_swap</code> table before we
-perform the actual swap.</p>
-<p>If this is a one-off swap, fine, but if you’re doing the swap as part of
-some automated maintenance task, that won’t do it.</p>
-<h2 id="automatically-swapping-dependent-views" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/postgresql-swap-tables-dependent-views.html#automatically-swapping-dependent-views"><span>Automatically swapping dependent views</span></a></h2>
-<p>In my case, the dependent views don’t change very often (if at all), so
-I went with a static list of the views that depend on the table I need
-to swap.</p>
-<p>Then I use the following script to swap the views:</p>
-<pre><code class="hljs language-sql"><span class="hljs-keyword">CREATE</span> <span class="hljs-keyword">OR</span> REPLACE <span class="hljs-keyword">FUNCTION</span> pg_temp.replace_view_table(view_schema text, view_name text, old_table text, new_table text) <span class="hljs-keyword">RETURNS</span> void <span class="hljs-keyword">AS</span> $$
-<span class="hljs-keyword">DECLARE</span>
-    view_definition text;
-<span class="hljs-keyword">BEGIN</span>
-    <span class="hljs-keyword">SELECT</span> definition <span class="hljs-keyword">INTO</span> view_definition
-    <span class="hljs-keyword">FROM</span> pg_views
-    <span class="hljs-keyword">WHERE</span> schemaname <span class="hljs-operator">=</span> view_schema
-    <span class="hljs-keyword">AND</span> viewname <span class="hljs-operator">=</span> view_name;
-
-    view_definition :<span class="hljs-operator">=</span> REPLACE(view_definition, old_table, new_table);
-
-    <span class="hljs-keyword">EXECUTE</span> <span class="hljs-string">&#x27;CREATE OR REPLACE VIEW &#x27;</span> <span class="hljs-operator">||</span> view_schema <span class="hljs-operator">||</span> <span class="hljs-string">&#x27;.&#x27;</span> <span class="hljs-operator">||</span> view_name <span class="hljs-operator">||</span> <span class="hljs-string">&#x27; AS &#x27;</span> <span class="hljs-operator">||</span> view_definition;
-<span class="hljs-keyword">END</span>;
-$$ <span class="hljs-keyword">LANGUAGE</span> plpgsql;
-</code></pre>
-<p>This function will redefine the view to point to the new swap table. It
-does a basic search and replace in the SQL definition of the view, so
-you need to make sure the table name doesn’t conflict with anything else
-in there.</p>
-<div class="note">
-<p><strong>Note:</strong> I’m using <code>pg_temp</code> so that the function is local to the
-current database connection. I don’t want to leave it around permanently
-in that case.</p>
-</div>
-<p>You can now perform the swap as follows:</p>
-<pre><code class="hljs language-sql"><span class="hljs-keyword">BEGIN</span>;
-<span class="hljs-keyword">SELECT</span> pg_temp.replace_view_table(<span class="hljs-string">&#x27;public&#x27;</span>, <span class="hljs-string">&#x27;example_view&#x27;</span>, <span class="hljs-string">&#x27;example&#x27;</span>, <span class="hljs-string">&#x27;example_swap&#x27;</span>);
-<span class="hljs-keyword">DROP</span> <span class="hljs-keyword">TABLE</span> example;
-<span class="hljs-keyword">ALTER TABLE</span> example_swap RENAME <span class="hljs-keyword">TO</span> example;
-<span class="hljs-keyword">COMMIT</span>;
-</code></pre>
-<p>The renaming of the table will automatically propagate to the dependent
-views, they won’t keep referencing the now gone <code>example_swap</code> table,
-they’ll properly point to <code>example</code>! 🥳</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

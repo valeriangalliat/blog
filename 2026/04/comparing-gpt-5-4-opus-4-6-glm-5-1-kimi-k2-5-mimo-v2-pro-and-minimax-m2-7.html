@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7 | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260409.css">
+  <link rel="icon" href="/favicon.ico" data-emoji="🏕️">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <meta property="og:title" content="Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7 | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="So listen, I was just trying to eject a drive and I ended up spending the day benchmarking LLMs.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7</h1>
+<p class="date">April 14, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>So listen, I was just trying to eject a drive and I ended up spending
+the day benchmarking LLMs.</p>
+<p>In a hurry? Jump to the <a href="#getting-the-models-to-review-each-other">results</a>
+or the <a href="#a-surprising-finding-on-lack-of-biases">conclusion</a>. Otherwise make some tea, relax and
+read on.</p>
+<p>It started with this error:</p>
+<figure class="center">
+  <img alt="Disk wasn’t ejected because one or more programs may be using it" srcset="../../img/2026/04/disk-not-ejected.png 2x">
+</figure>
+<p>Usually I just <code>lsof /Volumes/Data</code> and kill whatever is causing the
+issue (99% Spotlight or QuickLook).</p>
+<p>But you know what, I’m at the point where I need to renew my AI coding
+subscription and after a while on Claude in Cursor and a bit of GPT 5.4
+in Codex, I wanted to see what’s out there, and especially compare the
+big two to the open weights models available through OpenCode Go.</p>
+<p>After all, Cursor based their Composer 2 model on Kimi K2.5 so it’s
+probably decent, and I’ve heard good things about GLM-5.1.</p>
+<p>So I decided to compare those models to build a native macOS app to make
+the above experience a bit nicer.</p>
+<ul>
+<li>Show external drives and allow to unmount them.</li>
+<li>When unmounting from the app, show a popup with what’s blocking
+and allow to kill the process.</li>
+<li>If unmounting from the normal macOS context menu, the app should also
+detect a disk that failed to unmount, and show our popup.</li>
+</ul>
+<p>Simple as that.</p>
+<p>When it comes the planning and building experience, I’ll document
+<em>vibes</em> only, because nothing really stood out here. And this is all
+that matters these days anyway doesn’t it?</p>
+<p>As for code analysis and final ranking, it’s a bit more thorough, don’t
+worry.</p>
+<h2 id="planning" tabindex="-1"><a class="header-anchor" href="#planning"><span>Planning</span></a></h2>
+<p>I ran all models through OpenCode. Started in planning mode, and
+answered all questions they asked if any.</p>
+<p>They all had a pretty similar plan. Slight variations in irrelevant
+details, but everything was reasonable when it comes to the underlying
+commands and APIs to built upon.</p>
+<p>The only one that stood out was MiMo, kernel API instead of shelling out
+to <code>lsof</code>. Do what you want with that but I don’t really care.</p>
+<p>It’s a tie for me on this aspect.</p>
+<h2 id="building" tabindex="-1"><a class="header-anchor" href="#building"><span>Building</span></a></h2>
+<p>OpenCode lets the model run shell commands so they were all able to
+compile the app and iterate on build failures on their own.</p>
+<p>This means when the models were done, the code was compiling. It’s a tie
+again.</p>
+<h2 id="runtime" tabindex="-1"><a class="header-anchor" href="#runtime"><span>Runtime</span></a></h2>
+<p>Despite compiling successfully, a few of them crashed as soon as I
+launched the app.</p>
+<p>When you make a web app, most harnesses allow browser use for the LLM to
+test its own output <em>live</em>. This gives us the same success loop we had
+with compile-time errors.</p>
+<p>But there’s no such thing for native apps yet.</p>
+<p>Nothing to blame the actual models on though.</p>
+<p>After fixing those, all apps had one of two outcomes:</p>
+<ul>
+<li>Can’t find any disk.</li>
+<li>Finds disks but crashes when trying to eject.</li>
+</ul>
+<p>For all of them I could just have keep the vibe coding loop until it
+works. <small>(I did not, I have some real work to do and as you can notice,
+I’m spending way too much time on this already.)</small></p>
+<p>But as far as I’m concerned it’s more or less a tie. Maybe they didn’t
+work for different reasons, but it would take a comparable amount of
+effort to fix.</p>
+<div class="note">
+<p><strong>Note:</strong> nothing new here. If you can give the LLM a tool to test its
+work end to end, you spend less time writing “doesn’t work, pls fix”.
+Too bad it’s not a readily available option here.</p>
+</div>
+<h2 id="the-code" tabindex="-1"><a class="header-anchor" href="#the-code"><span>The code</span></a></h2>
+<p>Let’s take the hypothesis for a minute that code quality, as subjective
+as it is, is still relevant.</p>
+<p><strong>Then, I have a slight preference for the output of GLM-5.1 and
+GPT-5.4.</strong></p>
+<p>Both are more lean and easier to reason about than the other ones.</p>
+<p>This is usually synonymous with the software being less buggy <em>now</em>, as
+well as less buggy <em>in the future</em> when we add/change stuff around. And
+in my experience this seems to apply to both LLMs and humans.</p>
+<p>But I’m sure you can steer all of them to output a clean and
+maintainable app by prompting a bit more, that is, if you know how to
+code and care about the code at all.</p>
+<h2 id="getting-the-models-to-review-each-other" tabindex="-1"><a class="header-anchor" href="#getting-the-models-to-review-each-other"><span>Getting the models to review each other</span></a></h2>
+<p>That was a fun experiment. I asked the LLMs to review each other’s work,
+rank it, and score the cleanliness and technical approach.</p>
+<p><strong>I was worried this was gonna be a slop spiral but the results were not
+as over the place as I expected. 👀</strong></p>
+<p><strong>GPT-5.4</strong> and <strong>Opus 4.6</strong>, the two frontier proprietary models,
+nearly always came up in the top 3, with an edge for GPT.</p>
+<p><strong>MiMo V2 Pro</strong> also had a tendency to rank quite high, close to the two
+leaders, even if the consensus wasn’t as striking.</p>
+<p>The caveat is that it scored on the low side for cleanliness, despite
+standing out for technical approach.</p>
+<p><strong>GLM-5.1</strong> had a pretty consistent 4th place, but it ranked really high
+on cleanliness specifically.</p>
+<p>This means it’s a decent choice is you want relatively clean code out of
+the box and don’t mind giving it guidance when it comes to technical
+approach.</p>
+<p>This is actually something that works best for me. I’d rather steer the
+technical approach if it means I don’t have to refine output quality as
+much.</p>
+<p><strong>Kimi K2.5</strong> and <strong>MiniMax M2.7</strong> were consistently at the bottom, and
+in that order. Which is pretty consistent with their cost.</p>
+<p>Here’s the raw data. Row is candidate, column is judge. Cleanliness and
+technical approach are rated out of 10.</p>
+<h3 id="absolute-rank" tabindex="-1"><a class="header-anchor" href="#absolute-rank"><span>Absolute rank</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Overall</th>
+<th>GPT-5.4</th>
+<th>Opus 4.6</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>🥇</td>
+<td>1</td>
+<td>2</td>
+<td>2</td>
+<td>2</td>
+<td>1</td>
+<td>2</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>🥈</td>
+<td>3</td>
+<td>3</td>
+<td>3</td>
+<td>1</td>
+<td>3</td>
+<td>1</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>🥉</td>
+<td>2</td>
+<td>1</td>
+<td>1</td>
+<td>3</td>
+<td>4</td>
+<td>6</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>2</td>
+<td>3</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>6</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="cleanliness" tabindex="-1"><a class="header-anchor" href="#cleanliness"><span>Cleanliness</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Average</th>
+<th>GPT-5.4</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>8.4</td>
+<td>8.5</td>
+<td>8</td>
+<td>9</td>
+<td>8.5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>7.8</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>8</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>7.7</td>
+<td>6.5</td>
+<td>6</td>
+<td>9</td>
+<td>8</td>
+<td>9</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>6.5</td>
+<td>6</td>
+<td>5</td>
+<td>7</td>
+<td>7.5</td>
+<td>7</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>6.3</td>
+<td>6.5</td>
+<td>7</td>
+<td>7</td>
+<td>7</td>
+<td>4</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>5.2</td>
+<td>4</td>
+<td>4</td>
+<td>6</td>
+<td>7</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h3 id="technical-approach" tabindex="-1"><a class="header-anchor" href="#technical-approach"><span>Technical approach</span></a></h3>
+<table>
+<thead>
+<tr>
+<th></th>
+<th>Average</th>
+<th>GPT-5.4</th>
+<th>GLM-5.1</th>
+<th>Kimi K2.5</th>
+<th>MiMo V2 Pro</th>
+<th>MiniMax M2.7</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>GPT-5.4</td>
+<td>8.2</td>
+<td>9</td>
+<td>8</td>
+<td>9</td>
+<td>7</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Opus 4.6</td>
+<td>7.9</td>
+<td>8</td>
+<td>7</td>
+<td>9</td>
+<td>7.5</td>
+<td>8</td>
+</tr>
+<tr>
+<td>MiMo V2 Pro</td>
+<td>7.4</td>
+<td>8.5</td>
+<td>9</td>
+<td>8</td>
+<td>7.5</td>
+<td>4</td>
+</tr>
+<tr>
+<td>GLM-5.1</td>
+<td>6.4</td>
+<td>6</td>
+<td>5</td>
+<td>7</td>
+<td>7</td>
+<td>7</td>
+</tr>
+<tr>
+<td>Kimi K2.5</td>
+<td>5.6</td>
+<td>4</td>
+<td>6</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+</tr>
+<tr>
+<td>MiniMax M2.7</td>
+<td>5.2</td>
+<td>3</td>
+<td>5</td>
+<td>7</td>
+<td>6</td>
+<td>5</td>
+</tr>
+</tbody>
+</table>
+<h2 id="a-surprising-finding-on-lack-of-biases" tabindex="-1"><a class="header-anchor" href="#a-surprising-finding-on-lack-of-biases"><span>A surprising finding on (lack of) biases</span></a></h2>
+<p>The most impressing thing for me was that models didn’t seem to be
+biased by their own performance??</p>
+<p>All models gave their own output a score that was either very close to,
+or lower than their average score. Even when the average score was low.</p>
+<p>GPT-5.4 is the only one that ranked itself first, but guess what, the
+consensus also agreed on that. 😎</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="#conclusion"><span>Conclusion</span></a></h2>
+<p>I’m gonna keep using GLM-5.1 via OpenCode Go for the rest of the month
+or until I run out of usage. Then switch to GPT-5.4 via Codex Plus
+to see if it’s worth the extra $$$, both in terms of quality and
+quantity.</p>
+<p>Though by then I’ll probably have 5 other models to test. 😂🙃</p>
+<h2 id="meta-conclusion" tabindex="-1"><a class="header-anchor" href="#meta-conclusion"><span>Meta conclusion</span></a></h2>
+<p>Comparing models is peak procrastination. Any of the top models will do
+just fine.</p>
+<p>And I guess GLM and MiMo are now playing in that league at a fraction of
+the cost.</p>
+<p>If you have a clear idea what you want, you’ll need to steer all
+of them in one way or another. Just pick one and get back to work.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/emojicon.js"></script>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

@@ -71,7 +71,8 @@ Firebase token was more elegant than configuring some kind of internal
 ## Invoking the callable function manually
 
 It turns out it's also quite easy to invoke a callable function without
-the Firebase SDK, via a [plain HTTP call](https://firebase.google.com/docs/functions/callable-reference).
+the Firebase SDK, via a [plain HTTP call](https://firebase.google.com/docs/functions/callable-reference),
+as detailed in [this reference](https://flame.evetools.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator#callable-functions).
 
 With cURL, calling a function that doesn't have token authentication is
 as simple as:

@@ -8,6 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [How to manually trigger Cloud Tasks in the emulator](https://flame.evetools.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
+* [How to manually publish messages to the Pub/Sub emulator](https://flame.evetools.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
+* [How to manually trigger Firebase Functions in the emulator](https://flame.evetools.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator) <small>April 24, 2026</small>
 * [Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7](2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.md) <small>April 14, 2026</small>
 * [Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)](2026/04/cross-compiling-tauri-linux-arm-mac.md) <small>April 14, 2026</small>
 * [Run Astro middleware in front of static pages (Cloudflare Workers)](2026/02/astro-middleware-static-pages.md) <small>February 11, 2026</small>
@@ -192,10 +195,10 @@ Yes?
 
 ## 2017
 
-* [Automatically index your Heroku Postgres database with Dexter](https://www.busbud.com/blog/automatically-index-heroku-postgres-database-dexter/) <small>June 28, 2017</small>
-* [Going further Docker multi-stage builds](https://www.busbud.com/blog/going-docker-multi-stage-builds/) <small>May 21, 2017</small>
-* [Introducing Docker multi-stage builds](https://www.busbud.com/blog/introducing-docker-multi-stage-builds/) <small>May 15, 2017</small>
-* [A history of Dockerfiles at Busbud](https://www.busbud.com/blog/history-dockerfiles-busbud/) <small>May 13, 2017</small>
+* [Automatically index your Heroku Postgres database with Dexter](2017/06/automatically-index-postgres-dexter.md) <small>June 28, 2017</small>
+* [Going further Docker multi-stage builds](2017/05/going-further-docker-multi-stage-builds.md) <small>May 21, 2017</small>
+* [Introducing Docker multi-stage builds](2017/05/docker-multi-stage.md) <small>May 15, 2017</small>
+* [A history of Dockerfiles at Busbud](2017/05/dockerfiles-history.md) <small>May 13, 2017</small>
 
 
 ## 2016

@@ -6,7 +6,6 @@
   "dependencies": {
     "@primer/primitives": "^7.8.3",
     "@sindresorhus/slugify": "^1.1.0",
-    "emojicon-big": "^1.1.0",
     "escape-html": "^1.0.3",
     "highlight.js": "^11.5.1",
     "highlightjs-code-diff": "^1.0.0",

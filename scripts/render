@@ -166,6 +166,12 @@ const body = html.slice(markerIndex + '<hr>'.length).trim()
 
 let metaTags = ''
 
+const favicon = meta.favicon
+  ? new URL(meta.favicon, `${baseUrl}${file}`).pathname
+  : '/favicon.ico'
+
+metaTags += `  <link rel="icon" href="${escape(favicon)}">\n`
+
 if (meta.canonical) {
   metaTags += `  <link rel="canonical" href="${escape(meta.canonical)}">\n`
 }

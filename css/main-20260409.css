@@ -511,6 +511,11 @@ footer a:hover {
     color: var(--color-fg-default);
     text-decoration: none;
 }
+
+.post-footer {
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border-default);
+}
 header .content {
     margin-bottom: 1em;
 }
@@ -525,6 +530,24 @@ header .content {
     header .content {
         margin-top: 5em;
     }
+}
+
+header h1:not(:last-child) {
+    margin-bottom: .5rem;
+}
+
+header .tagline,
+header .date {
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+header p:not(:last-child) {
+    margin-bottom: 0;
+}
+
+.post header .date,
+.now header .tagline {
+    color: var(--color-fg-subtle);
 }
 
 .hero {
@@ -549,13 +572,13 @@ header .content {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .tagline,
-.page-updated .hero .date {
+.hero .tagline,
+.now .hero .date {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .date,
-.page-updated .hero .tagline {
+.hero .date,
+.now .hero .tagline {
     color: var(--color-scale-gray-2);
 }
 
@@ -719,7 +742,7 @@ details.boxed {
     text-align: center;
 }
 
-.index h1 {
+.index header h1 {
     margin: 0;
 }
 
@@ -814,30 +837,4 @@ details.boxed {
 
 .search {
     --vertical-margin: 1rem;
-}
-.post h1,
-.page-updated h1 {
-    margin-bottom: .5rem;
-}
-
-.post .tagline,
-.post .date,
-.page-updated .tagline,
-.page-updated .date {
-    font-family: "Helvetica Neue", sans-serif;
-}
-
-.post .tagline,
-.page-updated .tagline {
-    margin-bottom: 0;
-}
-
-.post .date,
-.page-updated .tagline {
-    color: var(--color-fg-subtle);
-}
-
-.post-footer {
-    padding-top: 2rem;
-    border-top: 1px solid var(--color-border-default);
 }

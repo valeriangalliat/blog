@@ -1,4 +1,3 @@
-import fs from 'node:fs/promises'
 import jsdom from 'jsdom'
 
 let postsDocumentCache

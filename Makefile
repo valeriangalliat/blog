@@ -56,10 +56,6 @@ dev:
 dev-vercel:
 	npx concurrently 'make watch' 'make serve-vercel'
 
-dist/index.html: index.md head.html foot.html
-	mkdir -p $$(dirname $@)
-	./scripts/render $< | sed 's/class="page"/class="page index"/' > $@
-
 dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
 	./scripts/render $< > $@
@@ -83,8 +79,7 @@ dist/css/main-20260409.css: \
 	css/components/oversized.css \
 	css/components/social.css \
 	css/components/details.css \
-	css/pages/index.css \
-	css/pages/post.css
+	css/pages/index.css
 	cat $^ > $@
 
 dist/js/main-20230317.js: js/main.js

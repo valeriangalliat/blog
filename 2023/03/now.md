@@ -1,10 +1,9 @@
 ---
-layout: page-updated
+layout: now
 ---
 
 # What I'm doing now
-This is a [now page](https://nownownow.com/about).  
-**March 17, 2023**, from **Montreal, Canada**.
+**March 17, 2023**, from **Montreal, Canada**
 
 ## Back from Guadeloupe
 

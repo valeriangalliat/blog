@@ -14,6 +14,24 @@ header .content {
     }
 }
 
+header h1:not(:last-child) {
+    margin-bottom: .5rem;
+}
+
+header .tagline,
+header .date {
+    font-family: "Helvetica Neue", sans-serif;
+}
+
+header p:not(:last-child) {
+    margin-bottom: 0;
+}
+
+.post header .date,
+.now header .tagline {
+    color: var(--color-fg-subtle);
+}
+
 .hero {
     position: relative;
     background-size: cover;
@@ -36,13 +54,13 @@ header .content {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .tagline,
-.page-updated .hero .date {
+.hero .tagline,
+.now .hero .date {
     color: var(--color-fg-on-emphasis);
 }
 
-.post .hero .date,
-.page-updated .hero .tagline {
+.hero .date,
+.now .hero .tagline {
     color: var(--color-scale-gray-2);
 }
 

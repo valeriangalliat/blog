@@ -1,4 +1,5 @@
 ---
+layout: index
 excerpt: A blog about tech, software and other things.
 ---
 

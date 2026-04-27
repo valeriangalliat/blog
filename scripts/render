@@ -96,72 +96,52 @@ md.core.ruler.push('markdownLinkRewrite', state => {
   }
 })
 
-md.core.ruler.push('paragraphsAfterTitle', state => {
-  let h1
-  let index
+function preProcessMarkdown (markdown) {
+  const h1Index = markdown.search(/^# /m)
+  const frontMatter = markdown.slice(0, h1Index)
+  const contentIndex = markdown.indexOf('\n\n', h1Index)
+  const header = markdown.slice(h1Index, contentIndex).replace(/ {2}$/gm, '\n\n')
+  const content = markdown.slice(contentIndex)
 
-  for (const [i, token] of state.tokens.entries()) {
-    if (!token.map) { continue }
-    if (token.tag === 'h1') { h1 = token; continue }
-    if (!h1) { continue }
-    if (token.map[0] > h1.map[1]) { break }
-    if (token.tag === 'p') { index = i; break }
-  }
+  return { frontMatter, header, content }
+}
 
-  // No paragraph found right after main title, add the `<hr>` marker right after.
-  if (!index) {
-    state.tokens.splice(state.tokens.indexOf(h1) + 3, 0, new state.Token('hr', 'hr', 0))
-    state.env.paragraphsAfterTitle = 0
-    return
-  }
+const preprocessed = preProcessMarkdown(markdown)
 
-  const pOpen = state.tokens[index]
-  const inline = state.tokens[index + 1]
-  const paragraphs = [[]]
+function postProcessHeader (header) {
+  header = header
+    .replace(/<h1>([^<]*) <small>/, '<h1 class="has-subtitle"><span>$1</span> <small>')
 
-  for (const child of inline.children) {
-    if (child.tag === 'br' && child.type === 'hardbreak') {
-      paragraphs.unshift([])
-      continue
+  const pCount = (header.match(/<p>/g) || []).length
+  let i = 0
+
+  env.paragraphsAfterTitle = []
+
+  const expectDate = ['post', 'now'].includes(layout) || meta.dated
+
+  header = header.replace(/<p>/g, () => {
+    i += 1
+
+    if (i === pCount && expectDate) {
+      env.paragraphsAfterTitle.push('date')
+      return '<p class="date">'
     }
 
-    paragraphs[0].push(child)
+    env.paragraphsAfterTitle.push('tagline')
+    return '<p class="tagline">'
+  })
+
+  if (layout === 'now') {
+    header += '\n<p class="tagline">This is a <a href="https://nownownow.com/about">now page</a></p>'
   }
 
-  paragraphs.reverse()
+  return header
+}
 
-  const classes = ['tagline', 'date']
+md.render(preprocessed.frontMatter, env)
 
-  if (['post', 'page-updated'].includes(layout) && paragraphs.length === 1) {
-    classes.shift()
-  }
-
-  pOpen.attrSet('class', classes.shift())
-  inline.children = paragraphs[0]
-
-  const newTokens = []
-
-  for (const children of paragraphs.slice(1)) {
-    newTokens.push(
-      Object.assign(new state.Token('paragraph_open', 'p', 1), { attrs: [['class', classes.shift()]] }),
-      Object.assign(new state.Token('inline', '', 0), { children }),
-      new state.Token('paragraph_close', 'p', -1)
-    )
-  }
-
-  // Add a marker that is always there and will be removed during the split below.
-  newTokens.push(new state.Token('hr', 'hr', 0))
-
-  state.tokens.splice(index + 3, 0, ...newTokens)
-
-  // Keep track for finding excerpt.
-  state.env.paragraphsAfterTitle = paragraphs.length
-})
-
-const html = md.render(markdown, env)
-const markerIndex = html.indexOf('<hr>')
-const header = html.slice(0, markerIndex).trim().replace(/<h1>([^<]*) <small>/, '<h1 class="has-subtitle"><span>$1</span> <small>')
-const body = html.slice(markerIndex + '<hr>'.length).trim()
+const header = postProcessHeader(md.render(preprocessed.header, env).trim())
+const content = md.render(preprocessed.content, env).trim()
 
 let pageTitle
 
@@ -189,8 +169,9 @@ metaTags += `  <meta property="og:site_name" content="${siteName}">\n`
 if (meta.excerpt) {
   metaTags += `  <meta property="og:description" content="${escape(md.typographer(meta.excerpt))}">\n`
 } else if (env.excerpt) {
-  const tagline = env.excerpt.slice(0, env.paragraphsAfterTitle).filter(text => !text.match(/, 20\d\d$/))[0]
-  const excerpt = env.excerpt.slice(env.paragraphsAfterTitle)[0]
+  const taglineIndex = env.paragraphsAfterTitle.indexOf('tagline')
+  const tagline = taglineIndex !== -1 ? env.excerpt[taglineIndex] : null
+  const excerpt = env.excerpt[env.paragraphsAfterTitle.length]
   const description = (tagline ? `${tagline}.`.replace(/\.\.?$/, '. ') : '') + excerpt
   metaTags += `  <meta property="og:description" content="${escape(description)}">\n`
 }
@@ -232,14 +213,14 @@ process.stdout.write(
   head
     .replace('<title>', `<title>${escape(pageTitle)}`)
     .replace('</head>', `${metaTags}</head>`)
-    .replace('<body>', `<body class="${layout}">`)
+    .replace('<body>', layout ? `<body class="${layout}">` : '<body>')
     .replace('<header>', hero)
     .replace('</header>', heroCredit)
     .replace('<div class="content">', `<div class="content">\n${header}`)
     .replace(/<div class="content">/g, `<div class="content"${lang}>`)
 )
 
-process.stdout.write(body)
+process.stdout.write(content)
 process.stdout.write('\n')
 
 if (layout === 'post') {

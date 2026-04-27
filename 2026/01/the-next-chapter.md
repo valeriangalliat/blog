@@ -1,13 +1,12 @@
 ---
-layout: page-updated
+layout: now
 hero: ../../img/2026/01/now/hero.webp
 focus: 50% 35%
 tweet: https://x.com/valeriangalliat/status/2015917634940989649
 ---
 
 # The next chapter
-This is a [now page](https://nownownow.com/about).  
-**January 25, 2026**, from **Squamish, Canada**.
+**January 25, 2026**, from **Squamish, Canada**
 
 Just over two years since the [last update](../../2024/01/now.md). Time
 flies, heh?

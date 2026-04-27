@@ -63,3 +63,8 @@ footer a:hover {
     color: var(--color-fg-default);
     text-decoration: none;
 }
+
+.post-footer {
+    padding-top: 2rem;
+    border-top: 1px solid var(--color-border-default);
+}

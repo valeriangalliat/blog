@@ -1,9 +1,9 @@
 ---
-layout: page-updated
+dated: true
 ---
 
 # The gear I use
-Updated on **March 17, 2023**.
+Updated on **March 17, 2023**
 
 On this page you'll find the gear that I use for various aspects of my life.  
 [Tech](#tech), [music](#music), [photography](#photography), [video](#video), [sports](#sports) and [coffee](#coffee).

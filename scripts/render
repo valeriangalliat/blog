@@ -132,7 +132,7 @@ function postProcessHeader (header) {
   })
 
   if (layout === 'now') {
-    header += '\n<p class="tagline">This is a <a href="https://nownownow.com/about">now page</a></p>'
+    header += '\n<p class="tagline">This is a <a href="https://nownownow.com/about">now page</a> | <a href="/nows.html">History</a></p>'
   }
 
   return header

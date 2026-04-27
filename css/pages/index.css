@@ -48,6 +48,10 @@
     font-family: "Helvetica Neue", sans-serif;
 }
 
+.links.grid h3 {
+    margin-bottom: .5rem;
+}
+
 .posts li {
     display: flex;
     align-items: baseline;
@@ -84,6 +88,11 @@
 
     .posts li > small {
         text-align: right;
+    }
+
+    .links.grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 }
 

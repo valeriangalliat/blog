@@ -13,7 +13,6 @@ const siteName = 'CodeJam'
 const meta = {}
 
 const file = process.argv[2]
-const isIndex = file === 'index.md'
 const head = fs.readFileSync(path.resolve(__dirname, '../head.html'), 'utf8')
 const foot = fs.readFileSync(path.resolve(__dirname, '../foot.html'), 'utf8')
 const markdown = fs.readFileSync(file, 'utf8')
@@ -164,6 +163,14 @@ const markerIndex = html.indexOf('<hr>')
 const header = html.slice(0, markerIndex).trim().replace(/<h1>([^<]*) <small>/, '<h1 class="has-subtitle"><span>$1</span> <small>')
 const body = html.slice(markerIndex + '<hr>'.length).trim()
 
+let pageTitle
+
+if (['index.md', 'val.md'].includes(file)) {
+  pageTitle = meta.excerpt ? `${env.title} - ${meta.excerpt.replace(/\.$/, '')}` : env.title
+} else {
+  pageTitle = `${env.title} | ${siteName}`
+}
+
 let metaTags = ''
 
 const favicon = meta.favicon
@@ -175,10 +182,6 @@ metaTags += `  <link rel="icon" href="${escape(favicon)}">\n`
 if (meta.canonical) {
   metaTags += `  <link rel="canonical" href="${escape(meta.canonical)}">\n`
 }
-
-const pageTitle = isIndex
-  ? (meta.excerpt ? `${env.title} - ${meta.excerpt.replace(/\.$/, '')}` : env.title)
-  : `${env.title} | ${siteName}`
 
 metaTags += `  <meta property="og:title" content="${escape(pageTitle)}">\n`
 metaTags += `  <meta property="og:site_name" content="${siteName}">\n`

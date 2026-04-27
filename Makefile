@@ -93,11 +93,31 @@ dist/js/main-20230317.js: js/main.js
 dist/api/%.js: api/%.js
 	cp $^ $@
 
-dist/img/val.jpg:
-	curl https://photography.codejam.info/photos/full/P2570771.jpg | magick - -resize 1280x -crop '1280x512+0+%[fx:88.5/100*(h-512)]' $@
+dist/img/profile-2019.jpg:
+	magick IMG_4236-square.jpg -resize 256x $@
 
-dist/img/freelance.jpg:
+dist/img/profile.jpg:
+	magick PXL_20240613_171744940.PORTRAIT.jpg -resize 256x -gravity center -crop 256x256+0+0 $@
+
+dist/img/val-motorcycle-2018.jpg:
+	magick P2570771.jpg -resize 1280x -crop '1280x512+0+%[fx:88.5/100*(h-512)]' $@
+
+dist/img/val-pool-2021.jpg:
 	magick IMG_7587.jpeg -resize 1280x -crop '1280x512+0+%[fx:50/100*(h-512)]' $@
+
+dist/img/val-summer-2021.jpg:
+	magick i-4GRXZrV-X3-Edit.jpg -resize 1280x $@
+
+dist/img/val-2020.jpg:
+	magick P2660793-Crop.jpg -resize 1280x $@
+
+dist/img/val-winter.jpg:
+	magick IMG_7530.jpg -resize 1280x $@
+
+dist/img/profile-favicon.ico:
+	magick IMG_7533.square.jpg -resize 32x32 -alpha on \
+		\( -size 32x32 xc:none -fill white -draw "circle 16,16 16,0" \) \
+		-compose DstIn -composite $@
 
 dist/img/icons/%.svg: node_modules/simple-icons/icons/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /' > $@

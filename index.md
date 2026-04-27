@@ -44,16 +44,22 @@ A blog about tech, software and other things.
 
 ## Links
 
-<div class="links">
+<div class="links grid">
+
+<section>
 
 * [About](val.md) <small>| meet the author</small>
 * [Now](now.md) <small>| what I'm doing now</small>
-* [Gear](gear.md) <small>| the gear I use</small>
 * [About the name](about-the-name.md) <small>| why CodeJam</small>
-* [Photography](https://photography.codejam.info/) <small>| my photos</small>
-* [YouTube <small>(main channel)</small>](https://www.youtube.com/@FunkyVal) <small>| music covers, and more</small>
-* [YouTube <small>(secondary channel)</small>](https://www.youtube.com/@FonkyVal) <small>| mostly just skiing</small>
-* [More links](val.md#links) <small>| social media, contact, ...</small>
+
+</section>
+
+<section>
+
+* [Gear](gear.md) <small>| the gear I use</small>
+* [Photography](https://photography.codejam.info/) <small>| photo archive</small>
+
+</section>
 
 </div>
 

@@ -545,7 +545,7 @@ header p:not(:last-child) {
     margin-bottom: 0;
 }
 
-.post header .date,
+header .date,
 .now header .tagline {
     color: var(--color-fg-subtle);
 }

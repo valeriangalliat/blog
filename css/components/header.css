@@ -50,8 +50,13 @@ header .date,
 }
 
 .hero h1 {
-    text-shadow: 1px 2px rgba(0, 0, 0, .1);
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, .5);
     color: var(--color-fg-on-emphasis);
+}
+
+.hero .tagline,
+.hero .date {
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, .5);
 }
 
 .hero .tagline,
@@ -61,7 +66,12 @@ header .date,
 
 .hero .date,
 .now .hero .tagline {
-    color: var(--color-scale-gray-2);
+    color: var(--color-scale-gray-1);
+}
+
+.hero a,
+.hero a:visited {
+    color: var(--color-fg-on-emphasis);
 }
 
 .hero code {
@@ -72,22 +82,22 @@ header .date,
     opacity: 1;
 }
 
-.hero-credit {
+.hero .hero-credit {
     font-family: "Helvetica Neue", sans-serif;
     font-size: .8em;
     position: absolute;
     right: 1em;
     bottom: .5em;
     opacity: 0;
-    transition: opacity 100ms;
+    transition: color 100ms, opacity 100ms;
 }
 
-.hero-credit,
-.hero-credit:visited {
-    color: var(--color-scale-gray-2);
+.hero .hero-credit,
+.hero .hero-credit:visited {
+    color: var(--color-scale-gray-1);
 }
 
-.hero-credit:hover {
+.hero .hero-credit:hover {
     color: var(--color-fg-on-emphasis);
     text-decoration: none;
 }

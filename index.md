@@ -33,16 +33,6 @@ A blog about tech, software and other things.
 
 </div>
 
-## Pages
-
-<div class="links">
-
-* [Git](git.md) <small>| how I learnt Git</small>
-* [Vim](vim.md) <small>| how I learnt Vim</small>
-* [Simple](simple.md) <small>| why I write boring code</small>
-
-</div>
-
 ## Links
 
 <div class="links grid">

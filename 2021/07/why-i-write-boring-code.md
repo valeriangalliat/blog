@@ -1,4 +1,5 @@
-# Simple, boring and "dumb" code
+# Why I write boring code
+July 20, 2021 | Updated on May 29, 2025
 
 After more than 10 years building websites, I've had my fare share of
 frameworks, design patterns, bleeding edge libraries, compiling and

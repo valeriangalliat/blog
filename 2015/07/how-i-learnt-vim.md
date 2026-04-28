@@ -1,7 +1,8 @@
-# Vim
+# How I learnt Vim
+July 8, 2015 | Updated on July 20, 2021
 
 Vim is my editor of choice, and it's one of the first software I install
-on a new machine, with [Git](git.html).
+on a new machine, with [Git](../06/how-i-learnt-git.md).
 
 Here's a compilation of all the resources that helped me to start with
 Vim, and understand its power.

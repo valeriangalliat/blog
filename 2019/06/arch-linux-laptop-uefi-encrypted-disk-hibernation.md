@@ -1,14 +1,8 @@
 # Arch Linux laptop, UEFI, encrypted disk and hibernation
-June 8, 2019
+June 8, 2019 | Updated on March 27, 2020
 
 Based on [this Gist](https://gist.github.com/mattiaslundberg/8620837),
 with hibernation added.
-
-<div class="note">
-
-**Note:** updated on March 27, 2020.
-
-</div>
 
 ## Installer USB
 

@@ -1,11 +1,5 @@
 # Archiving Google Photos offline to free up space
-April 2, 2023
-
-<div class="note">
-
-**Note:** updated on June 6, 2025.
-
-</div>
+April 2, 2023 | Updated on June 6, 2025
 
 If you backup your phone photos to Google Photos automatically, and you
 don't pay for some kind of Google One subscription, you'll run sooner or

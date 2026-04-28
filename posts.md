@@ -143,6 +143,7 @@ excerpt: All the posts I've written so far.
 * [Why I switched to Firefox Lockwise as my password manager](2021/08/why-i-switched-to-firefox-lockwise-as-my-password-manager.md) <small>August 8, 2021</small>
 * [Intercept a macOS app traffic using mitmproxy](2021/07/intercept-macos-app-traffic-mitmproxy.md) <small>July 20, 2021</small>
 * [Adding search capability to a static blog using the GitHub API](2021/07/search-static-blog-github-api.md) <small>July 20, 2021</small>
+* [Why I write boring code](2021/07/why-i-write-boring-code.md) <small>July 20, 2021</small>
 * [You're (probably) doing anchor links wrong](2021/06/you-re-probably-doing-anchor-links-wrong.md) <small>June 15, 2021</small>
 * [My custom Premiere Pro export presets](2021/06/my-custom-premiere-pro-export-presets.md) <small>June 14, 2021</small>
 * [Tacos congelé, sacrilège ou bonne idée?](2021/06/tacos-congele-sacrilege-ou-bonne-idee.md) <small>June 5, 2021</small>
@@ -209,6 +210,8 @@ Yes?
 ## 2015
 
 * [Installing NixOS on a Kimsufi](2015/12/installing-nixos-on-a-kimsufi.md) <small>December 24, 2015</small>
+* [How I learnt Vim](2015/07/how-i-learnt-vim.md) <small>July 8, 2015</small>
+* [How I learnt Git](2015/06/how-i-learnt-git.md) <small>June 29, 2015</small>
 * [Batch updating npm packages license](2015/05/batch-updating-npm-packages-license.md) <small>May 25, 2015</small>
 * [Listen a raw playlist with YouTube](2015/05/listen-a-raw-playlist-with-youtube.md) <small>May 22, 2015</small>
 * [FreeBSD, Python and SSL certificate validation](2015/05/freebsd-python-and-ssl-certificate-validation.md) <small>May 22, 2015</small>

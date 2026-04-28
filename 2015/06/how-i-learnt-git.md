@@ -1,8 +1,9 @@
-# Git
+# How I learnt Git
+June 29, 2015 | Updated on July 25, 2021
 
 Last time I checked, `git` was *the* most used command in my history.
 Git is one of the first software I install on a new machine, with
-[Vim](vim.html).
+[Vim](../07/how-i-learnt-vim.md).
 
 Here's all the stuff I collected about Git, that helped me better
 understand it and learn to use it properly.

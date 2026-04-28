@@ -3,7 +3,7 @@ dated: true
 ---
 
 # The gear I use
-Updated on **March 17, 2023**
+Updated on **April 27, 2026**
 
 On this page you'll find the gear that I use for various aspects of my life.  
 [Tech](#tech), [music](#music), [photography](#photography), [video](#video), [sports](#sports) and [coffee](#coffee).
@@ -14,9 +14,10 @@ On this page you'll find the gear that I use for various aspects of my life.
 
 * M1 MacBook Pro 16"
 * [LG UltraFine 4K 24"](https://amzn.to/3LB5CiR)
-* [Sony WH-1000XM4](https://amzn.to/40d3yS7)
+* [Sony WH-1000XM6](https://amzn.to/4eMocCY)
 * [Pixel 6A](https://store.google.com/product/pixel_6a)
 * [Kobo Nia](https://ca.kobobooks.com/products/kobo-nia)
+* [FlexiSpot Comhar Standing Desk](https://www.flexispot.ca/comhar-all-in-one-standing-desk-wooden-top-48-w)
 
 ### Software
 
@@ -209,18 +210,24 @@ On this page you'll find the gear that I use for various aspects of my life.
 * Large beaners: [Petzn Am'D Screw-Lock](https://www.petzl.com/US/en/Sport/Carabiners-and-quickdraws/Am-D) (2)
 * Small beaners: [Petzl Spirit Screw-Lock](https://www.vertical-addiction.com/us/petzl-petzl-spirit-screw-lock-carabiner.html) (5)
 * PAS: [Metolius Dynamic PAS](https://www.metoliusclimbing.com/dynamic-pas-personal-anchor-system.html)
+* Sling: [Petzl Fin'Anneau 120 cm](https://weighmyrack.com/sling/petzl-8-mm-finanneau-120-cm)
 * Harness: [Edelrid Zack](https://www.outdoorgearlab.com/reviews/climbing/climbing-harness/edelrid-zack)
 * Helmet: [Edelrid Zodiac](https://www.trueoutdoors.ca/zodiac-helmet.html)
-* ATC: [Petzl REVERSO](https://www.petzl.com/US/en/Sport/Belay-devices-and-descenders/REVERSO)
-* Sling: [Petzl Fin'Anneau 120 cm](https://weighmyrack.com/sling/petzl-8-mm-finanneau-120-cm)
+* Belay device: [Petzl Grigri](https://amzn.to/4e9uigB)
+* Guide mode belay device: [Petzl Reverso](https://amzn.to/4w0dpeM)
 
 ### Skiing ⛷️
 
-* Ski: [Salomon MTN Explore 95 177 cm](https://www.sail.ca/en/salomon-mtn-explore-95-alpine-touring-skis-791043)
 * Bindings: [Salomon S/Lab Shift MNC 10 100 mm](https://www.salomon.com/en-ca/shop/product/s-lab-shift-mnc-10.html)
 * Boots: [Salomon Shift Pro 100 AT](https://www.mec.ca/en/product/6010-972/shift-pro-100-at-ski-boots)
-* Poles: [Völkl Touristick AC](https://volkl.com/en-ca/p/touristick-ac-poles-adjustable-2023)
 * Skins: [Black Diamond Ascension Nylon](https://www.blackdiamondequipment.com/product/ascension-nylon-climbing-skins/)
+
+### Glacier 🧊
+
+* Rope: [Simond Dry Climbing Double Rope 7.5 mm x 30 m](https://www.decathlon.ca/en/p/8735526/dry-climbing-double-rope-75-mm-x-30-m-1-3-x-100-)
+* Ice axe: [Petzl Gully](https://amzn.to/42x7Uqb)
+* Progress capture pulley: [Petzl Micro Traxion](https://amzn.to/4mVrBkT)
+* Ascender: [Petzl Tibloc](https://amzn.to/4mVrCVZ)
 
 ### Backpacks ⛰️
 
@@ -246,6 +253,26 @@ On this page you'll find the gear that I use for various aspects of my life.
     it. Perfect especially when I want to travel with <em>only</em> a
     carry-on (this is so convenient).</td>
   </tr>
+  <tr>
+    <td><a href="https://amzn.to/4mQgyte">Osprey Soelden 32</a></td>
+    <td>Ski resort and slackcountry pack. A-frame and diagonal ski carry
+    support for bootpacks. Also ice axe slot.</td>
+  </tr>
+  <tr>
+    <td><a href="https://amzn.to/4cDoR8A">Osprey Soelden 42</a></td>
+    <td>Ski touring pack. Same as above but bigger for days when I need
+    more layers, ski or boot crampons and so on. Extra room with an
+    optional top lid, and unlike the smaller version, can access the
+    contents from the top and not just the back which is convenient to
+    stuff things inside.</td>
+  </tr>
+  <tr>
+    <td><a href="https://blackdiamondequipment.com/products/distance-15-backpack?variant=51231282954557">Black Diamond Distance 15</a></td>
+    <td>Trail running / light mountaineering pack. Can carry 2 ice axes
+    and a rope. Fits a water bladder inside, with a slot for the hose.
+    Roomy but can compress super tight with the side straps. Super well
+    designed.</td>
+  </tr>
 </table>
 
 ### Camping 🏕️
@@ -267,4 +294,8 @@ On this page you'll find the gear that I use for various aspects of my life.
     <td>The worldwide reference as far as moka pot is concerned. Classic
     Italian-style coffee! Watch my <a href="https://youtu.be/zMR8B2yDgaU">video about it</a>!</td>
   </tr>
+  <tr>
+    <td><a href="https://amzn.to/4vWycQk">Aeropress</a></td>
+    <td>When I want a change from the moka pot, and more control over the
+    brewing parameters.</td> </tr>
 </table>

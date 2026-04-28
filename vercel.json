@@ -6,17 +6,32 @@
   "redirects": [
     {
       "source": "/resources/git.html",
-      "destination": "/git.html",
+      "destination": "/2015/06/how-i-learnt-git.html",
       "permanent": true
     },
     {
       "source": "/resources/vim.html",
-      "destination": "/vim.html",
+      "destination": "/2015/07/how-i-learnt-vim.html",
       "permanent": true
     },
     {
       "source": "/resources/simple.html",
-      "destination": "/simple.html",
+      "destination": "/2021/07/why-i-write-boring-code.html",
+      "permanent": true
+    },
+    {
+      "source": "/git.html",
+      "destination": "/2015/06/how-i-learnt-git.html",
+      "permanent": true
+    },
+    {
+      "source": "/vim.html",
+      "destination": "/2015/07/how-i-learnt-vim.html",
+      "permanent": true
+    },
+    {
+      "source": "/simple.html",
+      "destination": "/2021/07/why-i-write-boring-code.html",
       "permanent": true
     },
     {

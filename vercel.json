@@ -40,6 +40,11 @@
       "permanent": true
     },
     {
+      "source": "/about-the-name.html",
+      "destination": "/2015/03/naming-things.html",
+      "permanent": true
+    },
+    {
       "source": "/now.html",
       "destination": "/2026/01/the-next-chapter.html",
       "permanent": false

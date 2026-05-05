@@ -41,7 +41,6 @@ A blog about tech, software and other things.
 
 * [About](val.md) <small>| meet the author</small>
 * [Now](now.md) <small>| what I'm doing now</small>
-* [About the name](about-the-name.md) <small>| why CodeJam</small>
 
 </section>
 

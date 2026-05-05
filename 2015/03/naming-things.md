@@ -1,9 +1,8 @@
-# Naming things
+# Naming things <small>(why this blog is named CodeJam)</small>
 March 29, 2015
 
-**CodeJam** is the name I choose more than a year ago for both my domain
-and [home server](../../2014/10/low-consumption-home-server.md)
-name.
+I got [codejam.info](https://www.codejam.info/) years ago, with the idea
+to build a tech blog to share tips, thoughts and resources about code.
 
 Choosing this name was tough. I wanted a name that evoked *programming*,
 and possibly *free software*, while still being short and sounding
@@ -13,12 +12,20 @@ Among all names I thought of, CodeJam was my favorite. "Code" is able
 to evoke programming in just 4 letters, without being some kind of geeky
 jargon. "Jam" was my musical touch.
 
-A [jam session] is when a bunch of musicians get together and start
-playing with very little or no preparation, like "let's just play
-together and see where it leads". You have a lot of freedom in what you
-play, but you still need to be consistent with the group. It's a very
-rich creative process, and it decently picture my ultimate philosophy
-with free software; let's just code together and see where it leads!
+## Jam
+
+A jam session consists of people improvising music together. No
+preparation, more like "let's just play together and see where it
+leads". And that regardless of anyone's level, and without necessarily
+knowing each other, in a very spontaneous way. Only a basic set of rules
+(chords, tempo, time signature), and creating something unique and
+beautiful.
+
+You have a lot of freedom in what you play, but you still need to be
+consistent with the group. It's a very rich creative process, and it
+resonates with vision of building software; let's just code together and
+see where it leads! Which is why CodeJam sounded like a perfect fit for
+my blog.
 
 [jam session]: http://en.wikipedia.org/wiki/Jam_session
 
@@ -57,6 +64,20 @@ trademark and I don't care about my blog not being in the top results
 when searching "CodeJam". Where's the problem then?
 
 Long live CodeJam!
+
+## Jamming further than code
+
+Over the years, this blog drifted from being purely about programming,
+and I've been sharing other things I care about too, like photography,
+music, sports, brewing and so on, so it's now more about the "jam" than
+the "code".
+
+I also realized that the powerful concept of the musical jam session not
+only resonated with my approach to programming, but also with my
+approach to life (just that), where I like to create environments where
+a diverse group of people can spontaneously get together and feel like
+expressing themselves freely, allowing unique and beautiful things to
+happen.
 
 [^1]: Always wait a night before taking an important[^2] decision!
 [^2]: First world domain owner problem...

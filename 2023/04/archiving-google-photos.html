@@ -231,8 +231,8 @@ for parsing those.</p>
 <p>Now, let’s make a list of all the files local to the phone. I’ll only
 scan the directories I configured to be backed up on Google Photos.
 Adjust this to your needs.</p>
-<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find DCIM Pictures Movies Download \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> \)) &gt; phone-files
-<span class="hljs-built_in">cat</span> phone-files | xargs <span class="hljs-built_in">basename</span> | <span class="hljs-built_in">sort</span> &gt; phone-basefiles
+<pre><code class="hljs language-sh">(<span class="hljs-built_in">cd</span> /Volumes/Syncthing/Phone &amp;&amp; find DCIM Pictures Movies Download \( -name <span class="hljs-string">&#x27;*.jpg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.jpeg&#x27;</span> -o -name <span class="hljs-string">&#x27;*.JPG&#x27;</span> -o -name <span class="hljs-string">&#x27;*.mp4&#x27;</span> -o -name <span class="hljs-string">&#x27;*.png&#x27;</span> -o -name <span class="hljs-string">&#x27;*.webp&#x27;</span> -o -name <span class="hljs-string">&#x27;*.heic&#x27;</span> \)) &gt; phone-files
+<span class="hljs-built_in">cat</span> phone-files | <span class="hljs-built_in">tr</span> <span class="hljs-string">&#x27;\n&#x27;</span> <span class="hljs-string">&#x27;\0&#x27;</span> | xargs -0 <span class="hljs-built_in">basename</span> | <span class="hljs-built_in">sort</span> &gt; phone-basefiles
 </code></pre>
 <div class="note">
 <p><strong>Note:</strong> to find the list of relevant extensions I used the following command:</p>

@@ -246,8 +246,8 @@ scan the directories I configured to be backed up on Google Photos.
 Adjust this to your needs.
 
 ```sh
-(cd /Volumes/Syncthing/Phone && find DCIM Pictures Movies Download \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' \)) > phone-files
-cat phone-files | xargs basename | sort > phone-basefiles
+(cd /Volumes/Syncthing/Phone && find DCIM Pictures Movies Download \( -name '*.jpg' -o -name '*.jpeg' -o -name '*.JPG' -o -name '*.mp4' -o -name '*.png' -o -name '*.webp' -o -name '*.heic' \)) > phone-files
+cat phone-files | tr '\n' '\0' | xargs -0 basename | sort > phone-basefiles
 ```
 
 <div class="note">

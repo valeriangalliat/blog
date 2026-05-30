@@ -165,7 +165,7 @@ Peace. ✌️
 
 <div class="note sponsors">
 
-If you use the Firebase emulator, I made [Flame](https://flame.evetools.app/),
+If you use the Firebase emulator, I made [Flame](https://useflame.app/),
 a better UI for it. I'd love if you can check it out, feedback welcome! 🫶
 
 </div>

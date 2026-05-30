@@ -8,9 +8,9 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
-* [How to manually trigger Cloud Tasks in the emulator](https://flame.evetools.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
-* [How to manually publish messages to the Pub/Sub emulator](https://flame.evetools.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
-* [How to manually trigger Firebase Functions in the emulator](https://flame.evetools.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator) <small>April 24, 2026</small>
+* [How to manually trigger Cloud Tasks in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
+* [How to manually publish messages to the Pub/Sub emulator](https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
+* [How to manually trigger Firebase Functions in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator) <small>April 24, 2026</small>
 * [Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7](2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.md) <small>April 14, 2026</small>
 * [Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)](2026/04/cross-compiling-tauri-linux-arm-mac.md) <small>April 14, 2026</small>
 * [Run Astro middleware in front of static pages (Cloudflare Workers)](2026/02/astro-middleware-static-pages.md) <small>February 11, 2026</small>

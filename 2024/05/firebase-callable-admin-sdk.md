@@ -72,7 +72,7 @@ Firebase token was more elegant than configuring some kind of internal
 
 It turns out it's also quite easy to invoke a callable function without
 the Firebase SDK, via a [plain HTTP call](https://firebase.google.com/docs/functions/callable-reference),
-as detailed in [this reference](https://flame.evetools.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator#callable-functions).
+as detailed in [this reference](https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator#callable-functions).
 
 With cURL, calling a function that doesn't have token authentication is
 as simple as:
@@ -144,7 +144,7 @@ expire? Which is considered insecure.
 
 <div class="note sponsors">
 
-If you use the Firebase emulator, I made [Flame](https://flame.evetools.app/),
+If you use the Firebase emulator, I made [Flame](https://useflame.app/),
 a better UI for it. I'd love if you can check it out, feedback welcome! 🫶
 
 </div>

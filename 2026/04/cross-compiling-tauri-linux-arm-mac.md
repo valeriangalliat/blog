@@ -5,7 +5,7 @@ tweet: https://x.com/valeriangalliat/status/2044190593543483532
 # Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)
 April 14, 2026
 
-Context: I'm building an app called [Flame](https://flame.evetools.app/)
+Context: I'm building an app called [Flame](https://useflame.app/)
 with [Tauri](https://v2.tauri.app/), and I work from a M-series Mac.
 
 We initially released it only on Mac as a MVP. Some folks on Reddit

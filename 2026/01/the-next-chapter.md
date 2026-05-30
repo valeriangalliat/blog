@@ -241,7 +241,7 @@ We got together with my friend [Ben](https://www.benoitzohar.com/) and
 started [EveTools](https://evetools.app/), where we make apps for
 developers.
 
-The first app is [Flame](https://flame.evetools.app/), and its goal is
+The first app is [Flame](https://useflame.app/), and its goal is
 to remove as much friction as possible from the Firebase local
 development experience, especially when it comes to dealing with the
 [emulators](https://firebase.google.com/docs/emulator-suite).

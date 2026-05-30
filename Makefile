@@ -1,7 +1,7 @@
 MD = $(shell find . -name '*.md' ! -path '*/node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
 ICONS = dist/img/icons/instagram.svg dist/img/icons/x.svg dist/img/icons/youtube.svg dist/img/icons/github.svg dist/img/icons/kofi.svg dist/img/icons/rss.svg
-ASSETS = dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/api/search.js $(ICONS)
+ASSETS = dist/favicon.ico dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/api/search.js $(ICONS)
 FEED = dist/feed.xml
 
 build: dist $(HTML) $(ASSETS)
@@ -113,6 +113,11 @@ dist/img/profile-favicon.ico:
 	magick IMG_7533.square.jpg -resize 32x32 -alpha on \
 		\( -size 32x32 xc:none -fill white -draw "circle 16,16 16,0" \) \
 		-compose DstIn -composite $@
+
+dist/favicon.ico:
+	curl -s 'https://em-content.zobj.net/source/apple/453/snow-capped-mountain_1f3d4-fe0f.png' | \
+		magick png:- -trim +repage -background none -gravity center \
+		-extent 160x160 -define icon:auto-resize=32,16 $@
 
 dist/img/icons/%.svg: node_modules/simple-icons/icons/%.svg
 	cat $< | sed 's/<svg /<svg id="icon" /' > $@

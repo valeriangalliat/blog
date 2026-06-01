@@ -5,10 +5,108 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-04-15T03:18:07.867Z</updated>
+  <updated>2026-06-01T19:26:33.831Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Astro ESLint with pnpm 11: return outside of function</title>
+    <link href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html" />
+    <id>https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html</id>
+    <updated>2026-06-01T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>After upgrading to pnpm 11, ESLint started flagging every <code>.astro</code> page
+that returns early from the frontmatter:</p>
+<pre><code class="hljs">src/pages/login.astro
+  9:3  error  Parsing error: &#x27;return&#x27; outside of function
+</code></pre>
+<p>The line points to something like this:</p>
+<pre><code class="hljs language-tsx">---
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> prerender = <span class="hljs-literal">false</span>
+
+<span class="hljs-keyword">if</span> (<span class="hljs-title class_">Astro</span>.<span class="hljs-property">locals</span>.<span class="hljs-property">user</span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">Astro</span>.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
+}
+---
+
+<span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">Login</span> /&gt;</span></span>
+</code></pre>
+<p>To lint Astro files I use <a href="https://www.npmjs.com/package/eslint-plugin-astro">eslint-plugin-astro</a>
+with a pretty basic config.</p>
+<h2 id="works-from-cli-but-not-from-editor" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#works-from-cli-but-not-from-editor"><span>Works from CLI but not from editor</span></a></h2>
+<p>Running ESLint from a pnpm script i.e. <code>pnpm eslint</code> actually still
+worked. Only inside Cursor with the ESLint extension I had the issue.</p>
+<p>Nothing specific to Cursor though, figured out just using the
+programmatic API with <code>new ESLint().lintFiles()</code> failed with the same
+error.</p>
+<p>Turns out that pnpm wraps <code>node_modules/.bin/eslint</code> and sets
+<code>NODE_PATH</code> to <code>node_modules/.pnpm/node_modules</code>, a flat bucket of
+symlinks to everything installed in the project.</p>
+<p>Sounds like we have a dependency graph problem. Something is missing an
+explicit link and that’s why it only works when everything is hoisted.</p>
+<h2 id="pnpm-history-of-hoisting-of-eslint" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#pnpm-history-of-hoisting-of-eslint"><span>pnpm history of hoisting of ESLint</span></a></h2>
+<p>Interestingly, pnpm 10 used to <a href="https://github.com/pnpm/pnpm/issues/8878#issuecomment-2546442011">hoist <code>*eslint*</code> by default</a>.</p>
+<p>This was because ESLint old config format used to have stuff like
+<code>plugins: ['astro']</code> that had ESLint itself translate this to
+<code>require('eslint-plugin-astro')</code>. This notoriously doesn’t work with
+pnpm style of <code>node_modules</code> where packages only see their explicit
+dependencies and not everything in the entire project.</p>
+<p>Since then, ESLint moved to <a href="https://eslint.org/docs/latest/use/configure/migration-guide">flat config</a>
+that doesn’t rely on those implicit dependencies.</p>
+<p>Everything in my project uses ESLint flat config so this wasn’t the
+issue, but this default hoisting of <code>*eslint*</code> packages was still
+helping me when it comes to my Astro parsing.</p>
+<h2 id="root-cause" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#root-cause"><span>Root cause</span></a></h2>
+<p><code>eslint-plugin-astro</code> probes for <code>@typescript-eslint/parser</code> at load
+time (optional, not an explicit hard dependency). When it cannot
+resolve the package, it falls back to the Espree parser.</p>
+<p>Espree seems to treat frontmatter <code>return</code> as a module-level return and
+errors. <code>@typescript-eslint/parser</code> does not.</p>
+<h2 id="rtfm-kinda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#rtfm-kinda"><span>RTFM, kinda</span></a></h2>
+<p>Guess what? <code>eslint-plugin-astro</code> <a href="https://www.npmjs.com/package/eslint-plugin-astro#user-content--installation">documents</a>:</p>
+<blockquote>
+<p>If you write TypeScript in Astro components, you also need to install
+the <code>@typescript-eslint/parser</code>:</p>
+<pre><code class="hljs language-sh">npm install --save-dev @typescript-eslint/parser
+</code></pre>
+</blockquote>
+<p>I do use TypeScript, although the above failing example was
+JavaScript-only. Docs frame it as a TypeScript dependency, but in
+practice <code>@typescript-eslint/parser</code> seems to play better with astro
+files in general, even JavaScript, at least when early <code>return</code> is
+involved.</p>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#tldr"><span>TLDR</span></a></h2>
+<p>ESLint erroring with <code>'return' outside of function</code> on <code>.astro</code>
+frontmatter after upgrading to pnpm 11.</p>
+<p>Fix: <code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
+picks it up instead of Espree. Needed for TypeScript, but also helps
+with things like early <code>return</code> in frontmatter.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
+  <entry>
+    <title>How to manually trigger Cloud Tasks in the emulator</title>
+    <link href="https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator" />
+    <id>https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator</id>
+    <updated>2026-04-24T07:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <title>How to manually publish messages to the Pub/Sub emulator</title>
+    <link href="https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator" />
+    <id>https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator</id>
+    <updated>2026-04-24T07:00:00.000Z</updated>
+  </entry>
+  <entry>
+    <title>How to manually trigger Firebase Functions in the emulator</title>
+    <link href="https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator" />
+    <id>https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator</id>
+    <updated>2026-04-24T07:00:00.000Z</updated>
+  </entry>
   <entry>
     <title>Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7</title>
     <link href="https://www.codejam.info/2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.html" />
@@ -370,7 +468,7 @@ of them in one way or another. Just pick one and get back to work.</p>
     <link href="https://www.codejam.info/2026/04/cross-compiling-tauri-linux-arm-mac.html" />
     <id>https://www.codejam.info/2026/04/cross-compiling-tauri-linux-arm-mac.html</id>
     <updated>2026-04-14T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Context: I’m building an app called <a href="https://flame.evetools.app/">Flame</a>
+    <content type="html"><![CDATA[<p>Context: I’m building an app called <a href="https://useflame.app/">Flame</a>
 with <a href="https://v2.tauri.app/">Tauri</a>, and I work from a M-series Mac.</p>
 <p>We initially released it only on Mac as a MVP. Some folks on Reddit
 showed interest but were on Windows and Linux. I’m pretty eager to get
@@ -1249,7 +1347,7 @@ again.</strong></p>
 <p>We got together with my friend <a href="https://www.benoitzohar.com/">Ben</a> and
 started <a href="https://evetools.app/">EveTools</a>, where we make apps for
 developers.</p>
-<p>The first app is <a href="https://flame.evetools.app/">Flame</a>, and its goal is
+<p>The first app is <a href="https://useflame.app/">Flame</a>, and its goal is
 to remove as much friction as possible from the Firebase local
 development experience, especially when it comes to dealing with the
 <a href="https://firebase.google.com/docs/emulator-suite">emulators</a>.</p>
@@ -2329,7 +2427,8 @@ Firebase token was more elegant than configuring some kind of internal
 “API key”.</p>
 <h2 id="invoking-the-callable-function-manually" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html#invoking-the-callable-function-manually"><span>Invoking the callable function manually</span></a></h2>
 <p>It turns out it’s also quite easy to invoke a callable function without
-the Firebase SDK, via a <a href="https://firebase.google.com/docs/functions/callable-reference">plain HTTP call</a>.</p>
+the Firebase SDK, via a <a href="https://firebase.google.com/docs/functions/callable-reference">plain HTTP call</a>,
+as detailed in <a href="https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator#callable-functions">this reference</a>.</p>
 <p>With cURL, calling a function that doesn’t have token authentication is
 as simple as:</p>
 <pre><code class="hljs language-sh">curl \
@@ -2380,7 +2479,7 @@ nor <code>refreshToken</code>, so my guess is that it’s a token that… doesn�
 expire? Which is considered insecure.</p>
 </div>
 <div class="note sponsors">
-<p>If you use the Firebase emulator, I made <a href="https://flame.evetools.app/">Flame</a>,
+<p>If you use the Firebase emulator, I made <a href="https://useflame.app/">Flame</a>,
 a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
 </div>
 <section class="post-footer">
@@ -2601,563 +2700,6 @@ it’s very obvious, but it can get trickier when you call a function that
 calls another function that calls a method that makes a query but didn’t
 accept a <code>trx</code> parameter and so ends up needing its own connection. 😬</p>
 <p>Now you know what to look for. 👀</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Prevent macOS to switch to bluetooth headphones microphone 🎧</title>
-    <link href="https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html" />
-    <id>https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html</id>
-    <updated>2024-05-05T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Maybe like me, you have bluetooth headphones such as the Sony WH-1000XM4
-that you like because they have great audio, but the built-in microphone
-otherwise suck. But you don’t care because you use your MacBook’s
-microphone.</p>
-<p>Then, maybe also like me, you didn’t even <em>know</em> that it had a built-in
-microphone in the first place, and even less that macOS was
-automatically switching to that microphone when you connect your
-headphones!</p>
-<p>Luckily, I didn’t sound like shit on calls for too long, because my
-friends quickly told me “bro, ur mic sounds like shit”. 💩</p>
-<h2 id="forcing-the-internal-microphone" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/macos-prevent-bluetooth-headphones-microphone.html#forcing-the-internal-microphone"><span>Forcing the internal microphone</span></a></h2>
-<p>Now we know what’s wrong, let’s fix it. The idea is that when I connect
-my bluetooth headphones, I want the audio output to go to them, but I
-don’t want to switch my default microphone.</p>
-<p>We can achieve that with the <strong>Audio MIDI Setup</strong> app.</p>
-<p>Create an <strong>Aggregate Device</strong> (from the <code>+</code> icon at the bottom-left
-corner) that has only one input: your MacBook microphone. Then set this
-aggregate device as “default for sound input” from the right click menu.</p>
-<figure class="center">
-  <img alt="Audio MIDI Setup" srcset="../../img/2024/05/macos-microphone/audio-midi-setup.png 2x">
-</figure>
-<p>Tada! Now connecting your headphones will leave the aggregate device
-alone, meaning you’ll keep using the good microphone that comes with
-your laptop, without thinking about it. 👌</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Firebase Auth Admin SDK denied when using application default credentials</title>
-    <link href="https://www.codejam.info/2024/05/firebase-auth-admin-denied-application-default.html" />
-    <id>https://www.codejam.info/2024/05/firebase-auth-admin-denied-application-default.html</id>
-    <updated>2024-05-05T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>If you’re using the Firebase Admin SDK from your development machine
-e.g. to run ad hoc scripts, you may have tried to do something like
-this:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">import</span> admin <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin&#x27;</span>
-<span class="hljs-keyword">import</span> { applicationDefault } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase-admin/app&#x27;</span>
-
-admin.<span class="hljs-title function_">initializeApp</span>({
-  <span class="hljs-attr">projectId</span>: <span class="hljs-string">&#x27;my-project&#x27;</span>,
-  <span class="hljs-attr">credential</span>: <span class="hljs-title function_">applicationDefault</span>()
-})
-
-<span class="hljs-keyword">const</span> auth = admin.<span class="hljs-title function_">auth</span>()
-
-<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">await</span> auth.<span class="hljs-title function_">getUserByEmail</span>(<span class="hljs-string">&#x27;foo@bar.com&#x27;</span>)
-
-<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(user)
-</code></pre>
-<p>After all, it works just fine with other Firebase APIs like Firestore.</p>
-<p>But in the above case, you’d be getting the following error (spread onto
-lines for readability):</p>
-<pre><code class="hljs">FirebaseAuthError: //cloud.google.com/docs/authentication/.
-
-If you are getting this error with curl or similar tools, you may need
-to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing
-purposes.
-
-For more information regarding &#x27;X-Goog-User-Project&#x27; header, please
-check https://cloud.google.com/apis/docs/system-parameters.
-
-Raw server response:
-
-{
-  &quot;error&quot;: {
-    &quot;code&quot;: 403,
-    &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
-    &quot;errors&quot;: [
-      {
-        &quot;message&quot;: &quot;Your application has authenticated using end user credentials from the Google Cloud SDK or Google Cloud Shell which are not supported by the identitytoolkit.googleapis.com. We recommend configuring the billing/quota_project setting in gcloud or using a service account through the auth/impersonate_service_account setting. For more information about service accounts and how to use them in your application, see https://cloud.google.com/docs/authentication/. If you are getting this error with curl or similar tools, you may need to specify &#x27;X-Goog-User-Project&#x27; HTTP header for quota and billing purposes. For more information regarding &#x27;X-Goog-User-Project&#x27; header, please check https://cloud.google.com/apis/docs/system-parameters.&quot;,
-        &quot;domain&quot;: &quot;usageLimits&quot;,
-        &quot;reason&quot;: &quot;accessNotConfigured&quot;,
-        &quot;extendedHelp&quot;: &quot;https://console.developers.google.com&quot;
-      }
-    ],
-    &quot;status&quot;: &quot;PERMISSION_DENIED&quot;,
-    &quot;details&quot;: [
-      {
-        &quot;@type&quot;: &quot;type.googleapis.com/google.rpc.ErrorInfo&quot;,
-        &quot;reason&quot;: &quot;SERVICE_DISABLED&quot;,
-        &quot;domain&quot;: &quot;googleapis.com&quot;,
-        &quot;metadata&quot;: {
-          &quot;service&quot;: &quot;identitytoolkit.googleapis.com&quot;,
-          &quot;consumer&quot;: &quot;projects/123456&quot;
-        }
-      }
-    ]
-  }
-}
-}
-</code></pre>
-<p>So what’s going on? Well <code>applicationDefault()</code> works with the
-application default credentials as created by
-<a href="https://cloud.google.com/sdk/gcloud/reference/auth/application-default/login"><code>gcloud auth application-default login</code></a>,
-which live in <code>~/.config/gcloud/application_default_credentials.json</code>.</p>
-<p>In my case, those credentials didn’t have access to Firebase Auth for a
-reason I did not try to understand.</p>
-<p>However, what <em>did</em> have access to Firebase Auth is the application
-default credentials as created by <a href="https://firebase.google.com/docs/cli#sign-in-test-cli"><code>firebase login</code></a>,
-which live in <code>~/.config/firebase/*_application_default_credentials.json</code>.</p>
-<p>Firebase’s <code>applicationDefault()</code>, despite being a method of the
-Firebase SDK, <a href="https://github.com/firebase/firebase-admin-node/blob/ddcf965511e2f03853bad7658b5c61b85c306580/src/app/credential-internal.ts#L485">does <em>not</em> know</a>
-about the Firebase application default credentials, and instead only
-uses the Google Cloud credentials. 😅</p>
-<p>However it supports reading the credentials file from the
-<code>GOOGLE_APPLICATION_CREDENTIALS</code> environment variable, so we can run the
-script like this:</p>
-<pre><code class="hljs language-sh">GOOGLE_APPLICATION_CREDENTIALS=~/.config/firebase/*_application_default_credentials.json node script.js
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> I left a wildcard <code>*</code> in the path above because Firebase
-application default credentials contain your user and organization name.
-It’ll work out of the box if you are only connected to a single Firebase
-identity, but you’ll have to be more specific otherwise.</p>
-</div>
-<div class="note sponsors">
-<p>If you use the Firebase emulator, I made <a href="https://flame.evetools.app/">Flame</a>,
-a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Send Cloudflare Workers logs to Google Cloud Logging using Logpush</title>
-    <link href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html" />
-    <id>https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html</id>
-    <updated>2024-05-05T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Cloudflare Workers are great, until they become a key part of your
-production system and you realize you don’t have any logs. 😅</p>
-<p>Something didn’t work the way it should? Woops, sorry, can’t do much
-about that, I have no trace of what happened. 🤷</p>
-<p>Not ideal.</p>
-<div class="note">
-<p><strong>Note:</strong> sure there’s the option to tail logs from the dashboard and
-the CLI, but it turns out most of the logs I need don’t get logged while
-I’m watching. 👀</p>
-</div>
-<p>For a while, the alternative was to replace <code>console.log</code> statements by
-<code>fetch</code> requests to something that will actually persist logs. Fine, but
-still not ideal.</p>
-<p>Thankfully they introduced <a href="https://blog.cloudflare.com/logpush-for-workers/">Logpush for Workers</a>
-back in 2022, which finally gave us a way to forward worker logs to a
-number of <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/">destinations</a>,
-including Amazon S3, Google Cloud Storage, Datadog, Elasticsearch,
-BigQuery and more.</p>
-<p>But none of those options was Google Cloud Logging. And I like to
-centralize my logs in Google Cloud Logging. Bummer.</p>
-<h2 id="leveraging-the-http-destination" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#leveraging-the-http-destination"><span>Leveraging the HTTP destination</span></a></h2>
-<p>One of those options though is an arbitrary <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/http/">HTTP destination</a>.</p>
-<p>With that, I should be able to integrate any log backend I want.</p>
-<p>What if I made a Cloudflare Worker to handle the logs of my other
-workers? That log drain worker probably shouldn’t drain logs to itself
-to avoid an infinite recursion, but I could fallback in one of the other
-integrations just for this one.</p>
-<h2 id="configuring-a-logpush-handler" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#configuring-a-logpush-handler"><span>Configuring a Logpush handler</span></a></h2>
-<p>In order to use Cloudflare Logpush, <a href="https://developers.cloudflare.com/logs/about/">you need to be under the Cloudflare Enterprise plan</a>.
-However there’s an exception for the Cloudflare Workers logs! Then all
-you need is the <a href="https://developers.cloudflare.com/workers/platform/pricing/">Workers Paid</a>
-plan.</p>
-<p>You can configure a log handler from your dashboard, in <strong>Analytics &amp;
-Logs &gt; Logs &gt; Add Logpush job</strong>. Select <strong>Workers trace events</strong> as a
-dataset, select the fields you care about (more on that later), and
-configure your HTTP endpoint.</p>
-<p>This UI looks like a recent addition! When I originally worked on this,
-Logpush was only configurable <a href="https://developers.cloudflare.com/logs/get-started/enable-destinations/http/#manage-via-api">by using the Cloudflare HTTP API</a>.</p>
-<p>For the record, and because it gives you more control over the Logpush
-settings, here’s how you would do this with the API.</p>
-<p>First, you need an API token, which you can create from <strong>My Profile &gt;
-API Tokens</strong>.</p>
-<p>While the API docs often reference the usage of API keys with
-<code>X-Auth-Email</code> and <code>X-Auth-Key</code> headers, those API keys have complete
-permissions over your account, and I would recommend against using them
-if you have a better alternative.</p>
-<p>The better alternative: API <em>tokens</em>, which lets you scope permissions.
-In our case, we want to create a custom token with permissions of
-<code>Zone.Logs.Edit</code>. That token can then be used in a <code>Authorization: Bearer</code> header.</p>
-<p>Here’s how you would list existing Logpush jobs:</p>
-<pre><code class="hljs language-sh">curl \
-    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span>
-</code></pre>
-<p>Where <code>my-account-id</code> is your account ID, that you can find for example
-in the <strong>Workers &amp; Pages &gt; Overview</strong> page on the right.</p>
-<p>To create a job:</p>
-<pre><code class="hljs language-sh">curl \
-    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$TOKEN</span>&quot;</span> \
-    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-    <span class="hljs-string">&#x27;https://api.cloudflare.com/client/v4/accounts/my-account-id/logpush/jobs&#x27;</span> \
-    --data <span class="hljs-string">&#x27;{
-  &quot;name&quot;: &quot;test&quot;,
-  &quot;output_options&quot;: {
-    &quot;field_names&quot;: [&quot;DispatchNamespace&quot;, &quot;Entrypoint&quot;, &quot;Event&quot;, &quot;EventTimestampMs&quot;, &quot;EventType&quot;, &quot;Exceptions&quot;, &quot;Logs&quot;, &quot;Outcome&quot;, &quot;ScriptName&quot;, &quot;ScriptTags&quot;, &quot;ScriptVersion&quot;],
-    &quot;timestamp_format&quot;: &quot;rfc3339&quot;
-  },
-  &quot;destination_conf&quot;: &quot;https://my.worker.workers.dev&quot;,
-  &quot;dataset&quot;: &quot;workers_trace_events&quot;,
-  &quot;enabled&quot;: true
-}&#x27;</span>
-</code></pre>
-<p>Where the API shines compared to the UI, is that you can configure a
-number of <a href="https://developers.cloudflare.com/api/operations/post-accounts-account_identifier-logpush-jobs#request-body">extra options</a>
-like <code>max_upload_bytes</code>, <code>max_upload_interval_seconds</code> and
-<code>max_upload_records</code>, to make sure Logpush makes requests within
-acceptable limits for your endpoint.</p>
-<p>In our case, the Logpush handler is also a Cloudflare worker so the max
-body size will be between 100 MB and 500 MB <a href="https://developers.cloudflare.com/workers/platform/limits/#request-limits">depending on your plan</a>.
-But also, Cloudflare workers have a <a href="https://developers.cloudflare.com/workers/platform/limits/">memory limit</a>
-of 128 MB so that’s something to take into account as well. Oh and keep
-in mind <a href="https://community.cloudflare.com/t/workers-memory-limit/491329/2">this memory limit is per-isolate</a>
-meaning that multiple requests could hit the same isolate. So adjust
-accordingly, but I don’t have a silver bullet for this one. 🙃</p>
-<div class="note">
-<p><strong>Note:</strong> in my experience, setting <code>timestamp_format</code> to <code>rfc3339</code>
-doesn’t do anything? I’m still only getting <code>TimestampMs</code> fields in
-milliseconds (which interestingly is neither a <code>unix</code> (seconds) nor
-<code>unixnano</code> (nanoseconds) timestamp, which are the other two possible
-options).</p>
-</div>
-<p>In order to update a job, you’ll need the <code>id</code> that was returned by the
-create request, or simply fetch it with the list request. It’s gonna be
-like the create request but you append the log ID in the end, e.g.
-<code>logpush/jobs/12345</code>, it’s a <code>PUT</code> request, and all fields are optional.</p>
-<p>To delete a job, same but it’s a <code>DELETE</code> request with no body.</p>
-<h2 id="the-logpush-http-destination-protocol" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#the-logpush-http-destination-protocol"><span>The Logpush HTTP destination protocol</span></a></h2>
-<p>I didn’t find documentation about what the HTTP destination is supposed
-to accept, so here’s what I figured out:</p>
-<ul>
-<li>It sends a <code>POST</code> request to the configured URL.</li>
-<li>The body is gzipped.</li>
-<li>The uncompressed body is a newline-delimited JSON of “events”, e.g.:</li>
-</ul>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;87ed87f80cf22d84&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">200</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560011</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;foo&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560016</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;87ed87fb49cb2d84&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;GET&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">200</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560532</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-string">&quot;foo&quot;</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-number">1714878560532</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-punctuation">{</span><span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span><span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span><span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">}</span><span class="hljs-punctuation">}</span>
-</code></pre>
-<p>When you configure the HTTP destination, you get a chance to choose
-which of those fields are included. You’ll get a different set of fields
-depending on the kind of dataset you’re dealing with, but in the scope
-of this article we’re focusing on worker logs.</p>
-<p>For reference, here’s the list of supported <a href="https://developers.cloudflare.com/logs/reference/log-fields/zone/">zone-scoped datasets</a>
-and <a href="https://developers.cloudflare.com/logs/reference/log-fields/account/">account-scoped datasets</a>.
-Zone-scoped datasets like DNS logs are tied to a specific “zone”
-(a specific domain), while account-scoped datasets like worker logs are
-global to your account (workers don’t belong to a particular zone).</p>
-<h2 id="writing-the-worker" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#writing-the-worker"><span>Writing the worker</span></a></h2>
-<p>The worker will need to decompress the gzipped body, split it into lines
-and send the individual logs to the Google Cloud Logging API.</p>
-<p>Calling Google Cloud APIs from Cloudflare Workers is a bit of a
-challenge because the Node.js SDK is not compatible with the workers
-environment, so we need to reimplement the whole authentication process.
-But it’s a problem <a href="https://www.codejam.info/2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.html">we’ve already solved in the past</a>
-so it should be no big deal. 😎</p>
-<p>First let’s start with the base of the worker, including decompressing
-the body:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
-  <span class="hljs-keyword">async</span> <span class="hljs-title function_">fetch</span> (request) {
-    <span class="hljs-keyword">if</span> (request.<span class="hljs-property">method</span> !== <span class="hljs-string">&#x27;POST&#x27;</span>) {
-      <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-string">&#x27;&#x27;</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">405</span> })
-    }
-
-    <span class="hljs-keyword">const</span> ds = <span class="hljs-keyword">new</span> <span class="hljs-title class_">DecompressionStream</span>(<span class="hljs-string">&#x27;gzip&#x27;</span>)
-    <span class="hljs-keyword">const</span> stream = request.<span class="hljs-property">body</span>.<span class="hljs-title function_">pipeThrough</span>(ds)
-    <span class="hljs-keyword">const</span> body = <span class="hljs-keyword">await</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(stream).<span class="hljs-title function_">text</span>()
-    <span class="hljs-keyword">const</span> logs = body.<span class="hljs-title function_">split</span>(<span class="hljs-string">&#x27;\n&#x27;</span>)
-
-    <span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> json <span class="hljs-keyword">of</span> logs) {
-      <span class="hljs-keyword">if</span> (json.<span class="hljs-title function_">trim</span>() === <span class="hljs-string">&#x27;&#x27;</span>) {
-        <span class="hljs-keyword">continue</span>
-      }
-
-      <span class="hljs-keyword">const</span> log = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(json)
-
-      <span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(log)
-    }
-
-    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>()
-  }
-}
-</code></pre>
-<p>To do that, we use the native
-<a href="https://developer.mozilla.org/en-US/docs/Web/API/DecompressionStream"><code>DecompressionStream</code></a>,
-that we can then <a href="https://stackoverflow.com/a/72718732/4324668">convert to text</a>
-with <code>await new Response(stream).text()</code>.</p>
-<h2 id="calling-the-google-cloud-logging-api" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#calling-the-google-cloud-logging-api"><span>Calling the Google Cloud Logging API</span></a></h2>
-<p>Now let’s see how we can call the Google Cloud Logging API. Again, we
-can’t use the Google Cloud Node.js SDK, so we need to call the REST API
-manually. Everything about authentication is explained in
-<a href="https://www.codejam.info/2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.html">this post</a>
-so I won’t cover that again. Read that article to understand how to deal
-with Google Cloud API authentication from a Cloudflare worker!</p>
-<p>When it comes to Google Cloud Logging specifically, you’ll need an <code>aud</code>
-of <code>https://logging.googleapis.com/</code> in your JWT. The rest of this post
-will assume you generated a <code>token</code> variable thanks to the
-aforementioned article.</p>
-<p>In order to write logs, we need to call the <a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/entries/write"><code>entries:write</code></a>
-endpoint.</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(
-  <span class="hljs-string">`https://logging.googleapis.com/v2/entries:write`</span>,
-  {
-    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
-    <span class="hljs-attr">headers</span>: {
-      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
-      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
-    },
-    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
-      <span class="hljs-attr">entries</span>: [
-        {
-          <span class="hljs-attr">logName</span>: <span class="hljs-string">`projects/my-project-id/logs/my-log-id`</span>,
-          <span class="hljs-attr">resource</span>: {
-            <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;generic_node&#x27;</span>,
-            <span class="hljs-attr">labels</span>: {
-              <span class="hljs-comment">// project_id: &#x27;...&#x27;,</span>
-              <span class="hljs-comment">// location: &#x27;...&#x27;,</span>
-              <span class="hljs-comment">// namespace: &#x27;...&#x27;,</span>
-              <span class="hljs-comment">// node_id: &#x27;...&#x27;</span>
-            }
-          },
-          <span class="hljs-comment">// severity: &#x27;DEFAULT&#x27;,</span>
-          <span class="hljs-attr">timestamp</span>: <span class="hljs-string">&#x27;2024-05-05T17:38:47.512Z&#x27;</span>,
-          <span class="hljs-attr">jsonPayload</span>: {
-            <span class="hljs-attr">foo</span>: <span class="hljs-string">&#x27;bar
-          }
-        }
-      ]
-    })
-  }
-)
-</span></code></pre>
-<p>Replace <code>my-project-id</code> by your project ID. <code>my-log-id</code> can be anything.</p>
-<p>Here I chose to use a <code>generic_node</code> resource type, but there’s
-<a href="https://cloud.google.com/logging/docs/api/v2/resource-list#resource-types">quite a lot of other choices</a>
-so feel free to use what makes the most sense to you.</p>
-<p>The resource type that you chose will have a number of associated labels
-that you can feed. In this example I included the <code>generic_node</code> labels.
-<code>project_id</code> doesn’t really need to be set because it will be
-automatically populated from the project ID in your <code>logName</code>. The other
-ones are also optional. Put what makes the most sense for your data!</p>
-<p>There’s a number of other fields you can set on each <a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry">log entry</a>
-in the <code>entries</code> array, but I kept it simple for this example.</p>
-<p>You can for example tune the
-<a href="https://cloud.google.com/logging/docs/reference/v2/rest/v2/LogEntry#LogSeverity"><code>severity</code></a>,
-e.g. to distinguish <code>WARNING</code> and <code>ERROR</code> logs appropriately.</p>
-<h2 id="formatting-logpush-logs-to-google-cloud-logging-entries" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#formatting-logpush-logs-to-google-cloud-logging-entries"><span>Formatting Logpush logs to Google Cloud Logging entries</span></a></h2>
-<p>Let’s look in a bit more details at a worker log received from Logpush:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;DispatchNamespace&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;Entrypoint&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;Event&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;RayID&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;87ed87f80cf22d84&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;Request&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-      <span class="hljs-attr">&quot;URL&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;https://test.workers.dev/&quot;</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">&quot;Method&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;GET&quot;</span>
-    <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;Response&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-      <span class="hljs-attr">&quot;Status&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">200</span>
-    <span class="hljs-punctuation">}</span>
-  <span class="hljs-punctuation">}</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;EventTimestampMs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1714878560011</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;EventType&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;fetch&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;Exceptions&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;Logs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-    <span class="hljs-punctuation">{</span>
-      <span class="hljs-attr">&quot;Level&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;log&quot;</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span>
-        <span class="hljs-string">&quot;bar&quot;</span><span class="hljs-punctuation">,</span>
-        <span class="hljs-string">&quot;foo&quot;</span>
-      <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-      <span class="hljs-attr">&quot;TimestampMs&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-number">1714878560016</span>
-    <span class="hljs-punctuation">}</span>
-  <span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;Outcome&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;ok&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;ScriptName&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;test&quot;</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;ScriptTags&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">[</span><span class="hljs-punctuation">]</span><span class="hljs-punctuation">,</span>
-  <span class="hljs-attr">&quot;ScriptVersion&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;ID&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;1e7519b3-08e2-441d-ae10-7c8c6d3b7e17&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;Message&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span><span class="hljs-punctuation">,</span>
-    <span class="hljs-attr">&quot;Tag&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;&quot;</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<p>And here’s the associated <a href="https://developers.cloudflare.com/logs/reference/log-fields/account/workers_trace_events/">docs</a>.</p>
-<p>As we can see, we get one entry per “event” which in this case, is a
-whole HTTP request completing.</p>
-<p>Then for this particular HTTP request, we’ve got an array of <code>Logs</code> that
-the worker outputted during its runtime.</p>
-<div class="note">
-<p><strong>Note:</strong> interestingly, the above log <code>[&quot;bar&quot;, &quot;foo&quot;]</code> was generated
-by:</p>
-<pre><code class="hljs language-js"><span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-string">&#x27;foo&#x27;</span>, <span class="hljs-string">&#x27;bar&#x27;</span>)
-</code></pre>
-<p>So it looks like the <code>Message</code> array is the reverse of the arguments
-order that was passed to <code>console.log</code>.</p>
-<p>Weird, but OK.</p>
-</div>
-<p>From there, it’s up to you how you translate that to Google Cloud
-Logging entries. You could:</p>
-<ol>
-<li>Use the whole “event” as a single log entry and dig in the <code>Logs</code>
-property to see the actual logs. Then you could set the log severity
-based on the response status code, e.g. <code>ERROR</code> if the status is
-<code>&gt;=400</code>.</li>
-<li>Store the HTTP request “event” without logs in a separate entry, then
-map the <code>Logs</code> array to individual log entries. Then you could map
-the <code>Level</code> property to a log severity and have more granularity that
-way.</li>
-</ol>
-<p>For this post, I’ll take the lazy approach and just shove the whole
-thing in the <code>jsonPayload</code>. 😄</p>
-<p>Building off the <a href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#writing-the-worker">worker base from earlier</a>:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> entries = []
-
-<span class="hljs-keyword">for</span> (<span class="hljs-keyword">const</span> json <span class="hljs-keyword">of</span> logs) {
-  <span class="hljs-keyword">if</span> (json.<span class="hljs-title function_">trim</span>() === <span class="hljs-string">&#x27;&#x27;</span>) {
-    <span class="hljs-keyword">continue</span>
-  }
-
-  <span class="hljs-keyword">const</span> log = <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">parse</span>(json)
-
-  entries.<span class="hljs-title function_">push</span>({
-    <span class="hljs-attr">logName</span>: <span class="hljs-string">`projects/my-project-id/logs/my-log-id`</span>,
-    <span class="hljs-attr">resource</span>: {
-      <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;generic_node&#x27;</span>,
-      <span class="hljs-attr">labels</span>: {
-        <span class="hljs-attr">namespace</span>: log.<span class="hljs-property">ScriptName</span>
-      }
-    },
-    <span class="hljs-attr">severity</span>: log.<span class="hljs-property">Event</span>.<span class="hljs-property">Response</span>.<span class="hljs-property">Status</span> &gt;= <span class="hljs-number">400</span> ? <span class="hljs-string">&#x27;ERROR&#x27;</span> : <span class="hljs-string">&#x27;DEFAULT&#x27;</span>,
-    <span class="hljs-attr">timestamp</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Date</span>(log.<span class="hljs-property">EventTimestampMs</span>).<span class="hljs-title function_">toISOString</span>(),
-    <span class="hljs-attr">jsonPayload</span>: log
-  })
-}
-</code></pre>
-<p>Then as we saw before, we can push those entries to Google Cloud
-Logging:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> res = <span class="hljs-keyword">await</span> <span class="hljs-title function_">fetch</span>(
-  <span class="hljs-string">`https://logging.googleapis.com/v2/entries:write`</span>,
-  {
-    <span class="hljs-attr">method</span>: <span class="hljs-string">&#x27;POST&#x27;</span>,
-    <span class="hljs-attr">headers</span>: {
-      <span class="hljs-string">&#x27;Content-Type&#x27;</span>: <span class="hljs-string">&#x27;application/json&#x27;</span>,
-      <span class="hljs-title class_">Authorization</span>: <span class="hljs-string">`Bearer <span class="hljs-subst">${token}</span>`</span>
-    },
-    <span class="hljs-attr">body</span>: <span class="hljs-title class_">JSON</span>.<span class="hljs-title function_">stringify</span>({
-      entries
-    })
-  }
-)
-</code></pre>
-<h2 id="make-your-workers-use-logpush" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#make-your-workers-use-logpush"><span>Make your workers use Logpush!</span></a></h2>
-<p>The final step is to enable Logpush on your workers. By default, even if
-you have Logpush destinations enabled, they won’t be used unless
-explicitly enabled at the worker level as well.</p>
-<p>You can do that from the UI in your worker page, in <strong>Logs &gt; Event logs
-Workers Logpush</strong>. If you use the Wrangler CLI, make sure to also set
-<code>logpush = true</code> in your <code>wrangler.toml</code>!</p>
-<h2 id="final-thoughts" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/cloudflare-workers-logs-gcp-logging-logpush.html#final-thoughts"><span>Final thoughts</span></a></h2>
-<p>Getting your Cloudflare Workers logs onto Google Cloud Logging is not
-easy, and using a Cloudflare worker for the integration layer makes it
-even harder, but it’s also kinda cool if you ask me. 😏</p>
-<p>You should now have everything you need to implement that, from the
-details of using the Cloudflare API to create Logpush jobs and tune it
-in a way you can’t do from the UI, implementing a HTTP Logpush
-destination with gzip support, parsing the Logpush payload, all the way
-to translating it for Google Cloud Logging and push it using the raw
-HTTP API in an environment where the official SDK is not supported.</p>
-<p>I hope you learnt a thing or two thanks to this post, and that your logs
-are being happily ingested now! 🫶</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://x.com/valeriangalliat/status/1787213611267674227">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Next.js: make Firebase Auth signInWithRedirect work with Safari</title>
-    <link href="https://www.codejam.info/2024/05/nextjs-firebase-auth-safari.html" />
-    <id>https://www.codejam.info/2024/05/nextjs-firebase-auth-safari.html</id>
-    <updated>2024-05-04T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>Had that
-<a href="https://github.com/firebase/firebase-js-sdk/issues/6716">issue</a>
-back in 2022 and it’s now a pretty
-<a href="https://firebase.google.com/docs/auth/web/redirect-best-practices">well-understood</a>
-problem, but better write about it later than never. 😂</p>
-<p>Essentially, in Safari 16.1+ (and now Firefox 109+), there are more
-aggressive restrictions on third-party cookies that mess with the way
-Firebase Auth <code>signInWithRedirect</code> is implemented.</p>
-<p>By default, your app could be running on <code>https://myapp.com</code> but
-<code>signInWithRedirect</code> would redirect to
-<code>https://myapp.firebaseapp.com/__/auth</code> and then back to your app in
-order to handle the auth. The message passing with third-party cookies
-between those two hosts is no longer possible in Safari, Firefox, and
-soon Chrome.</p>
-<p>Firebase docs now document <a href="https://firebase.google.com/docs/auth/web/redirect-best-practices">5 options</a>
-to solve that.</p>
-<ol>
-<li>If you host your app on Firebase, make sure your Firebase config
-<code>authDomain</code> point to your custom domain and not
-<code>myapp.firebaseapp.com</code>. Because Firebase hosts your app, it will
-automatically handle the special <code>__/auth</code> path.</li>
-<li>Use <code>signInWithPopup</code> which doesn’t depend on third-party cookies.</li>
-<li>If your frontend is not hosted on Firebase, proxy requests from
-<code>https://myapp.com/__auth/*</code> to <code>https://myapp.firebaseapp.com/__/auth/*</code>
-so there’s no cross-domain concerns.</li>
-<li>Download the relevant files from
-<code>https://myapp.firebaseapp.com/__/auth/*</code> and “self-host” them on
-your app.</li>
-<li>Handle provider auth by yourself.</li>
-</ol>
-<p>In my case, I’m not hosting the website on Firebase, and I don’t want to
-use <code>signInWithPupup</code>, so the proxy looks like a solid option.</p>
-<p>In a Next.js app, it’s as easy as adding the following to
-<code>next.config.js</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
-  <span class="hljs-keyword">async</span> <span class="hljs-title function_">rewrites</span> () {
-    <span class="hljs-keyword">return</span> {
-      <span class="hljs-attr">beforeFiles</span>: [
-        {
-          <span class="hljs-attr">source</span>: <span class="hljs-string">&#x27;/__/auth/:path*&#x27;</span>,
-          <span class="hljs-attr">destination</span>: <span class="hljs-string">`https://myapp.firebaseapp.com/__/auth/:path*`</span>
-        }
-      ]
-    }
-  }
-}
-</code></pre>
-<div class="note sponsors">
-<p>If you use the Firebase emulator, I made <a href="https://flame.evetools.app/">Flame</a>,
-a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
-</div>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Astro ESLint with pnpm 11: return outside of function | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Astro ESLint with pnpm 11: return outside of function | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="After upgrading to pnpm 11, ESLint started flagging every .astro page that returns early from the frontmatter:">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Astro ESLint with pnpm 11: <code>return</code> outside of function</h1>
+<p class="date">June 1, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>After upgrading to pnpm 11, ESLint started flagging every <code>.astro</code> page
+that returns early from the frontmatter:</p>
+<pre><code class="hljs">src/pages/login.astro
+  9:3  error  Parsing error: &#x27;return&#x27; outside of function
+</code></pre>
+<p>The line points to something like this:</p>
+<pre><code class="hljs language-tsx">---
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> prerender = <span class="hljs-literal">false</span>
+
+<span class="hljs-keyword">if</span> (<span class="hljs-title class_">Astro</span>.<span class="hljs-property">locals</span>.<span class="hljs-property">user</span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-title class_">Astro</span>.<span class="hljs-title function_">redirect</span>(<span class="hljs-string">&#x27;/&#x27;</span>)
+}
+---
+
+<span class="language-xml"><span class="hljs-tag">&lt;<span class="hljs-name">Login</span> /&gt;</span></span>
+</code></pre>
+<p>To lint Astro files I use <a href="https://www.npmjs.com/package/eslint-plugin-astro">eslint-plugin-astro</a>
+with a pretty basic config.</p>
+<h2 id="works-from-cli-but-not-from-editor" tabindex="-1"><a class="header-anchor" href="#works-from-cli-but-not-from-editor"><span>Works from CLI but not from editor</span></a></h2>
+<p>Running ESLint from a pnpm script i.e. <code>pnpm eslint</code> actually still
+worked. Only inside Cursor with the ESLint extension I had the issue.</p>
+<p>Nothing specific to Cursor though, figured out just using the
+programmatic API with <code>new ESLint().lintFiles()</code> failed with the same
+error.</p>
+<p>Turns out that pnpm wraps <code>node_modules/.bin/eslint</code> and sets
+<code>NODE_PATH</code> to <code>node_modules/.pnpm/node_modules</code>, a flat bucket of
+symlinks to everything installed in the project.</p>
+<p>Sounds like we have a dependency graph problem. Something is missing an
+explicit link and that’s why it only works when everything is hoisted.</p>
+<h2 id="pnpm-history-of-hoisting-of-eslint" tabindex="-1"><a class="header-anchor" href="#pnpm-history-of-hoisting-of-eslint"><span>pnpm history of hoisting of ESLint</span></a></h2>
+<p>Interestingly, pnpm 10 used to <a href="https://github.com/pnpm/pnpm/issues/8878#issuecomment-2546442011">hoist <code>*eslint*</code> by default</a>.</p>
+<p>This was because ESLint old config format used to have stuff like
+<code>plugins: ['astro']</code> that had ESLint itself translate this to
+<code>require('eslint-plugin-astro')</code>. This notoriously doesn’t work with
+pnpm style of <code>node_modules</code> where packages only see their explicit
+dependencies and not everything in the entire project.</p>
+<p>Since then, ESLint moved to <a href="https://eslint.org/docs/latest/use/configure/migration-guide">flat config</a>
+that doesn’t rely on those implicit dependencies.</p>
+<p>Everything in my project uses ESLint flat config so this wasn’t the
+issue, but this default hoisting of <code>*eslint*</code> packages was still
+helping me when it comes to my Astro parsing.</p>
+<h2 id="root-cause" tabindex="-1"><a class="header-anchor" href="#root-cause"><span>Root cause</span></a></h2>
+<p><code>eslint-plugin-astro</code> probes for <code>@typescript-eslint/parser</code> at load
+time (optional, not an explicit hard dependency). When it cannot
+resolve the package, it falls back to the Espree parser.</p>
+<p>Espree seems to treat frontmatter <code>return</code> as a module-level return and
+errors. <code>@typescript-eslint/parser</code> does not.</p>
+<h2 id="rtfm-kinda" tabindex="-1"><a class="header-anchor" href="#rtfm-kinda"><span>RTFM, kinda</span></a></h2>
+<p>Guess what? <code>eslint-plugin-astro</code> <a href="https://www.npmjs.com/package/eslint-plugin-astro#user-content--installation">documents</a>:</p>
+<blockquote>
+<p>If you write TypeScript in Astro components, you also need to install
+the <code>@typescript-eslint/parser</code>:</p>
+<pre><code class="hljs language-sh">npm install --save-dev @typescript-eslint/parser
+</code></pre>
+</blockquote>
+<p>I do use TypeScript, although the above failing example was
+JavaScript-only. Docs frame it as a TypeScript dependency, but in
+practice <code>@typescript-eslint/parser</code> seems to play better with astro
+files in general, even JavaScript, at least when early <code>return</code> is
+involved.</p>
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<p>ESLint erroring with <code>'return' outside of function</code> on <code>.astro</code>
+frontmatter after upgrading to pnpm 11.</p>
+<p>Fix: <code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
+picks it up instead of Espree. Needed for TypeScript, but also helps
+with things like early <code>return</code> in frontmatter.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/06/astro-eslint-pnpm-11-return-outside-function.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

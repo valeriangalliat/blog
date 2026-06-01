@@ -54,6 +54,9 @@ that returns early from the frontmatter:</p>
 </code></pre>
 <p>To lint Astro files I use <a href="https://www.npmjs.com/package/eslint-plugin-astro">eslint-plugin-astro</a>
 with a pretty basic config.</p>
+<p>Same error <a href="https://github.com/ota-meshi/eslint-plugin-astro/issues/459">reported on GitHub</a>,
+still open at time of writing, no resolution except for disabling the
+rule entirely.</p>
 <h2 id="works-from-cli-but-not-from-editor" tabindex="-1"><a class="header-anchor" href="#works-from-cli-but-not-from-editor"><span>Works from CLI but not from editor</span></a></h2>
 <p>Running ESLint from a pnpm script i.e. <code>pnpm eslint</code> actually still
 worked. Only inside Cursor with the ESLint extension I had the issue.</p>

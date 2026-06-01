@@ -10,6 +10,7 @@ A blog about tech, software and other things.
 
 <div class="links posts">
 
+* [Supabase with Colima: error from daemon `docker.sock` operation not supported](2026/06/supabase-colima-docker-sock-operation-not-supported.md) <small>June 1, 2026</small>
 * [Astro ESLint with pnpm 11: `return` outside of function](2026/06/astro-eslint-pnpm-11-return-outside-function.md) <small>June 1, 2026</small>
 * [How to manually trigger Cloud Tasks in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
 * [How to manually publish messages to the Pub/Sub emulator](https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
@@ -27,7 +28,6 @@ A blog about tech, software and other things.
 * [How to sign and notarize an Electron app for macOS](2024/05/sign-notarize-electron-app-macos.md) <small>May 15, 2024</small>
 * [How to use Electron auto updater ⚛️](2024/05/how-to-use-electron-auto-updater.md) <small>May 15, 2024</small>
 * [Invoking a Firebase callable function from the Firebase Admin SDK](2024/05/firebase-callable-admin-sdk.md) <small>May 15, 2024</small>
-* [Jest and Firestore: could not reach Cloud Firestore backend](2024/05/jest-firestore-could-not-reach-firestore-backend.md) <small>May 8, 2024</small>
 
 [All the posts](posts.md)
 

@@ -1,6 +1,14 @@
 # Astro ESLint with pnpm 11: `return` outside of function
 June 1, 2026
 
+## TLDR
+
+`pnpm add -D @typescript-eslint/parser` so `eslint-plugin-astro`
+picks it up instead of Espree. Mandatory for TypeScript, but also helps
+with things like early `return` in frontmatter even in plain JS.
+
+## Context
+
 After upgrading to pnpm 11, ESLint started flagging every `.astro` page
 that returns early from the frontmatter:
 
@@ -89,11 +97,8 @@ practice `@typescript-eslint/parser` seems to play better with astro
 files in general, even JavaScript, at least when early `return` is
 involved.
 
-## TLDR
+So with pnpm:
 
-ESLint erroring with `'return' outside of function` on `.astro`
-frontmatter after upgrading to pnpm 11.
-
-Fix: `pnpm add -D @typescript-eslint/parser` so `eslint-plugin-astro`
-picks it up instead of Espree. Needed for TypeScript, but also helps
-with things like early `return` in frontmatter.
+```sh
+pnpm add -D @typescript-eslint/parser
+```

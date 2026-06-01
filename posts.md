@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [Supabase with Colima: error from daemon `docker.sock` operation not supported](2026/06/supabase-colima-docker-sock-operation-not-supported.md) <small>June 1, 2026</small>
 * [Astro ESLint with pnpm 11: `return` outside of function](2026/06/astro-eslint-pnpm-11-return-outside-function.md) <small>June 1, 2026</small>
 * [How to manually trigger Cloud Tasks in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
 * [How to manually publish messages to the Pub/Sub emulator](https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>

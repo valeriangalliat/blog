@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="Astro ESLint with pnpm 11: return outside of function | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="After upgrading to pnpm 11, ESLint started flagging every .astro page that returns early from the frontmatter:">
+  <meta property="og:description" content="pnpm add -D @typescript-eslint/parser so eslint-plugin-astro picks it up instead of Espree. Mandatory for TypeScript, but also helps with things like early return in frontmatter even in plain JS.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -36,6 +36,11 @@
     </div>
   </header>
   <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<p><code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
+picks it up instead of Espree. Mandatory for TypeScript, but also helps
+with things like early <code>return</code> in frontmatter even in plain JS.</p>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="#context"><span>Context</span></a></h2>
 <p>After upgrading to pnpm 11, ESLint started flagging every <code>.astro</code> page
 that returns early from the frontmatter:</p>
 <pre><code class="hljs">src/pages/login.astro
@@ -99,12 +104,9 @@ JavaScript-only. Docs frame it as a TypeScript dependency, but in
 practice <code>@typescript-eslint/parser</code> seems to play better with astro
 files in general, even JavaScript, at least when early <code>return</code> is
 involved.</p>
-<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
-<p>ESLint erroring with <code>'return' outside of function</code> on <code>.astro</code>
-frontmatter after upgrading to pnpm 11.</p>
-<p>Fix: <code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
-picks it up instead of Espree. Needed for TypeScript, but also helps
-with things like early <code>return</code> in frontmatter.</p>
+<p>So with pnpm:</p>
+<pre><code class="hljs language-sh">pnpm add -D @typescript-eslint/parser
+</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

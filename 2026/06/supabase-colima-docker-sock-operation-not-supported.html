@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Supabase with Colima: error from daemon docker.sock operation not supported | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Supabase with Colima: error from daemon docker.sock operation not supported | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="Working on a Supabase project, wanna run the whole stack locally using supabase start.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Supabase with Colima: error from daemon <code>docker.sock</code> operation not supported</h1>
+<p class="date">June 1, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /var/run/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///var/run/docker.sock&#x27;</span>
+</code></pre>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="#context"><span>Context</span></a></h2>
+<p>Working on a Supabase project, wanna run the whole stack locally using
+<code>supabase start</code>.</p>
+<p>Supabase local development environment is based on Docker containers, so
+we need a runtime for it. <a href="https://supabase.com/docs/guides/local-development">Docs</a>
+mention Docker Desktop, Rancher Desktop, Podman and OrbStack.</p>
+<p>But I like to be different and I want to use
+<a href="https://github.com/abiosoft/colima">Colima</a>. 😂</p>
+<p>However <code>supabase start</code> fails with:</p>
+<pre><code class="hljs">failed to start docker container &quot;supabase_vector_myapp&quot;:
+Error response from daemon: error while creating mount source path &#x27;~/.colima/default/docker.sock&#x27;:
+mkdir ~/.colima/default/docker.sock: operation not supported
+</code></pre>
+<p>Found the same error on <a href="https://www.reddit.com/r/Supabase/comments/1nlh0p1/comment/nfw87m7/">this Reddit post</a>
+with the following fix:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /tmp/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///tmp/docker.sock&#x27;</span> 
+</code></pre>
+<p>But in my case, while this goes a bit further, I just get another error.
+(And the post is archived so I can’t even mention the final solution
+there, oh well.)</p>
+<pre><code class="hljs">ERROR source{component_kind=&quot;source&quot; component_id=docker_host component_type=docker_logs}:
+vector::sources::docker_logs: Listing currently running containers failed.
+error=HyperLegacyError {
+  err: hyper_util::client::legacy::Error(Connect, Os {
+    code: 111,
+    kind: ConnectionRefused,
+    message: &quot;Connection refused&quot;
+  })
+}
+</code></pre>
+<p>Nothing came up online for this error so hopefully this blog post will help
+if anyone runs into this.</p>
+<p>However I stumbled more generic threads of trying to
+<a href="https://github.com/abiosoft/colima/issues/365">configure Colima to use the default Docker socket</a>,
+where the way to do this is:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /var/run/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///var/run/docker.sock&#x27;</span>
+</code></pre>
+<p>So same as before but with <code>/var/run/docker.sock</code> instead of <code>/tmp/docker.sock</code>.</p>
+<p>That worked flawlessly for me!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/06/supabase-colima-docker-sock-operation-not-supported.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

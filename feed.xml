@@ -5,16 +5,80 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-06-01T19:59:34.802Z</updated>
+  <updated>2026-06-01T20:27:58.312Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Supabase with Colima: error from daemon docker.sock operation not supported</title>
+    <link href="https://www.codejam.info/2026/06/supabase-colima-docker-sock-operation-not-supported.html" />
+    <id>https://www.codejam.info/2026/06/supabase-colima-docker-sock-operation-not-supported.html</id>
+    <updated>2026-06-01T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/supabase-colima-docker-sock-operation-not-supported.html#tldr"><span>TLDR</span></a></h2>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /var/run/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///var/run/docker.sock&#x27;</span>
+</code></pre>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/supabase-colima-docker-sock-operation-not-supported.html#context"><span>Context</span></a></h2>
+<p>Working on a Supabase project, wanna run the whole stack locally using
+<code>supabase start</code>.</p>
+<p>Supabase local development environment is based on Docker containers, so
+we need a runtime for it. <a href="https://supabase.com/docs/guides/local-development">Docs</a>
+mention Docker Desktop, Rancher Desktop, Podman and OrbStack.</p>
+<p>But I like to be different and I want to use
+<a href="https://github.com/abiosoft/colima">Colima</a>. 😂</p>
+<p>However <code>supabase start</code> fails with:</p>
+<pre><code class="hljs">failed to start docker container &quot;supabase_vector_myapp&quot;:
+Error response from daemon: error while creating mount source path &#x27;~/.colima/default/docker.sock&#x27;:
+mkdir ~/.colima/default/docker.sock: operation not supported
+</code></pre>
+<p>Found the same error on <a href="https://www.reddit.com/r/Supabase/comments/1nlh0p1/comment/nfw87m7/">this Reddit post</a>
+with the following fix:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /tmp/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///tmp/docker.sock&#x27;</span> 
+</code></pre>
+<p>But in my case, while this goes a bit further, I just get another error.
+(And the post is archived so I can’t even mention the final solution
+there, oh well.)</p>
+<pre><code class="hljs">ERROR source{component_kind=&quot;source&quot; component_id=docker_host component_type=docker_logs}:
+vector::sources::docker_logs: Listing currently running containers failed.
+error=HyperLegacyError {
+  err: hyper_util::client::legacy::Error(Connect, Os {
+    code: 111,
+    kind: ConnectionRefused,
+    message: &quot;Connection refused&quot;
+  })
+}
+</code></pre>
+<p>Nothing came up online for this error so hopefully this blog post will help
+if anyone runs into this.</p>
+<p>However I stumbled more generic threads of trying to
+<a href="https://github.com/abiosoft/colima/issues/365">configure Colima to use the default Docker socket</a>,
+where the way to do this is:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">sudo</span> <span class="hljs-built_in">ln</span> -s ~/.colima/default/docker.sock /var/run/docker.sock
+<span class="hljs-built_in">export</span> DOCKER_HOST=<span class="hljs-string">&#x27;unix:///var/run/docker.sock&#x27;</span>
+</code></pre>
+<p>So same as before but with <code>/var/run/docker.sock</code> instead of <code>/tmp/docker.sock</code>.</p>
+<p>That worked flawlessly for me!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Astro ESLint with pnpm 11: return outside of function</title>
     <link href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html" />
     <id>https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html</id>
     <updated>2026-06-01T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>After upgrading to pnpm 11, ESLint started flagging every <code>.astro</code> page
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#tldr"><span>TLDR</span></a></h2>
+<p><code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
+picks it up instead of Espree. Mandatory for TypeScript, but also helps
+with things like early <code>return</code> in frontmatter even in plain JS.</p>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#context"><span>Context</span></a></h2>
+<p>After upgrading to pnpm 11, ESLint started flagging every <code>.astro</code> page
 that returns early from the frontmatter:</p>
 <pre><code class="hljs">src/pages/login.astro
   9:3  error  Parsing error: &#x27;return&#x27; outside of function
@@ -77,12 +141,9 @@ JavaScript-only. Docs frame it as a TypeScript dependency, but in
 practice <code>@typescript-eslint/parser</code> seems to play better with astro
 files in general, even JavaScript, at least when early <code>return</code> is
 involved.</p>
-<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/astro-eslint-pnpm-11-return-outside-function.html#tldr"><span>TLDR</span></a></h2>
-<p>ESLint erroring with <code>'return' outside of function</code> on <code>.astro</code>
-frontmatter after upgrading to pnpm 11.</p>
-<p>Fix: <code>pnpm add -D @typescript-eslint/parser</code> so <code>eslint-plugin-astro</code>
-picks it up instead of Espree. Needed for TypeScript, but also helps
-with things like early <code>return</code> in frontmatter.</p>
+<p>So with pnpm:</p>
+<pre><code class="hljs language-sh">pnpm add -D @typescript-eslint/parser
+</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
@@ -2699,55 +2760,6 @@ above command cleaner.</p>
 <p>The good thing is that this script knows to not re-download Chrome if
 it’s already found in the cache directory, so when the <code>postinstall</code>
 script <em>does</em> run, the extra <code>gcp-build</code> command will be a no-op.</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Knex: timeout acquiring a connection, the pool is probably full</title>
-    <link href="https://www.codejam.info/2024/05/knex-timeout-pool-full.html" />
-    <id>https://www.codejam.info/2024/05/knex-timeout-pool-full.html</id>
-    <updated>2024-05-05T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<pre><code class="hljs">Error: Knex: Timeout acquiring a connection. The pool is probably full. Are you missing a .transacting(trx) call?
-</code></pre>
-<p>Yes, you’re probably missing a <code>.transacting(trx)</code> call, but what’s
-going on exactly?</p>
-<p>Knex maintains a connection pool to your database, which you configure
-with the <a href="https://knexjs.org/guide/#pool"><code>pool</code> <code>min</code> and <code>max</code> options</a>.
-If <code>max</code> is 5, then Knex will keep up to 5 connections to your database
-in the pool.</p>
-<p>If you’re attempting to make a query and the pool is full, then it’ll
-wait that one of the connection frees up in order to use it.</p>
-<p>Sometimes however, it will timeout doing so. One common case is a
-deadlock when mixing queries inside and outside a transaction.</p>
-<p>Let’s say that you start 5 transactions, but within those transactions,
-you’re performing some queries <em>outside</em> of the transaction:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">transaction</span>(<span class="hljs-function"><span class="hljs-params">trx</span> =&gt;</span> {
-  <span class="hljs-keyword">await</span> trx.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
-  <span class="hljs-keyword">await</span> knex.<span class="hljs-title function_">raw</span>(<span class="hljs-string">&#x27;...&#x27;</span>)
-})
-</code></pre>
-<p>Here, the <code>knex.raw</code> statement will execute outside of the transaction
-(despite being in the function, because it doesn’t use <code>trx</code>). This
-means that it will use its own connection from the pool, on top of the
-one <code>knex.transaction</code> already uses.</p>
-<p>If you have enough of those running in parallel, you can hit a case
-where there’s no available connection to execute the <code>knex.raw</code> bit. So
-it’s waiting that a connection frees up. <strong>But no connection get freed up
-because all the transactions are waiting for the <code>knex.raw</code> bit to
-complete in order to commit!</strong></p>
-<p>See the deadlock here?</p>
-<p>So the solution is to make sure that all the queries you perform inside
-the transaction actually use that transaction. In the above example,
-it’s very obvious, but it can get trickier when you call a function that
-calls another function that calls a method that makes a query but didn’t
-accept a <code>trx</code> parameter and so ends up needing its own connection. 😬</p>
-<p>Now you know what to look for. 👀</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

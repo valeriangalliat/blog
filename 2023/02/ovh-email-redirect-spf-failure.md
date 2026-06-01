@@ -3,7 +3,7 @@ tweet: https://x.com/valeriangalliat/status/1629899238728499200
 ---
 
 # OVH email redirect causes SPF check failure
-February 26, 2023
+February 26, 2023 | Updated on April 27, 2024
 
 <div class="note">
 

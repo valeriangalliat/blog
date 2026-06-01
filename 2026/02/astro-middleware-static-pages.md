@@ -3,7 +3,15 @@ tweet: https://x.com/valeriangalliat/status/2021761871104430267
 ---
 
 # Run Astro middleware in front of static pages (Cloudflare Workers)
-February 11, 2026
+February 11, 2026 | Updated on June 1, 2026
+
+<div class="note">
+
+**Update:** Astro v6 and `@astrojs/cloudflare` v13 simplify a few things
+described below, including how you configure a custom worker entrypoint.
+See [Astro v6](#astro-v6-update)!
+
+</div>
 
 Astro allows to prerender pages as static assets, so everything is
 compiled at build time and can be served super quick.
@@ -211,10 +219,59 @@ const handler: MiddlewareHandler = async (context, next) => {
 export const onRequest = import.meta.env.DEV ? handler : undefined
 ```
 
+## Astro v6 update
+
+[Astro v6 and `@astrojs/cloudflare` v13](https://docs.astro.build/en/guides/integrations-guide/cloudflare/#upgrading-to-v13-and-astro-6)
+change a few things (for the best). [The Cloudflare part](#the-cloudflare-part)
+(`run_worker_first` in `wrangler.jsonc`) is unchanged.
+
+The `workerEntryPoint` adapter option was removed. Instead, simpler, we
+just point `main` in `wrangler.jsonc` directly to our custom worker
+file:
+
+```json
+{
+  "main": "./src/worker.ts"
+}
+```
+
+Inside there the syntax is slightly different since we're in a raw
+Cloudflare Worker environment, not wrapped by Astro.
+
+```ts
+import { handle } from '@astrojs/cloudflare/handler'
+
+type Env = {
+  [key: string]: unknown
+  ASSETS: {
+    fetch: (req: Request | string) => Promise<Response>
+  }
+}
+
+export default {
+  async fetch(request, env, ctx) {
+    const url = new URL(request.url)
+    const { pathname, search } = url
+
+    // Do anything before Astro handles the request
+
+    const response = await handle(request, env, ctx)
+
+    // Do anything after
+
+    return response
+  },
+} satisfies ExportedHandler<Env>
+```
+
+As for development, `astro dev` now runs on Cloudflare's `workerd` using
+the same entrypoint as production, so no need for the [middleware workaround](#what-about-development)
+anymore. Sweet!
+
 ## Wrapping up
 
 In short: configure `run_worker_first` on Cloudflare so it runs the
 worker in front of static pages, then use a custom `workerEntryPoint`
-with the Astro Cloudflare adapter so you get full control over the
-worker, and can run code _outside of the middleware_ (which does not
-run for static pages).
+(Astro v5) or a custom `main` in `wrangler.jsonc` (Astro v6) so you get
+full control over the worker, and can run code _outside of the
+middleware_ (which does not run for static pages).

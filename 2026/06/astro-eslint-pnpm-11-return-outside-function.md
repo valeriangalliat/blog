@@ -26,6 +26,10 @@ if (Astro.locals.user) {
 To lint Astro files I use [eslint-plugin-astro](https://www.npmjs.com/package/eslint-plugin-astro)
 with a pretty basic config.
 
+Same error [reported on GitHub](https://github.com/ota-meshi/eslint-plugin-astro/issues/459),
+still open at time of writing, no resolution except for disabling the
+rule entirely.
+
 ## Works from CLI but not from editor
 
 Running ESLint from a pnpm script i.e. `pnpm eslint` actually still

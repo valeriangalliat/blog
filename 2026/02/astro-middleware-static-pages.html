@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="Run Astro middleware in front of static pages (Cloudflare Workers) | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="Astro allows to prerender pages as static assets, so everything is compiled at build time and can be served super quick.">
+  <meta property="og:description" content="Update: Astro v6 and @astrojs/cloudflare v13 simplify a few things described below, including how you configure a custom worker entrypoint. See Astro v6!">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -31,11 +31,16 @@
     <div class="header-inner">
       <div class="content">
 <h1>Run Astro middleware in front of static pages (Cloudflare Workers)</h1>
-<p class="date">February 11, 2026</p>
+<p class="date">February 11, 2026 | Updated on June 1, 2026</p>
       </div>
     </div>
   </header>
   <div class="content">
+<div class="note">
+<p><strong>Update:</strong> Astro v6 and <code>@astrojs/cloudflare</code> v13 simplify a few things
+described below, including how you configure a custom worker entrypoint.
+See <a href="#astro-v6-update">Astro v6</a>!</p>
+</div>
 <p>Astro allows to prerender pages as static assets, so everything is
 compiled at build time and can be served super quick.</p>
 <p>But also, Astro has the concept of a middleware, that allows to run
@@ -208,12 +213,52 @@ production.</p>
 
 <span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> onRequest = <span class="hljs-keyword">import</span>.<span class="hljs-property">meta</span>.<span class="hljs-property">env</span>.<span class="hljs-property">DEV</span> ? handler : <span class="hljs-literal">undefined</span>
 </code></pre>
+<h2 id="astro-v6-update" tabindex="-1"><a class="header-anchor" href="#astro-v6-update"><span>Astro v6 update</span></a></h2>
+<p><a href="https://docs.astro.build/en/guides/integrations-guide/cloudflare/#upgrading-to-v13-and-astro-6">Astro v6 and <code>@astrojs/cloudflare</code> v13</a>
+change a few things (for the best). <a href="#the-cloudflare-part">The Cloudflare part</a>
+(<code>run_worker_first</code> in <code>wrangler.jsonc</code>) is unchanged.</p>
+<p>The <code>workerEntryPoint</code> adapter option was removed. Instead, simpler, we
+just point <code>main</code> in <code>wrangler.jsonc</code> directly to our custom worker
+file:</p>
+<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
+  <span class="hljs-attr">&quot;main&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;./src/worker.ts&quot;</span>
+<span class="hljs-punctuation">}</span>
+</code></pre>
+<p>Inside there the syntax is slightly different since we’re in a raw
+Cloudflare Worker environment, not wrapped by Astro.</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { handle } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;@astrojs/cloudflare/handler&#x27;</span>
+
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">Env</span> = {
+  [<span class="hljs-attr">key</span>: <span class="hljs-built_in">string</span>]: <span class="hljs-built_in">unknown</span>
+  <span class="hljs-attr">ASSETS</span>: {
+    <span class="hljs-attr">fetch</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">req</span>: <span class="hljs-title class_">Request</span> | <span class="hljs-built_in">string</span></span>) =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Response</span>&gt;
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> {
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">fetch</span>(<span class="hljs-params">request, env, ctx</span>) {
+    <span class="hljs-keyword">const</span> url = <span class="hljs-keyword">new</span> <span class="hljs-title function_">URL</span>(request.<span class="hljs-property">url</span>)
+    <span class="hljs-keyword">const</span> { pathname, search } = url
+
+    <span class="hljs-comment">// Do anything before Astro handles the request</span>
+
+    <span class="hljs-keyword">const</span> response = <span class="hljs-keyword">await</span> <span class="hljs-title function_">handle</span>(request, env, ctx)
+
+    <span class="hljs-comment">// Do anything after</span>
+
+    <span class="hljs-keyword">return</span> response
+  },
+} <span class="hljs-keyword">satisfies</span> <span class="hljs-title class_">ExportedHandler</span>&lt;<span class="hljs-title class_">Env</span>&gt;
+</code></pre>
+<p>As for development, <code>astro dev</code> now runs on Cloudflare’s <code>workerd</code> using
+the same entrypoint as production, so no need for the <a href="#what-about-development">middleware workaround</a>
+anymore. Sweet!</p>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>In short: configure <code>run_worker_first</code> on Cloudflare so it runs the
 worker in front of static pages, then use a custom <code>workerEntryPoint</code>
-with the Astro Cloudflare adapter so you get full control over the
-worker, and can run code <em>outside of the middleware</em> (which does not
-run for static pages).</p>
+(Astro v5) or a custom <code>main</code> in <code>wrangler.jsonc</code> (Astro v6) so you get
+full control over the worker, and can run code <em>outside of the
+middleware</em> (which does not run for static pages).</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

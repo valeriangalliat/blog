@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>xcrun stapler could not validate ticket, error 65 | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="xcrun stapler could not validate ticket, error 65 | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="When publishing a macOS app, you need to go through code signing and “notarization” of the app and DMG file to avoid “unverified developer” warnings.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1><code>xcrun stapler</code> could not validate ticket, error 65</h1>
+<p class="date">June 4, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>When publishing a macOS app, you need to go through code signing and
+“notarization” of the app and DMG file to avoid “unverified developer”
+warnings.</p>
+<p>This is well integrated in Xcode, and frameworks like Electron and Tauri
+also have direct support for this (see <a href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html">How to sign and notarize an Electron app</a> and <a href="https://tauri.app/distribute/sign/macos/">Tauri macOS code signing</a>).</p>
+<p>But the app I’m building, <a href="https://evetools.app/en/tzbar">TZBar</a>, is
+native (no Electron or Tauri), but small enough that I didn’t want to
+bother with Xcode at all.  Just plain <code>swift build</code>. This also meant
+doing the code signing and notarizaiton <a href="https://github.com/EveToolsHQ/TZBar/blob/efef3f52bfecf226ece9477a6f43a4639acf5d19/Makefile#L41-L65">from the CLI</a>,
+which luckily is well documented in <a href="https://stackoverflow.com/a/64733472">this Stack Overflow answer</a>.</p>
+<p>That’s how I learnt about the stapling process. While notarization means
+uploading your app for Apple to scan and approve it, that “verification
+ticket” can be “stapled” onto the app file itself so that the
+verification can be done offline on users devices.</p>
+<p>This is optional since when connected to the internet, the system will
+just check the app’s signature for notarization status online, and users
+who just downloaded your app are typically connected to the internet. 😂</p>
+<p>Anyway, it’s done with this command:</p>
+<pre><code class="hljs language-sh">xcrun stapler staple App.dmg
+</code></pre>
+<h2 id="error-65" tabindex="-1"><a class="header-anchor" href="#error-65"><span>Error 65</span></a></h2>
+<p>However the above command failed with:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">xcrun stapler staple App.dmg</span>
+Processing: ~/App.dmg
+Could not validate ticket for ~/App.dmg
+The staple and validate action failed! Error 65.
+</code></pre>
+<p>Sounds like this error happens for many unrelated reasons with no way to
+know exactly what’s wrong…</p>
+<p>In my case, the Apple root certificates were set to “always trust”
+instead of “system defaults” (probably from attempts to troubleshoot
+signing issues of past apps I worked on).</p>
+<p>This is apparently a problem, and the stapler will fail if the
+certificates not set to “system defaults”.</p>
+<p>So go in <strong>Keychain Access &gt; System Roots</strong>, and for <strong>Apple Root</strong>,
+<strong>G2</strong>, <strong>G3</strong> and <strong>WWDR</strong>, make sure to select <strong>System Defaults</strong> if
+it’s not the case already.</p>
+<p>If this doesn’t solve it for you, <a href="https://github.com/electron/notarize/issues/120#issuecomment-3215070977">this GitHub answer</a>
+describes a few more steps that you can use to troubleshoot “health” of
+the signing setup.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">xcrun stapler staple App.dmg</span>
+The staple and validate action worked!
+</code></pre>
+<p>Better!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/06/xcrun-stapler-could-not-validate-ticket-error-65.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

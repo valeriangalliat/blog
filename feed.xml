@@ -5,10 +5,68 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-06-01T20:27:58.312Z</updated>
+  <updated>2026-06-04T18:29:52.631Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>xcrun stapler could not validate ticket, error 65</title>
+    <link href="https://www.codejam.info/2026/06/xcrun-stapler-could-not-validate-ticket-error-65.html" />
+    <id>https://www.codejam.info/2026/06/xcrun-stapler-could-not-validate-ticket-error-65.html</id>
+    <updated>2026-06-04T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>When publishing a macOS app, you need to go through code signing and
+“notarization” of the app and DMG file to avoid “unverified developer”
+warnings.</p>
+<p>This is well integrated in Xcode, and frameworks like Electron and Tauri
+also have direct support for this (see <a href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html">How to sign and notarize an Electron app</a> and <a href="https://tauri.app/distribute/sign/macos/">Tauri macOS code signing</a>).</p>
+<p>But the app I’m building, <a href="https://evetools.app/en/tzbar">TZBar</a>, is
+native (no Electron or Tauri), but small enough that I didn’t want to
+bother with Xcode at all.  Just plain <code>swift build</code>. This also meant
+doing the code signing and notarizaiton <a href="https://github.com/EveToolsHQ/TZBar/blob/efef3f52bfecf226ece9477a6f43a4639acf5d19/Makefile#L41-L65">from the CLI</a>,
+which luckily is well documented in <a href="https://stackoverflow.com/a/64733472">this Stack Overflow answer</a>.</p>
+<p>That’s how I learnt about the stapling process. While notarization means
+uploading your app for Apple to scan and approve it, that “verification
+ticket” can be “stapled” onto the app file itself so that the
+verification can be done offline on users devices.</p>
+<p>This is optional since when connected to the internet, the system will
+just check the app’s signature for notarization status online, and users
+who just downloaded your app are typically connected to the internet. 😂</p>
+<p>Anyway, it’s done with this command:</p>
+<pre><code class="hljs language-sh">xcrun stapler staple App.dmg
+</code></pre>
+<h2 id="error-65" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/xcrun-stapler-could-not-validate-ticket-error-65.html#error-65"><span>Error 65</span></a></h2>
+<p>However the above command failed with:</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">xcrun stapler staple App.dmg</span>
+Processing: ~/App.dmg
+Could not validate ticket for ~/App.dmg
+The staple and validate action failed! Error 65.
+</code></pre>
+<p>Sounds like this error happens for many unrelated reasons with no way to
+know exactly what’s wrong…</p>
+<p>In my case, the Apple root certificates were set to “always trust”
+instead of “system defaults” (probably from attempts to troubleshoot
+signing issues of past apps I worked on).</p>
+<p>This is apparently a problem, and the stapler will fail if the
+certificates not set to “system defaults”.</p>
+<p>So go in <strong>Keychain Access &gt; System Roots</strong>, and for <strong>Apple Root</strong>,
+<strong>G2</strong>, <strong>G3</strong> and <strong>WWDR</strong>, make sure to select <strong>System Defaults</strong> if
+it’s not the case already.</p>
+<p>If this doesn’t solve it for you, <a href="https://github.com/electron/notarize/issues/120#issuecomment-3215070977">this GitHub answer</a>
+describes a few more steps that you can use to troubleshoot “health” of
+the signing setup.</p>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">xcrun stapler staple App.dmg</span>
+The staple and validate action worked!
+</code></pre>
+<p>Better!</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Supabase with Colima: error from daemon docker.sock operation not supported</title>
     <link href="https://www.codejam.info/2026/06/supabase-colima-docker-sock-operation-not-supported.html" />
@@ -2642,124 +2700,6 @@ separately from the rest of your frontend test suite and passing <code>--env nod
 <pre><code class="hljs language-sh">npx jest --<span class="hljs-built_in">env</span> node firestore.test.js
 </code></pre>
 <p>Last resort, the <code>useFetchStreams</code> hack above should do it. 😄</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Using Google Chrome instead of Chromium in Google Cloud Functions</title>
-    <link href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html" />
-    <id>https://www.codejam.info/2024/05/google-chrome-cloud-functions.html</id>
-    <updated>2024-05-05T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>When using Puppeteer, Playwright and similar, you need to have Chrome
-installed. When you’re running on AWS Lambda or Google Cloud Functions,
-it can get tricky.</p>
-<p>Google Cloud Functions <em>used to</em> bundle Chromium in their base images,
-but it’s been a few years it’s no longer the case. That’s where packages
-like <a href="https://github.com/alixaxel/chrome-aws-lambda"><code>chrome-aws-lambda</code></a>
-come in handy, by bundling Chromium directly inside a npm package, and
-exposing a function that extracts the Chromium binary and returns the
-path:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> chromium = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;chrome-aws-lambda&#x27;</span>)
-
-<span class="hljs-keyword">const</span> path = <span class="hljs-keyword">await</span> chromium.<span class="hljs-property">executablePath</span>
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> unnecessary pedantic detail: the above code doesn’t look like a function,
-but <a href="https://github.com/alixaxel/chrome-aws-lambda/blob/f9d5a9ff0282ef8e172a29d6d077efc468ca3c76/source/index.ts#L147">it is, in fact</a>,
-a getter function that returns a promise. 😄</p>
-</div>
-<p>However that’s Chromium, and you may have reasons to want Google Chrome
-instead (mainly, proprietary codecs).</p>
-<h2 id="a-totally-unrelated-note-about-aws-lambda" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#a-totally-unrelated-note-about-aws-lambda"><span>A totally unrelated note about AWS Lambda</span></a></h2>
-<p>This article is about Google Cloud Functions, but if you’re on AWS
-Lambda, the above option is your best bet. Because of the Lambda total
-size limit of 250 MB (all layers combined), it’s really hard to get a
-binary of Chrome that fits in there.</p>
-<p>That’s why <code>chrome-aws-lambda</code> uses <a href="https://github.com/alixaxel/lambdafs">LambdaFS</a>
-under the hood, to aggressively compress the Chrome installation with
-Brotli and make it fit in that limited space.</p>
-<p>But again with that build, you won’t have proprietary codecs. I tried to
-trim down a Chrome Linux build and compress it with the same technique
-but never managed to make it fit on AWS Lambda. Recent Chrome versions
-are just too big.</p>
-<p>There’s another option, which is to compile Chromium yourself with
-proprietary codecs. I never found any prebuilt binaries of Chromium that
-include proprietary codecs (maybe because of license issues
-redistributing them 🙃) so you’re on your own here.</p>
-<p><a href="https://www.remotion.dev/">Remotion</a> successfully does that for
-<a href="https://www.remotion.dev/docs/lambda">Remotion Lambda</a>.
-Here’s <a href="https://github.com/remotion-dev/chrome-build-instructions">their instructions</a>
-to compile Chromium with proprietary codecs for Lambda.</p>
-<p>Fair warning: it gets hairy, fast.</p>
-<h2 id="back-to-google-cloud-functions" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#back-to-google-cloud-functions"><span>Back to Google Cloud Functions</span></a></h2>
-<p>Google Cloud Functions is more generous as for bundle size, so we don’t
-need to resort to those tricks, and we can include a complete,
-uncompressed, Google Chrome installation.</p>
-<p>Google publishes <a href="https://googlechromelabs.github.io/chrome-for-testing/">Chrome for Testing</a>,
-builds <a href="https://developer.chrome.com/blog/chrome-for-testing">specifically made</a>
-for headless usage.</p>
-<p>We can just download the latest build from there as part of the
-<code>gcp-build</code> script in our <code>package.json</code>.</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;gcp-build&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;curl -s -O &#x27;https://storage.googleapis.com/chrome-for-testing-public/124.0.6367.91/linux64/chrome-linux64.zip&#x27; &amp;&amp; unzip chrome-linux64.zip &amp;&amp; rm chrome-linux64.zip&quot;</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> the <code>gcp-build</code> script allows you to <a href="https://cloud.google.com/appengine/docs/standard/nodejs/running-custom-build-step">run a custom build step</a>
-in Google Cloud Build, which is what Cloud Functions (both 1st and 2nd
-gen, as well as Cloud Run and App Engine) use to build your function
-image.</p>
-<p>It would work just fine with a <code>postinstall</code> script as well, but
-<code>gcp-build</code> makes sure you run it only on Google Cloud Build, which is
-probably desirable in this particular case.</p>
-</div>
-<p>You will then have the Chrome binary in <code>chrome-linux64/chrome</code>, that
-you can pass to the tool of your choice.</p>
-<h2 id="with-puppeteer" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/google-chrome-cloud-functions.html#with-puppeteer"><span>With Puppeteer</span></a></h2>
-<p>Courtesy of <a href="https://medium.com/@jackklpan/run-puppeteer-in-google-cloud-functions-v2-b18a353e609b">this post</a>,
-with Puppeteer, you don’t need to download Chrome manually, since it
-provides a nifty script to do just that.</p>
-<p>Actually, Puppeteer’s <a href="https://github.com/puppeteer/puppeteer/blob/f23646b3526aa87145c17b22e9967ec8f77d82d2/packages/puppeteer/package.json#L41"><code>postinstall</code> script</a>
-automatically downloads the latest version of Chrome for Testing for
-your platform.</p>
-<p>The caveat is that this script by default installs it to
-<code>~/.cache/puppeteer</code>, which in the case of Google Cloud Build, is not
-gonna be preserved in the final image. So we need to instruct Puppeteer
-to install Chrome in a directory that Cloud Build will keep.</p>
-<p>This can be done with the following <code>.puppeteerrc.js</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
-  <span class="hljs-attr">cacheDirectory</span>: <span class="hljs-string">`<span class="hljs-subst">${__dirname}</span>/.cache/puppeteer`</span>
-}
-</code></pre>
-<p>But even then, there’s another caveat. Puppeteer’s <code>postinstall</code> script
-will only run after it gets installed. However, because of build
-caching, you will get in a state where <code>node_modules</code> is restored, with
-Puppeteer already installed (so <code>postinstall</code> will <em>not</em> run), but the
-<code>.cache/puppeteer</code> directory will also <em>not</em> be restored.</p>
-<p>To mitigate that, we need to make sure to install Chrome systematically.
-Again we can leverage the <code>gcp-build</code> for that:</p>
-<pre><code class="hljs language-json"><span class="hljs-punctuation">{</span>
-  <span class="hljs-attr">&quot;scripts&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-punctuation">{</span>
-    <span class="hljs-attr">&quot;gcp-build&quot;</span><span class="hljs-punctuation">:</span> <span class="hljs-string">&quot;npx puppeteer browsers install chrome&quot;</span>
-  <span class="hljs-punctuation">}</span>
-<span class="hljs-punctuation">}</span>
-</code></pre>
-<div class="note">
-<p><strong>Note:</strong> you could call Puppeteer’s <code>postinstall</code> script directly by
-doing <code>node node_modules/puppeteer/install.mjs</code> instead, but I found the
-above command cleaner.</p>
-</div>
-<p>The good thing is that this script knows to not re-download Chrome if
-it’s already found in the cache directory, so when the <code>postinstall</code>
-script <em>does</em> run, the extra <code>gcp-build</code> command will be a no-op.</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

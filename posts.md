@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [AWS S3 flaky 403 on `HEAD` after upload](2026/06/aws-s3-flaky-403-head-after-upload.md) <small>June 10, 2026</small>
 * [`xcrun stapler` could not validate ticket, error 65](2026/06/xcrun-stapler-could-not-validate-ticket-error-65.md) <small>June 4, 2026</small>
 * [Supabase with Colima: error from daemon `docker.sock` operation not supported](2026/06/supabase-colima-docker-sock-operation-not-supported.md) <small>June 1, 2026</small>
 * [Astro ESLint with pnpm 11: `return` outside of function](2026/06/astro-eslint-pnpm-11-return-outside-function.md) <small>June 1, 2026</small>

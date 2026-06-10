@@ -5,10 +5,152 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-06-04T18:29:52.631Z</updated>
+  <updated>2026-06-10T21:03:26.189Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>AWS S3 flaky 403 on HEAD after upload</title>
+    <link href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html" />
+    <id>https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html</id>
+    <updated>2026-06-10T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html#tldr"><span>TLDR</span></a></h2>
+<p><code>HEAD</code> flaky? Use <code>GET</code> with <code>Range: bytes=0-0</code> instead.</p>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html#context"><span>Context</span></a></h2>
+<p>Had a wild bug with S3 recently. Let’s start with some context.</p>
+<p>I’m currently building <a href="https://cloudmotion.dev/">Cloudmotion</a>,
+a hosted Remotion Lambda.  <a href="https://www.remotion.dev/">Remotion</a> is the
+<abbr title="Greatest of all time">GOAT</abbr> when it comes to making
+programmatic videos, and <a href="https://www.remotion.dev/lambda">Remotion Lambda</a>
+is the fastest way to render those videos in the cloud at scale.
+<strong>Cloudmotion is that but I deal with AWS so you don’t have to.</strong></p>
+<p>Part of the challenge is supporting <em>any</em> Remotion version. There’s
+currently <a href="https://www.npmjs.com/package/remotion?activeTab=versions">over 1,200</a>
+published versions on npm, and new versions are released about every
+other day.</p>
+<p>In order to do that, the first time a new version is requested, I
+trigger a AWS CodeBuild job that prepares the Lambda source, and uploads
+a ZIP file to S3 that the function can be created from. In the <code>finally</code>
+phase of the buildspec, I send a webhook to notify the app to continue
+the provisioning with the newly built artifact.</p>
+<p>The app then does a <code>HEAD</code> requests to check that the ZIP file exists
+and then creates the Lambda from it. This is where things go sideways.</p>
+<div class="note">
+<p><strong>Note:</strong> writing this post, I’m realizing I don’t need that <code>HEAD</code> call
+in the first place. I can just optimistically try to create the Lambda
+assuming the ZIP file is there (normally, it should), and let the call
+fail otherwise.</p>
+<p>However I have other cases where I <em>do</em> want that <code>HEAD</code> call to resume
+provisioning from an existing artifact instead of starting a new build
+all over. So it’s not all lost, phew.</p>
+</div>
+<h2 id="flaky-head-response" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html#flaky-head-response"><span>Flaky <code>HEAD</code> response</span></a></h2>
+<p>I’m always calling the S3 API with the same, valid, credentials. So I’m
+expecting 2 answers: 404 when the file doesn’t exist, and 200 when it
+does.</p>
+<p>However here’s some logs I’ve observed:</p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Event</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20:23:29</td>
+<td><code>HEAD</code></td>
+<td>404</td>
+</tr>
+<tr>
+<td>20:23:31</td>
+<td><code>aws s3 cp</code></td>
+<td>success</td>
+</tr>
+<tr>
+<td><strong>20:23:33</strong></td>
+<td><strong><code>HEAD</code></strong></td>
+<td><strong>403</strong></td>
+</tr>
+<tr>
+<td>20:23:34</td>
+<td><code>HEAD</code></td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+<p>And another weird instance:</p>
+<table>
+<thead>
+<tr>
+<th>Time</th>
+<th>Event</th>
+<th>result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>03:52:04</strong></td>
+<td><strong><code>HEAD</code></strong></td>
+<td><strong>403</strong></td>
+</tr>
+<tr>
+<td>03:52:11</td>
+<td><code>HEAD</code></td>
+<td>404</td>
+</tr>
+<tr>
+<td>03:52:27</td>
+<td><code>aws s3 cp</code></td>
+<td>success</td>
+</tr>
+<tr>
+<td>03:52:28</td>
+<td><code>HEAD</code></td>
+<td>200</td>
+</tr>
+</tbody>
+</table>
+<p>So while at first it felt like it could be due to doing the <code>HEAD</code> call
+<em>really shortly</em> after the upload succeeded, that second instance
+actually shows us that even calls that expect a 404 can get a wild 403
+instead, with the same credentials and permissions that got a 404 and
+eventually a 200 seconds later.</p>
+<h2 id="a-note-about-eventual-consistency" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html#a-note-about-eventual-consistency"><span>A note about eventual consistency</span></a></h2>
+<p>S3 has <a href="https://aws.amazon.com/s3/consistency/">“strong read-after-write consistency”</a>
+<a href="https://aws.amazon.com/blogs/aws/amazon-s3-update-strong-read-after-write-consistency/">since 2020</a>,
+so it’s been a while there’s no more eventual consistency to deal with
+when calling S3.</p>
+<p>That being said I’m now realizing they say:</p>
+<blockquote>
+<p>Effective immediately, all S3 <code>GET</code>, <code>PUT</code>, and <code>LIST</code> operations
+[…] are now strongly consistent.</p>
+</blockquote>
+<p>This doesn’t include <code>HEAD</code>, so maybe <code>HEAD</code> is still eventually
+consistent? But even with eventual consistency I’d expect a 404 after a
+successful upload that eventually becomes a 200. In no way eventual
+consistency should result in a 403 with valid credentials and
+appropriate IAM permissions.</p>
+<h2 id="workaround" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html#workaround"><span>Workaround</span></a></h2>
+<p>I never managed to understand the root cause of why those <code>HEAD</code> calls
+randomly return a 403.</p>
+<p><strong>Instead I switched to doing <code>GET</code> calls with <code>Range: bytes=0-0</code>.</strong>
+Returns a 404 consistently when the file doens’t exist, and a 206
+(partial content) when it does.</p>
+<p>Bonus is that the <code>GET</code> method allows the S3 API to return proper XML
+error responses, whereas <code>HEAD</code> by design doesn’t have a HTTP body and
+thus can’t communicate any useful error information (especially in the
+case of those 403s).</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>xcrun stapler could not validate ticket, error 65</title>
     <link href="https://www.codejam.info/2026/06/xcrun-stapler-could-not-validate-ticket-error-65.html" />
@@ -2649,57 +2791,6 @@ expire? Which is considered insecure.</p>
 <p>If you use the Firebase emulator, I made <a href="https://useflame.app/">Flame</a>,
 a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
 </div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Jest and Firestore: could not reach Cloud Firestore backend</title>
-    <link href="https://www.codejam.info/2024/05/jest-firestore-could-not-reach-firestore-backend.html" />
-    <id>https://www.codejam.info/2024/05/jest-firestore-could-not-reach-firestore-backend.html</id>
-    <updated>2024-05-08T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>So you’re using Jest to do some unit tests that involve testing
-Firebase-related stuff like Firestore, maybe Firestore rules with
-<a href="https://firebase.google.com/docs/rules/unit-tests"><code>@firebase/rules-unit-testing</code></a>?</p>
-<p>But your test just times out:</p>
-<pre><code class="hljs">thrown: &quot;Exceeded timeout of 5000 ms for a test.
-Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout.&quot;
-</code></pre>
-<p>So you go on and add a longer timeout value to the test, but then you
-hit another level of timeout:</p>
-<pre><code class="hljs">@firebase/firestore: Firestore: Could not reach Cloud Firestore backend. Backend didn&#x27;t respond within 10 seconds.
-This typically indicates that your device does not have a healthy Internet connection at the moment. The client will operate in offline mode until it is able to successfully connect to the backend.
-</code></pre>
-<p>By any chance, are you using <a href="https://jestjs.io/docs/next/tutorial-jquery"><code>jest-environment-jsdom</code></a>?
-Something like this in your <code>jest.config.js</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
-  <span class="hljs-attr">testEnvironment</span>: <span class="hljs-string">&#x27;jsdom&#x27;</span>
-  <span class="hljs-comment">// testEnvironment: &#x27;jest-environment-jsdom&#x27;</span>
-}
-</code></pre>
-<p>If so, look no further. Firestore doesn’t like what
-<code>jest-environment-jsdom</code> does to the global object and makes it hang
-forever.</p>
-<p>It took me long enough to figure <em>that</em> out, so I didn’t manage to
-figure out <em>why</em> exactly it’s the case. So far my understanding is that
-it’s related to the <code>fetch</code> API <em>somehow</em>, because if you set the
-undocumented <code>useFetchStreams</code> option to <code>false</code> in the Firebase client,
-then it falls back to <code>XMLHttpRequest</code> (which jsdom implements) and
-things work again.</p>
-<pre><code class="hljs language-js">user.<span class="hljs-title function_">firestore</span>({ <span class="hljs-attr">useFetchStreams</span>: <span class="hljs-literal">false</span>, <span class="hljs-attr">merge</span>: <span class="hljs-literal">true</span> })
-</code></pre>
-<p>My advice would be to run the Firestore tests in the default Node.js
-environment instead of the jsdom environment. This may be by using a
-dedicated <code>jest.config.js</code>, or simply running your Firestore tests
-separately from the rest of your frontend test suite and passing <code>--env node</code> to override the value from <code>jest.config.js</code>:</p>
-<pre><code class="hljs language-sh">npx jest --<span class="hljs-built_in">env</span> node firestore.test.js
-</code></pre>
-<p>Last resort, the <code>useFetchStreams</code> hack above should do it. 😄</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

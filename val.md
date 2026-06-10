@@ -11,12 +11,12 @@ favicon: img/profile-favicon.ico
 
 <script>
 
-const month = new Date().getMonth()
+// const month = new Date().getMonth()
 
 // From June to November (included), show summer picture
-if (month >= 5 && month <= 10) {
-  val.src = val.src.replace('winter', 'summer')
-}
+// if (month >= 5 && month <= 10) {
+//   val.src = val.src.replace('winter', 'summer')
+// }
 
 </script>
 

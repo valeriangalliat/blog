@@ -145,8 +145,8 @@ const content = md.render(preprocessed.content, env).trim()
 
 let pageTitle
 
-if (['index.md', 'val.md'].includes(file)) {
-  pageTitle = meta.excerpt ? `${env.title} - ${meta.excerpt.replace(/\.$/, '')}` : env.title
+if (file === 'index.md') {
+  pageTitle = meta.excerpt ? `${env.title} | ${meta.excerpt.replace(/\.$/, '')}` : env.title
 } else {
   pageTitle = `${env.title} | ${siteName}`
 }

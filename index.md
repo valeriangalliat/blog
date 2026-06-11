@@ -14,8 +14,8 @@ A blog about tech, software and other things.
 * [`xcrun stapler` could not validate ticket, error 65](2026/06/xcrun-stapler-could-not-validate-ticket-error-65.md) <small>June 4, 2026</small>
 * [Supabase with Colima: error from daemon `docker.sock` operation not supported](2026/06/supabase-colima-docker-sock-operation-not-supported.md) <small>June 1, 2026</small>
 * [Astro ESLint with pnpm 11: `return` outside of function](2026/06/astro-eslint-pnpm-11-return-outside-function.md) <small>June 1, 2026</small>
-* [How to manually trigger Cloud Tasks in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
-* [How to manually publish messages to the Pub/Sub emulator](https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
+* [How to manually trigger Cloud Tasks in the Firebase emulator](https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator) <small>April 24, 2026</small>
+* [How to manually publish messages to the Firebase Pub/Sub emulator](https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator) <small>April 24, 2026</small>
 * [How to manually trigger Firebase Functions in the emulator](https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator) <small>April 24, 2026</small>
 * [Comparing GPT-5.4, Opus 4.6, GLM-5.1, Kimi K2.5, MiMo V2 Pro and MiniMax M2.7](2026/04/comparing-gpt-5-4-opus-4-6-glm-5-1-kimi-k2-5-mimo-v2-pro-and-minimax-m2-7.md) <small>April 14, 2026</small>
 * [Cross-compiling a Tauri app for x86-64 Linux from an ARM Mac (no emulation ⚡️)](2026/04/cross-compiling-tauri-linux-arm-mac.md) <small>April 14, 2026</small>

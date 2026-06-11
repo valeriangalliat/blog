@@ -41,6 +41,7 @@ A blog about tech, software and other things.
 
 * [About](val.md) <small>| meet the author</small>
 * [Now](now.md) <small>| what I'm doing now</small>
+* [Projects](projects.md) <small>| things I've built</small>
 
 </section>
 

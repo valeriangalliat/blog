@@ -51,6 +51,7 @@ Canada**.
 ### Here
 
 * [Now](now.md) <small>| what I'm doing now</small>
+* [Projects](projects.md) <small>| things I've built</small>
 * [Blog](https://www.codejam.info/) <small>| technical notes and life bits</small>
 * [Email](mailto:val@codejam.info) <small>| `val@codejam.info`, say hi!</small>
 

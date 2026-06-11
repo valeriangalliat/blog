@@ -66,9 +66,14 @@
 
 /* Make sure we don't target the `<small>` tags in the `<a>` but only
  * the one used for the date. */
-.posts li > small {
+.posts li > small,
+.links li > small.date {
     color: var(--color-fg-subtle);
     white-space: nowrap;
+}
+
+.links li > small.date {
+    font-size: .65em;
 }
 
 .posts a[href^="https://"]::after {

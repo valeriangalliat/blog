@@ -5,10 +5,381 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-06-10T21:03:26.189Z</updated>
+  <updated>2026-06-23T04:55:37.454Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>How much is Composer 2.5 subsidized in Cursor?</title>
+    <link href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html" />
+    <id>https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html</id>
+    <updated>2026-06-23T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#tldr"><span>TLDR</span></a></h2>
+<p>According to my own usage, 10x. If you need more than 10% extra usage
+from the Pro plan, don’t use on-demand pricing, get a second Pro plan.
+If you need more than 10% extra of that second one, get Pro+.</p>
+<div class="note">
+<p>In this post:</p>
+<ul>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#what-i-think-of-composer-2-5">What I think of Composer 2.5</a></li>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#composer-2-5-vs-composer-2-5-fast-vs-auto">Composer 2.5 vs. Composer 2.5 (Fast) vs. Auto</a></li>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#what-happens-when-you-run-out-of-auto-composer-quota">What happens when you run out of “Auto + Composer” quota?</a></li>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#how-much-inference-do-we-get-on-the-20-pro-plan">How much inference do we get on the $20 Pro plan?</a></li>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#should-i-enable-on-demand-usage-or-upgrade-my-subscription">Should I enable on-demand usage or upgrade my subscription?</a></li>
+<li><a href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#conclusion">Conclusion</a></li>
+</ul>
+</div>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#context"><span>Context</span></a></h2>
+<p>I’ve been using Composer 2.5 in Cursor since it came out on May 18,
+2026.</p>
+<p>I actually had no clue. I had just ran out of Codex quota and wanted
+to try Cursor again to see how much output I can get from the “Auto”
+mode in the subscription.</p>
+<p>By pure coincidence, the day I want to subscribe, they release Composer
+2.5, a significant update to their own model (where “own” means
+reinforcement learning fine-tuning of Kimi K2.5).</p>
+<h2 id="what-i-think-of-composer-2-5" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#what-i-think-of-composer-2-5"><span>What I think of Composer 2.5</span></a></h2>
+<p>I was instantly impressed by the quality to price feel of that model.
+It’s one of the cheapest models available, yet it seems to rival
+GPT-5.5 and Opus 4.8 when it comes to coding? Although it’s tricky to
+really evaluate that because Composer 2.5 is only available through
+Cursor, so it’s not possible to rank it on traditional benchmarks like
+<a href="https://arena.ai/leaderboard/code">Arena AI’s Code Arena</a>.</p>
+<p>Instead we have to rely on Cursor’s own <a href="https://cursor.com/cursorbench">CursorBench</a>.
+To be fair their scoring of other models is not out of ordinary compared
+to other coding benchmarks, and the fact the benchmark is private means
+that it can’t be “gamed” by optimizing for it (except by Cursor
+themselves 🙃). So if we can’t necessarily trust it for Composer’s
+performance (it could be trained to perform well on that benchmark
+specifically without that translating in real-world performance), it
+might actually be a really good benchmark to compare other models.</p>
+<p>That being said in day to day use in real projects, not just toy demos
+or throwaway stuff, I’ve been pretty happy. The quality is here and I
+get a fuckton more usage than I was getting with Codex for a similar
+price.</p>
+<p>And that’s despite, with Codex, me trying to aggressively limit the
+spend by using low thinking most of the time, and older models like
+GPT-5.3-Codex. Which also resulted in poorer quality and more
+frustration.</p>
+<p>In comparison with Composer 2.5, I stick it to the normal mode (not the
+“fast” mode they select by default), which is already insanely fast
+compared to anything else I’m used to (Codex and OpenCode Go), and I
+don’t have to think about what model or level of thinking to select for
+every prompt, and deal with the resulting variable quality output. I get
+consistent quality output and more usage than the competition at the
+same price point.</p>
+<h2 id="composer-2-5-vs-composer-2-5-fast-vs-auto" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#composer-2-5-vs-composer-2-5-fast-vs-auto"><span>Composer 2.5 vs. Composer 2.5 (Fast) vs. Auto</span></a></h2>
+<p>Although there’s no way to know for sure, it feels like picking “Auto”
+in Cursor often results in using Composer 2.5. Unclear whether it’s in
+fast mode or not though.</p>
+<p>When it comes to pricing, here’s <a href="https://cursor.com/docs/models-and-pricing">what they charge</a>
+(price per 1M tokens):</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th style="text-align:right">Input</th>
+<th style="text-align:right">Cache Read</th>
+<th style="text-align:right">Output</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Composer 2.5</td>
+<td style="text-align:right">$0.5</td>
+<td style="text-align:right">$0.2</td>
+<td style="text-align:right">$2.5</td>
+</tr>
+<tr>
+<td>Composer 2.5 (Fast)</td>
+<td style="text-align:right">$3</td>
+<td style="text-align:right">$0.5</td>
+<td style="text-align:right">$15</td>
+</tr>
+<tr>
+<td>Auto</td>
+<td style="text-align:right">$1.25</td>
+<td style="text-align:right">$0.25</td>
+<td style="text-align:right">$6</td>
+</tr>
+</tbody>
+</table>
+<p>So Composer 2.5 (Fast) is 6 times more expensive than Composer 2.5 (it’s
+not clear to me that it’s 6 times faster though, as far as I’m concerned
+if I’m not in a rush I’m happy with the normal mode).</p>
+<p>As for Auto, it’s 2.5 times more expensive than Composer 2.5, and it
+seems that you get Composer 2.5 at the end anyway. Maybe a bit faster
+but no guarantee to be Composer 2.5 (Fast) speed all the time either.</p>
+<p>When it comes to the subscription, there’s no indication that the usage
+you get is proportional to the public pricing of those models. But it
+would seem logical to me that using a cheaper option results in less
+quota usage than using a more expensive option.</p>
+<p>So as far as I’m concerned since I want to maximize my quota usage, I’ve
+been using Composer 2.5 explicitly (not through Auto, and not the fast
+mode) most of the time.</p>
+<h2 id="what-happens-when-you-run-out-of-auto-composer-quota" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#what-happens-when-you-run-out-of-auto-composer-quota"><span>What happens when you run out of “Auto + Composer” quota?</span></a></h2>
+<p>When you max out your “Auto + Composer” quota, if you still have API
+quota left, Cursor starts to dip into this for Auto and Composer
+requests.</p>
+<p>On the $20 plan, Cursor says that the API quota includes “at least $20
+of API usage”, so you can expect that from this pool once you start
+using it. In my experience it’s indeed a bit more, see below.</p>
+<h2 id="how-much-inference-do-we-get-on-the-20-pro-plan" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#how-much-inference-do-we-get-on-the-20-pro-plan"><span>How much inference do we get on the $20 Pro plan?</span></a></h2>
+<p>Your mileage may vary, but here’s what it came out for me after one
+month of using (mostly) Composer 2.5.</p>
+<p><strong>Auto + Composer:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th style="text-align:right">Events</th>
+<th style="text-align:right">Input</th>
+<th style="text-align:right">Cache</th>
+<th style="text-align:right">Output</th>
+<th style="text-align:right">Total</th>
+<th style="text-align:right">API-equiv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auto</code></td>
+<td style="text-align:right">211</td>
+<td style="text-align:right">5.73M</td>
+<td style="text-align:right">87.33M</td>
+<td style="text-align:right">905.7K</td>
+<td style="text-align:right">93.96M</td>
+<td style="text-align:right">$34.42</td>
+</tr>
+<tr>
+<td><code>composer-2.5</code></td>
+<td style="text-align:right">1,716</td>
+<td style="text-align:right">32.03M</td>
+<td style="text-align:right">495.52M</td>
+<td style="text-align:right">5.35M</td>
+<td style="text-align:right">532.89M</td>
+<td style="text-align:right">$128.48</td>
+</tr>
+<tr>
+<td><code>composer-2.5-fast</code></td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">34.7K</td>
+<td style="text-align:right">84.4K</td>
+<td style="text-align:right">2.4K</td>
+<td style="text-align:right">121.5K</td>
+<td style="text-align:right">$0.18</td>
+</tr>
+<tr>
+<td><strong>Subtotal</strong></td>
+<td style="text-align:right"><strong>1,930</strong></td>
+<td style="text-align:right"><strong>37.79M</strong></td>
+<td style="text-align:right"><strong>582.93M</strong></td>
+<td style="text-align:right"><strong>6.25M</strong></td>
+<td style="text-align:right"><strong>626.97M</strong></td>
+<td style="text-align:right"><strong>$163.09</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>API:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th style="text-align:right">Events</th>
+<th style="text-align:right">Input</th>
+<th style="text-align:right">Cache</th>
+<th style="text-align:right">Output</th>
+<th style="text-align:right">Total</th>
+<th style="text-align:right">API-equiv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>claude-4.6-sonnet-medium-thinking</code></td>
+<td style="text-align:right">20</td>
+<td style="text-align:right">867.1K</td>
+<td style="text-align:right">9.20M</td>
+<td style="text-align:right">146.8K</td>
+<td style="text-align:right">10.22M</td>
+<td style="text-align:right">$8.21</td>
+</tr>
+<tr>
+<td><code>claude-fable-5-thinking-high</code></td>
+<td style="text-align:right">1</td>
+<td style="text-align:right">32.1K</td>
+<td style="text-align:right">0</td>
+<td style="text-align:right">339</td>
+<td style="text-align:right">32.4K</td>
+<td style="text-align:right">$0.42</td>
+</tr>
+<tr>
+<td><code>composer-2.5</code></td>
+<td style="text-align:right">341</td>
+<td style="text-align:right">7.29M</td>
+<td style="text-align:right">140.37M</td>
+<td style="text-align:right">1.16M</td>
+<td style="text-align:right">148.82M</td>
+<td style="text-align:right">$34.61</td>
+</tr>
+<tr>
+<td><code>gpt-5.3-codex</code></td>
+<td style="text-align:right">1</td>
+<td style="text-align:right">43.9K</td>
+<td style="text-align:right">426.1K</td>
+<td style="text-align:right">3.4K</td>
+<td style="text-align:right">473.4K</td>
+<td style="text-align:right">$0.20</td>
+</tr>
+<tr>
+<td><code>gpt-5.5</code></td>
+<td style="text-align:right">11</td>
+<td style="text-align:right">161.4K</td>
+<td style="text-align:right">2.95M</td>
+<td style="text-align:right">8.9K</td>
+<td style="text-align:right">3.12M</td>
+<td style="text-align:right">$2.55</td>
+</tr>
+<tr>
+<td><strong>Subtotal</strong></td>
+<td style="text-align:right"><strong>374</strong></td>
+<td style="text-align:right"><strong>8.39M</strong></td>
+<td style="text-align:right"><strong>152.95M</strong></td>
+<td style="text-align:right"><strong>1.31M</strong></td>
+<td style="text-align:right"><strong>162.66M</strong></td>
+<td style="text-align:right"><strong>$45.99</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Free:</strong></p>
+<p>After I used 100% of my subscription quota, everything kept working and
+appeared as “free” in the billing usage log. I’m assuming that’s falling
+back to their Hobby (free) plan once the subscription is exhausted,
+which has much lower limits (although I didn’t have time to reach them
+this time).</p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th style="text-align:right">Events</th>
+<th style="text-align:right">Input</th>
+<th style="text-align:right">Cache</th>
+<th style="text-align:right">Output</th>
+<th style="text-align:right">Total</th>
+<th style="text-align:right">API-equiv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>auto</code></td>
+<td style="text-align:right">3</td>
+<td style="text-align:right">41.3K</td>
+<td style="text-align:right">135.4K</td>
+<td style="text-align:right">1.9K</td>
+<td style="text-align:right">178.6K</td>
+<td style="text-align:right">$0.10</td>
+</tr>
+<tr>
+<td><code>composer-2.5</code></td>
+<td style="text-align:right">76</td>
+<td style="text-align:right">1.49M</td>
+<td style="text-align:right">27.60M</td>
+<td style="text-align:right">198.4K</td>
+<td style="text-align:right">29.29M</td>
+<td style="text-align:right">$6.76</td>
+</tr>
+<tr>
+<td><strong>Subtotal</strong></td>
+<td style="text-align:right"><strong>79</strong></td>
+<td style="text-align:right"><strong>1.53M</strong></td>
+<td style="text-align:right"><strong>27.74M</strong></td>
+<td style="text-align:right"><strong>200.3K</strong></td>
+<td style="text-align:right"><strong>29.47M</strong></td>
+<td style="text-align:right"><strong>$6.86</strong></td>
+</tr>
+</tbody>
+</table>
+<p><strong>Grand total:</strong></p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">Events</th>
+<th style="text-align:right">Input</th>
+<th style="text-align:right">Cache</th>
+<th style="text-align:right">Output</th>
+<th style="text-align:right">Total</th>
+<th style="text-align:right">API-equiv</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right"><strong>2,383</strong></td>
+<td style="text-align:right"><strong>47.72M</strong></td>
+<td style="text-align:right"><strong>763.62M</strong></td>
+<td style="text-align:right"><strong>7.77M</strong></td>
+<td style="text-align:right"><strong>819.10M</strong></td>
+<td style="text-align:right"><strong>$215.94</strong></td>
+</tr>
+</tbody>
+</table>
+<p>So if my computations are correct, the $20 plan gave me $208 worth of
+tokens. $163 of that was in the Auto + Composer pool, and the remaining
+$46 was in the API pool. (And $7 Hobby fallback.)</p>
+<h2 id="should-i-enable-on-demand-usage-or-upgrade-my-subscription" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#should-i-enable-on-demand-usage-or-upgrade-my-subscription"><span>Should I enable on-demand usage or upgrade my subscription?</span></a></h2>
+<p>Cursor has an option to enable on-demand spending, where usage is billed
+at API price after you exhaust your subscription.</p>
+<p>When it comes to using Composer 2.5, the subscription gives a 10x boost
+in tokens compared to API prices.</p>
+<p>The next subscription tier is the $60 Pro+ plan which comes with 3x the
+usage, or you can get a second $20 Pro plan (to get obviously 2x the
+usage).</p>
+<p>This gives us a table like this (based on my own 1 month data, your
+mileage may vary):</p>
+<table>
+<thead>
+<tr>
+<th style="text-align:right">Expected usage</th>
+<th>Best choice</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align:right">Less than 10% over</td>
+<td>On-demand</td>
+</tr>
+<tr>
+<td style="text-align:right">More than 10% over</td>
+<td>Second $20 Pro plan</td>
+</tr>
+<tr>
+<td style="text-align:right">More than 210% over</td>
+<td>$60 Pro+ plan</td>
+</tr>
+</tbody>
+</table>
+<p>If you run out of the $20 plan, first you might as well max out the
+Hobby (free) quota as well (worth at least $7 apparently).</p>
+<p>Then if you need 10% or less extra usage compared to your Pro plan,
+on-demand is worth it.</p>
+<p>More than that, get a second $20 Pro plan.</p>
+<p>If you max out that second plan, the same 10% rule applies for upgrading
+to Pro+.</p>
+<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/how-much-is-composer-2-5-subsidized-in-cursor.html#conclusion"><span>Conclusion</span></a></h2>
+<p>Composer 2.5 appears to be quite subsidized, where a $20 plan gives over
+$200 worth of tokens, about 10 times more than what you pay for.</p>
+<p>Though it’s not necessarily as subsidized as other subscriptions, as
+there’s reports of people getting between $2,000 and $8,000 (???) worth
+of tokens with the $200 Claude plan.</p>
+<p>But because I’m the one paying this subscription and not my employer or
+some VC, and because I don’t have unlimited money, I find Composer 2.5
+is a lot more interesting for my current usage.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>AWS S3 flaky 403 on HEAD after upload</title>
     <link href="https://www.codejam.info/2026/06/aws-s3-flaky-403-head-after-upload.html" />
@@ -354,13 +725,13 @@ involved.</p>
 ]]></content>
   </entry>
   <entry>
-    <title>How to manually trigger Cloud Tasks in the emulator</title>
+    <title>How to manually trigger Cloud Tasks in the Firebase emulator</title>
     <link href="https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator" />
     <id>https://useflame.app/en/blog/how-to-manually-trigger-cloud-tasks-in-the-emulator</id>
     <updated>2026-04-24T07:00:00.000Z</updated>
   </entry>
   <entry>
-    <title>How to manually publish messages to the Pub/Sub emulator</title>
+    <title>How to manually publish messages to the Firebase Pub/Sub emulator</title>
     <link href="https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator" />
     <id>https://useflame.app/en/blog/how-to-manually-publish-messages-to-the-pubsub-emulator</id>
     <updated>2026-04-24T07:00:00.000Z</updated>
@@ -2669,132 +3040,6 @@ suits you best! Cheers. ✌️</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Join the discussion on <a href="https://x.com/valeriangalliat/status/1790906278086386079">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Invoking a Firebase callable function from the Firebase Admin SDK</title>
-    <link href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html" />
-    <id>https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html</id>
-    <updated>2024-05-15T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p><a href="https://stackoverflow.com/a/65061421/4324668">LOL you can’t</a>.</p>
-<p>What you <a href="https://stackoverflow.com/a/65062301/4324668"><em>can</em></a> do
-however is using the Firebase Admin SDK to create a custom token for the
-client SDK, and use the client SDK to make the call. 🙃</p>
-<p>What does this looks like?</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> admin = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-admin&#x27;</span>)
-<span class="hljs-keyword">const</span> { initializeApp } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/app&#x27;</span>)
-<span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
-<span class="hljs-keyword">const</span> { getFunctions, httpsCallable } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
-
-admin.<span class="hljs-title function_">initializeApp</span>({
-  <span class="hljs-comment">// Your admin config</span>
-})
-
-<span class="hljs-title function_">initializeApp</span>({
-  <span class="hljs-comment">// Your client config</span>
-})
-
-<span class="hljs-keyword">const</span> token = <span class="hljs-keyword">await</span> admin.<span class="hljs-title function_">auth</span>().<span class="hljs-title function_">createCustomToken</span>(<span class="hljs-string">&#x27;admin&#x27;</span>)
-
-<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
-
-<span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> <span class="hljs-title function_">httpsCallable</span>(<span class="hljs-title function_">getFunctions</span>(), <span class="hljs-string">&#x27;myCallableFunction&#x27;</span>).<span class="hljs-title function_">call</span>({})
-</code></pre>
-<p>Here we created a custom token for a virtual user with UID <code>admin</code> (it
-doesn’t need to exist in Firebase Auth). We can verify that in the
-function:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> functions = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase-functions&#x27;</span>)
-
-<span class="hljs-built_in">exports</span>.<span class="hljs-property">myCallableFunction</span> = functions.<span class="hljs-property">https</span>.<span class="hljs-title function_">onCall</span>(<span class="hljs-title function_">async</span> (data, context) =&gt; {
-  <span class="hljs-keyword">if</span> (!context.<span class="hljs-property">auth</span>) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
-      <span class="hljs-string">&#x27;unauthenticated&#x27;</span>,
-      <span class="hljs-string">&#x27;User is not authenticated&#x27;</span>
-    )
-  }
-
-  <span class="hljs-keyword">if</span> (context.<span class="hljs-property">auth</span>.<span class="hljs-property">uid</span> !== <span class="hljs-string">&#x27;admin&#x27;</span>) {
-    <span class="hljs-keyword">throw</span> <span class="hljs-keyword">new</span> functions.<span class="hljs-property">https</span>.<span class="hljs-title class_">HttpsError</span>(
-      <span class="hljs-string">&#x27;permission-denied&#x27;</span>,
-      <span class="hljs-string">&#x27;User is not authorized&#x27;</span>
-    )
-  }
-})
-</code></pre>
-<h2 id="why-callable-instead-of-http-function" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html#why-callable-instead-of-http-function"><span>Why callable instead of HTTP function?</span></a></h2>
-<p>With a <a href="https://firebase.google.com/docs/functions/http-events">HTTP function</a>,
-we could have made a simple <code>fetch</code> request to the endpoint.</p>
-<p>Why use a <a href="https://firebase.google.com/docs/functions/callable">callable function</a>
-then?</p>
-<p>In my case, it was because callable functions have auth built-in,
-whereas you’re responsible to implement your own auth for HTTP
-functions. I found that using a <code>https.onCall</code> function with a custom
-Firebase token was more elegant than configuring some kind of internal
-“API key”.</p>
-<h2 id="invoking-the-callable-function-manually" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/firebase-callable-admin-sdk.html#invoking-the-callable-function-manually"><span>Invoking the callable function manually</span></a></h2>
-<p>It turns out it’s also quite easy to invoke a callable function without
-the Firebase SDK, via a <a href="https://firebase.google.com/docs/functions/callable-reference">plain HTTP call</a>,
-as detailed in <a href="https://useflame.app/en/blog/how-to-manually-trigger-firebase-functions-in-the-emulator#callable-functions">this reference</a>.</p>
-<p>With cURL, calling a function that doesn’t have token authentication is
-as simple as:</p>
-<pre><code class="hljs language-sh">curl \
-    -X POST \
-    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
-    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
-</code></pre>
-<p>For the authentication, we need an <code>Authorization: Bearer</code> header, but
-we can’t directly use the custom token we generated above. We need to
-<a href="https://stackoverflow.com/a/51346783/4324668">exchange</a> it for an ID
-token first (this happened transparently in the previous example).</p>
-<p>We could use the client SDK to do that for us but at that point we might
-as well use the client SDK to call the function as well. 😅</p>
-<p>Just for educational purpose, and building off the earlier example, it
-would look like:</p>
-<pre><code class="hljs language-js"><span class="hljs-keyword">const</span> { getAuth, signInWithCustomToken, getIdToken } = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;firebase/auth&#x27;</span>)
-
-<span class="hljs-keyword">await</span> <span class="hljs-title function_">signInWithCustomToken</span>(<span class="hljs-title function_">getAuth</span>(), token)
-
-<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(<span class="hljs-keyword">await</span> <span class="hljs-title function_">getIdToken</span>(<span class="hljs-title function_">getAuth</span>().<span class="hljs-property">currentUser</span>))
-</code></pre>
-<p>We could then use that token in the cURL request:</p>
-<pre><code class="hljs language-sh">curl \
-    -X POST \
-    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-    -H <span class="hljs-string">&quot;Authorization: Bearer <span class="hljs-variable">$token</span>&quot;</span> \
-    <span class="hljs-string">&#x27;https://region-project.cloudfunctions.net/myCallableFunction&#x27;</span> \
-    --data <span class="hljs-string">&#x27;{&quot;data&quot;: {}}&#x27;</span>
-</code></pre>
-<p>But if we’re calling the function via <code>fetch</code>, it’s probably that we
-don’t want to use the client SDK. Then, exchanging the token would
-look like <a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">this</a>:</p>
-<pre><code class="hljs language-sh">curl \
-    -X POST \
-    -H <span class="hljs-string">&#x27;Content-Type: application/json&#x27;</span> \
-    <span class="hljs-string">&quot;https://identitytoolkit.googleapis.com/v1/accounts:signInWithCustomToken?key=<span class="hljs-variable">$firebaseApiKey</span>&quot;</span> \
-    --data <span class="hljs-string">&quot;{\&quot;token\&quot;: \&quot;<span class="hljs-variable">$customToken</span>\&quot;, \&quot;returnSecureToken\&quot;: true}&quot;</span>
-</code></pre>
-<p>This returns an <code>idToken</code> that we can use as <code>Authorization: Bearer</code> in
-the invocation of the callable function as seen above.</p>
-<div class="note">
-<p><strong>Note:</strong> if you’re wondering about <code>returnSecureToken</code>, it’s
-<a href="https://cloud.google.com/identity-platform/docs/use-rest-api#section-verify-custom-token">documented</a>
-as “should always be true”.</p>
-<p>Without it, the endpoint returns only an <code>idToken</code> with no <code>expiresIn</code>
-nor <code>refreshToken</code>, so my guess is that it’s a token that… doesn’t
-expire? Which is considered insecure.</p>
-</div>
-<div class="note sponsors">
-<p>If you use the Firebase emulator, I made <a href="https://useflame.app/">Flame</a>,
-a better UI for it. I’d love if you can check it out, feedback welcome! 🫶</p>
-</div>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

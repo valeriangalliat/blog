@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2069449766061404473
+---
+
 # How much is Composer 2.5 subsidized in Cursor?
 June 23, 2026
 

@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [Generate subtitles for audio/video on Mac](2026/06/subtitles-audio-video-mac.md) <small>June 29, 2026</small>
 * [LG UltraFine 4K display randomly flickering](2026/06/lg-ultrafine-4k-display-randomly-flickering.md) <small>June 29, 2026</small>
 * [How much is Composer 2.5 subsidized in Cursor?](2026/06/how-much-is-composer-2-5-subsidized-in-cursor.md) <small>June 23, 2026</small>
 * [AWS S3 flaky 403 on `HEAD` after upload](2026/06/aws-s3-flaky-403-head-after-upload.md) <small>June 10, 2026</small>

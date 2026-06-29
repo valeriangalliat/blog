@@ -10,6 +10,7 @@ A blog about tech, software and other things.
 
 <div class="links posts">
 
+* [Generate subtitles for audio/video on Mac](2026/06/subtitles-audio-video-mac.md) <small>June 29, 2026</small>
 * [LG UltraFine 4K display randomly flickering](2026/06/lg-ultrafine-4k-display-randomly-flickering.md) <small>June 29, 2026</small>
 * [How much is Composer 2.5 subsidized in Cursor?](2026/06/how-much-is-composer-2-5-subsidized-in-cursor.md) <small>June 23, 2026</small>
 * [AWS S3 flaky 403 on `HEAD` after upload](2026/06/aws-s3-flaky-403-head-after-upload.md) <small>June 10, 2026</small>
@@ -27,7 +28,6 @@ A blog about tech, software and other things.
 * [macOS app showing scrollbars to some users only](2025/06/macos-app-scrollbars-some-users-only.md) <small>June 25, 2025</small>
 * [GitHub Action hanging on Electron macOS app code signing](2025/06/github-action-hanging-macos-app-code-signing.md) <small>June 22, 2025</small>
 * [USB iPhone screen recording in Swift](2025/06/usb-iphone-screen-recording-swift.md) <small>June 22, 2025</small>
-* [Turborepo: don't buffer logs on GitHub Actions](2025/04/turborepo-buffer-logs-github-actions.md) <small>April 23, 2025</small>
 
 [All the posts](posts.md)
 

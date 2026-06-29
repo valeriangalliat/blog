@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [LG UltraFine 4K display randomly flickering](2026/06/lg-ultrafine-4k-display-randomly-flickering.md) <small>June 29, 2026</small>
 * [How much is Composer 2.5 subsidized in Cursor?](2026/06/how-much-is-composer-2-5-subsidized-in-cursor.md) <small>June 23, 2026</small>
 * [AWS S3 flaky 403 on `HEAD` after upload](2026/06/aws-s3-flaky-403-head-after-upload.md) <small>June 10, 2026</small>
 * [`xcrun stapler` could not validate ticket, error 65](2026/06/xcrun-stapler-could-not-validate-ticket-error-65.md) <small>June 4, 2026</small>

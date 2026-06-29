@@ -1,3 +1,7 @@
+---
+tweet: https://x.com/valeriangalliat/status/2071720584397176976
+---
+
 # Generate subtitles for audio/video on Mac
 June 29, 2026
 
@@ -40,6 +44,9 @@ mlx_whisper your-video.mp4 --model mlx-community/whisper-large-v3-mlx -f srt
 ```
 
 This will produce a SRT file next to the input video.
+
+You can see how it performs with the captions on [this post on X](https://x.com/valeriangalliat/status/2071720584397176976)
+(spoiler: it's good).
 
 ## Turbo version
 

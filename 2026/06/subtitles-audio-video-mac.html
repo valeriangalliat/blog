@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Generate subtitles for audio/video on Mac | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Generate subtitles for audio/video on Mac | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="I started posting daily on X, including, sometimes, videos. And it turns out X isn’t able to automatically generate captions for the video like other platforms do. They do give the option to upload a SRT file though.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">Home</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Generate subtitles for audio/video on Mac</h1>
+<p class="date">June 29, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I started posting daily <a href="https://x.com/valeriangalliat">on X</a>,
+including, sometimes, videos. And it turns out X isn’t able to
+automatically generate captions for the video like other platforms do.
+They do give the option to upload a SRT file though.</p>
+<p>Since I want to keep things minimal I’m gonna use that option, as I
+don’t want to get down the rabbit hole of burning stylized captions in
+the video itself like you see all over short form content. That’s for
+another day.</p>
+<p>Most of the options to create subtitles from audio require to call a
+paid transcription API, like OpenAI’s <code>gpt-4o-transcribe</code> or ElevenLabs.
+But I’m not paying to caption my random yapping on X, thank you.</p>
+<h2 id="the-best-local-option" tabindex="-1"><a class="header-anchor" href="#the-best-local-option"><span>The best local option</span></a></h2>
+<p>As far as I can tell the best open-source model for this that can be run
+locally is <a href="https://github.com/openai/whisper">OpenAI Whisper</a>,
+originally released in 2022, with a v3 update in 2023.</p>
+<p>While not state of the art, we can run this locally for free and it
+performed perfectly in my case of speaking English with a heavy French
+accent (which often defeats transcription models including the ones of
+Slack and YouTube).</p>
+<p>The following is for a Silicon Mac using Apple MLX for performance:</p>
+<pre><code class="hljs language-sh">brew install pipx
+pipx install mlx-whisper
+</code></pre>
+<p>Then:</p>
+<pre><code class="hljs language-sh">mlx_whisper your-video.mp4 --model mlx-community/whisper-large-v3-mlx -f srt
+</code></pre>
+<p>This will produce a SRT file next to the input video.</p>
+<h2 id="turbo-version" tabindex="-1"><a class="header-anchor" href="#turbo-version"><span>Turbo version</span></a></h2>
+<p>It’s also possible to use the Whisper v3 Turbo variant that OpenAI released in
+2024, which is <a href="https://huggingface.co/openai/whisper-large-v3-turbo">“way faster at the expense of a minor quality degradation”</a>.</p>
+<pre><code class="hljs language-sh">mlx_whisper your-video.mp4 --model mlx-community/whisper-large-v3-turbo -f srt
+</code></pre>
+<p>However I had some slight glitch with it that didn’t happen in the
+normal version. Also it seems to make longer lines in captions, and I
+like the way the non-Turbo version splits lines better.</p>
+<h2 id="non-mlx" tabindex="-1"><a class="header-anchor" href="#non-mlx"><span>Non-MLX</span></a></h2>
+<p>For the non-MLX version if you need. This should run on any Mac.</p>
+<pre><code class="hljs language-sh">brew install openai-whisper
+whisper your-video.mpk --model large --output_format srt
+whisper your-video.mpk --model turbo --output_format srt
+</code></pre>
+<h2 id="even-faster" tabindex="-1"><a class="header-anchor" href="#even-faster"><span>Even faster?</span></a></h2>
+<p>For even faster transcription, I heard about
+<a href="https://github.com/mustafaaljadery/lightning-whisper-mlx">lightning-whisper-mlx</a>,
+but didn’t get to try it as it doesn’t come with a CLI. Need to call it
+from Python instead, and I’m lazy to do that given that <code>mlx_whisper</code>
+is way fast enough for my short videos anyway.</p>
+<p>Let me know how it goes if you try it. ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/06/subtitles-audio-video-mac.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

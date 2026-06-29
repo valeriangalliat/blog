@@ -5,10 +5,72 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-06-29T21:37:59.451Z</updated>
+  <updated>2026-06-29T22:09:45.856Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Generate subtitles for audio/video on Mac</title>
+    <link href="https://www.codejam.info/2026/06/subtitles-audio-video-mac.html" />
+    <id>https://www.codejam.info/2026/06/subtitles-audio-video-mac.html</id>
+    <updated>2026-06-29T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I started posting daily <a href="https://x.com/valeriangalliat">on X</a>,
+including, sometimes, videos. And it turns out X isn’t able to
+automatically generate captions for the video like other platforms do.
+They do give the option to upload a SRT file though.</p>
+<p>Since I want to keep things minimal I’m gonna use that option, as I
+don’t want to get down the rabbit hole of burning stylized captions in
+the video itself like you see all over short form content. That’s for
+another day.</p>
+<p>Most of the options to create subtitles from audio require to call a
+paid transcription API, like OpenAI’s <code>gpt-4o-transcribe</code> or ElevenLabs.
+But I’m not paying to caption my random yapping on X, thank you.</p>
+<h2 id="the-best-local-option" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/subtitles-audio-video-mac.html#the-best-local-option"><span>The best local option</span></a></h2>
+<p>As far as I can tell the best open-source model for this that can be run
+locally is <a href="https://github.com/openai/whisper">OpenAI Whisper</a>,
+originally released in 2022, with a v3 update in 2023.</p>
+<p>While not state of the art, we can run this locally for free and it
+performed perfectly in my case of speaking English with a heavy French
+accent (which often defeats transcription models including the ones of
+Slack and YouTube).</p>
+<p>The following is for a Silicon Mac using Apple MLX for performance:</p>
+<pre><code class="hljs language-sh">brew install pipx
+pipx install mlx-whisper
+</code></pre>
+<p>Then:</p>
+<pre><code class="hljs language-sh">mlx_whisper your-video.mp4 --model mlx-community/whisper-large-v3-mlx -f srt
+</code></pre>
+<p>This will produce a SRT file next to the input video.</p>
+<h2 id="turbo-version" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/subtitles-audio-video-mac.html#turbo-version"><span>Turbo version</span></a></h2>
+<p>It’s also possible to use the Whisper v3 Turbo variant that OpenAI released in
+2024, which is <a href="https://huggingface.co/openai/whisper-large-v3-turbo">“way faster at the expense of a minor quality degradation”</a>.</p>
+<pre><code class="hljs language-sh">mlx_whisper your-video.mp4 --model mlx-community/whisper-large-v3-turbo -f srt
+</code></pre>
+<p>However I had some slight glitch with it that didn’t happen in the
+normal version. Also it seems to make longer lines in captions, and I
+like the way the non-Turbo version splits lines better.</p>
+<h2 id="non-mlx" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/subtitles-audio-video-mac.html#non-mlx"><span>Non-MLX</span></a></h2>
+<p>For the non-MLX version if you need. This should run on any Mac.</p>
+<pre><code class="hljs language-sh">brew install openai-whisper
+whisper your-video.mpk --model large --output_format srt
+whisper your-video.mpk --model turbo --output_format srt
+</code></pre>
+<h2 id="even-faster" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/subtitles-audio-video-mac.html#even-faster"><span>Even faster?</span></a></h2>
+<p>For even faster transcription, I heard about
+<a href="https://github.com/mustafaaljadery/lightning-whisper-mlx">lightning-whisper-mlx</a>,
+but didn’t get to try it as it doesn’t come with a CLI. Need to call it
+from Python instead, and I’m lazy to do that given that <code>mlx_whisper</code>
+is way fast enough for my short videos anyway.</p>
+<p>Let me know how it goes if you try it. ✌️</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>LG UltraFine 4K display randomly flickering</title>
     <link href="https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html" />
@@ -2656,151 +2718,6 @@ Algolia can’t handle.</p>
   <h3>Want to leave a comment?</h3>
   <p>
     Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>How to sign and notarize an Electron app for macOS</title>
-    <link href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html" />
-    <id>https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html</id>
-    <updated>2024-05-15T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>So you made a macOS app, shared it with your friends, and they
-encountered one of those dreaded popups:</p>
-<figure class="grid">
-  <img alt="App cannot be opened because it is from an unidentified developer" srcset="../../img/2024/05/electron-signature/unidentified-developer.png 2x">
-  <img alt="App can’t be opened because Apple cannot check it for malicious software" srcset="../../img/2024/05/electron-signature/cannot-check.png 2x">
-</figure>
-<p>Then you need to sign (left) and notarize (right) your app!</p>
-<div class="note">
-<p><strong>Note:</strong> in the meantime, the app
-<a href="https://support.apple.com/en-ca/guide/mac-help/mh40616/mac">can still</a>
-<a href="https://support.apple.com/en-ca/guide/mac-help/mchleab3a043/mac">be opened</a>
-by right clicking on it and clicking <strong>Open</strong> from the context menu.</p>
-</div>
-<p>Signing consists in buying a developer membership with Apple, which will
-let you create a key that you can use to <code>codesign</code> your app with.</p>
-<p>Notarizing consists in uploading your app to an Apple service that scans
-it for malware. If it passes the process, your app gets a “stamp of
-approval” that is <a href="https://developer.apple.com/documentation/security/notarizing_macos_software_before_distribution">bundled with your app and also mirrored</a>
-on Apple’s Gatekeeper servers.</p>
-<p>In the case of Electron, here’s some relevant docs this article is based
-on:</p>
-<ul>
-<li><a href="https://www.electronjs.org/docs/latest/tutorial/code-signing#signing--notarizing-macos-builds">Electron: Signing &amp; notarizing macOS builds</a></li>
-<li><a href="https://www.electronforge.io/guides/code-signing/code-signing-macos">Electron Forge: Signing a macOS app</a></li>
-</ul>
-<h2 id="get-a-signing-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#get-a-signing-certificate"><span>Get a signing certificate</span></a></h2>
-<p>The first step is to generate a signing keypair, and get a signing
-certificate from Apple, which requires you to subscribe to
-<a href="https://developer.apple.com/">Apple’s developer program</a>.</p>
-<p>Then, follow <a href="https://developer.apple.com/help/account/create-certificates/create-a-certificate-signing-request">create a certificate signing request</a>.</p>
-<p>In my experience, it doesn’t seem that the <strong>User Email Address</strong> you
-input matters.</p>
-<p>As for <strong>Common Name</strong>, it seems to only affect how the private and
-public key are named in Keychain Access.</p>
-<p>By saving the request to disk, you will get a
-<code>CertificateSigningRequest.certSigningRequest</code> file.</p>
-<p>This will also create a <code>Common Name.p12</code> and <code>Common Name.pem</code> entry in
-your Keychain Access. The <code>.p12</code> is the private key, and the <code>.pem</code> is
-the public key, that are going to be associated with the certificate
-you’re requesting.</p>
-<p>You should now upload the <code>.certSigningRequest</code> file to your Apple
-Developer account, in <strong>Certificates, IDs &amp; Profiles</strong>. Choose the
-<strong>Developer ID Application</strong> certificate type.</p>
-<p>This will give you a certificate <code>developerID_application.cer</code> that you
-need to import in Keychain Access (by simply opening it).</p>
-<div class="note">
-<p><strong>Note:</strong> if it refuses to open with “The System Roots keychain cannot
-be modified”, it’s because Keychain Access opens by default in the
-System Roots keychain and you can only update it as superuser (so mainly
-from the CLI with <code>sudo security ...</code>).</p>
-<p>We only need this certificate in the login keychain, so make sure it’s
-the selected one in Keychain Access and then open the certificate again.</p>
-</div>
-<h2 id="get-the-intermediate-certificate" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#get-the-intermediate-certificate"><span>Get the intermediate certificate</span></a></h2>
-<p>In Apple’s <abbr title="Public key infrastructure"><a href="https://www.apple.com/certificateauthority/">PKI</a></abbr>,
-your developer certificate is signed by an intermediate certificate,
-that’s itself signed by one of Apple’s root certificates.</p>
-<p>The Apple root certificates should already be present out of the box in
-your System Roots keychain, but the intermediate ones are not, and need
-to be downloaded for the certificate chain to be complete and for
-<code>codesign</code> to work.</p>
-<p>When you created your Developer ID certificate, you were likely prompted
-between “G2 Sub-CA” and “Previous Sub-CA”. At the time of writing, on the
-<a href="https://www.apple.com/certificateauthority/">Apple PKI page</a>,
-those are respectively <a href="https://www.apple.com/certificateauthority/DeveloperIDG2CA.cer">Developer ID - G2 (Expiring 09/17/2031 00:00:00 UTC)</a>
-and <a href="https://www.apple.com/certificateauthority/DeveloperIDCA.cer">Developer ID - G1 (Expiring 02/01/2027 22:12:15 UTC)</a>.
-So go ahead and download the appropriate one and install it to your
-login keychain just like your developer certificate.</p>
-<div class="note">
-<p><strong>Note:</strong> if you don’t know what intermediate certificate you need, you
-can see what <abbr title="Certificate authorith">CA</abbr> signed your
-certificate like so:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash">openssl x509 -<span class="hljs-keyword">in</span> <span class="hljs-string">&quot;developerID_application.cer&quot;</span> -noout -issuer</span>
-issuer=CN=Developer ID Certification Authority, OU=G2, O=Apple Inc., C=US
-</code></pre>
-<p>In this case, you can see my certificate was issued using the G2
-intermediate certificate.</p>
-</div>
-<div class="note warn">
-<p><strong>Warning:</strong> <a href="https://developer.apple.com/forums/thread/86161?answerId=422698022#422698022">leave the certificate trust settings</a>
-to “Use System Defaults” and do not mark it as “Always Trust”, both for
-your developer certificate and the intermediate certificate.</p>
-<p>If like me you were getting issues signing things and assumed marking as
-“Always Trust” could help, beware, it does the opposite and prevents
-<code>codesign</code> from working altogether for some reason, even after you fix
-the actual cause of your signing issues. 😅</p>
-<p>Whether you’re missing a certificate, or if you have the right
-certificates but they’re marked as “Always Trust”, you’ll get that same
-error:</p>
-<pre><code class="hljs">Warning: unable to build chain to self-signed root for signer
-</code></pre>
-</div>
-<h2 id="manually-sign-your-app" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#manually-sign-your-app"><span>Manually sign your app</span></a></h2>
-<p>You’re now in a place where you can manually sign your app:</p>
-<pre><code class="hljs language-sh">codesign --sign <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span> MyApp.app
-</code></pre>
-<p>To find the identify to pass to <code>--sign</code>:</p>
-<pre><code class="hljs language-sh">security find-identity -v -p codesigning
-</code></pre>
-<p><code>-v</code> will show only valid identities. <code>-p</code> is for selecting a specific
-policy, here we care about <code>codesigning</code>.</p>
-<h2 id="signing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#signing-your-app-with-electron-forge"><span>Signing your app with Electron Forge</span></a></h2>
-<p>Add <code>osxSign</code> to your <code>forge.config.js</code>:</p>
-<pre><code class="hljs language-js"><span class="hljs-variable language_">module</span>.<span class="hljs-property">exports</span> = {
-  <span class="hljs-attr">packagerConfig</span>: {
-    <span class="hljs-attr">osxSign</span>: {
-      <span class="hljs-attr">identity</span>: <span class="hljs-string">&#x27;Developer ID Application: MyApp (ID)&#x27;</span>
-    }
-  }
-}
-</code></pre>
-<p>If you only have one valid code signing identity configured on your Mac,
-you can omit the <code>identity</code> parameter. You still need to pass an empty
-object <code>osxSign: {}</code>.</p>
-<h2 id="notarizing-your-app-with-electron-forge" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#notarizing-your-app-with-electron-forge"><span>Notarizing your app with Electron Forge</span></a></h2>
-<p>Add <code>osxNotarize</code> to your <code>forge.config.js</code>. There’s a few ways to
-configure it <a href="https://www.electronforge.io/guides/code-signing/code-signing-macos#osxnotarize-options">documented here</a>.</p>
-<p>The documentation is pretty clear and complete so I won’t bother
-repeating anything here. 🙂</p>
-<h2 id="debugging-osxsign-and-osxnotarize" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#debugging-osxsign-and-osxnotarize"><span>Debugging <code>osxSign</code> and <code>osxNotarize</code></span></a></h2>
-<p>If you encounter issues where Electron is not properly signing or
-notarizing your app, you can debug the signing and notarizing process
-that way:</p>
-<pre><code class="hljs language-sh">DEBUG=electron-osx-sign,electron-notarize* npx electron-forge package
-</code></pre>
-<p>This will output detailed logs that should help you identify the
-culprit.</p>
-<h2 id="conclusion" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2024/05/sign-notarize-electron-app-macos.html#conclusion"><span>Conclusion</span></a></h2>
-<p>That should be all you need to have your app approved by Apple so that
-you can share it with the world. 🌎</p>
-<p>Happy building! 🚀</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Join the discussion on <a href="https://x.com/valeriangalliat/status/1790906279852204042">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

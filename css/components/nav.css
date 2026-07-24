@@ -3,10 +3,6 @@ nav {
     flex-direction: column;
     flex-wrap: wrap;
 
-    /* Dirty fix to prevent horizontal scroll in some cased because of negative
-     * margin below. */
-    overflow: hidden;
-
     padding: 1em .5em;
     margin-left: auto;
     margin-right: auto;
@@ -22,18 +18,8 @@ nav ul {
     list-style-type: none;
     padding-left: 0;
     display: flex;
-    justify-content: center;
-
-    /* Negative horizontal margin to make up for the fact each `<li>`
-     * has horizontal padding. */
-    margin: 1em -1em;
-}
-
-@media (min-width: 69em) {
-    nav {
-        padding: 1em 2em;
-        max-width: none;
-    }
+    gap: 2em;
+    margin: 1em 0;
 }
 
 @media (min-width: 42em) {
@@ -41,10 +27,6 @@ nav ul {
         flex-direction: row;
         justify-content: space-between;
     }
-}
-
-nav li {
-    padding: 0 1em;
 }
 
 nav li.pull {

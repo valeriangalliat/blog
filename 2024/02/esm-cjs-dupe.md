@@ -107,11 +107,11 @@ parts of the codebase point to a different, isolated version of the SDK.
 
 ## This sucks, and nobody's to blame really
 
-- It's absolutely reasonable for the Firebase SDK to expose a different
+* It's absolutely reasonable for the Firebase SDK to expose a different
   browser bundle for `import` and `require`.
-- It's absolutely reasonable, and even expected, that Webpack maps
+* It's absolutely reasonable, and even expected, that Webpack maps
   `import` and `require` calls to the matching field in `package.json`.
-- It's absolutely reasonable for next-firebase-auth to export a single
+* It's absolutely reasonable for next-firebase-auth to export a single
   CJS bundle (that's how npm packages look like since npm is a thing).
 
 It's just a result of the giant fracture in the ecosystem between CJS

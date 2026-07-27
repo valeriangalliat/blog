@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Using Firestore JS client SDK as an admin client (bypass rules) | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Using Firestore JS client SDK as an admin client (bypass rules) | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="Just so we’re clear, this is not a security vulnerability.">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">CodeJam</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Using Firestore JS client SDK as an admin client (bypass rules)</h1>
+<p class="date">July 26, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>Just so we’re clear, this is not a security vulnerability.</p>
+<p>This blog post goes through an undocumented option in the
+<a href="https://firebase.google.com/docs/reference/js/firestore_"><code>firebase/firestore</code></a>
+JS client SDK that allows to use it as an admin client (skipping <code>firestore.rules</code>)
+just like <a href="https://firebase.google.com/docs/reference/admin/node/firebase-admin.firestore"><code>firebase-admin/firestore</code></a>
+would do.</p>
+<p>Spoiler on the next section: <strong>this is especially useful for using inside
+Cloudflare Workers and Tauri apps</strong>.</p>
+<div class="note">
+<p>In this post:</p>
+<ul>
+<li><a href="#why-not-use-firebase-admin">Why not use <code>firebase-admin</code>?</a>
+<ul>
+<li><a href="#cloudflare-workers">Cloudflare Workers</a></li>
+<li><a href="#tauri">Tauri</a></li>
+</ul>
+</li>
+<li><a href="#alternative-options">Alternative options</a>
+<ul>
+<li><a href="#rest-api">Rest API</a></li>
+<li><a href="#third-party-sdks">Third-party SDKs</a></li>
+</ul>
+</li>
+<li><a href="#client-sdk-with-admin-permissions"><strong>Client SDK with admin permissions</strong></a></li>
+</ul>
+</div>
+<h2 id="why-not-use-firebase-admin" tabindex="-1"><a class="header-anchor" href="#why-not-use-firebase-admin"><span>Why not use <code>firebase-admin</code>?</span></a></h2>
+<p>Why in the world would one want to use the JS client SDK instead of
+<code>firebase-admin</code> that’s <em>made for that</em>?</p>
+<p>I don’t know what life decisions conducted me to this but I recently ran
+into not one, but <em>two</em> situations where I want <code>firebase-admin</code>
+capabilities in a JavaScript environment where Node.js is not supported.</p>
+<h3 id="cloudflare-workers" tabindex="-1"><a class="header-anchor" href="#cloudflare-workers"><span>Cloudflare Workers</span></a></h3>
+<p>I’m currently hosting many <a href="https://evetools.app/">sites</a> on Cloudflare
+Workers because of the generous free tier. But one limitation is that the
+<a href="https://developers.cloudflare.com/workers/runtime-apis/">runtime</a>
+is a lot closer to a web browser (with Cloudflare-specific extras) than
+to Node.js.</p>
+<p><code>firebase-admin</code> does <em>not</em> support being run in a browser or alike. The
+package and <em>many</em> of its dependencies depend <em>really hard</em> on Node.js.</p>
+<p>Cloudflare has a compatibility layer with Node.js but
+<a href="https://github.com/firebase/firebase-admin-node/issues/2069">it’s not sufficient</a>
+here.</p>
+<p><code>firebase-admin</code> and its dependencies go deep in <code>crypto</code>, <code>dns</code>, <code>fs</code>,
+<code>http</code>, <code>http2</code>, <code>https</code>, <code>net</code>, <code>os</code>, <code>process</code> <code>stream</code>, <code>tls</code>, <code>zlib</code>
+and more.</p>
+<p>Many of those are not part of Cloudflare’s <code>nodejs_compat</code>, or not to
+the extent that is needed by <code>firebase-admin</code> and its underlying (hairy
+AF) dependencies like <code>google-gax</code> and <code>@grpc/grpc-js</code>.</p>
+<p>Also many of those Node.js APIs make no sense in a Workers environment.
+You end up trying to mock specific APIs to trigger the right branch in
+particular call sites deep in the dependency tree of <code>firebase-admin</code>
+and it’s just a massive fragile mess.</p>
+<p>Trust me, I tried. And I gave up. (And I don’t often do that.)</p>
+<h3 id="tauri" tabindex="-1"><a class="header-anchor" href="#tauri"><span>Tauri</span></a></h3>
+<p>I’m currently working on a <a href="https://useflame.app/">Firebase GUI app called Flame</a><sup class="footnote-ref"><a href="#fn1" id="fnref1">[1]</a></sup>
+that happens to be made with <a href="https://v2.tauri.app/">Tauri</a>.</p>
+<p>Unlike Electron, Tauri doesn’t come with a Node.js runtime. Everything
+runs in the browser, with a Rust backend.</p>
+<p>This means I need <code>firebase-admin</code> capabilities, but in a browser
+environment (or Rust, but it’s not any more convenient at that point).</p>
+<p>As we saw above, this is a fight that I lost.</p>
+<h2 id="alternative-options" tabindex="-1"><a class="header-anchor" href="#alternative-options"><span>Alternative options</span></a></h2>
+<p>So, no <code>firebase-admin</code> on Cloudflare Workers or in a Tauri app. What do
+we do then?</p>
+<h3 id="rest-api" tabindex="-1"><a class="header-anchor" href="#rest-api"><span>Rest API</span></a></h3>
+<p>An option is to directly use the <a href="https://firebase.google.com/docs/reference/rest/auth">REST</a>
+<a href="https://firebase.google.com/docs/firestore/reference/rest">API</a>.</p>
+<p>For simple use cases it’s fine, especially LLMs are really good at
+querying it and writing a small purpose-built SDK for your needs. Does
+the job for Firebase Auth in my case.</p>
+<p>But for Firestore, as you start needing batching, transactions, snapshot
+listeners, and custom types and APIs like <code>Timestamp</code>, <code>GeoPoint</code>,
+<code>Bytes</code>, <code>DocumentReference</code>, <code>FieldPath</code> and <code>FieldValue</code>, the
+complexity increases and so does bugs.</p>
+<h3 id="third-party-sdks" tabindex="-1"><a class="header-anchor" href="#third-party-sdks"><span>Third-party SDKs</span></a></h3>
+<p>There’s quite a bunch. Non-exhaustive list of what I’ve looked at:</p>
+<ul>
+<li><a href="https://github.com/ljoukov/firebase-admin-cloudflare">firebase-admin-cloudflare</a></li>
+<li><a href="https://github.com/Code-Hex/firebase-auth-cloudflare-workers">firebase-auth-cloudflare-workers</a></li>
+<li><a href="https://github.com/prmichaelsen/firebase-admin-sdk-v8">Firebase Admin SDK v8</a></li>
+<li><a href="https://github.com/JacobLinCool/fires2rest">Fires2REST</a></li>
+<li><a href="https://github.com/samuelgozi/firebase-firestore-lite">Firestore Lite</a></li>
+<li><a href="https://github.com/samuelgozi/firebase-auth-lite">Firebase Auth Lite</a></li>
+<li><a href="https://github.com/samuelgozi/firebase-storage-lite">Firebase Storage Lite</a></li>
+<li><a href="https://github.com/nabettu/firebase-rest-firestore">Firebase REST Firestore</a></li>
+<li><a href="https://github.com/Moe03/firebase-admin-rest">Firebase Admin REST</a></li>
+<li><a href="https://github.com/Marplex/flarebase-auth">Flarebase Auth</a></li>
+</ul>
+<p>However there’s often a catch and it’s any combination of the following
+(in order of importance to me):</p>
+<ul>
+<li>Doesn’t support stuff I need (emulator, admin, Firestore transactions
+and collection groups, Firebase Auth session tokens)</li>
+<li>Bugs (malformed requests, mishandling of specific data types)</li>
+<li>Explicitly marked as deprecated or abandoned</li>
+<li>Still documented as work in progress</li>
+<li>Hasn’t been updated in years, or not actively maintained</li>
+<li>Doesn’t seem used by many other projects</li>
+<li>Experimental (either explicitly said, or 0.x version string)</li>
+</ul>
+<p>The first point (lack of support for stuff I need) killed like 90% of
+those for me.</p>
+<p>The last few catches, I don’t mind as much. For example I’ve been using
+<a href="https://github.com/ljoukov/firebase-admin-cloudflare">firebase-admin-cloudflare</a>,
+version 0.0.2, that got published 6 months ago and hasn’t been
+touched after that. But I didn’t encounter any bug with it and it
+supports everything I need…</p>
+<p>…except for <code>WebChannel</code> connection pooling which I discovered the
+hard way that I depended on. While forking the lib to add pooling
+support, I took another look at the official SDK that’s how I found the
+trick for this post. 👀</p>
+<p>I’ve also been using <a href="https://github.com/Code-Hex/firebase-auth-cloudflare-workers">firebase-auth-cloudflare-workers</a>.
+It hasn’t been updated in 2 years, but it’s solid, and the APIs it’s
+using are not really ever changing, so there’s no need for it to be
+updated or “maintained” at that point…</p>
+<p>…well, except for a bug where you can’t use it to verify session
+tokens <em>and</em> ID tokens at the same time in the same process.</p>
+<p>This kinda bugged me but also I didn’t need to verify both session
+tokens and ID tokens in the same environment so I let it go.
+<a href="https://github.com/Code-Hex/firebase-auth-cloudflare-workers/pull/32">Until I did</a>. 🙃</p>
+<h2 id="client-sdk-with-admin-permissions" tabindex="-1"><a class="header-anchor" href="#client-sdk-with-admin-permissions"><span>Client SDK with admin permissions</span></a></h2>
+<p>Sorry, I got distracted. That’s the meat of the subject. That’s what
+you’re here for, right?</p>
+<p>The <a href="https://firebase.google.com/docs/reference/js/firestore_.md#initializefirestore_fc7d200"><code>initializeFirestore</code></a>
+function allows to pass a settings object.</p>
+<pre><code class="hljs language-ts"><span class="hljs-title function_">initializeFirestore</span>(app, {
+ <span class="hljs-comment">// Settings go here.</span>
+}
+</code></pre>
+<p>This <a href="https://firebase.google.com/docs/reference/js/firestore_.firestoresettings.md#properties">settings object</a>
+has a few properties, and exactly 0 of them is named <code>credentials</code>.</p>
+<p>But you can still pass <a href="https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/lite-api/settings.ts#L99"><code>credentials</code></a>
+with <a href="https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/api/credentials.ts#L57-L66"><code>type: 'provider'</code></a>
+and a <a href="https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/api/credentials.ts#L100-L127"><code>CredentialsProvider</code></a>.</p>
+<pre><code class="hljs language-ts"><span class="hljs-title function_">initializeFirestore</span>(app, {
+  <span class="hljs-attr">credentials</span>: {
+    <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;provider&#x27;</span>,
+    <span class="hljs-attr">client</span>: ...,
+  },
+}
+</code></pre>
+<p>This undocumented, internal (yet accessible) API gives us direct control over the
+headers of the requests made to the Firestore API, where we can inject a
+bearer token from a service account.</p>
+<p>When used with a service account token, queries run with admin
+capabilities (unaffected by <code>firestore.rules</code>) just like with
+<code>firebase-admin</code>.</p>
+<p><strong>Biggest downside of this?</strong> this may break in any future version of
+<code>firebase/firestore</code>.</p>
+<p>Also: no <code>listCollections</code> method because you never need to do that with
+a non-admin SDK, but it’s trivial to use the REST API for just that one.</p>
+<p><strong>Upside?</strong> using the official JS SDK for admin operations in
+environments where <code>firebase-admin</code> is not supported.</p>
+<p>Here’s what it looks like concretely:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { initializeApp } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase/app&#x27;</span>
+<span class="hljs-keyword">import</span> { doc, getDoc, initializeFirestore } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;firebase/firestore&#x27;</span>
+
+<span class="hljs-keyword">const</span> <span class="hljs-variable constant_">SERVICE_ACCOUNT_EMAIL</span> = <span class="hljs-string">&#x27;...&#x27;</span>
+<span class="hljs-keyword">const</span> <span class="hljs-variable constant_">SERVICE_ACCOUNT_JWT</span> = <span class="hljs-string">&#x27;...&#x27;</span>
+
+<span class="hljs-comment">// See &lt;https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/auth/user.ts&gt;.</span>
+<span class="hljs-keyword">class</span> <span class="hljs-title class_">User</span> {
+  <span class="hljs-title function_">constructor</span>(<span class="hljs-params"><span class="hljs-keyword">readonly</span> <span class="hljs-attr">uid</span>: <span class="hljs-built_in">string</span></span>) {}
+  <span class="hljs-title function_">isAuthenticated</span>(<span class="hljs-params"></span>) { <span class="hljs-keyword">return</span> <span class="hljs-literal">true</span> }
+  <span class="hljs-title function_">toKey</span>(<span class="hljs-params"></span>) { <span class="hljs-keyword">return</span> <span class="hljs-string">`uid:<span class="hljs-subst">${<span class="hljs-variable language_">this</span>.uid}</span>`</span> }
+  <span class="hljs-title function_">isEqual</span>(<span class="hljs-params"><span class="hljs-attr">otherUser</span>: <span class="hljs-title class_">User</span></span>) { <span class="hljs-keyword">return</span> otherUser.<span class="hljs-property">uid</span> === <span class="hljs-variable language_">this</span>.<span class="hljs-property">uid</span> }
+}
+
+<span class="hljs-comment">// See &lt;https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/api/credentials.ts#L68-L82&gt;.</span>
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">Token</span> = {
+  <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;OAuth&#x27;</span> | <span class="hljs-string">&#x27;FirstParty&#x27;</span> | <span class="hljs-string">&#x27;AppCheck&#x27;</span>
+  <span class="hljs-attr">user</span>?: <span class="hljs-title class_">User</span>
+  <span class="hljs-attr">headers</span>: <span class="hljs-title class_">Map</span>&lt;<span class="hljs-built_in">string</span>, <span class="hljs-built_in">string</span>&gt;
+}
+
+<span class="hljs-comment">// See &lt;https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/api/credentials.ts#L100-L127&gt;.</span>
+<span class="hljs-keyword">type</span> <span class="hljs-title class_">CredentialsProvider</span> = {
+  <span class="hljs-title function_">start</span>(
+    <span class="hljs-attr">asyncQueue</span>: {
+      <span class="hljs-attr">enqueueRetryable</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">op</span>: () =&gt; <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;</span>) =&gt;</span> <span class="hljs-built_in">void</span>
+    },
+    <span class="hljs-attr">changeListener</span>: <span class="hljs-function">(<span class="hljs-params"><span class="hljs-attr">user</span>: <span class="hljs-title class_">User</span></span>) =&gt;</span> <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-built_in">void</span>&gt;
+  ): <span class="hljs-built_in">void</span>
+
+  <span class="hljs-title function_">getToken</span>(): <span class="hljs-title class_">Promise</span>&lt;<span class="hljs-title class_">Token</span> | <span class="hljs-literal">null</span>&gt;
+  <span class="hljs-title function_">invalidateToken</span>(): <span class="hljs-built_in">void</span>
+  <span class="hljs-title function_">shutdown</span>(): <span class="hljs-built_in">void</span>
+}
+
+<span class="hljs-keyword">const</span> user = <span class="hljs-keyword">new</span> <span class="hljs-title class_">User</span>(<span class="hljs-variable constant_">SERVICE_ACCOUNT_EMAIL</span>)
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">token</span>: <span class="hljs-title class_">Token</span> = {
+  <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;OAuth&#x27;</span>,
+  user,
+  <span class="hljs-attr">headers</span>: <span class="hljs-keyword">new</span> <span class="hljs-title class_">Map</span>([[<span class="hljs-string">&#x27;Authorization&#x27;</span>, <span class="hljs-string">`Bearer <span class="hljs-subst">${SERVICE_ACCOUNT_JWT}</span>`</span>]]),
+}
+
+<span class="hljs-keyword">const</span> <span class="hljs-attr">credentialsProvider</span>: <span class="hljs-title class_">CredentialsProvider</span> = {
+  <span class="hljs-title function_">start</span>(<span class="hljs-params">asyncQueue, changeListener</span>) {
+    asyncQueue.<span class="hljs-title function_">enqueueRetryable</span>(<span class="hljs-function">() =&gt;</span> <span class="hljs-title function_">changeListener</span>(user))
+  },
+  <span class="hljs-keyword">async</span> <span class="hljs-title function_">getToken</span>(<span class="hljs-params"></span>) { <span class="hljs-keyword">return</span> token },
+  <span class="hljs-title function_">invalidateToken</span>(<span class="hljs-params"></span>) {},
+  <span class="hljs-title function_">shutdown</span>(<span class="hljs-params"></span>) {},
+}
+
+<span class="hljs-keyword">const</span> app = <span class="hljs-title function_">initializeApp</span>({ <span class="hljs-attr">projectId</span>: <span class="hljs-string">&#x27;your-project&#x27;</span>, <span class="hljs-attr">apiKey</span>: <span class="hljs-string">&#x27;unused&#x27;</span> })
+
+<span class="hljs-keyword">const</span> firestore = <span class="hljs-title function_">initializeFirestore</span>(app, {
+  <span class="hljs-comment">// @ts-ignore: Undocumented option.</span>
+  <span class="hljs-comment">// See &lt;https://github.com/firebase/firebase-js-sdk/blob/ef7111b788a7b9f3739d523e66bea1b2f22d10d7/packages/firestore/src/lite-api/settings.ts#L99&gt;.</span>
+  <span class="hljs-attr">credentials</span>: {
+    <span class="hljs-attr">type</span>: <span class="hljs-string">&#x27;provider&#x27;</span>,
+    <span class="hljs-attr">client</span>: credentialsProvider,
+  },
+})
+
+<span class="hljs-keyword">const</span> snap = <span class="hljs-keyword">await</span> <span class="hljs-title function_">getDoc</span>(<span class="hljs-title function_">doc</span>(firestore, <span class="hljs-string">&#x27;someCollection&#x27;</span>, <span class="hljs-string">&#x27;someDocument&#x27;</span>))
+
+<span class="hljs-variable language_">console</span>.<span class="hljs-title function_">log</span>(snap.<span class="hljs-title function_">data</span>())
+</code></pre>
+<p>As for <code>SERVICE_ACCOUNT_EMAIL</code> and <code>SERVICE_ACCOUNT_JWT</code>, I’ll direct
+you to <a href="../../2022/02/how-to-call-google-cloud-apis-from-cloudflare-workers.html">this post</a>
+that documents everything about service account authentication.</p>
+<p>Bonus: if you <a href="https://firebase.google.com/docs/firestore/solutions/firestore-lite">don’t need</a>
+snapshot listeners, you can swap the import to <code>firebase/firestore/lite</code>
+and cut bundle size by 60%.</p>
+<h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
+<p>Do I recommend using undocumented APIs to use the official client SDK in
+a way it’s not intended to?</p>
+<p>That’s your call, but sometimes it sounds better then the alternatives. 😂</p>
+<hr class="footnotes-sep">
+<section class="footnotes">
+<ol class="footnotes-list">
+<li id="fn1" class="footnote-item"><p>Yes I’m shamelessly sending some
+<abbr title="Search engine optimization">SEO</abbr>/<abbr title="Generative engine optimization">GEO</abbr>
+juice from my blog to my own app, check it out if you look for a modern
+and actively maintained <a href="https://useflame.app/">Firebase GUI</a>. ✌️ <a href="#fnref1" class="footnote-backref">↩︎</a></p>
+</li>
+</ol>
+</section>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/07/firestore-client-sdk-admin.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>

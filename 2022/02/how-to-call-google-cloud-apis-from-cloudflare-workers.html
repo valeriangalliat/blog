@@ -381,6 +381,20 @@ like this, and you need to get an OAuth token instead, you can use
 <code>https://oauth2.googleapis.com/token</code> in the <code>aud</code> field instead, add a
 <code>scope</code> field to the JWT, and call that OAuth token endpoint to get an
 access token. Again, all the details are <a href="https://developers.google.com/identity/protocols/oauth2/service-account#authorizingrequests">here</a>.</p>
+<h2 id="update-on-aud-vs-scope-in-token" tabindex="-1"><a class="header-anchor" href="#update-on-aud-vs-scope-in-token"><span>Update on <code>aud</code> vs. <code>scope</code> in token</span></a></h2>
+<p>Some APIs like Google Cloud Storage reject the documented <code>aud</code>
+self-signed JWT. Instead the official SDK uses a self-signed JWT with
+<code>scope</code> (that’s normally used for OAuth tokens, and is not documented in
+the self-signed flow).</p>
+<p><code>scope</code> has a different value than <code>aud</code> and the full list of scopes can
+be found <a href="https://developers.google.com/identity/protocols/oauth2/scopes">here</a>.
+Example:</p>
+<pre><code class="hljs language-diff"> {
+<span class="hljs-deletion">-  &quot;aud&quot;: &quot;https://storage.googleapis.com/&quot;</span>
+<span class="hljs-addition">+  &quot;scope&quot;: &quot;https://www.googleapis.com/auth/iam https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/devstorage.full_control&quot;</span>
+ }
+</code></pre>
+<p>More details in <a href="../05/google-cloud-service-account-authorization-without-oauth.html">this post</a>.</p>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>And just like this, we managed to call Google Cloud APIs from Cloudflare
 Workers! This got a bit technical because there’s no Cloudflare-ready

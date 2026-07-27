@@ -440,6 +440,26 @@ like this, and you need to get an OAuth token instead, you can use
 `scope` field to the JWT, and call that OAuth token endpoint to get an
 access token. Again, all the details are [here](https://developers.google.com/identity/protocols/oauth2/service-account#authorizingrequests).
 
+## Update on `aud` vs. `scope` in token
+
+Some APIs like Google Cloud Storage reject the documented `aud`
+self-signed JWT. Instead the official SDK uses a self-signed JWT with
+`scope` (that's normally used for OAuth tokens, and is not documented in
+the self-signed flow).
+
+`scope` has a different value than `aud` and the full list of scopes can
+be found [here](https://developers.google.com/identity/protocols/oauth2/scopes).
+Example:
+
+```diff
+ {
+-  "aud": "https://storage.googleapis.com/"
++  "scope": "https://www.googleapis.com/auth/iam https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/devstorage.full_control"
+ }
+```
+
+More details in [this post](../05/google-cloud-service-account-authorization-without-oauth.md).
+
 ## Wrapping up
 
 And just like this, we managed to call Google Cloud APIs from Cloudflare

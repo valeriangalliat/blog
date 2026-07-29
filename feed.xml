@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-07-27T21:37:40.082Z</updated>
+  <updated>2026-07-29T18:46:21.498Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -13,7 +13,7 @@
     <title>Using Firestore JS client SDK as an admin client (bypass rules)</title>
     <link href="https://www.codejam.info/2026/07/firestore-client-sdk-admin.html" />
     <id>https://www.codejam.info/2026/07/firestore-client-sdk-admin.html</id>
-    <updated>2026-07-26T07:00:00.000Z</updated>
+    <updated>2026-07-27T07:00:00.000Z</updated>
     <content type="html"><![CDATA[<p>Just so we’re clear, this is not a security vulnerability.</p>
 <p>This blog post goes through an undocumented option in the
 <a href="https://firebase.google.com/docs/reference/js/firestore_"><code>firebase/firestore</code></a>
@@ -259,7 +259,7 @@ and actively maintained <a href="https://useflame.app/">Firebase GUI</a>. ✌️
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    Join the discussion on <a href="https://x.com/valeriangalliat/status/2082537992816861566">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
     This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
   </p>
 </section>

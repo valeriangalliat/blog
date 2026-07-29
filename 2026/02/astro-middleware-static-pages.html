@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="Run Astro middleware in front of static pages (Cloudflare Workers) | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="Update: Astro v6 and @astrojs/cloudflare v13 simplify a few things described below, including how you configure a custom worker entrypoint. See Astro v6!">
+  <meta property="og:description" content="Update: Astro v6, v7 and @astrojs/cloudflare v13 and v14 simplify a few things described below. See Astro v6 and Astro v7!">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -31,15 +31,15 @@
     <div class="header-inner">
       <div class="content">
 <h1>Run Astro middleware in front of static pages (Cloudflare Workers)</h1>
-<p class="date">February 11, 2026 | Updated on June 1, 2026</p>
+<p class="date">February 11, 2026 | Updated on July 29, 2026</p>
       </div>
     </div>
   </header>
   <div class="content">
 <div class="note">
-<p><strong>Update:</strong> Astro v6 and <code>@astrojs/cloudflare</code> v13 simplify a few things
-described below, including how you configure a custom worker entrypoint.
-See <a href="#astro-v6-update">Astro v6</a>!</p>
+<p><strong>Update:</strong> Astro v6, v7 and <code>@astrojs/cloudflare</code> v13 and v14 simplify
+a few things described below. See <a href="#astro-v6-update">Astro v6</a> and
+<a href="#astro-v7-update">Astro v7</a>!</p>
 </div>
 <p>Astro allows to prerender pages as static assets, so everything is
 compiled at build time and can be served super quick.</p>
@@ -253,10 +253,60 @@ Cloudflare Worker environment, not wrapped by Astro.</p>
 <p>As for development, <code>astro dev</code> now runs on Cloudflare’s <code>workerd</code> using
 the same entrypoint as production, so no need for the <a href="#what-about-development">middleware workaround</a>
 anymore. Sweet!</p>
+<h2 id="astro-v7-update" tabindex="-1"><a class="header-anchor" href="#astro-v7-update"><span>Astro v7 update</span></a></h2>
+<p>Everything from <a href="#astro-v6-update">v6</a> is relevant (read that first).
+Then one detail: in a fully <code>output: 'static'</code> site with <em>no</em> SSR or API
+route whatsoever, Astro now skips the worker entirely. Your <code>main</code> in
+<code>wrangler.jsonc</code> is completely ignored.</p>
+<p>This results in the following error when deploying to Cloudflare:</p>
+<pre><code class="hljs">Cannot set run_worker_first without a Worker script.
+Please remove run_worker_first from your configuration file, or provide a Worker script in your configuration file (`main`).
+</code></pre>
+<p>Three options:</p>
+<ol>
+<li>
+<p>Set <code>output: 'server'</code> and then <code>export const prerender = true</code> in all
+your pages (meh).</p>
+</li>
+<li>
+<p>Same but do the second part via an Astro integration:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { defineConfig } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro/config&#x27;</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AstroIntegration</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro&#x27;</span>
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">prerender</span>(<span class="hljs-params"></span>): <span class="hljs-title class_">AstroIntegration</span> {
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;prerender&#x27;</span>,
+    <span class="hljs-attr">hooks</span>: {
+      <span class="hljs-string">&#x27;astro:route:setup&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">{ route }</span>) =&gt;</span> {
+        <span class="hljs-keyword">if</span> (route.<span class="hljs-property">prerender</span> === <span class="hljs-literal">undefined</span>) {
+          route.<span class="hljs-property">prerender</span> = <span class="hljs-literal">true</span>
+        }
+      },
+    },
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title function_">defineConfig</span>({
+  <span class="hljs-attr">output</span>: <span class="hljs-string">&#x27;server&#x27;</span>,
+  <span class="hljs-attr">integrations</span>: [<span class="hljs-title function_">prerender</span>()],
+})
+</code></pre>
+</li>
+<li>
+<p>Add a dummy SSR or API route to force the hybrid mode:</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// src/pages/api/hybrid.ts</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> prerender = <span class="hljs-literal">false</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">GET</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-literal">null</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">204</span> })
+}
+</code></pre>
+</li>
+</ol>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>In short: configure <code>run_worker_first</code> on Cloudflare so it runs the
 worker in front of static pages, then use a custom <code>workerEntryPoint</code>
-(Astro v5) or a custom <code>main</code> in <code>wrangler.jsonc</code> (Astro v6) so you get
+(Astro v5) or a custom <code>main</code> in <code>wrangler.jsonc</code> (Astro v6+) so you get
 full control over the worker, and can run code <em>outside of the
 middleware</em> (which does not run for static pages).</p>
 <section class="post-footer">

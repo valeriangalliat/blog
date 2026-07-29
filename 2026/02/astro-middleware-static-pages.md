@@ -3,13 +3,13 @@ tweet: https://x.com/valeriangalliat/status/2021761871104430267
 ---
 
 # Run Astro middleware in front of static pages (Cloudflare Workers)
-February 11, 2026 | Updated on June 1, 2026
+February 11, 2026 | Updated on July 29, 2026
 
 <div class="note">
 
-**Update:** Astro v6 and `@astrojs/cloudflare` v13 simplify a few things
-described below, including how you configure a custom worker entrypoint.
-See [Astro v6](#astro-v6-update)!
+**Update:** Astro v6, v7 and `@astrojs/cloudflare` v13 and v14 simplify
+a few things described below. See [Astro v6](#astro-v6-update) and
+[Astro v7](#astro-v7-update)!
 
 </div>
 
@@ -268,10 +268,65 @@ As for development, `astro dev` now runs on Cloudflare's `workerd` using
 the same entrypoint as production, so no need for the [middleware workaround](#what-about-development)
 anymore. Sweet!
 
+## Astro v7 update
+
+Everything from [v6](#astro-v6-update) is relevant (read that first).
+Then one detail: in a fully `output: 'static'` site with _no_ SSR or API
+route whatsoever, Astro now skips the worker entirely. Your `main` in
+`wrangler.jsonc` is completely ignored.
+
+This results in the following error when deploying to Cloudflare:
+
+```
+Cannot set run_worker_first without a Worker script.
+Please remove run_worker_first from your configuration file, or provide a Worker script in your configuration file (`main`).
+```
+
+Three options:
+
+1. Set `output: 'server'` and then `export const prerender = true` in all
+your pages (meh).
+
+2. Same but do the second part via an Astro integration:
+
+   ```ts
+   import { defineConfig } from 'astro/config'
+   import { AstroIntegration } from 'astro'
+
+   function prerender(): AstroIntegration {
+     return {
+       name: 'prerender',
+       hooks: {
+         'astro:route:setup': ({ route }) => {
+           if (route.prerender === undefined) {
+             route.prerender = true
+           }
+         },
+       },
+     }
+   }
+
+   export default defineConfig({
+     output: 'server',
+     integrations: [prerender()],
+   })
+   ```
+
+3. Add a dummy SSR or API route to force the hybrid mode:
+
+   ```ts
+   // src/pages/api/hybrid.ts
+   export const prerender = false
+
+   export function GET() {
+     return new Response(null, { status: 204 })
+   }
+   ```
+
 ## Wrapping up
 
 In short: configure `run_worker_first` on Cloudflare so it runs the
 worker in front of static pages, then use a custom `workerEntryPoint`
-(Astro v5) or a custom `main` in `wrangler.jsonc` (Astro v6) so you get
+(Astro v5) or a custom `main` in `wrangler.jsonc` (Astro v6+) so you get
 full control over the worker, and can run code _outside of the
 middleware_ (which does not run for static pages).

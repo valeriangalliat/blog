@@ -1,5 +1,9 @@
+---
+tweet: https://x.com/valeriangalliat/status/2082537992816861566
+---
+
 # Using Firestore JS client SDK as an admin client (bypass rules)
-July 26, 2026
+July 27, 2026
 
 Just so we're clear, this is not a security vulnerability.
 

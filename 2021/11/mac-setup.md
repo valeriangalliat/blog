@@ -7,7 +7,7 @@ November 17, 2021
 
 <div class="note">
 
-**Note:** updated March 17, 2023 with Ventura!
+**Note:** updated August 1, 2026 with Tahoe.
 
 </div>
 
@@ -118,40 +118,35 @@ installed system.
   directory** to `~/Desktop/Screenshots`. I don't like to clutter my
   desktop with screenshots like it's the case by default.
 
-Now I'm ready to configure the [system preferences](#system-preferences),
+Now I'm ready to configure the [system settings](#system-settings),
 [iTerm2 preferences](#iterm2-preferences) and my [terminal-environment](#terminal-environment).
 
-## System preferences
+## System settings
 
-* In **Keyboard** I set **Key repeat rate** and **Delay until repeat**
-  to the fastest possible. I like my keyboard to be snappy.
-* In **Keyboard > Input Sources**, I **Edit** the settings to disable
-  everything. Also in the **Text Replacements** part, I remove the
-  built-in `omw` abbreviation. See [before](../../img/2021/11/keyboard-before.png)
-  and [after](../../img/2021/11/keyboard-after.png). I'm always
-  staggered when I forget to do this and `omw` gets replaced by `On my
-  way!`, or when I press space twice and it inserts a colon instead
-  *while I code in Visual Studio Code*! 🤦‍♀️
-* In **Keyboard > Keyboard Shortcuts > Mission Control**, I
-  enable the **Switch to Desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
-* In **Control Center**, I leave only **Time Machine** and **Fast
-  User Switching** in the menu bar if I'm on a multi-user system, and I
-  set the **Clock** to 24 hours format.
-* In **Desktop & Dock**, under **Dock** tick **Automatically hide and
-  show the Dock** and untick **Show recent applications in Dock**. Under
+* In **Battery > Charging > ⓘ**, set **Charge Limit** to **80%**. Leave
+  **Optimized Battery Charging** on (should be default).
+* In **General > Software Update > Automatic updates > ⓘ**, turn on
+  **Download new updates when available**, but turn off **Install macOS updates**
+  (I don't want macOS to reboot without my permission and lose any unsaved state).
+* In **General > Date & Time**, turn on **24-hour time**.
+* In **Desktop & Dock**, under **Dock**, tick **Automatically hide and
+  show the Dock** and untick **Show suggested and recent apps in Dock**. Under
   **Windows**, set **Prefer tabs when opening documents** to **Always**.
   Under **Mission Control**, untick **Automatically rearrange Spaces
   based on most recent use**.
-* I enable **Time Machine** backups to my usual drive after configuring
-  my exclude list (very specific to my data so not included here).
-* In **Displays** I turn on **Night Shift** form sunset to sunrise.
 * Run `defaults write com.apple.dock autohide-delay -float 0; killall Dock`
   to [remove the delay](../../2022/05/macos-faster-desktops-dock.md) to
   show and hide the dock.
-* In **General > Software Update > Automatic updates**, I turn on
-  **Check for updates** and **Download new updates when available**, but
-  make sure **Install macOS updates** is off (I don't want macOS to
-  reboot without my permission and lose any unsaved state).
+* In **Displays > Night Shift...**, set **Schedule** to **Sunset to Sunrise**.
+* In **Keyboard**, set **Key repeat rate** and **Delay until repeat**
+  to the fastest possible. I like my keyboard to be snappy.
+* In **Keyboard > Input Sources**, **Edit...** the settings to disable
+  everything. Also in **Text Replacements...**, remove the
+  built-in `omw` abbreviation. I'm always staggered when I forget to do
+  this and `omw` gets replaced by `On my way!`, or when I press space
+  twice and it inserts a colon instead *while I code in Visual Studio Code*! 🤦‍♀️
+* In **Keyboard > Keyboard Shortcuts... > Mission Control**, I
+  enable the **Switch to Desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
 
 For all Visual Studio Code based editors, I disable
 `ApplePressAndHoldEnabled` for... sanity. And I also
@@ -276,7 +271,7 @@ That's pretty much the gist! This is a fairly straightforward and not
 very time consuming checklist, and the main things that need to be
 automated (my dotfiles) are.
 
-I don't think it's worth automating my macOS system preferences somehow
+I don't think it's worth automating my macOS system settings somehow
 as they might change in future versions anyways. Same thing for iTerm2,
 where I definitely don't want to copy over my whole configuration file
 from an old installation, I'd rather start from the latest and greatest

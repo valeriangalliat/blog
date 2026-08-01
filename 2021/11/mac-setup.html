@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="How I set up a new Mac | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="Note: updated March 17, 2023 with Ventura!">
+  <meta property="og:description" content="Note: updated August 1, 2026 with Tahoe.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -37,7 +37,7 @@
   </header>
   <div class="content">
 <div class="note">
-<p><strong>Note:</strong> updated March 17, 2023 with Ventura!</p>
+<p><strong>Note:</strong> updated August 1, 2026 with Tahoe.</p>
 </div>
 <p>As I <a href="yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">recently blogged</a>,
 I just upgraded to macOS Monterey taking it as an opportunity to start
@@ -137,38 +137,34 @@ directory</strong> to <code>~/Desktop/Screenshots</code>. I don’t like to clut
 desktop with screenshots like it’s the case by default.</p>
 </li>
 </ul>
-<p>Now I’m ready to configure the <a href="#system-preferences">system preferences</a>,
+<p>Now I’m ready to configure the <a href="#system-settings">system settings</a>,
 <a href="#iterm2-preferences">iTerm2 preferences</a> and my <a href="#terminal-environment">terminal-environment</a>.</p>
-<h2 id="system-preferences" tabindex="-1"><a class="header-anchor" href="#system-preferences"><span>System preferences</span></a></h2>
+<h2 id="system-settings" tabindex="-1"><a class="header-anchor" href="#system-settings"><span>System settings</span></a></h2>
 <ul>
-<li>In <strong>Keyboard</strong> I set <strong>Key repeat rate</strong> and <strong>Delay until repeat</strong>
-to the fastest possible. I like my keyboard to be snappy.</li>
-<li>In <strong>Keyboard &gt; Input Sources</strong>, I <strong>Edit</strong> the settings to disable
-everything. Also in the <strong>Text Replacements</strong> part, I remove the
-built-in <code>omw</code> abbreviation. See <a href="../../img/2021/11/keyboard-before.png">before</a>
-and <a href="../../img/2021/11/keyboard-after.png">after</a>. I’m always
-staggered when I forget to do this and <code>omw</code> gets replaced by <code>On my way!</code>, or when I press space twice and it inserts a colon instead
-<em>while I code in Visual Studio Code</em>! 🤦‍♀️</li>
-<li>In <strong>Keyboard &gt; Keyboard Shortcuts &gt; Mission Control</strong>, I
-enable the <strong>Switch to Desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
-<li>In <strong>Control Center</strong>, I leave only <strong>Time Machine</strong> and <strong>Fast
-User Switching</strong> in the menu bar if I’m on a multi-user system, and I
-set the <strong>Clock</strong> to 24 hours format.</li>
-<li>In <strong>Desktop &amp; Dock</strong>, under <strong>Dock</strong> tick <strong>Automatically hide and
-show the Dock</strong> and untick <strong>Show recent applications in Dock</strong>. Under
+<li>In <strong>Battery &gt; Charging &gt; ⓘ</strong>, set <strong>Charge Limit</strong> to <strong>80%</strong>. Leave
+<strong>Optimized Battery Charging</strong> on (should be default).</li>
+<li>In <strong>General &gt; Software Update &gt; Automatic updates &gt; ⓘ</strong>, turn on
+<strong>Download new updates when available</strong>, but turn off <strong>Install macOS updates</strong>
+(I don’t want macOS to reboot without my permission and lose any unsaved state).</li>
+<li>In <strong>General &gt; Date &amp; Time</strong>, turn on <strong>24-hour time</strong>.</li>
+<li>In <strong>Desktop &amp; Dock</strong>, under <strong>Dock</strong>, tick <strong>Automatically hide and
+show the Dock</strong> and untick <strong>Show suggested and recent apps in Dock</strong>. Under
 <strong>Windows</strong>, set <strong>Prefer tabs when opening documents</strong> to <strong>Always</strong>.
 Under <strong>Mission Control</strong>, untick <strong>Automatically rearrange Spaces
 based on most recent use</strong>.</li>
-<li>I enable <strong>Time Machine</strong> backups to my usual drive after configuring
-my exclude list (very specific to my data so not included here).</li>
-<li>In <strong>Displays</strong> I turn on <strong>Night Shift</strong> form sunset to sunrise.</li>
 <li>Run <code>defaults write com.apple.dock autohide-delay -float 0; killall Dock</code>
 to <a href="../../2022/05/macos-faster-desktops-dock.html">remove the delay</a> to
 show and hide the dock.</li>
-<li>In <strong>General &gt; Software Update &gt; Automatic updates</strong>, I turn on
-<strong>Check for updates</strong> and <strong>Download new updates when available</strong>, but
-make sure <strong>Install macOS updates</strong> is off (I don’t want macOS to
-reboot without my permission and lose any unsaved state).</li>
+<li>In <strong>Displays &gt; Night Shift…</strong>, set <strong>Schedule</strong> to <strong>Sunset to Sunrise</strong>.</li>
+<li>In <strong>Keyboard</strong>, set <strong>Key repeat rate</strong> and <strong>Delay until repeat</strong>
+to the fastest possible. I like my keyboard to be snappy.</li>
+<li>In <strong>Keyboard &gt; Input Sources</strong>, <strong>Edit…</strong> the settings to disable
+everything. Also in <strong>Text Replacements…</strong>, remove the
+built-in <code>omw</code> abbreviation. I’m always staggered when I forget to do
+this and <code>omw</code> gets replaced by <code>On my way!</code>, or when I press space
+twice and it inserts a colon instead <em>while I code in Visual Studio Code</em>! 🤦‍♀️</li>
+<li>In <strong>Keyboard &gt; Keyboard Shortcuts… &gt; Mission Control</strong>, I
+enable the <strong>Switch to Desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
 </ul>
 <p>For all Visual Studio Code based editors, I disable
 <code>ApplePressAndHoldEnabled</code> for… sanity. And I also
@@ -266,7 +262,7 @@ asdf install
 <p>That’s pretty much the gist! This is a fairly straightforward and not
 very time consuming checklist, and the main things that need to be
 automated (my dotfiles) are.</p>
-<p>I don’t think it’s worth automating my macOS system preferences somehow
+<p>I don’t think it’s worth automating my macOS system settings somehow
 as they might change in future versions anyways. Same thing for iTerm2,
 where I definitely don’t want to copy over my whole configuration file
 from an old installation, I’d rather start from the latest and greatest

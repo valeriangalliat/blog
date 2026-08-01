@@ -7,7 +7,7 @@ November 17, 2021
 
 <div class="note">
 
-**Note:** updated August 1, 2026 with Tahoe.
+**Note:** updated August 1, 2026 with Tahoe and more scripting.
 
 </div>
 
@@ -74,83 +74,129 @@ a clean start.
 Here's the things I do when I log in the first time on my freshly
 installed system.
 
-* Get rid of all the garbage in the dock. I just leave the Finder and
-  the trash, because you can't really remove them anyways (did you try
-  dragging the trash to the trash?), but I happen to use them so that's
-  fine.
-* Open the terminal app to install [Homebrew](https://brew.sh/) with
-  whatever is the current recommended way. I Install it in the default
-  place because otherwise it won't be able to leverage many prebuilt
-  binaries that hardcode the default prefix in them, and it's utterly
-  slow to compile everything. If you want to run Homebrew on a
-  multi-user system, [read that first](homebrew-multi-user.md).
+### Dock
 
-  After the installation, Homebrew tells you add `eval
-  "$(/opt/homebrew/bin/brew shellenv)"` to your `~/.zprofile`. I
-  personally prefer to use my `~/.zshenv` for this, because it's sourced
-  all the time whereas `.zprofile` is sourced only for login shells.
-  Concretely this means that by setting the Homebrew environment
-  variables in `.zshenv`, I can do `ssh me@my-machine brew ...`, whereas with `.zprofile`, I can't.
+Get rid of all the garbage in the dock. I just leave the Finder and
+the trash, because you can't really remove them anyways (did you try
+dragging the trash to the trash?), but I happen to use them so that's
+fine.
 
-  Also I don't like running `eval "$(brew shellenv)"` on every single
-  Zsh boot, I'd rather hardcode the output of `brew shellenv` in there
-  since it's not really supposed to change anyway. Concretely, I run:
+```sh
+defaults write com.apple.dock persistent-apps -array
+defaults write com.apple.dock persistent-others -array
+killall Dock
+```
 
-  ```sh
-  /opt/homebrew/bin/brew shellenv >> ~/.zshenv
-  ```
-* Install Firefox and iTerm2 and optionally other apps:
+### Homebrew
 
-  ```sh
-  brew install firefox iterm2
-  # brew install rectangle
-  # brew install homebrew/cask-versions/firefox-developer-edition
-  # brew install google-chrome
-  # brew install visual-studio-code
-  ```
-* Install **DaVinci Resolve**.
-* Install **Logic Pro** an download the full sound library. Sadly a fresh
-  Logic installation can't reuse an existing sound library directory (I
-  like to keep mine on my hard drive instead of my limited size SSD), so
-  we need to download the whole 60 GB from scratch.
-* Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
-  custom screenshot interface, where I can change the **screenshot
-  directory** to `~/Desktop/Screenshots`. I don't like to clutter my
-  desktop with screenshots like it's the case by default.
+Install [Homebrew](https://brew.sh/) (only `curl | sh` I'll tolerate).
+I install it in the default place because otherwise it won't be able to
+leverage many prebuilt binaries that hardcode the default prefix in
+them, and it's utterly slow to compile everything. If you want to run
+Homebrew on a multi-user system, [read that first](homebrew-multi-user.md).
+
+After the installation, Homebrew tells you to add `eval
+"$(/opt/homebrew/bin/brew shellenv)"` to your `~/.zprofile`.
+I personally prefer to use my `~/.zshenv` for this, because it's sourced
+all the time whereas `.zprofile` is sourced only for login shells.
+Concretely this means that by setting the Homebrew environment
+variables in `.zshenv`, I can do `ssh me@my-machine brew ...`, whereas
+with `.zprofile`, I can't.
+
+Also I don't like running `eval "$(brew shellenv)"` on every single
+Zsh boot, I'd rather hardcode the output of `brew shellenv` in there
+since it's not really supposed to change anyway:
+
+```sh
+bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+/opt/homebrew/bin/brew shellenv >> ~/.zshenv
+```
+
+### Apps
+
+```sh
+brew install firefox iterm2 maccy cursor
+# brew install firefox@developer-edition
+# brew install google-chrome
+```
+
+([Maccy](https://maccy.app/) is a lovely super light clipboard history manager.)
+
+Then install **DaVinci Resolve** and **Logic Pro** and download the full
+sound library. Sadly a fresh Logic installation can't reuse an existing
+sound library directory (I like to keep mine on my hard drive instead
+of my limited size SSD), so we need to download the whole 60 GB from
+scratch.
+
+### Screenshots
+
+I don't like to clutter my desktop with screenshots like it's the case
+by default, so I save them to `~/Desktop/Screenshots` instead:
+
+```sh
+mkdir -p ~/Desktop/Screenshots
+defaults write com.apple.screencapture location ~/Desktop/Screenshots
+killall SystemUIServer
+```
 
 Now I'm ready to configure the [system settings](#system-settings),
-[iTerm2 preferences](#iterm2-preferences) and my [terminal-environment](#terminal-environment).
+[iTerm2 preferences](#iterm2-preferences) and my [terminal environment](#terminal-environment).
 
 ## System settings
+
+```sh
+# General > Date & Time: 24-hour time
+defaults write -g AppleICUForce24HourTime -bool true
+
+# Desktop & Dock > Dock: Automatically hide and show the Dock
+defaults write com.apple.dock autohide -bool true
+
+# Desktop & Dock > Dock: Don't show suggested and recent apps
+defaults write com.apple.dock show-recents -bool false
+
+# Desktop & Dock > Dock: Remove the delay to show and hide the dock
+defaults write com.apple.dock autohide-delay -float 0
+
+# Desktop & Dock > Windows: Tiled windows have margins
+defaults write com.apple.WindowManager EnableTiledWindowMargins -bool false
+
+# Desktop & Dock > Mission Control: Don't automatically rearrange Spaces
+defaults write com.apple.dock mru-spaces -bool false
+
+# Desktop & Dock > Hot Corners (disable all, bottom right is Quick Note by default)
+defaults write com.apple.dock wvous-tl-corner -int 0
+defaults write com.apple.dock wvous-tr-corner -int 0
+defaults write com.apple.dock wvous-bl-corner -int 0
+defaults write com.apple.dock wvous-br-corner -int 0
+
+# Keyboard: Key repeat rate & Delay until repeat (fastest possible, I like a snappy keyboard)
+defaults write -g KeyRepeat -int 1
+defaults write -g InitialKeyRepeat -int 15
+
+killall Dock
+```
+
+For Dock delay, [see full blog post here](../../2022/05/macos-faster-desktops-dock.md).
+
+A few things I still need to do manually in system settings:
 
 * In **Battery > Charging > ⓘ**, set **Charge Limit** to **80%**. Leave
   **Optimized Battery Charging** on (should be default).
 * In **General > Software Update > Automatic updates > ⓘ**, turn on
-  **Download new updates when available**, but turn off **Install macOS updates**
-  (I don't want macOS to reboot without my permission and lose any unsaved state).
-* In **General > Date & Time**, turn on **24-hour time**.
-* In **Desktop & Dock**, under **Dock**, tick **Automatically hide and
-  show the Dock** and untick **Show suggested and recent apps in Dock**. Under
-  **Windows**, set **Prefer tabs when opening documents** to **Always**.
-  Under **Mission Control**, untick **Automatically rearrange Spaces
-  based on most recent use**.
-* Run `defaults write com.apple.dock autohide-delay -float 0; killall Dock`
-  to [remove the delay](../../2022/05/macos-faster-desktops-dock.md) to
-  show and hide the dock.
+  **Download new updates when available**, but turn off **Install macOS
+  updates** (I don't want macOS to reboot without my permission and lose
+  any unsaved state).
 * In **Displays > Night Shift...**, set **Schedule** to **Sunset to Sunrise**.
-* In **Keyboard**, set **Key repeat rate** and **Delay until repeat**
-  to the fastest possible. I like my keyboard to be snappy.
-* In **Keyboard > Input Sources**, **Edit...** the settings to disable
-  everything. Also in **Text Replacements...**, remove the
-  built-in `omw` abbreviation. I'm always staggered when I forget to do
-  this and `omw` gets replaced by `On my way!`, or when I press space
-  twice and it inserts a colon instead *while I code in Visual Studio Code*! 🤦‍♀️
-* In **Keyboard > Keyboard Shortcuts... > Mission Control**, I
-  enable the **Switch to Desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
+* In **Keyboard > Input Sources > Edit...**, disable everything. Also in
+  **Text Replacements...**, remove the built-in `omw` abbreviation. I'm
+  always staggered when I forget to do this and `omw` gets replaced by
+  `On my way!`, or when I press space twice and it inserts a colon
+  instead while I code in Cursor! 🤦‍♀️
+* In **Keyboard > Keyboard Shortcuts... > Mission Control**, I enable
+  the **Switch to Desktop** shortcuts for [faster desktop switching](../../2022/05/macos-faster-desktops-dock.md).
 
 For all Visual Studio Code based editors, I disable
-`ApplePressAndHoldEnabled` for... sanity. And I also
-[force new windows to open as tabs](https://powerusers.codidact.com/posts/285975/285976#answer-285976)
+`ApplePressAndHoldEnabled` for... sanity. And I also [force new windows to open as tabs](https://powerusers.codidact.com/posts/285975/285976#answer-285976)
 (this can also be configured [system-wide](https://support.apple.com/en-ca/guide/mac-help/mchlp1032/mac#apd6b032a9835244)
 but I only want it for those apps).
 
@@ -240,28 +286,27 @@ vim ~/.zshrc ~/.zshenv
 Install whatever software I pretty much always use with Homebrew.
 
 ```sh
-brew install rg fzf imagemagick ffmpeg ncdu htop
+brew install rg imagemagick ffmpeg ncdu htop jq asdf wget tree watch moreutils yt-dlp 
 ```
 
-* [ripgrep](https://github.com/BurntSushi/ripgrep)
-  is my favorite way to search code.
-* [fzf](https://github.com/junegunn/fzf) is an awesome fuzzy finder.
+* [ripgrep](https://github.com/BurntSushi/ripgrep) is my favorite way to
+  search code.
 * I probably don't need to introduce [ImageMagick](https://imagemagick.org/)
   and [FFmpeg](https://www.ffmpeg.org/).
 * [ncdu](https://dev.yorhel.nl/ncdu) is a cool tool to monitor disk usage.
 * [htop](https://htop.dev/) is an awesome process viewer.
+* [jq](https://jqlang.org/), legendary CLI to process JSON.
+* [asdf](https://asdf-vm.com/) version manager.
+* `wget`, `tree`, `watch` basic UNIX commands missing from macOS.
+* [moreutils](https://github.com/pgdr/moreutils) handy utils, mainly for `sponge`.
+* [yt-dlp](https://github.com/yt-dlp/yt-dlp) CLI video downloader.
 
 Install the [asdf](https://github.com/asdf-vm/asdf) plugins I need
-and whatever version is in my `~/.tool-versions`. My `~/.zshrc`
-automatically installs asdf on the first invocation so no need to do
-that manually.
+and whatever version is in my `~/.tool-versions`.
 
 ```sh
 asdf plugin add nodejs
 # asdf plugin add python
-# asdf plugin add ruby
-# asdf plugin add elixir
-# asdf plugin add erlang
 asdf install
 ```
 
@@ -270,12 +315,6 @@ asdf install
 That's pretty much the gist! This is a fairly straightforward and not
 very time consuming checklist, and the main things that need to be
 automated (my dotfiles) are.
-
-I don't think it's worth automating my macOS system settings somehow
-as they might change in future versions anyways. Same thing for iTerm2,
-where I definitely don't want to copy over my whole configuration file
-from an old installation, I'd rather start from the latest and greatest
-defaults and just tweak what I need on top of it.
 
 Everything else is very specific to the current machine I'm setting up
 and I leave them to my discretion at the time of installing.

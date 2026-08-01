@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="How I set up a new Mac | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="Note: updated August 1, 2026 with Tahoe.">
+  <meta property="og:description" content="Note: updated August 1, 2026 with Tahoe and more scripting.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -37,7 +37,7 @@
   </header>
   <div class="content">
 <div class="note">
-<p><strong>Note:</strong> updated August 1, 2026 with Tahoe.</p>
+<p><strong>Note:</strong> updated August 1, 2026 with Tahoe and more scripting.</p>
 </div>
 <p>As I <a href="yearly-hackintosh-upgrade-macos-monterey-with-opencore.html">recently blogged</a>,
 I just upgraded to macOS Monterey taking it as an opportunity to start
@@ -87,88 +87,104 @@ a clean start.</p>
 <h2 id="new-system-setup" tabindex="-1"><a class="header-anchor" href="#new-system-setup"><span>New system setup</span></a></h2>
 <p>Here’s the things I do when I log in the first time on my freshly
 installed system.</p>
-<ul>
-<li>
+<h3 id="dock" tabindex="-1"><a class="header-anchor" href="#dock"><span>Dock</span></a></h3>
 <p>Get rid of all the garbage in the dock. I just leave the Finder and
 the trash, because you can’t really remove them anyways (did you try
 dragging the trash to the trash?), but I happen to use them so that’s
 fine.</p>
-</li>
-<li>
-<p>Open the terminal app to install <a href="https://brew.sh/">Homebrew</a> with
-whatever is the current recommended way. I Install it in the default
-place because otherwise it won’t be able to leverage many prebuilt
-binaries that hardcode the default prefix in them, and it’s utterly
-slow to compile everything. If you want to run Homebrew on a
-multi-user system, <a href="homebrew-multi-user.html">read that first</a>.</p>
-<p>After the installation, Homebrew tells you add <code>eval &quot;$(/opt/homebrew/bin/brew shellenv)&quot;</code> to your <code>~/.zprofile</code>. I
-personally prefer to use my <code>~/.zshenv</code> for this, because it’s sourced
+<pre><code class="hljs language-sh">defaults write com.apple.dock persistent-apps -array
+defaults write com.apple.dock persistent-others -array
+killall Dock
+</code></pre>
+<h3 id="homebrew" tabindex="-1"><a class="header-anchor" href="#homebrew"><span>Homebrew</span></a></h3>
+<p>Install <a href="https://brew.sh/">Homebrew</a> (only <code>curl | sh</code> I’ll tolerate).
+I install it in the default place because otherwise it won’t be able to
+leverage many prebuilt binaries that hardcode the default prefix in
+them, and it’s utterly slow to compile everything. If you want to run
+Homebrew on a multi-user system, <a href="homebrew-multi-user.html">read that first</a>.</p>
+<p>After the installation, Homebrew tells you to add <code>eval &quot;$(/opt/homebrew/bin/brew shellenv)&quot;</code> to your <code>~/.zprofile</code>.
+I personally prefer to use my <code>~/.zshenv</code> for this, because it’s sourced
 all the time whereas <code>.zprofile</code> is sourced only for login shells.
 Concretely this means that by setting the Homebrew environment
-variables in <code>.zshenv</code>, I can do <code>ssh me@my-machine brew ...</code>, whereas with <code>.zprofile</code>, I can’t.</p>
+variables in <code>.zshenv</code>, I can do <code>ssh me@my-machine brew ...</code>, whereas
+with <code>.zprofile</code>, I can’t.</p>
 <p>Also I don’t like running <code>eval &quot;$(brew shellenv)&quot;</code> on every single
 Zsh boot, I’d rather hardcode the output of <code>brew shellenv</code> in there
-since it’s not really supposed to change anyway. Concretely, I run:</p>
-<pre><code class="hljs language-sh">/opt/homebrew/bin/brew shellenv &gt;&gt; ~/.zshenv
+since it’s not really supposed to change anyway:</p>
+<pre><code class="hljs language-sh">bash -c <span class="hljs-string">&quot;<span class="hljs-subst">$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)</span>&quot;</span>
+/opt/homebrew/bin/brew shellenv &gt;&gt; ~/.zshenv
 </code></pre>
-</li>
-<li>
-<p>Install Firefox and iTerm2 and optionally other apps:</p>
-<pre><code class="hljs language-sh">brew install firefox iterm2
-<span class="hljs-comment"># brew install rectangle</span>
-<span class="hljs-comment"># brew install homebrew/cask-versions/firefox-developer-edition</span>
+<h3 id="apps" tabindex="-1"><a class="header-anchor" href="#apps"><span>Apps</span></a></h3>
+<pre><code class="hljs language-sh">brew install firefox iterm2 maccy cursor
+<span class="hljs-comment"># brew install firefox@developer-edition</span>
 <span class="hljs-comment"># brew install google-chrome</span>
-<span class="hljs-comment"># brew install visual-studio-code</span>
 </code></pre>
-</li>
-<li>
-<p>Install <strong>DaVinci Resolve</strong>.</p>
-</li>
-<li>
-<p>Install <strong>Logic Pro</strong> an download the full sound library. Sadly a fresh
-Logic installation can’t reuse an existing sound library directory (I
-like to keep mine on my hard drive instead of my limited size SSD), so
-we need to download the whole 60 GB from scratch.</p>
-</li>
-<li>
-<p>Press <kbd>Command</kbd> + <kbd>Shift</kbd> + <kbd>5</kbd> to open the
-custom screenshot interface, where I can change the <strong>screenshot
-directory</strong> to <code>~/Desktop/Screenshots</code>. I don’t like to clutter my
-desktop with screenshots like it’s the case by default.</p>
-</li>
-</ul>
+<p>(<a href="https://maccy.app/">Maccy</a> is a lovely super light clipboard history manager.)</p>
+<p>Then install <strong>DaVinci Resolve</strong> and <strong>Logic Pro</strong> and download the full
+sound library. Sadly a fresh Logic installation can’t reuse an existing
+sound library directory (I like to keep mine on my hard drive instead
+of my limited size SSD), so we need to download the whole 60 GB from
+scratch.</p>
+<h3 id="screenshots" tabindex="-1"><a class="header-anchor" href="#screenshots"><span>Screenshots</span></a></h3>
+<p>I don’t like to clutter my desktop with screenshots like it’s the case
+by default, so I save them to <code>~/Desktop/Screenshots</code> instead:</p>
+<pre><code class="hljs language-sh"><span class="hljs-built_in">mkdir</span> -p ~/Desktop/Screenshots
+defaults write com.apple.screencapture location ~/Desktop/Screenshots
+killall SystemUIServer
+</code></pre>
 <p>Now I’m ready to configure the <a href="#system-settings">system settings</a>,
-<a href="#iterm2-preferences">iTerm2 preferences</a> and my <a href="#terminal-environment">terminal-environment</a>.</p>
+<a href="#iterm2-preferences">iTerm2 preferences</a> and my <a href="#terminal-environment">terminal environment</a>.</p>
 <h2 id="system-settings" tabindex="-1"><a class="header-anchor" href="#system-settings"><span>System settings</span></a></h2>
+<pre><code class="hljs language-sh"><span class="hljs-comment"># General &gt; Date &amp; Time: 24-hour time</span>
+defaults write -g AppleICUForce24HourTime -bool <span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Dock: Automatically hide and show the Dock</span>
+defaults write com.apple.dock autohide -bool <span class="hljs-literal">true</span>
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Dock: Don&#x27;t show suggested and recent apps</span>
+defaults write com.apple.dock show-recents -bool <span class="hljs-literal">false</span>
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Dock: Remove the delay to show and hide the dock</span>
+defaults write com.apple.dock autohide-delay -<span class="hljs-built_in">float</span> 0
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Windows: Tiled windows have margins</span>
+defaults write com.apple.WindowManager EnableTiledWindowMargins -bool <span class="hljs-literal">false</span>
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Mission Control: Don&#x27;t automatically rearrange Spaces</span>
+defaults write com.apple.dock mru-spaces -bool <span class="hljs-literal">false</span>
+
+<span class="hljs-comment"># Desktop &amp; Dock &gt; Hot Corners (disable all, bottom right is Quick Note by default)</span>
+defaults write com.apple.dock wvous-tl-corner -int 0
+defaults write com.apple.dock wvous-tr-corner -int 0
+defaults write com.apple.dock wvous-bl-corner -int 0
+defaults write com.apple.dock wvous-br-corner -int 0
+
+<span class="hljs-comment"># Keyboard: Key repeat rate &amp; Delay until repeat (fastest possible, I like a snappy keyboard)</span>
+defaults write -g KeyRepeat -int 1
+defaults write -g InitialKeyRepeat -int 15
+
+killall Dock
+</code></pre>
+<p>For Dock delay, <a href="../../2022/05/macos-faster-desktops-dock.html">see full blog post here</a>.</p>
+<p>A few things I still need to do manually in system settings:</p>
 <ul>
 <li>In <strong>Battery &gt; Charging &gt; ⓘ</strong>, set <strong>Charge Limit</strong> to <strong>80%</strong>. Leave
 <strong>Optimized Battery Charging</strong> on (should be default).</li>
 <li>In <strong>General &gt; Software Update &gt; Automatic updates &gt; ⓘ</strong>, turn on
-<strong>Download new updates when available</strong>, but turn off <strong>Install macOS updates</strong>
-(I don’t want macOS to reboot without my permission and lose any unsaved state).</li>
-<li>In <strong>General &gt; Date &amp; Time</strong>, turn on <strong>24-hour time</strong>.</li>
-<li>In <strong>Desktop &amp; Dock</strong>, under <strong>Dock</strong>, tick <strong>Automatically hide and
-show the Dock</strong> and untick <strong>Show suggested and recent apps in Dock</strong>. Under
-<strong>Windows</strong>, set <strong>Prefer tabs when opening documents</strong> to <strong>Always</strong>.
-Under <strong>Mission Control</strong>, untick <strong>Automatically rearrange Spaces
-based on most recent use</strong>.</li>
-<li>Run <code>defaults write com.apple.dock autohide-delay -float 0; killall Dock</code>
-to <a href="../../2022/05/macos-faster-desktops-dock.html">remove the delay</a> to
-show and hide the dock.</li>
+<strong>Download new updates when available</strong>, but turn off <strong>Install macOS
+updates</strong> (I don’t want macOS to reboot without my permission and lose
+any unsaved state).</li>
 <li>In <strong>Displays &gt; Night Shift…</strong>, set <strong>Schedule</strong> to <strong>Sunset to Sunrise</strong>.</li>
-<li>In <strong>Keyboard</strong>, set <strong>Key repeat rate</strong> and <strong>Delay until repeat</strong>
-to the fastest possible. I like my keyboard to be snappy.</li>
-<li>In <strong>Keyboard &gt; Input Sources</strong>, <strong>Edit…</strong> the settings to disable
-everything. Also in <strong>Text Replacements…</strong>, remove the
-built-in <code>omw</code> abbreviation. I’m always staggered when I forget to do
-this and <code>omw</code> gets replaced by <code>On my way!</code>, or when I press space
-twice and it inserts a colon instead <em>while I code in Visual Studio Code</em>! 🤦‍♀️</li>
-<li>In <strong>Keyboard &gt; Keyboard Shortcuts… &gt; Mission Control</strong>, I
-enable the <strong>Switch to Desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
+<li>In <strong>Keyboard &gt; Input Sources &gt; Edit…</strong>, disable everything. Also in
+<strong>Text Replacements…</strong>, remove the built-in <code>omw</code> abbreviation. I’m
+always staggered when I forget to do this and <code>omw</code> gets replaced by
+<code>On my way!</code>, or when I press space twice and it inserts a colon
+instead while I code in Cursor! 🤦‍♀️</li>
+<li>In <strong>Keyboard &gt; Keyboard Shortcuts… &gt; Mission Control</strong>, I enable
+the <strong>Switch to Desktop</strong> shortcuts for <a href="../../2022/05/macos-faster-desktops-dock.html">faster desktop switching</a>.</li>
 </ul>
 <p>For all Visual Studio Code based editors, I disable
-<code>ApplePressAndHoldEnabled</code> for… sanity. And I also
-<a href="https://powerusers.codidact.com/posts/285975/285976#answer-285976">force new windows to open as tabs</a>
+<code>ApplePressAndHoldEnabled</code> for… sanity. And I also <a href="https://powerusers.codidact.com/posts/285975/285976#answer-285976">force new windows to open as tabs</a>
 (this can also be configured <a href="https://support.apple.com/en-ca/guide/mac-help/mchlp1032/mac#apd6b032a9835244">system-wide</a>
 but I only want it for those apps).</p>
 <pre><code class="hljs language-sh"><span class="hljs-comment"># Visual Studio Code</span>
@@ -236,37 +252,31 @@ asdf helper (see below).</p>
 <pre><code class="hljs language-sh">vim ~/.zshrc ~/.zshenv
 </code></pre>
 <p>Install whatever software I pretty much always use with Homebrew.</p>
-<pre><code class="hljs language-sh">brew install rg fzf imagemagick ffmpeg ncdu htop
+<pre><code class="hljs language-sh">brew install rg imagemagick ffmpeg ncdu htop jq asdf wget tree watch moreutils yt-dlp 
 </code></pre>
 <ul>
-<li><a href="https://github.com/BurntSushi/ripgrep">ripgrep</a>
-is my favorite way to search code.</li>
-<li><a href="https://github.com/junegunn/fzf">fzf</a> is an awesome fuzzy finder.</li>
+<li><a href="https://github.com/BurntSushi/ripgrep">ripgrep</a> is my favorite way to
+search code.</li>
 <li>I probably don’t need to introduce <a href="https://imagemagick.org/">ImageMagick</a>
 and <a href="https://www.ffmpeg.org/">FFmpeg</a>.</li>
 <li><a href="https://dev.yorhel.nl/ncdu">ncdu</a> is a cool tool to monitor disk usage.</li>
 <li><a href="https://htop.dev/">htop</a> is an awesome process viewer.</li>
+<li><a href="https://jqlang.org/">jq</a>, legendary CLI to process JSON.</li>
+<li><a href="https://asdf-vm.com/">asdf</a> version manager.</li>
+<li><code>wget</code>, <code>tree</code>, <code>watch</code> basic UNIX commands missing from macOS.</li>
+<li><a href="https://github.com/pgdr/moreutils">moreutils</a> handy utils, mainly for <code>sponge</code>.</li>
+<li><a href="https://github.com/yt-dlp/yt-dlp">yt-dlp</a> CLI video downloader.</li>
 </ul>
 <p>Install the <a href="https://github.com/asdf-vm/asdf">asdf</a> plugins I need
-and whatever version is in my <code>~/.tool-versions</code>. My <code>~/.zshrc</code>
-automatically installs asdf on the first invocation so no need to do
-that manually.</p>
+and whatever version is in my <code>~/.tool-versions</code>.</p>
 <pre><code class="hljs language-sh">asdf plugin add nodejs
 <span class="hljs-comment"># asdf plugin add python</span>
-<span class="hljs-comment"># asdf plugin add ruby</span>
-<span class="hljs-comment"># asdf plugin add elixir</span>
-<span class="hljs-comment"># asdf plugin add erlang</span>
 asdf install
 </code></pre>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>That’s pretty much the gist! This is a fairly straightforward and not
 very time consuming checklist, and the main things that need to be
 automated (my dotfiles) are.</p>
-<p>I don’t think it’s worth automating my macOS system settings somehow
-as they might change in future versions anyways. Same thing for iTerm2,
-where I definitely don’t want to copy over my whole configuration file
-from an old installation, I’d rather start from the latest and greatest
-defaults and just tweak what I need on top of it.</p>
 <p>Everything else is very specific to the current machine I’m setting up
 and I leave them to my discretion at the time of installing.</p>
 <p>If you read until there, I hope that you learnt something, or that it

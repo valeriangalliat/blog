@@ -136,7 +136,6 @@ by default, so I save them to `~/Desktop/Screenshots` instead:
 ```sh
 mkdir -p ~/Desktop/Screenshots
 defaults write com.apple.screencapture location ~/Desktop/Screenshots
-killall SystemUIServer
 ```
 
 Now I'm ready to configure the [system settings](#system-settings),
@@ -145,8 +144,15 @@ Now I'm ready to configure the [system settings](#system-settings),
 ## System settings
 
 ```sh
+# General > AirDrop & Continuity: Allow Handoff between this Mac and your iCloud devices
+defaults -currentHost write com.apple.coreservices.useractivityd ActivityAdvertisingAllowed -bool false
+defaults -currentHost write com.apple.coreservices.useractivityd ActivityReceivingAllowed -bool false
+
 # General > Date & Time: 24-hour time
 defaults write -g AppleICUForce24HourTime -bool true
+
+# Accessibility > Zoom: Use scroll gesture with modifier keys to zoom (Control is default)
+defaults write com.apple.universalaccess closeViewScrollWheelToggle -bool true
 
 # Desktop & Dock > Dock: Automatically hide and show the Dock
 defaults write com.apple.dock autohide -bool true
@@ -170,13 +176,23 @@ defaults write com.apple.dock wvous-bl-corner -int 0
 defaults write com.apple.dock wvous-br-corner -int 0
 
 # Keyboard: Key repeat rate & Delay until repeat (fastest possible, I like a snappy keyboard)
-defaults write -g KeyRepeat -int 1
+defaults write -g KeyRepeat -int 2
 defaults write -g InitialKeyRepeat -int 15
 
 killall Dock
 ```
 
+<div class="note">
+
+**Note:** log out and back in after running this block. Clock, keyboard and tiling settings don't take effect immediately.
+
+</div>
+
 For Dock delay, [see full blog post here](../../2022/05/macos-faster-desktops-dock.md).
+
+Thanks to [this blog post](https://alexwlchan.net/notes/2025/disable-handoff-icons-in-dock/)
+for disabling Continuity Handoff (prevent Dock icons from apps on other
+devices).
 
 A few things I still need to do manually in system settings:
 
@@ -256,9 +272,15 @@ shortcuts to navigate between tabs.
 
 ## Terminal environment
 
-First, I make a SSH keypair or copy an existing one in `~/.ssh`. I
-usually run `ssh-keygen` either way just to let it create the directory
-with the proper permissions, even if I'll override the key later.
+Starts with Xcode Command Line Tools to have `git`.
+
+```sh
+xcode-select --install
+```
+
+Then I make a SSH keypair or copy an existing one in `~/.ssh`. I usually
+run `ssh-keygen` either way just to let it create the directory with the
+proper permissions, even if I'll override the key later.
 
 ```sh
 ssh-keygen -t ed25519

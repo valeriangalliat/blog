@@ -5,7 +5,7 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-07-29T18:46:21.498Z</updated>
+  <updated>2026-08-03T03:21:01.216Z</updated>
   <author>
     <name>Val</name>
   </author>
@@ -334,7 +334,15 @@ is way fast enough for my short videos anyway.</p>
     <link href="https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html" />
     <id>https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html</id>
     <updated>2026-06-29T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>I have a <a href="https://www.lg.com/ca_en/monitors/uhd-4k-5k/24md4klb-b/">LG UltraFine 4K</a>
+    <content type="html"><![CDATA[<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html#tldr"><span>TLDR</span></a></h2>
+<ul>
+<li>Plug an external power adapter instead of relying on the monitor to
+power the laptop (if using with a laptop).</li>
+<li>Play a <a href="https://youtu.be/VN-KIlsxxOw">LCD screen burn-in fix</a> video
+full screen for a few hours.</li>
+</ul>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html#context"><span>Context</span></a></h2>
+<p>I have a <a href="https://www.lg.com/ca_en/monitors/uhd-4k-5k/24md4klb-b/">LG UltraFine 4K</a>
 monitor (24MD4KLB-B, the one made in partnership with Apple in 2019 for deep
 macOS integration).</p>
 <p>This year it randomly started flickering. Literally once second it was
@@ -359,6 +367,27 @@ few minutes or sometimes a few hours, the flickering is gone.</p>
 <p>Then you can use the screen for power again, and in my experience it’s
 fine again for weeks or even months until the next instance of
 flickering. 🤷</p>
+<h2 id="new-solution" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/06/lg-ultrafine-4k-display-randomly-flickering.html#new-solution"><span>New solution</span></a></h2>
+<p>Hi, it’s Val from the future, a month later. It just happened again and
+the previous solution wouldn’t do anything.</p>
+<p>Tried unplugging the monitor overnight, but this changed nothing.</p>
+<p>Tried <a href="https://apps.apple.com/us/app/lg-screen-manager-lg-monitor/id1142051783?mt=12">LG Screen Manager</a>
+to update the monitor software, and to factory reset the monitor, but
+both changed nothing.</p>
+<p>Then in a Google search for “LG UltraFine 4K flickering” which lead to a
+quick back and forth with Gemini, it eventually suggested one thing I
+hadn’t tried yet: <strong>force an internal panel flush</strong>.</p>
+<blockquote>
+<p>Since the ghost frame survived overnight, The LCD pixels are
+physically stuck in their twisted orientation due to a static
+electrical charge.</p>
+</blockquote>
+<p>How to do this? Play a “pixel unsticking” or “color cycling” video, also
+known as “LCD screen burn-in fix”. I searched exactly that on YouTube
+and found <a href="https://youtu.be/VN-KIlsxxOw">this video</a> (one amongst a ton
+of other similar videos).</p>
+<p>I played it, full screen of course, for a couple hours and guess what, I
+returned to a perfectly fine screen, no flickering and burn-in anymore!!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>
@@ -1905,9 +1934,9 @@ make a x86-64 Linux build from an ARM Mac without emulation.</p>
     <id>https://www.codejam.info/2026/02/astro-middleware-static-pages.html</id>
     <updated>2026-02-11T08:00:00.000Z</updated>
     <content type="html"><![CDATA[<div class="note">
-<p><strong>Update:</strong> Astro v6 and <code>@astrojs/cloudflare</code> v13 simplify a few things
-described below, including how you configure a custom worker entrypoint.
-See <a href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#astro-v6-update">Astro v6</a>!</p>
+<p><strong>Update:</strong> Astro v6, v7 and <code>@astrojs/cloudflare</code> v13 and v14 simplify
+a few things described below. See <a href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#astro-v6-update">Astro v6</a> and
+<a href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#astro-v7-update">Astro v7</a>!</p>
 </div>
 <p>Astro allows to prerender pages as static assets, so everything is
 compiled at build time and can be served super quick.</p>
@@ -2121,10 +2150,60 @@ Cloudflare Worker environment, not wrapped by Astro.</p>
 <p>As for development, <code>astro dev</code> now runs on Cloudflare’s <code>workerd</code> using
 the same entrypoint as production, so no need for the <a href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#what-about-development">middleware workaround</a>
 anymore. Sweet!</p>
+<h2 id="astro-v7-update" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#astro-v7-update"><span>Astro v7 update</span></a></h2>
+<p>Everything from <a href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#astro-v6-update">v6</a> is relevant (read that first).
+Then one detail: in a fully <code>output: 'static'</code> site with <em>no</em> SSR or API
+route whatsoever, Astro now skips the worker entirely. Your <code>main</code> in
+<code>wrangler.jsonc</code> is completely ignored.</p>
+<p>This results in the following error when deploying to Cloudflare:</p>
+<pre><code class="hljs">Cannot set run_worker_first without a Worker script.
+Please remove run_worker_first from your configuration file, or provide a Worker script in your configuration file (`main`).
+</code></pre>
+<p>Three options:</p>
+<ol>
+<li>
+<p>Set <code>output: 'server'</code> and then <code>export const prerender = true</code> in all
+your pages (meh).</p>
+</li>
+<li>
+<p>Same but do the second part via an Astro integration:</p>
+<pre><code class="hljs language-ts"><span class="hljs-keyword">import</span> { defineConfig } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro/config&#x27;</span>
+<span class="hljs-keyword">import</span> { <span class="hljs-title class_">AstroIntegration</span> } <span class="hljs-keyword">from</span> <span class="hljs-string">&#x27;astro&#x27;</span>
+
+<span class="hljs-keyword">function</span> <span class="hljs-title function_">prerender</span>(<span class="hljs-params"></span>): <span class="hljs-title class_">AstroIntegration</span> {
+  <span class="hljs-keyword">return</span> {
+    <span class="hljs-attr">name</span>: <span class="hljs-string">&#x27;prerender&#x27;</span>,
+    <span class="hljs-attr">hooks</span>: {
+      <span class="hljs-string">&#x27;astro:route:setup&#x27;</span>: <span class="hljs-function">(<span class="hljs-params">{ route }</span>) =&gt;</span> {
+        <span class="hljs-keyword">if</span> (route.<span class="hljs-property">prerender</span> === <span class="hljs-literal">undefined</span>) {
+          route.<span class="hljs-property">prerender</span> = <span class="hljs-literal">true</span>
+        }
+      },
+    },
+  }
+}
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">default</span> <span class="hljs-title function_">defineConfig</span>({
+  <span class="hljs-attr">output</span>: <span class="hljs-string">&#x27;server&#x27;</span>,
+  <span class="hljs-attr">integrations</span>: [<span class="hljs-title function_">prerender</span>()],
+})
+</code></pre>
+</li>
+<li>
+<p>Add a dummy SSR or API route to force the hybrid mode:</p>
+<pre><code class="hljs language-ts"><span class="hljs-comment">// src/pages/api/hybrid.ts</span>
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> prerender = <span class="hljs-literal">false</span>
+
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">function</span> <span class="hljs-title function_">GET</span>(<span class="hljs-params"></span>) {
+  <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-title class_">Response</span>(<span class="hljs-literal">null</span>, { <span class="hljs-attr">status</span>: <span class="hljs-number">204</span> })
+}
+</code></pre>
+</li>
+</ol>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="https://www.codejam.info/2026/02/astro-middleware-static-pages.html#wrapping-up"><span>Wrapping up</span></a></h2>
 <p>In short: configure <code>run_worker_first</code> on Cloudflare so it runs the
 worker in front of static pages, then use a custom <code>workerEntryPoint</code>
-(Astro v5) or a custom <code>main</code> in <code>wrangler.jsonc</code> (Astro v6) so you get
+(Astro v5) or a custom <code>main</code> in <code>wrangler.jsonc</code> (Astro v6+) so you get
 full control over the worker, and can run code <em>outside of the
 middleware</em> (which does not run for static pages).</p>
 <section class="post-footer">

@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="LG UltraFine 4K display randomly flickering | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="I have a LG UltraFine 4K monitor (24MD4KLB-B, the one made in partnership with Apple in 2019 for deep macOS integration).">
+  <meta property="og:description" content="Plug an external power adapter instead of relying on the monitor to power the laptop (if using with a laptop).">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -36,6 +36,14 @@
     </div>
   </header>
   <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<ul>
+<li>Plug an external power adapter instead of relying on the monitor to
+power the laptop (if using with a laptop).</li>
+<li>Play a <a href="https://youtu.be/VN-KIlsxxOw">LCD screen burn-in fix</a> video
+full screen for a few hours.</li>
+</ul>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="#context"><span>Context</span></a></h2>
 <p>I have a <a href="https://www.lg.com/ca_en/monitors/uhd-4k-5k/24md4klb-b/">LG UltraFine 4K</a>
 monitor (24MD4KLB-B, the one made in partnership with Apple in 2019 for deep
 macOS integration).</p>
@@ -61,6 +69,27 @@ few minutes or sometimes a few hours, the flickering is gone.</p>
 <p>Then you can use the screen for power again, and in my experience it’s
 fine again for weeks or even months until the next instance of
 flickering. 🤷</p>
+<h2 id="new-solution" tabindex="-1"><a class="header-anchor" href="#new-solution"><span>New solution</span></a></h2>
+<p>Hi, it’s Val from the future, a month later. It just happened again and
+the previous solution wouldn’t do anything.</p>
+<p>Tried unplugging the monitor overnight, but this changed nothing.</p>
+<p>Tried <a href="https://apps.apple.com/us/app/lg-screen-manager-lg-monitor/id1142051783?mt=12">LG Screen Manager</a>
+to update the monitor software, and to factory reset the monitor, but
+both changed nothing.</p>
+<p>Then in a Google search for “LG UltraFine 4K flickering” which lead to a
+quick back and forth with Gemini, it eventually suggested one thing I
+hadn’t tried yet: <strong>force an internal panel flush</strong>.</p>
+<blockquote>
+<p>Since the ghost frame survived overnight, The LCD pixels are
+physically stuck in their twisted orientation due to a static
+electrical charge.</p>
+</blockquote>
+<p>How to do this? Play a “pixel unsticking” or “color cycling” video, also
+known as “LCD screen burn-in fix”. I searched exactly that on YouTube
+and found <a href="https://youtu.be/VN-KIlsxxOw">this video</a> (one amongst a ton
+of other similar videos).</p>
+<p>I played it, full screen of course, for a couple hours and guess what, I
+returned to a perfectly fine screen, no flickering and burn-in anymore!!</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

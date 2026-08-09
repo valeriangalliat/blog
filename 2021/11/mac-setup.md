@@ -175,6 +175,9 @@ defaults write com.apple.dock wvous-tr-corner -int 0
 defaults write com.apple.dock wvous-bl-corner -int 0
 defaults write com.apple.dock wvous-br-corner -int 0
 
+# Menu Bar: Spotlight (untick)
+defaults -currentHost write com.apple.Spotlight MenuItemHidden -bool true
+
 # Keyboard: Key repeat rate & Delay until repeat (fastest possible, I like a snappy keyboard)
 defaults write -g KeyRepeat -int 2
 defaults write -g InitialKeyRepeat -int 15

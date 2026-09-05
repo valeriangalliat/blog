@@ -4,7 +4,15 @@ tweet: https://x.com/valeriangalliat/status/1448722067638177795
 
 # Bypass SQLite exclusive lock 🔐
 "Error: database is locked" is not an acceptable answer  
-October 14, 2021
+October 14, 2021 | Updated on September 4, 2026
+
+## TLDR
+
+Chrome database with rollback journal: `sqlite3 'file:Web Data?mode=ro&nolock=1'`.
+
+Firefox database with WAL: `sqlite3 'file:places.sqlite?immutable=1'`.
+
+## Context
 
 There's a [number of ways](https://www.sqlite.org/lockingv3.html) SQLite
 can lock a database file, and if you're encountering a "database is
@@ -20,10 +28,10 @@ the whole database file and query the copy**. If working off a one-time
 snapshot of the database work for you, awesome, problem solved:
 
 ```console
-$ echo .tables | sqlite3 db.sqlite
+$ echo .tables | sqlite3 places.sqlite
 Error: database is locked
-$ cp db.sqlite db-snapshot.sqlite
-$ echo '.tables' | sqlite3 db-snapshot.sqlite
+$ cp places.sqlite places-snapshot.sqlite
+$ echo '.tables' | sqlite3 places-snapshot.sqlite
 actual_table
 ```
 
@@ -51,7 +59,7 @@ So let me tell you the better way.
 
 SQLite [allows passing](https://www.sqlite.org/c3ref/open.html) a
 [`file:` URI](https://www.sqlite.org/uri.html) instead of a filename
-(e.g. `file:db.sqlite` instead of `db.sqlite`), which comes with the
+(e.g. `file:places.sqlite` instead of `places.sqlite`), which comes with the
 extra ability to pass query string parameters.
 
 Some of those are aliases for flags you could otherwise set when opening
@@ -65,18 +73,47 @@ would otherwise be inaccessible to the SQLite user (no configuration
 flags for those). In particular, [`nolock`](https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4913)
 and [`immutable`](https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4915).
 
-While `nolock` only prevents this connection from locking the database
-and doesn't do anything about the fact a lock is already being held by
-another connection, the `immutable` is especially interesting for us.
-From its [documentation](https://www.sqlite.org/c3ref/open.html):
+### Rollback journal databases
 
-> The immutable parameter is a boolean query parameter that indicates
+For SQLite databases using the default rollback journal, as Chrome does,
+we can get away with using `nolock` to bypass the lock. From the
+[documentation](https://www.sqlite.org/c3ref/open.html):
+
+> The `nolock` parameter is a boolean query parameter which if set
+> disables file locking in rollback journal modes. This is useful for
+> accessing a database on a filesystem that does not support locking.
+>
+> **Caution:** database corruption might result if two or more processes
+> write to the same database and any one of those processes uses
+> `nolock=1`.
+
+```console
+$ echo .tables | sqlite3 'Web Data'
+Error: database is locked
+$ echo '.tables' | sqlite3 'file:Web Data?nolock=1'
+actual_table
+```
+
+As long as you're only reading data, you'll be fine. You can enforce
+that by using:
+
+```sh
+sqlite3 'file:Web Data?mode=ro&nolock=1'
+```
+
+### WAL databases
+
+For WAL SQLite databases like used in Firefox, the `nolock` parameter
+has no effect, which leaves us with `immutable`. From its
+[documentation](https://www.sqlite.org/c3ref/open.html):
+
+> The `immutable` parameter is a boolean query parameter that indicates
 > that the database file is stored on read-only media. When `immutable`
 > is set, SQLite assumes that the database file cannot be changed, and
 > so the database is opened read-only and **all locking and change
 > detection is disabled**.
 >
-> **Caution:** setting the immutable property on a database file that
+> **Caution:** setting the `immutable` property on a database file that
 > does in fact change can result in incorrect query results and/or
 > [`SQLITE_CORRUPT`](https://www.sqlite.org/rescode.html#corrupt) errors.
 >
@@ -88,26 +125,23 @@ the database as if was on an read-only device by setting `immutable=1`,
 which has the particularity of disabling all locking mechanisms,
 **including that of respecting existing locks**.
 
-With this trick, we can rewrite the previous fix:
-
 ```console
-$ echo .tables | sqlite3 db.sqlite
+$ echo .tables | sqlite3 places.sqlite
 Error: database is locked
-$ echo '.tables' | sqlite3 'file:db.sqlite?immutable=1'
+$ echo '.tables' | sqlite3 'file:places.sqlite?immutable=1'
 actual_table
 ```
 
 This doesn't require creating a copy of the file that you want to
 query despite it being locked by another active connection!
 
-The only caveat is because SQLite doesn't expect that file to be
-updated, changes wont be reflected in that immutable connexion, so it's
-still like you're querying a snapshot, it's just that you don't have to
-physically copy the database in order to read it.
+The catch is SQLite assumes the file never changes, so it ignores the
+WAL. You see the last checkpoint in the main file and not necessarily
+all the latest writes. If a checkpoint runs during the query, you can also
+get incorrect results and/or [`SQLITE_CORRUPT`](https://www.sqlite.org/rescode.html#corrupt)
+as mentioned earlier.
 
-Also as mentioned earlier, if the underlying database is updated, this
-might result in errors when querying over the immutable connection.
-Because of that, I would recommending opening a new connection every
+Because of that, I would recommend opening a new connection every
 time you want to query the database.
 
 ## Applying it to a SQLite driver
@@ -117,9 +151,10 @@ a program that uses a SQLite driver? In my case I'm using
 [`sqlite3`](https://www.npmjs.com/package/sqlite3) with Node.js, but the
 method should be very similar in your language of choice.
 
-Because the `immutable` option is only available in the [URI filename](https://www.sqlite.org/uri.html)
-format, we need to pass this kind of URI to our driver, e.g.
-`file:db.sqlite?immutable=1` as opposed to `db.sqlite`.
+Because the `nolock` and `immutable` options are only available in the
+[URI filename](https://www.sqlite.org/uri.html) format, we need to pass
+this kind of URI to our driver, e.g. `file:places.sqlite?immutable=1` as
+opposed to `places.sqlite`.
 
 The URI format is not enabled by default and you need to pass the
 [`SQLITE_OPEN_URI`](https://www.sqlite.org/c3ref/c_open_autoproxy.html)
@@ -129,7 +164,7 @@ With `sqlite3`, this looks like this:
 
 ```js
 const sqlite3 = require('sqlite3')
-const db = new sqlite3.Database('file:db.sqlite?immutable=1', sqlite3.OPEN_READONLY | sqlite3.OPEN_URI)
+const db = new sqlite3.Database('file:places.sqlite?immutable=1', sqlite3.OPEN_READONLY | sqlite3.OPEN_URI)
 ```
 
 We need to precise `OPEN_READONLY` because `OPEN_URI` alone is not a
@@ -139,9 +174,8 @@ of `SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX`.
 
 ## Wrapping up
 
-I hope you enjoyed this trick! If you find a better way to do this, or
-a way that allows to reflect underlying database updates without
-reloading the connection, please [let me know](/val.md#contact), I'd
-love to know about it!
+I hope you enjoyed this trick! If you find a better way to do this
+(especially for WAL to be able to reflect underlying database updates),
+please [let me know](/val.md#contact), I'd love to know about it!
 
 And as usual, keep hacking. 😜

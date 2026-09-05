@@ -12,7 +12,7 @@
   <link rel="icon" href="/favicon.ico">
   <meta property="og:title" content="Bypass SQLite exclusive lock 🔐 | CodeJam">
   <meta property="og:site_name" content="CodeJam">
-  <meta property="og:description" content="“Error: database is locked” is not an acceptable answer. There’s a number of ways SQLite can lock a database file, and if you’re encountering a “database is locked” error, according to the internet, you have two options:">
+  <meta property="og:description" content="“Error: database is locked” is not an acceptable answer. Chrome database with rollback journal: sqlite3 &#39;file:Web Data?mode=ro&amp;nolock=1&#39;.">
   <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
   <meta name="twitter:card" content="summary">
   <meta name="twitter:site" content="@valeriangalliat">
@@ -32,11 +32,15 @@
       <div class="content">
 <h1>Bypass SQLite exclusive lock 🔐</h1>
 <p class="tagline">“Error: database is locked” is not an acceptable answer</p>
-<p class="date">October 14, 2021</p>
+<p class="date">October 14, 2021 | Updated on September 4, 2026</p>
       </div>
     </div>
   </header>
   <div class="content">
+<h2 id="tldr" tabindex="-1"><a class="header-anchor" href="#tldr"><span>TLDR</span></a></h2>
+<p>Chrome database with rollback journal: <code>sqlite3 'file:Web Data?mode=ro&amp;nolock=1'</code>.</p>
+<p>Firefox database with WAL: <code>sqlite3 'file:places.sqlite?immutable=1'</code>.</p>
+<h2 id="context" tabindex="-1"><a class="header-anchor" href="#context"><span>Context</span></a></h2>
 <p>There’s a <a href="https://www.sqlite.org/lockingv3.html">number of ways</a> SQLite
 can lock a database file, and if you’re encountering a “database is
 locked” error, according to <a href="https://stackoverflow.com/questions/151026/how-do-i-unlock-a-sqlite-database">the internet</a>,
@@ -49,10 +53,10 @@ problematic queries.</li>
 <p>By “you’re fucked” I mean that your seemingly only option is to <strong>copy
 the whole database file and query the copy</strong>. If working off a one-time
 snapshot of the database work for you, awesome, problem solved:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 places.sqlite</span>
 Error: database is locked
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cp</span> db.sqlite db-snapshot.sqlite</span>
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 db-snapshot.sqlite</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">cp</span> places.sqlite places-snapshot.sqlite</span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 places-snapshot.sqlite</span>
 actual_table
 </code></pre>
 <p>But it seems that’s not a good enough solution for many people (including myself)
@@ -74,7 +78,7 @@ and I believe there <em>must</em> be a better way.</p>
 <h2 id="the-better-way" tabindex="-1"><a class="header-anchor" href="#the-better-way"><span>The better way</span></a></h2>
 <p>SQLite <a href="https://www.sqlite.org/c3ref/open.html">allows passing</a> a
 <a href="https://www.sqlite.org/uri.html"><code>file:</code> URI</a> instead of a filename
-(e.g. <code>file:db.sqlite</code> instead of <code>db.sqlite</code>), which comes with the
+(e.g. <code>file:places.sqlite</code> instead of <code>places.sqlite</code>), which comes with the
 extra ability to pass query string parameters.</p>
 <p>Some of those are aliases for flags you could otherwise set when opening
 the connexion, for example <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/main.c#L3023"><code>mode=ro</code></a>
@@ -85,17 +89,38 @@ the same as <a href="https://www.sqlite.org/c3ref/c_open_autoproxy.html"><code>S
 would otherwise be inaccessible to the SQLite user (no configuration
 flags for those). In particular, <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4913"><code>nolock</code></a>
 and <a href="https://github.com/sqlite/sqlite/blob/8436f53ebe369e0d646068d3b25ea11673debf0e/src/pager.c#L4915"><code>immutable</code></a>.</p>
-<p>While <code>nolock</code> only prevents this connection from locking the database
-and doesn’t do anything about the fact a lock is already being held by
-another connection, the <code>immutable</code> is especially interesting for us.
-From its <a href="https://www.sqlite.org/c3ref/open.html">documentation</a>:</p>
+<h3 id="rollback-journal-databases" tabindex="-1"><a class="header-anchor" href="#rollback-journal-databases"><span>Rollback journal databases</span></a></h3>
+<p>For SQLite databases using the default rollback journal, as Chrome does,
+we can get away with using <code>nolock</code> to bypass the lock. From the
+<a href="https://www.sqlite.org/c3ref/open.html">documentation</a>:</p>
 <blockquote>
-<p>The immutable parameter is a boolean query parameter that indicates
+<p>The <code>nolock</code> parameter is a boolean query parameter which if set
+disables file locking in rollback journal modes. This is useful for
+accessing a database on a filesystem that does not support locking.</p>
+<p><strong>Caution:</strong> database corruption might result if two or more processes
+write to the same database and any one of those processes uses
+<code>nolock=1</code>.</p>
+</blockquote>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 <span class="hljs-string">&#x27;Web Data&#x27;</span></span>
+Error: database is locked
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:Web Data?nolock=1&#x27;</span></span>
+actual_table
+</code></pre>
+<p>As long as you’re only reading data, you’ll be fine. You can enforce
+that by using:</p>
+<pre><code class="hljs language-sh">sqlite3 <span class="hljs-string">&#x27;file:Web Data?mode=ro&amp;nolock=1&#x27;</span>
+</code></pre>
+<h3 id="wal-databases" tabindex="-1"><a class="header-anchor" href="#wal-databases"><span>WAL databases</span></a></h3>
+<p>For WAL SQLite databases like used in Firefox, the <code>nolock</code> parameter
+has no effect, which leaves us with <code>immutable</code>. From its
+<a href="https://www.sqlite.org/c3ref/open.html">documentation</a>:</p>
+<blockquote>
+<p>The <code>immutable</code> parameter is a boolean query parameter that indicates
 that the database file is stored on read-only media. When <code>immutable</code>
 is set, SQLite assumes that the database file cannot be changed, and
 so the database is opened read-only and <strong>all locking and change
 detection is disabled</strong>.</p>
-<p><strong>Caution:</strong> setting the immutable property on a database file that
+<p><strong>Caution:</strong> setting the <code>immutable</code> property on a database file that
 does in fact change can result in incorrect query results and/or
 <a href="https://www.sqlite.org/rescode.html#corrupt"><code>SQLITE_CORRUPT</code></a> errors.</p>
 <p><strong>See also:</strong> <a href="https://www.sqlite.org/c3ref/c_iocap_atomic.html"><code>SQLITE_IOCAP_IMMUTABLE</code></a>.</p>
@@ -105,46 +130,44 @@ particular characteristic of the IO device, we can force SQLite to treat
 the database as if was on an read-only device by setting <code>immutable=1</code>,
 which has the particularity of disabling all locking mechanisms,
 <strong>including that of respecting existing locks</strong>.</p>
-<p>With this trick, we can rewrite the previous fix:</p>
-<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 db.sqlite</span>
+<pre><code class="hljs language-console"><span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> .tables | sqlite3 places.sqlite</span>
 Error: database is locked
-<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span></span>
+<span class="hljs-meta prompt_">$ </span><span class="language-bash"><span class="hljs-built_in">echo</span> <span class="hljs-string">&#x27;.tables&#x27;</span> | sqlite3 <span class="hljs-string">&#x27;file:places.sqlite?immutable=1&#x27;</span></span>
 actual_table
 </code></pre>
 <p>This doesn’t require creating a copy of the file that you want to
 query despite it being locked by another active connection!</p>
-<p>The only caveat is because SQLite doesn’t expect that file to be
-updated, changes wont be reflected in that immutable connexion, so it’s
-still like you’re querying a snapshot, it’s just that you don’t have to
-physically copy the database in order to read it.</p>
-<p>Also as mentioned earlier, if the underlying database is updated, this
-might result in errors when querying over the immutable connection.
-Because of that, I would recommending opening a new connection every
+<p>The catch is SQLite assumes the file never changes, so it ignores the
+WAL. You see the last checkpoint in the main file and not necessarily
+all the latest writes. If a checkpoint runs during the query, you can also
+get incorrect results and/or <a href="https://www.sqlite.org/rescode.html#corrupt"><code>SQLITE_CORRUPT</code></a>
+as mentioned earlier.</p>
+<p>Because of that, I would recommend opening a new connection every
 time you want to query the database.</p>
 <h2 id="applying-it-to-a-sqlite-driver" tabindex="-1"><a class="header-anchor" href="#applying-it-to-a-sqlite-driver"><span>Applying it to a SQLite driver</span></a></h2>
 <p>It’s nice to be able to do that with the CLI, but how do we do that from
 a program that uses a SQLite driver? In my case I’m using
 <a href="https://www.npmjs.com/package/sqlite3"><code>sqlite3</code></a> with Node.js, but the
 method should be very similar in your language of choice.</p>
-<p>Because the <code>immutable</code> option is only available in the <a href="https://www.sqlite.org/uri.html">URI filename</a>
-format, we need to pass this kind of URI to our driver, e.g.
-<code>file:db.sqlite?immutable=1</code> as opposed to <code>db.sqlite</code>.</p>
+<p>Because the <code>nolock</code> and <code>immutable</code> options are only available in the
+<a href="https://www.sqlite.org/uri.html">URI filename</a> format, we need to pass
+this kind of URI to our driver, e.g. <code>file:places.sqlite?immutable=1</code> as
+opposed to <code>places.sqlite</code>.</p>
 <p>The URI format is not enabled by default and you need to pass the
 <a href="https://www.sqlite.org/c3ref/c_open_autoproxy.html"><code>SQLITE_OPEN_URI</code></a>
 flag in order to enable it.</p>
 <p>With <code>sqlite3</code>, this looks like this:</p>
 <pre><code class="hljs language-js"><span class="hljs-keyword">const</span> sqlite3 = <span class="hljs-built_in">require</span>(<span class="hljs-string">&#x27;sqlite3&#x27;</span>)
-<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.<span class="hljs-title class_">Database</span>(<span class="hljs-string">&#x27;file:db.sqlite?immutable=1&#x27;</span>, sqlite3.<span class="hljs-property">OPEN_READONLY</span> | sqlite3.<span class="hljs-property">OPEN_URI</span>)
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">new</span> sqlite3.<span class="hljs-title class_">Database</span>(<span class="hljs-string">&#x27;file:places.sqlite?immutable=1&#x27;</span>, sqlite3.<span class="hljs-property">OPEN_READONLY</span> | sqlite3.<span class="hljs-property">OPEN_URI</span>)
 </code></pre>
 <p>We need to precise <code>OPEN_READONLY</code> because <code>OPEN_URI</code> alone is not a
 valid mode, and by passing an explicit mode, we’re effectively
 overriding the <a href="https://github.com/mapbox/node-sqlite3/blob/918052b538b0effe6c4a44c74a16b2749c08a0d2/src/database.cc#L135">default</a>
 of <code>SQLITE_OPEN_READWRITE | SQLITE_OPEN_CREATE | SQLITE_OPEN_FULLMUTEX</code>.</p>
 <h2 id="wrapping-up" tabindex="-1"><a class="header-anchor" href="#wrapping-up"><span>Wrapping up</span></a></h2>
-<p>I hope you enjoyed this trick! If you find a better way to do this, or
-a way that allows to reflect underlying database updates without
-reloading the connection, please <a href="/val.html#contact">let me know</a>, I’d
-love to know about it!</p>
+<p>I hope you enjoyed this trick! If you find a better way to do this
+(especially for WAL to be able to reflect underlying database updates),
+please <a href="/val.html#contact">let me know</a>, I’d love to know about it!</p>
 <p>And as usual, keep hacking. 😜</p>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>

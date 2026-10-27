@@ -2,4 +2,5 @@
 /1337
 /.vercel
 /.env
+/.wrangler
 /package-lock.json

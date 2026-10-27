@@ -1,0 +1,11 @@
+worker.js
+wrangler.jsonc
+api/
+package.json
+package-lock.json
+vercel.json
+.git/
+.env*
+.dev.vars*
+node_modules/
+.wrangler/

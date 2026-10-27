@@ -1,7 +1,7 @@
 MD = $(shell find . -name '*.md' ! -path '*/node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
 ICONS = dist/img/icons/instagram.svg dist/img/icons/x.svg dist/img/icons/youtube.svg dist/img/icons/github.svg dist/img/icons/kofi.svg dist/img/icons/rss.svg
-ASSETS = dist/favicon.ico dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/api/search.js $(ICONS)
+ASSETS = dist/favicon.ico dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/api/search.js dist/worker.js $(ICONS)
 FEED = dist/feed.xml
 
 build: dist $(HTML) $(ASSETS)
@@ -45,16 +45,14 @@ watch:
 serve:
 	cd dist && python3 -m http.server 8000
 
-# Useful to test the redirects from `dist/vercel.json`,
-# but requires logging in to Vercel CLI
-serve-vercel:
-	cd dist && npx vercel dev -l 8000
+serve-cloudflare:
+	cd dist && npx wrangler dev --local --port 8000
 
 dev:
 	npx concurrently 'make watch' 'make serve'
 
-dev-vercel:
-	npx concurrently 'make watch' 'make serve-vercel'
+dev-cloudflare:
+	npx concurrently 'make watch' 'make serve-cloudflare'
 
 dist/%.html: %.md head.html foot.html
 	mkdir -p $$(dirname $@)
@@ -87,6 +85,9 @@ dist/js/main-20230317.js: js/main.js
 
 dist/api/%.js: api/%.js
 	cp $^ $@
+
+dist/worker.js: cloudflare/worker.js
+	cp $< $@
 
 dist/img/profile-2019.jpg:
 	magick IMG_4236-square.jpg -resize 256x $@

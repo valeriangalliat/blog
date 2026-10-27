@@ -38,6 +38,9 @@ automatically run `make` to render the updated files.
 
 For convenience, run `make dev` which does both at the same time.
 
+Use `make serve-cloudflare` to test the Worker and redirects locally, or
+`make dev-cloudflare` to run it alongside the file watcher.
+
 ## Lint
 
 Use `make lint` to lint (and fix) `index.md` and `posts.md`, making sure

@@ -1,7 +1,7 @@
 MD = $(shell find . -name '*.md' ! -path '*/node_modules/*' ! -path './drafts/*' ! -path './README.md' | sed 's,^./,,')
 HTML = $(MD:%.md=dist/%.html)
 ICONS = dist/img/icons/instagram.svg dist/img/icons/x.svg dist/img/icons/youtube.svg dist/img/icons/github.svg dist/img/icons/kofi.svg dist/img/icons/rss.svg
-ASSETS = dist/favicon.ico dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/api/search.js dist/worker.js $(ICONS)
+ASSETS = dist/favicon.ico dist/css/normalize.css dist/css/github-20220617.css dist/css/main-20260427.css dist/js/main-20230317.js dist/worker.js $(ICONS)
 FEED = dist/feed.xml
 
 build: dist $(HTML) $(ASSETS)
@@ -11,9 +11,6 @@ publish: build
 
 dist:
 	git worktree add dist gh-pages
-	rm dist/.git
-	# Hack for Vercel CLI requiring `.git`. to be a dir
-	ln -s ../.git/worktrees/dist dist/.git
 
 pull:
 	git -C dist pull && git pull
@@ -81,9 +78,6 @@ dist/css/main-20260427.css: \
 	cat $^ > $@
 
 dist/js/main-20230317.js: js/main.js
-	cp $^ $@
-
-dist/api/%.js: api/%.js
 	cp $^ $@
 
 dist/worker.js: cloudflare/worker.js

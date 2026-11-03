@@ -172,6 +172,9 @@ defaults -currentHost write com.apple.Spotlight MenuItemHidden -bool <span class
 defaults write -g KeyRepeat -int 2
 defaults write -g InitialKeyRepeat -int 15
 
+<span class="hljs-comment"># Power Nap: off (no toggle in settings)</span>
+<span class="hljs-built_in">sudo</span> pmset -a powernap 0
+
 killall Dock
 </code></pre>
 <div class="note">
@@ -181,6 +184,8 @@ killall Dock
 <p>Thanks to <a href="https://alexwlchan.net/notes/2025/disable-handoff-icons-in-dock/">this blog post</a>
 for disabling Continuity Handoff (prevent Dock icons from apps on other
 devices).</p>
+<p>I turn off Power Nap as a workaround for a Firefox freeze bug, and I
+don’t need anything Power Nap does anyway.</p>
 <p>A few things I still need to do manually in system settings:</p>
 <ul>
 <li>In <strong>Battery &gt; Charging &gt; ⓘ</strong>, set <strong>Charge Limit</strong> to <strong>80%</strong>. Leave

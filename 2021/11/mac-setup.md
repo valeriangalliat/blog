@@ -182,6 +182,9 @@ defaults -currentHost write com.apple.Spotlight MenuItemHidden -bool true
 defaults write -g KeyRepeat -int 2
 defaults write -g InitialKeyRepeat -int 15
 
+# Power Nap: off (no toggle in settings)
+sudo pmset -a powernap 0
+
 killall Dock
 ```
 
@@ -196,6 +199,9 @@ For Dock delay, [see full blog post here](../../2022/05/macos-faster-desktops-do
 Thanks to [this blog post](https://alexwlchan.net/notes/2025/disable-handoff-icons-in-dock/)
 for disabling Continuity Handoff (prevent Dock icons from apps on other
 devices).
+
+I turn off Power Nap as a workaround for a Firefox freeze bug, and I
+don't need anything Power Nap does anyway.
 
 A few things I still need to do manually in system settings:
 

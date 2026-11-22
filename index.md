@@ -10,6 +10,7 @@ A blog about tech, software and other things.
 
 <div class="links posts">
 
+* [Download end-to-end encrypted chats from Messenger](2026/11/download-end-to-end-encrypted-chats-from-messenger.md) <small>November 22, 2026</small>
 * [Using Firestore JS client SDK as an admin client (bypass rules)](2026/07/firestore-client-sdk-admin.md) <small>July 27, 2026</small>
 * [Generate subtitles for audio/video on Mac](2026/06/subtitles-audio-video-mac.md) <small>June 29, 2026</small>
 * [LG UltraFine 4K display randomly flickering](2026/06/lg-ultrafine-4k-display-randomly-flickering.md) <small>June 29, 2026</small>
@@ -27,7 +28,6 @@ A blog about tech, software and other things.
 * [Cloudflare Workers choke on asdf `.tool-versions`](2026/02/cloudflare-workers-choke-asdf-tool-versions.md) <small>February 10, 2026</small>
 * [The next chapter](2026/01/the-next-chapter.md) <small>January 25, 2026</small>
 * [macOS app showing scrollbars to some users only](2025/06/macos-app-scrollbars-some-users-only.md) <small>June 25, 2025</small>
-* [GitHub Action hanging on Electron macOS app code signing](2025/06/github-action-hanging-macos-app-code-signing.md) <small>June 22, 2025</small>
 
 [All the posts](posts.md)
 

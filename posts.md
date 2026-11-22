@@ -8,6 +8,7 @@ excerpt: All the posts I've written so far.
 
 ## 2026
 
+* [Download end-to-end encrypted chats from Messenger](2026/11/download-end-to-end-encrypted-chats-from-messenger.md) <small>November 22, 2026</small>
 * [Using Firestore JS client SDK as an admin client (bypass rules)](2026/07/firestore-client-sdk-admin.md) <small>July 27, 2026</small>
 * [Generate subtitles for audio/video on Mac](2026/06/subtitles-audio-video-mac.md) <small>June 29, 2026</small>
 * [LG UltraFine 4K display randomly flickering](2026/06/lg-ultrafine-4k-display-randomly-flickering.md) <small>June 29, 2026</small>

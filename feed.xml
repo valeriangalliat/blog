@@ -5,10 +5,45 @@
   <link href="https://www.codejam.info/feed.xml" rel="self" />
   <link href="https://www.codejam.info/" />
   <id>https://www.codejam.info/</id>
-  <updated>2026-08-03T03:21:01.216Z</updated>
+  <updated>2026-11-23T01:27:51.865Z</updated>
   <author>
     <name>Val</name>
   </author>
+  <entry>
+    <title>Download end-to-end encrypted chats from Messenger</title>
+    <link href="https://www.codejam.info/2026/11/download-end-to-end-encrypted-chats-from-messenger.html" />
+    <id>https://www.codejam.info/2026/11/download-end-to-end-encrypted-chats-from-messenger.html</id>
+    <updated>2026-11-22T07:00:00.000Z</updated>
+    <content type="html"><![CDATA[<p>I like to periodically archive my data from online platforms,
+just in case something happens and they lose whatever I had
+on there (in the case of Messenger, my chat history).</p>
+<p>This shit definitely happens in the wild, like
+<a href="https://www.bleepingcomputer.com/news/google/google-drive-users-angry-over-losing-months-of-stored-data/">that time Google Drive lost months of data for some users</a>. 💀</p>
+<p>Facebook’s plaintext chats are already part of Meta’s own
+<a href="https://accountscenter.meta.com/info_and_permissions/dyi"><strong>Export your information</strong></a>
+tool, and that one seems OK.</p>
+<p>However end-to-end encrypted chats need to be exported separately, from
+Messenger in <strong>Privacy &amp; safety &gt; End-to-end encrypted chats &gt; Message storage &gt; <a href="https://www.facebook.com/secure_storage/dyi">Download message storage data</a></strong>.</p>
+<p>But in my experience (<a href="https://www.reddit.com/r/computerforensics/comments/1tqgypj/facebook_messenger_end_to_end_encrypted_messages/">and not just mine apparently</a>)
+those exports are half broken, missing random conversations and
+attachments. I could <em>not</em> get it to do a proper export that actually
+contains all my data.</p>
+<p>So I made a <a href="https://github.com/valeriangalliat/messenger-archive">Messenger Archive</a>,
+a browser extension that reuses the same underlying mechanism as
+Messenger’s own export tool, but that <em>actually</em> works.</p>
+<p>Not sure if it’s gonna keep working in the future if Facebook updates
+whatever functions the extension relies on, but as of today it allowed
+me to export all my chats and their attachments. Sharing in case it can
+be useful to anyone else.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+]]></content>
+  </entry>
   <entry>
     <title>Using Firestore JS client SDK as an admin client (bypass rules)</title>
     <link href="https://www.codejam.info/2026/07/firestore-client-sdk-admin.html" />
@@ -2947,40 +2982,6 @@ ID of a mobile device already:</p>
 <p>If you encountered any if the quirks above, I hope that it helped you
 work around them and hopefully you didn’t waste as much time on this as
 I did. Happy device recording!</p>
-<section class="post-footer">
-  <h3>Want to leave a comment?</h3>
-  <p>
-    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
-    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
-  </p>
-</section>
-]]></content>
-  </entry>
-  <entry>
-    <title>Turborepo: don’t buffer logs on GitHub Actions</title>
-    <link href="https://www.codejam.info/2025/04/turborepo-buffer-logs-github-actions.html" />
-    <id>https://www.codejam.info/2025/04/turborepo-buffer-logs-github-actions.html</id>
-    <updated>2025-04-23T07:00:00.000Z</updated>
-    <content type="html"><![CDATA[<p>When using <code>turbo run</code> inside a GitHub workflow, Turborepo buffers the
-logs by package so it’s all neatly sorted in the output.</p>
-<p>This is a nice feature when you’re looking at the logs after a run is
-completed.</p>
-<p>However when you’re trying to debug a timing-based issue <em>live</em>, this
-makes it really annoying because the logs are buffered the entire time
-the process runs and only spit out at the end! And then we can’t see
-which package logged what first because the logs got grouped by package
-instead of being in a merged stream.</p>
-<p>I ended up dissecting the source of Turborepo to figure out what causes
-this behavior inside GitHub Actions. <a href="https://github.com/vercel/turborepo/blob/90369bd86cd11ae59d5f94f60bcdbe49313d065f/crates/turborepo-ci/src/vendors.rs#L262-L285">I found it</a>.</p>
-<p>It’s triggered by the <code>GITHUB_ACTIONS</code> environment variable being
-present.</p>
-<p>So running <code>unset GITHUB_ACTIONS</code> before running <code>turbo run</code> turns off
-this behavior!</p>
-<p>In theory that should suffice but I had the following in my notes so
-I’ll also leave it here in case it helps:</p>
-<pre><code class="hljs language-sh"><span class="hljs-built_in">unset</span> $(<span class="hljs-built_in">env</span> | grep RUNNER | <span class="hljs-built_in">cut</span> -d= -f1)
-<span class="hljs-built_in">unset</span> $(<span class="hljs-built_in">env</span> | grep GITHUB | <span class="hljs-built_in">cut</span> -d= -f1)
-</code></pre>
 <section class="post-footer">
   <h3>Want to leave a comment?</h3>
   <p>

@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Download end-to-end encrypted chats from Messenger | CodeJam</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>document.documentElement.classList.add(localStorage.theme || ((matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'))</script>
+  <link rel="stylesheet" href="/css/normalize.css">
+  <link rel="stylesheet" href="/css/github-20220617.css">
+  <link rel="stylesheet" href="/css/main-20260427.css">
+  <link rel="alternate" href="/feed.xml" type="application/atom+xml" title="CodeJam">
+  <link rel="icon" href="/favicon.ico">
+  <meta property="og:title" content="Download end-to-end encrypted chats from Messenger | CodeJam">
+  <meta property="og:site_name" content="CodeJam">
+  <meta property="og:description" content="I like to periodically archive my data from online platforms, just in case something happens and they lose whatever I had on there (in the case of Messenger, my chat history).">
+  <meta property="og:image" content="https://www.codejam.info/img/profile.jpg">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:site" content="@valeriangalliat">
+  <meta name="twitter:creator" content="@valeriangalliat">
+</head>
+<body class="post">
+  <nav>
+    <ul>
+      <li><a href="/">CodeJam</a></li>
+      <li><a href="/val.html">About</a></li>
+      <li><a href="/now.html">Now</a></li>
+      <li class="pull"><button title="Toggle theme" class="change-color-theme">🌝</button></li>
+    </ul>
+  </nav>
+  <header>
+    <div class="header-inner">
+      <div class="content">
+<h1>Download end-to-end encrypted chats from Messenger</h1>
+<p class="date">November 22, 2026</p>
+      </div>
+    </div>
+  </header>
+  <div class="content">
+<p>I like to periodically archive my data from online platforms,
+just in case something happens and they lose whatever I had
+on there (in the case of Messenger, my chat history).</p>
+<p>This shit definitely happens in the wild, like
+<a href="https://www.bleepingcomputer.com/news/google/google-drive-users-angry-over-losing-months-of-stored-data/">that time Google Drive lost months of data for some users</a>. 💀</p>
+<p>Facebook’s plaintext chats are already part of Meta’s own
+<a href="https://accountscenter.meta.com/info_and_permissions/dyi"><strong>Export your information</strong></a>
+tool, and that one seems OK.</p>
+<p>However end-to-end encrypted chats need to be exported separately, from
+Messenger in <strong>Privacy &amp; safety &gt; End-to-end encrypted chats &gt; Message storage &gt; <a href="https://www.facebook.com/secure_storage/dyi">Download message storage data</a></strong>.</p>
+<p>But in my experience (<a href="https://www.reddit.com/r/computerforensics/comments/1tqgypj/facebook_messenger_end_to_end_encrypted_messages/">and not just mine apparently</a>)
+those exports are half broken, missing random conversations and
+attachments. I could <em>not</em> get it to do a proper export that actually
+contains all my data.</p>
+<p>So I made a <a href="https://github.com/valeriangalliat/messenger-archive">Messenger Archive</a>,
+a browser extension that reuses the same underlying mechanism as
+Messenger’s own export tool, but that <em>actually</em> works.</p>
+<p>Not sure if it’s gonna keep working in the future if Facebook updates
+whatever functions the extension relies on, but as of today it allowed
+me to export all my chats and their attachments. Sharing in case it can
+be useful to anyone else.</p>
+<section class="post-footer">
+  <h3>Want to leave a comment?</h3>
+  <p>
+    Start a conversation on <a href="https://x.com/valeriangalliat">X</a> or send me an <a href="mailto:val@codejam.info">email</a>! 💌<br>
+    This post helped you? <a href="https://ko-fi.com/funkyval">Buy me a coffee</a>! 🍻
+  </p>
+</section>
+  </div>
+  <footer>
+    <div class="footer-inner">
+      <figure>
+        <a href="/val.html">
+          <img alt="The author (Val) in front of a mountain" src="/img/profile.jpg">
+        </a>
+      </figure>
+      <div class="footer-content">
+        <p>
+          Made with 🧡 by <a href="/val.html">Val</a>.
+          Generated from a <abbr title="Pull requests welcome!"><a href="https://github.com/valeriangalliat/blog/tree/master/2026/11/download-end-to-end-encrypted-chats-from-messenger.md">public repository</a></abbr>.
+        </p>
+        <ul class="social">
+          <li>
+            <a href="https://x.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>X</title>
+                <use href="/img/icons/x.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://github.com/valeriangalliat">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>GitHub</title>
+                <use href="/img/icons/github.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.instagram.com/funkyval_/">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Instagram</title>
+                <use href="/img/icons/instagram.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://www.youtube.com/@FunkyVal">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>YouTube</title>
+                <use href="/img/icons/youtube.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="https://ko-fi.com/funkyval">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>Buy me a coffee!</title>
+                <use href="/img/icons/kofi.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+          <li>
+            <a href="/feed.xml">
+              <svg width="16" height="16" viewBox="0 0 24 24">
+                <title>RSS</title>
+                <use href="/img/icons/rss.svg#icon"></use>
+              </svg>
+            </a>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </footer>
+  <script src="/js/main-20230317.js"></script>
+</body>
+</html>
